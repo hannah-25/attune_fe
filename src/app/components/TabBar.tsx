@@ -1,6 +1,7 @@
 import React from 'react';
 
 export type Tab = '홈' | '일지' | '약' | '캘린더' | '커뮤니티' | '리포트' | '상담';
+export type TabBarVariant = 'main' | 'report' | 'counseling';
 
 const icons: Record<Tab, React.ReactNode> = {
   홈: (
@@ -45,25 +46,41 @@ const icons: Record<Tab, React.ReactNode> = {
   ),
 };
 
-const DEFAULT_TABS: Tab[] = ['홈', '일지', '약', '캘린더', '커뮤니티'];
+const TAB_PRESETS: Record<TabBarVariant, Tab[]> = {
+  main: ['홈', '일지', '약', '캘린더', '커뮤니티'],
+  report: ['홈', '일지', '약', '캘린더', '리포트'],
+  counseling: ['홈', '일지', '약', '캘린더', '상담'],
+};
 
 interface TabBarProps {
   active?: Tab;
+  variant?: TabBarVariant;
   tabs?: Tab[];
 }
 
-export function TabBar({ active, tabs = DEFAULT_TABS }: TabBarProps) {
+function TabBarItem({ active, tab }: { active: boolean; tab: Tab }) {
   return (
-    <div className="items-center flex justify-around absolute h-[62px] left-3 right-3 bottom-[14px] backdrop-blur-[20px] backdrop-saturate-[1.8] bg-white/80 border-white/60 border shadow-[rgba(60,40,90,0.12)_0px_10px_30px_0px,_rgba(255,255,255,0.7)_0px_1px_0px_0px_inset] z-[20] rounded-[1.9375rem]">
-      {tabs.map(tab => (
-        <div
-          key={tab}
-          className={`items-center flex flex-col grow justify-center basis-[0%] text-xs gap-1 min-h-11 ${active === tab ? 'font-bold' : 'font-medium text-gray-500'}`}
-        >
-          {icons[tab]}
-          {tab}
-        </div>
-      ))}
+    <div
+      className={`items-center flex flex-col grow justify-center basis-[0%] text-xs gap-1 min-h-11 ${active ? 'font-bold' : 'font-medium text-gray-500'}`}
+      aria-current={active ? 'page' : undefined}
+    >
+      {icons[tab]}
+      {tab}
     </div>
+  );
+}
+
+export function TabBar({ active, variant = 'main', tabs }: TabBarProps) {
+  const visibleTabs = tabs ?? TAB_PRESETS[variant];
+
+  return (
+    <nav
+      className="items-center flex justify-around absolute h-[62px] left-3 right-3 bottom-[14px] backdrop-blur-[20px] backdrop-saturate-[1.8] bg-white/80 border-white/60 border shadow-[rgba(60,40,90,0.12)_0px_10px_30px_0px,_rgba(255,255,255,0.7)_0px_1px_0px_0px_inset] z-[20] rounded-[1.9375rem]"
+      aria-label="하단 내비게이션"
+    >
+      {visibleTabs.map(tab => (
+        <TabBarItem key={tab} tab={tab} active={active === tab} />
+      ))}
+    </nav>
   );
 }

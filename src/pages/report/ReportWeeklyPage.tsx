@@ -134,7 +134,7 @@ export default function ReportWeeklyPage() {
             </div>
           </div>
         </div>
-        <TabBar active="리포트" tabs={['홈', '일지', '약', '캘린더', '리포트']} />
+        <TabBar active="리포트" variant="report" />
       </div>
     </div>
   );
