@@ -50,7 +50,7 @@ export function JournalSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-[14px] pt-1 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-1 pr-4 pb-[100px] pl-4">
                   <div>
                     <div className="items-center flex mb-2 gap-1.5">
                       <div className="w-[10px] h-[10px] bg-purple-500 rounded-[0.3125rem]"></div>
@@ -220,7 +220,7 @@ export function JournalSection() {
                   </div>
                   <div className="text-center text-gray-600 text-xs">5월 13일 화 · 6번째 기록</div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
                   <div className="relative pt-0 pr-0 pb-0 pl-[18px]">
                     <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-50"></div>
                     <div className="relative pt-0 pr-0 pb-3 pl-0">
@@ -447,7 +447,7 @@ export function JournalSection() {
                   <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(80,140,220)] rounded-sm"></div>업무</div>
                   <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(80,190,130)] rounded-sm"></div>좋은 날</div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-2 pr-4 pb-[100px] pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-2 pr-4 pb-[100px] pl-4">
                   <div className="font-bold mb-2 text-gray-600">
                     최근 기록
                   </div>
@@ -508,7 +508,7 @@ export function JournalSection() {
                     </div>
                   </div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-0 pr-4 pb-6 pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-6 pl-4">
                   <div className="flex gap-1 pt-1 pr-0 pb-3 pl-0">
                     <div className="grow font-bold text-center bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">감정·증상</div>
                     <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">부작용</div>

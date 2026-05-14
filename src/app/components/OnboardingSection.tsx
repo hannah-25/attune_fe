@@ -32,7 +32,7 @@ export function OnboardingSection() {
                 </div>
               </div>
               <div className="flex flex-col absolute left-0 top-0 right-0 bottom-0 pt-11 pr-0 pb-0 pl-0">
-                <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] pr-5 pb-16 pl-5">
+                <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] px-5 py-8">
                   <div className="flex items-center justify-center text-center w-32 h-32">
                     <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
                   </div>
@@ -372,7 +372,7 @@ export function OnboardingSection() {
                     <div className="w-11 h-11" />
                   </div>
                 </div>
-                <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] pr-5 pb-20 pl-5">
+                <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] px-5 py-8">
                   <div className="flex items-center justify-center text-center w-24 h-24">
                     <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
                   </div>

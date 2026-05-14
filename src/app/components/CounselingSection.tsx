@@ -50,7 +50,7 @@ export function CounselingSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-0 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-[100px] pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
                     <div className="font-bold text-gray-600 text-xs">
                       다음 상담까지
@@ -151,7 +151,7 @@ export function CounselingSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
                     <div className="font-bold text-gray-600 text-xs">
                       5월 16일 금 14:00까지
@@ -280,7 +280,7 @@ export function CounselingSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
                     <div className="font-bold text-gray-600">
                       4월 16일 금 · 청담심리상담센터

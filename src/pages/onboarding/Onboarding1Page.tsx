@@ -4,11 +4,11 @@ import logoImage from '@src/imports/logo.png';
 export default function Onboarding1Page() {
   return (
     <div
-      className="w-full h-dvh bg-purple-100 text-sm flex flex-col"
+      className="flex h-dvh min-h-dvh w-full flex-col overflow-hidden bg-purple-100 text-sm"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
-      <div className="flex flex-col flex-1 min-h-0">
-        <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] pr-5 pb-16 pl-5">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] px-5 py-8">
           <div className="flex items-center justify-center text-center w-32 h-32">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
           </div>

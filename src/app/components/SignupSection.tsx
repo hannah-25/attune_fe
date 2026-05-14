@@ -31,12 +31,7 @@ export function SignupSection() {
                 </div>
               </div>
               <div className="flex flex-col absolute left-0 top-0 right-0 bottom-0 pt-11 pr-0 pb-0 pl-0">
-                <div className="flex flex-col gap-1 pt-1 pr-3 pb-2.5 pl-3 shrink-[0]">
-                  <div className="items-center flex justify-between">
-                    <div className="font-bold text-sm"></div>
-                  </div>
-                </div>
-                <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center basis-[0%] pt-0 pr-7 pb-20 pl-7">
+                <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center basis-[0%] px-7 py-8">
                   <div className="flex items-center justify-center w-36 h-36 mb-5">
                     <img src={logoImage} alt="a.tune" className="w-full h-full object-contain" />
                   </div>

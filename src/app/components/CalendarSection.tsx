@@ -205,7 +205,7 @@ export function CalendarSection() {
                   </div>
                 </div>
                 <div className="h-px mt-3 ml-[16px] mr-[16px] bg-purple-50"></div>
-                <div className="grow overflow-auto basis-[0%] pt-3 pr-4 pb-[100px] pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-3 pr-4 pb-[100px] pl-4">
                   <div className="font-bold mb-2">
                     5월 13일 · 3개 일정
                   </div>
@@ -278,7 +278,7 @@ export function CalendarSection() {
                     </div>
                   </div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-0 pr-4 pb-4 pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
                   <div className="items-center flex mb-[14px] gap-2">
                     <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
                       <span className="block">상담</span>
@@ -368,7 +368,7 @@ export function CalendarSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
                     <div className="w-[65%] h-[10px] bg-purple-50 rounded-lg"></div>
                     <div className="h-3"></div>
@@ -466,7 +466,7 @@ export function CalendarSection() {
                     <div className="font-bold text-sm">캘린더 연동</div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.375rem]">
                     <div className="font-extrabold text-lg leading-[23.4px]" style={{"fontFamily":"NanumSquare, system-ui"}}>병원·회사 일정도<br />한 곳에서 봐요</div>
                     <div className="mt-[6px] text-gray-600 leading-normal">

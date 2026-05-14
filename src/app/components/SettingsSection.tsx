@@ -44,7 +44,7 @@ export function SettingsSection() {
                     </div>
                   </div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
                   <div className="text-center pt-1 pr-0 pb-5 pl-0">
                     <div className="inline-block relative text-center" style={{"textDecoration":"none"}}>
                       <div className="flex items-center justify-center text-center w-24 h-24">
@@ -195,7 +195,7 @@ export function SettingsSection() {
                     <div className="font-bold text-sm">알림 설정</div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
                     <div className="font-bold text-gray-600">
                       전체 알림
@@ -332,7 +332,7 @@ export function SettingsSection() {
                     <div className="font-bold text-sm">회원 탈퇴</div>
                   </div>
                 </div>
-                <div className="flex flex-col grow basis-[0%] gap-[14px] pt-2 pr-5 pb-6 pl-5">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-2 pr-5 pb-6 pl-5">
                   <div className="flex items-center justify-center text-center pt-3 pr-0 pb-3 pl-0">
                     <div className="w-20 h-20">
                       <img src={logoImage} alt="attune" className="w-full h-full object-contain" />

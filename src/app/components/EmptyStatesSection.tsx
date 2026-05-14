@@ -117,7 +117,7 @@ export function EmptyStatesSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow basis-[0%] gap-[14px] pt-3 pr-5 pb-[100px] pl-5">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-3 pr-5 pb-[100px] pl-5">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
                     <div className="items-center flex gap-3">
                       <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[1.375rem]">
@@ -290,7 +290,7 @@ export function EmptyStatesSection() {
                     <span className="block">D-4</span>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-3 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-3 pr-4 pb-[100px] pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
                     <div className="items-center flex mb-2 gap-1.5">
                       <div className="overflow-hidden w-[14px] h-[14px]">

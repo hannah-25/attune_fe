@@ -50,7 +50,7 @@ export function CommunitySection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-2 pt-0 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-0 pr-4 pb-[100px] pl-4">
                   <div className="items-center flex bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
                     <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
                       <div className="overflow-hidden w-3 h-3">
@@ -141,7 +141,7 @@ export function CommunitySection() {
                   <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">아데랄</div>
                   <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">일반</div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-2.5 pt-1 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2.5 pt-1 pr-4 pb-[100px] pl-4">
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
                     <div className="items-center flex mb-[6px] gap-1.5">
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">콘서타</div>
@@ -283,7 +283,7 @@ export function CommunitySection() {
                     </div>
                   </div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-0 pr-4 pb-20 pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-20 pl-4">
                   <div className="items-center flex mb-[10px] gap-1.5">
                     <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
                       <span className="block">콘서타</span>
@@ -420,7 +420,7 @@ export function CommunitySection() {
                     </div>
                   </div>
                 </div>
-                <div className="grow basis-[0%] pt-0 pr-4 pb-2 pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-2 pl-4">
                   <div className="flex mb-3 gap-1.5">
                     <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
                       <span className="block">콘서타</span>

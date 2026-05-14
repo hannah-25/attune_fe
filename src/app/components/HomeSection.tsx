@@ -48,7 +48,7 @@ export function HomeSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-2 pt-1 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-1 pr-4 pb-[100px] pl-4">
                   <div className="items-center flex justify-between px-1">
                     <div className="font-semibold text-sm text-gray-800">주간 통계</div>
                     <button className="text-xs text-gray-400">전체보기</button>
@@ -223,7 +223,7 @@ export function HomeSection() {
                     <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 rounded-xs"></div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-2.5 pt-3 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2.5 pt-3 pr-4 pb-[100px] pl-4">
                   <div className="items-center flex gap-3">
                     <div className="font-semibold w-[38px] text-gray-600 text-xs">08:00</div>
                     <div className="w-2 h-2 bg-purple-300 shrink-[0] rounded-sm"></div>

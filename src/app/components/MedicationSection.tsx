@@ -50,7 +50,7 @@ export function MedicationSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-1 pr-4 pb-[100px] pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-[100px] pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
                     <div className="font-bold text-gray-600 text-xs">
                       다음 복용까지
@@ -183,7 +183,7 @@ export function MedicationSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">
                   <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2 p-3 rounded-[1.125rem]">
                     <div className="overflow-hidden w-[14px] h-[14px]">
                       <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F617c79ed681b011cf58378b7ab214e9fffdccd9a.svg?generation=1778677415843289&amp;alt=media" className="block size-full" />
@@ -369,7 +369,7 @@ export function MedicationSection() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col grow overflow-auto basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
+                <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
                     <div className="items-center flex gap-3">
                       <div className="items-center flex justify-center w-14 h-14 bg-white rounded-[1.125rem]">
@@ -501,7 +501,7 @@ export function MedicationSection() {
                   <div className="items-center flex grow font-bold justify-center h-[30px] bg-white basis-[0%] rounded-[0.9375rem]">3달</div>
                   <div className="items-center flex grow font-bold justify-center h-[30px] bg-white basis-[0%] rounded-[0.9375rem]">직접</div>
                 </div>
-                <div className="grow overflow-auto basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
+                <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
                   <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
                     <div className="flex justify-around">
                       <div className="text-center">
