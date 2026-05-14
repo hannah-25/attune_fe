@@ -1,4 +1,5 @@
 import React from 'react';
+import { TopBar } from '../../app/components/TopBar';
 
 export default function ResetPassword3Page() {
   return (
@@ -7,15 +8,7 @@ export default function ResetPassword3Page() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
-            <button className="items-center flex justify-center w-11 h-11 text-gray-700 rounded-xl hover:bg-white/60 transition-colors" aria-label="이전 화면">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18L9 12L15 6" /></svg>
-            </button>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-sm">새 비밀번호 설정</div>
-            <div className="w-11 h-11" />
-          </div>
-        </div>
+        <TopBar title="새 비밀번호 설정" centered showBack />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-16 pr-5 pb-4 pl-5">
           <p className="text-gray-600 text-xs leading-relaxed">새로 사용할 비밀번호를 입력해주세요.</p>
           <div className="flex flex-col gap-2.5 mt-5">
