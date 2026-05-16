@@ -18,6 +18,7 @@ export default function JournalTimelinePage() {
               </div>
             </div>
             <div className="font-bold text-sm">오늘 일지</div>
+            <div className="w-11 h-11"></div>
           </div>
           <div className="text-center text-gray-600 text-xs">5월 13일 화 · 6번째 기록</div>
         </div>
@@ -51,10 +52,10 @@ export default function JournalTimelinePage() {
                     15분 전
                   </div>
                   <div className="flex flex-wrap mt-1 gap-1">
-                    <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
+                    <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-full">
                       <span className="block">😰 불안</span>
                     </div>
-                    <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
+                    <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-full">
                       <span className="block">멍해짐</span>
                     </div>
                   </div>
@@ -85,7 +86,7 @@ export default function JournalTimelinePage() {
                     방금 전
                   </div>
                   <div className="flex flex-wrap mt-1 gap-1">
-                    <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
+                    <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-full">
                       <span className="block">마감 놓침</span>
                     </div>
                   </div>
@@ -104,7 +105,7 @@ export default function JournalTimelinePage() {
                     30분 전
                   </div>
                   <div className="mt-1">
-                    <div className="items-center inline-flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
+                    <div className="items-center inline-flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-full">
                       <span className="block">식욕 저하</span>
                     </div>
                   </div>
