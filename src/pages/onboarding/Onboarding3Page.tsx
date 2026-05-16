@@ -1,4 +1,5 @@
 import React from 'react';
+import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
 
 export default function Onboarding3Page() {
   return (
@@ -7,21 +8,12 @@ export default function Onboarding3Page() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-2.5 pt-0 pr-0 pb-0 pl-0 shrink-[0]">
-          <div className="relative h-1 bg-purple-50 rounded-sm">
-            <div className="absolute w-[50%] left-0 top-0 bottom-0 bg-purple-300 rounded-sm"></div>
-          </div>
-          <div className="items-start flex pt-1 pr-4 pl-1">
-            <button className="items-center flex justify-center w-11 h-11 text-gray-700 rounded-xl shrink-0 hover:bg-white/60 transition-colors" aria-label="이전 화면">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18L9 12L15 6" /></svg>
-            </button>
-            <div className="grow">
-              <div className="font-semibold text-gray-900 text-sm leading-tight">ASRS 자가 체크</div>
-              <div className="mt-1 text-gray-600 text-xs leading-relaxed">18문항 · 약 3분</div>
-            </div>
-            <div className="text-gray-600 text-xs whitespace-nowrap ml-2 mt-0.5 shrink-0">2 / 4</div>
-          </div>
-        </div>
+        <OnboardingTopBar
+          title="ASRS 자가 체크"
+          description="18문항 · 약 3분"
+          progressClassName="w-[50%] bg-purple-300"
+          step={2}
+        />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-5 pr-5 pb-4 pl-5">
           <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] p-3 rounded-xl">
             <div className="font-medium mb-3 text-sm leading-snug">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { TopBar } from '../../app/components/TopBar';
 
 export default function SignupPage() {
   return (
@@ -7,17 +8,7 @@ export default function SignupPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
-            <button className="items-center flex justify-center w-11 h-11 text-gray-700 rounded-xl hover:bg-white/60 transition-colors" aria-label="이전 화면">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18L9 12L15 6" />
-              </svg>
-            </button>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-sm">회원가입</div>
-            <div className="w-11 h-11" />
-          </div>
-        </div>
+        <TopBar title="회원가입" centered showBack />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-5 pr-5 pb-4 pl-5">
           <div className="flex flex-col gap-2.5">
             <div className="flex flex-col justify-center w-full h-[54px] bg-white border border-gray-300 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] px-3 rounded-xl focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100">

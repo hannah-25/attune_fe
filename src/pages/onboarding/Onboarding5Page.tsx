@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImage from '@src/imports/logo.png';
+import { TopBar } from '../../app/components/TopBar';
 
 export default function Onboarding5Page() {
   return (
@@ -8,13 +9,7 @@ export default function Onboarding5Page() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
-            <div className="w-11 h-11" />
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-sm">온보딩 완료</div>
-            <div className="w-11 h-11" />
-          </div>
-        </div>
+        <TopBar title="온보딩 완료" centered />
         <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] px-5 py-8">
           <div className="flex items-center justify-center text-center w-24 h-24">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />

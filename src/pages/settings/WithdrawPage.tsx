@@ -1,5 +1,9 @@
 import React from 'react';
 import logoImage from '@src/imports/logo.png';
+import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+
+const withdrawIcon =
+  'https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff0071d92959cfc25f75d6812bbca366b70c646d6.svg?generation=1778677419926051&alt=media';
 
 export default function WithdrawPage() {
   return (
@@ -8,18 +12,7 @@ export default function WithdrawPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff0071d92959cfc25f75d6812bbca366b70c646d6.svg?generation=1778677419926051&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">회원 탈퇴</div>
-          </div>
-        </div>
+        <TopBar left={<HeaderIconButton src={withdrawIcon} />} title="회원 탈퇴" />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-2 pr-5 pb-6 pl-5">
           <div className="flex items-center justify-center text-center pt-3 pr-0 pb-3 pl-0">
             <div className="w-20 h-20">

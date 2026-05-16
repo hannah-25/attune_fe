@@ -157,7 +157,7 @@ export function ReportSection() {
                     </div>
                   </div>
                 </div>
-                <TabBar active="리포트" tabs={['홈', '일지', '약', '캘린더', '리포트']} />
+                <TabBar active="리포트" variant="report" />
               </div>
               <div className="absolute w-[104px] h-1 left-[50%] bottom-[7px] bg-black/18 translate-x-[-50%] rounded-full"></div>
             </div>
@@ -270,7 +270,7 @@ export function ReportSection() {
                     </div>
                   </div>
                 </div>
-                <TabBar active="리포트" tabs={['홈', '일지', '약', '캘린더', '리포트']} />
+                <TabBar active="리포트" variant="report" />
               </div>
               <div className="absolute w-[104px] h-1 left-[50%] bottom-[7px] bg-black/18 translate-x-[-50%] rounded-full"></div>
             </div>

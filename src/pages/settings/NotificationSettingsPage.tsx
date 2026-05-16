@@ -1,4 +1,8 @@
 import React from 'react';
+import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+
+const notificationIcon =
+  'https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fecc79c56d83d223eb08c89b79b70e84caf9360dd.svg?generation=1778677419880265&alt=media';
 
 export default function NotificationSettingsPage() {
   return (
@@ -7,18 +11,7 @@ export default function NotificationSettingsPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fecc79c56d83d223eb08c89b79b70e84caf9360dd.svg?generation=1778677419880265&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">알림 설정</div>
-          </div>
-        </div>
+        <TopBar left={<HeaderIconButton src={notificationIcon} />} title="알림 설정" />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <div className="font-bold text-gray-600">

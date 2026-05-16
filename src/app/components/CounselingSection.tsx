@@ -107,7 +107,7 @@ export function CounselingSection() {
                     <div className="mt-1 text-gray-600">초기 상담</div>
                   </div>
                 </div>
-                <TabBar active="상담" tabs={['홈', '일지', '약', '캘린더', '상담']} />
+                <TabBar active="상담" variant="counseling" />
               </div>
               <div className="absolute w-[104px] h-1 left-[50%] bottom-[7px] bg-black/18 translate-x-[-50%] rounded-full"></div>
             </div>
