@@ -29,12 +29,12 @@ export default function JournalTagsPage() {
         </div>
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[160px] pl-4">
           <div className="flex gap-1 pt-1 pr-0 pb-3 pl-0">
-            <div className="grow font-bold text-center bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">감정·증상</div>
-            <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">부작용</div>
-            <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">업무</div>
-            <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">목표</div>
+            <div className="grow font-bold text-center text-purple-700 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">감정·증상</div>
+            <div className="grow font-medium text-center text-gray-400 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">부작용</div>
+            <div className="grow font-medium text-center text-gray-400 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">업무</div>
+            <div className="grow font-medium text-center text-gray-400 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">목표</div>
           </div>
-          <div className="font-bold text-gray-600 text-xs pt-1 pr-1 pb-1.5 pl-1">
+          <div className="font-bold text-gray-800 text-xs pt-1 pr-1 pb-1.5 pl-1">
             활성 (8)
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
@@ -44,7 +44,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -54,7 +54,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -64,7 +64,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -74,7 +74,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -84,12 +84,12 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
           </div>
-          <div className="font-bold text-gray-600 text-xs pt-4 pr-1 pb-1.5 pl-1">
+          <div className="font-bold text-gray-800 text-xs pt-4 pr-1 pb-1.5 pl-1">
             비활성 (2)
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">

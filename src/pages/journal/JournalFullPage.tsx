@@ -310,7 +310,7 @@ export default function JournalFullPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-5 pb-[10px] pl-5 shrink-[0]">
+        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
           <div className="items-center flex justify-between">
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
@@ -332,7 +332,7 @@ export default function JournalFullPage() {
           </div>
         </div>
 
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-10 pt-2 pr-5 pb-[104px] pl-5">
+        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-10 pt-2 pr-4 pb-[104px] pl-4">
           <section>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
@@ -344,9 +344,9 @@ export default function JournalFullPage() {
                   6.5시간
                 </div>
                 <div className="flex mt-[6px] gap-[2px]">
-                  <div className="grow h-1 bg-purple-300 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-purple-300 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-purple-300 basis-[0%] rounded-xs"></div>
+                  <div className="grow h-1 bg-purple-200 basis-[0%] rounded-xs"></div>
+                  <div className="grow h-1 bg-purple-200 basis-[0%] rounded-xs"></div>
+                  <div className="grow h-1 bg-purple-200 basis-[0%] rounded-xs"></div>
                   <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
                   <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
                 </div>
@@ -403,7 +403,7 @@ export default function JournalFullPage() {
 
             <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
               <div className="flex items-center justify-between mb-2">
-                <div className="font-semibold text-gray-600">메모</div>
+                <div className="font-semibold text-gray-800">메모</div>
                 {!memoSaved && (
                   <button
                     onClick={() => setMemoSaved(true)}
