@@ -26,7 +26,6 @@
 | 경로 | 화면 | 파일 |
 |------|------|------|
 | `/home` | 리스트 대시보드 | `src/pages/home/HomeListPage.tsx` |
-| `/home/calendar` | 캘린더 타임라인 | `src/pages/home/HomeCalendarPage.tsx` |
 
 ## 일지
 | 경로 | 화면 | 파일 |
@@ -48,6 +47,7 @@
 ## 캘린더
 | 경로 | 화면 | 파일 |
 |------|------|------|
+| `/home/calendar` | 캘린더 타임라인 | `src/pages/home/HomeCalendarPage.tsx` |
 | `/calendar` | 월간 통합뷰 (CAL-001) | `src/pages/calendar/CalendarMainPage.tsx` |
 | `/calendar/event` | 일정 상세 | `src/pages/calendar/EventDetailPage.tsx` |
 | `/calendar/new` | 새 일정 · 카테고리 (CAL-003) | `src/pages/calendar/NewEventPage.tsx` |

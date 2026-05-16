@@ -51,7 +51,7 @@ export default function JournalCalendarPage() {
           <div className="grid-cols-7 grid mb-[6px] gap-1">
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 1 / 2 / 2"}}>일</div>
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 2 / 2 / 3"}}>월</div>
-            <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 2 / 2 / 3"}}>화</div>
+            <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 3 / 2 / 4"}}>화</div>
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 4 / 2 / 5"}}>수</div>
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 5 / 2 / 6"}}>목</div>
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 6 / 2 / 7"}}>금</div>
@@ -59,7 +59,7 @@ export default function JournalCalendarPage() {
           </div>
           <div className="grid-cols-7 grid gap-1">
             <div className="items-center aspect-square flex font-semibold justify-center relative text-gray-500 opacity-[0.5] rounded-xl" style={{"gridArea":"1 / 1 / 2 / 2"}}></div>
-            <div className="items-center aspect-square flex font-semibold justify-center relative text-gray-500 opacity-[0.5] rounded-xl" style={{"gridArea":"1 / 2 / 2 / 3"}}></div>
+            <div className="items-center aspect-square flex font-semibold justify-center relative text-gray-500 opacity-[0.5] rounded-xl" style={{"gridArea":"1 / 3 / 2 / 4"}}></div>
             <div className="items-center aspect-square flex font-semibold justify-center relative text-gray-500 opacity-[0.5] rounded-xl" style={{"gridArea":"1 / 2 / 2 / 3"}}></div>
             <div className="items-center aspect-square flex font-semibold justify-center relative rounded-xl" style={{"gridArea":"1 / 4 / 2 / 5"}}>1</div>
             <div className="items-center aspect-square flex font-semibold justify-center relative bg-purple-100 rounded-xl" style={{"gridArea":"1 / 5 / 2 / 6"}}>2<div className="absolute w-1 h-1 left-[50%] bottom-[3px] bg-[rgb(31,_27,_46)] translate-x-[-50%] rounded-xs"></div></div>
