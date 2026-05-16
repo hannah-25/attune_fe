@@ -113,11 +113,11 @@ export default function JournalTimelinePage() {
               </div>
             </div>
           </div>
-          <div className="items-center border-dashed flex font-bold mt-1 border-gray-400 border text-gray-600 gap-2 p-[14px] rounded-2xl">
+          <div className="items-center flex mt-1 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] text-gray-600 gap-2 p-[14px] rounded-2xl">
             <div className="overflow-hidden w-[14px] h-[14px]">
               <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2119c34d184031b1023b5f47910171ad846b1874.svg?generation=1778677415261953&alt=media" className="block size-full" />
             </div>
-            <span className="block">지금 일어난 일 빠르게 기록</span>
+            <span className="block">최근 기록 이후 1시간 20분</span>
           </div>
         </div>
         <div className="items-center flex absolute left-4 right-4 bottom-[78px] backdrop-blur-[18px] bg-white/80 border-white/70 border shadow-[rgba(60,40,90,0.12)_0px_10px_26px_0px] gap-1.5 pt-2 pr-2 pb-2 pl-[14px] rounded-3xl">

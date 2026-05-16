@@ -1,4 +1,5 @@
 import React from 'react';
+import { TabBar } from '@/components/TabBar';
 
 export default function JournalTagsPage() {
   return (
@@ -26,7 +27,7 @@ export default function JournalTagsPage() {
             </div>
           </div>
         </div>
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-6 pl-4">
+        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[160px] pl-4">
           <div className="flex gap-1 pt-1 pr-0 pb-3 pl-0">
             <div className="grow font-bold text-center bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">감정·증상</div>
             <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">부작용</div>
@@ -108,12 +109,13 @@ export default function JournalTagsPage() {
             </div>
           </div>
         </div>
-        <div className="items-center flex font-bold absolute h-[50px] right-4 bottom-6 bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem]">
+        <div className="items-center flex font-bold absolute h-[50px] right-4 bottom-[92px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem]">
           <div className="overflow-hidden w-[14px] h-[14px]">
             <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg?generation=1778677415542195&alt=media" className="block size-full" />
           </div>
           <span className="block">새 태그</span>
         </div>
+        <TabBar active="일지" />
       </div>
     </div>
   );
