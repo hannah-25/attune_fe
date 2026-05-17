@@ -32,9 +32,7 @@ export default function EmptyMedicationPage() {
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
             <div className="items-center flex gap-3">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[1.375rem]">
-                <div className="overflow-hidden w-5 h-5">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa9451c5d24783726972f1f38c1ada1a23c9347ec.svg?generation=1778677418843010&amp;alt=media" className="block size-full" />
-                </div>
+                <span className="text-xl">💊</span>
               </div>
               <div className="grow basis-[0%]">
                 <div className="font-extrabold text-lg leading-[22.5px]" style={{"fontFamily":"NanumSquare, system-ui"}}>
@@ -72,11 +70,12 @@ export default function EmptyMedicationPage() {
               <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
             </div>
             <div className="grow basis-[0%]">
-              <div className="font-bold">표준 정보 + 혈중농도</div>
+              <div className="font-bold">약물 정보 조회</div>
               <div className="mt-[2px] text-gray-600 text-xs">식약처·임상 자료 기반</div>
             </div>
           </div>
-          <div className="grow basis-[0%]"></div>
+        </ScrollArea>
+        <div className="flex flex-col gap-2 px-5 pt-4 pb-[100px]">
           <div className="items-center flex font-bold justify-center w-full h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
             <span className="block">+ 약 추가하기</span>
           </div>
@@ -87,7 +86,7 @@ export default function EmptyMedicationPage() {
             </b>
             <span className="text-center">도 가능해요</span>
           </div>
-        </ScrollArea>
+        </div>
         <TabBar active="약" />
       </div>
     </div>

@@ -69,9 +69,6 @@ export function EmptyStatesSection() {
                   <div className="items-center flex font-bold justify-center text-center h-[50px] bg-purple-500 shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
                     <span className="block text-center">오늘 첫 기록 시작</span>
                   </div>
-                  <div className="text-center text-gray-500 text-xs">
-                    <span className="text-center">걸리는 시간 · 평균 18초</span>
-                  </div>
                 </div>
                 <TabBar active="일지" />
               </div>
@@ -161,7 +158,7 @@ export function EmptyStatesSection() {
                       <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
                     </div>
                     <div className="grow basis-[0%]">
-                      <div className="font-bold">표준 정보 + 혈중농도</div>
+                      <div className="font-bold">약물 정보 조회</div>
                       <div className="mt-[2px] text-gray-600 text-xs">식약처·임상 자료 기반</div>
                     </div>
                   </div>

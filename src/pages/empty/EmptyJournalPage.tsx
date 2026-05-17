@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '@src/imports/logo.png';
+import logoImage from '@src/imports/emotion2.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
@@ -45,10 +45,7 @@ export default function EmptyJournalPage() {
           </div>
           <div className="text-center h-2"></div>
           <div className="items-center flex font-bold justify-center text-center h-[50px] bg-purple-500 shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
-            <span className="block text-center">오늘 첫 기록 시작</span>
-          </div>
-          <div className="text-center text-gray-500 text-xs">
-            <span className="text-center">걸리는 시간 · 평균 18초</span>
+            <span className="block text-center">첫 기록 시작</span>
           </div>
         </ScrollArea>
         <TabBar active="일지" />
