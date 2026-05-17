@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import logoImage from '../../imports/logo.png';
+import logoImage from '../../assets/logo.png';
 
 export function OnboardingSection() {
   const [guideOpen, setGuideOpen] = useState(false);
@@ -24,10 +24,10 @@ export function OnboardingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fbc6cf68bbc9b1cb51ee9c767f57e51161b770be0.svg?generation=1778677413669933&amp;alt=media" className="block size-full" />
+                    <img src="/icons/bc6cf68bbc9b1cb51ee9c767f57e51161b770be0.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F05d3aded7a3c0db98032b6170ad3c08c1adb44ac.svg?generation=1778677413684489&amp;alt=media" className="block size-full" />
+                    <img src="/icons/05d3aded7a3c0db98032b6170ad3c08c1adb44ac.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -63,10 +63,10 @@ export function OnboardingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fbc6cf68bbc9b1cb51ee9c767f57e51161b770be0.svg?generation=1778677413669933&amp;alt=media" className="block size-full" />
+                    <img src="/icons/bc6cf68bbc9b1cb51ee9c767f57e51161b770be0.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F05d3aded7a3c0db98032b6170ad3c08c1adb44ac.svg?generation=1778677413684489&amp;alt=media" className="block size-full" />
+                    <img src="/icons/05d3aded7a3c0db98032b6170ad3c08c1adb44ac.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -98,7 +98,7 @@ export function OnboardingSection() {
                   <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
                     <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen(v => !v)}>
                       <div className="overflow-hidden w-3 h-3 shrink-0">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F51c0b100c6c8da5a7080133c33e0d3164ca5032a.svg?generation=1778677413712073&amp;alt=media" className="block size-full" style={{filter: "invert(26%) sepia(89%) saturate(1583%) hue-rotate(248deg) brightness(97%) contrast(98%)"}} />
+                        <img src="/icons/51c0b100c6c8da5a7080133c33e0d3164ca5032a.svg" className="block size-full" style={{filter: "invert(26%) sepia(89%) saturate(1583%) hue-rotate(248deg) brightness(97%) contrast(98%)"}} />
                       </div>
                       <div className="font-bold text-purple-700">
                         증상 서술 가이드라인 보기
@@ -150,10 +150,10 @@ export function OnboardingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F61d91e07a35635e8d90656a1ae5f74552ac31092.svg?generation=1778677413841819&amp;alt=media" className="block size-full" />
+                    <img src="/icons/61d91e07a35635e8d90656a1ae5f74552ac31092.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F163171ecacbdefd526f3785f21b544519876c121.svg?generation=1778677413811718&amp;alt=media" className="block size-full" />
+                    <img src="/icons/163171ecacbdefd526f3785f21b544519876c121.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -285,10 +285,10 @@ export function OnboardingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd372e43477cf6a0fd2c961168af0296b22e7c83a.svg?generation=1778677413835669&amp;alt=media" className="block size-full" />
+                    <img src="/icons/d372e43477cf6a0fd2c961168af0296b22e7c83a.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5fa65b84a11244afe1bf2f5b22c5ff71f439963b.svg?generation=1778677413825062&amp;alt=media" className="block size-full" />
+                    <img src="/icons/5fa65b84a11244afe1bf2f5b22c5ff71f439963b.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -357,10 +357,10 @@ export function OnboardingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc9c21022de2da6c8462a33de9bd3baaf6a568e21.svg?generation=1778677413863160&amp;alt=media" className="block size-full" />
+                    <img src="/icons/c9c21022de2da6c8462a33de9bd3baaf6a568e21.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe80e993a45bcd9b6366659dc76747da07a77bc1e.svg?generation=1778677413892968&amp;alt=media" className="block size-full" />
+                    <img src="/icons/e80e993a45bcd9b6366659dc76747da07a77bc1e.svg" className="block size-full" />
                   </div>
                 </div>
               </div>

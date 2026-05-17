@@ -16,12 +16,12 @@ export default function EmptyCalendarPage() {
           <div className="flex gap-1.5">
             <div className="items-center flex justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc9e88ecb3a87f7274e3e7692f5801de092f97e1f.svg?generation=1778677418898949&amp;alt=media" className="block size-full" />
+                <img src="/icons/c9e88ecb3a87f7274e3e7692f5801de092f97e1f.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3c178cf4154d75bbfdb8a67c0f62d2d2b4f48a05.svg?generation=1778677418942841&amp;alt=media" className="block size-full" />
+                <img src="/icons/3c178cf4154d75bbfdb8a67c0f62d2d2b4f48a05.svg" className="block size-full" />
               </div>
             </div>
           </div>

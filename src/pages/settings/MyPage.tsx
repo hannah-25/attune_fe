@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import logoImage from '@src/imports/logo.png';
+import logoImage from '@src/assets/logo.png';
 import { Camera, Check, Pencil, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
 const settingsIcon =
-  'https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3ee2c90fb8f924ced4748922d30e751a3ae3ffdd.svg?generation=1778677419532828&alt=media';
+  '/icons/3ee2c90fb8f924ced4748922d30e751a3ae3ffdd.svg';
 
 export default function MyPage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -114,13 +114,13 @@ export default function MyPage() {
               <div className="grow font-semibold basis-[0%]">소셜 연동</div>
               <div className="mr-[6px] text-gray-600">Google · Apple</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc0a58c33a30355f92e7fdab0f9ccc4392a805826.svg?generation=1778677419588208&amp;alt=media" className="block size-full" />
+                <img src="/icons/c0a58c33a30355f92e7fdab0f9ccc4392a805826.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
               <div className="grow font-semibold basis-[0%]">비밀번호 변경</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0aa4a2e0b7d87abb8b58243397c841250589ff6a.svg?generation=1778677419595217&amp;alt=media" className="block size-full" />
+                <img src="/icons/0aa4a2e0b7d87abb8b58243397c841250589ff6a.svg" className="block size-full" />
               </div>
             </div>
           </div>
@@ -131,28 +131,28 @@ export default function MyPage() {
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">알림</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff95f43ee67a6cbe2ddde07b8c0f9b11d04de3472.svg?generation=1778677419625273&amp;alt=media" className="block size-full" />
+                <img src="/icons/f95f43ee67a6cbe2ddde07b8c0f9b11d04de3472.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">캘린더 연동</div>
               <div className="mr-[6px] text-gray-600">1개 연결</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd82b1cd67593c712819bf46f1ea27540e6fcc4fa.svg?generation=1778677419644582&amp;alt=media" className="block size-full" />
+                <img src="/icons/d82b1cd67593c712819bf46f1ea27540e6fcc4fa.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">언어</div>
               <div className="mr-[6px] text-gray-600">한국어</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7ad41aeccb05f20326923b45b6820530fbc7336f.svg?generation=1778677419648963&amp;alt=media" className="block size-full" />
+                <img src="/icons/7ad41aeccb05f20326923b45b6820530fbc7336f.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
               <div className="grow font-semibold basis-[0%]">테마</div>
               <div className="mr-[6px] text-gray-600">자동</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3fe6afd6a71e7f6750adb88bd9610e2093246a1f.svg?generation=1778677419722547&amp;alt=media" className="block size-full" />
+                <img src="/icons/3fe6afd6a71e7f6750adb88bd9610e2093246a1f.svg" className="block size-full" />
               </div>
             </div>
           </div>
@@ -163,13 +163,13 @@ export default function MyPage() {
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">공지사항</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7fc69f72966fe4f025aab0ddacf3c27f7e066dc2.svg?generation=1778677419683750&amp;alt=media" className="block size-full" />
+                <img src="/icons/7fc69f72966fe4f025aab0ddacf3c27f7e066dc2.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">문의하기</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5061bb77ab260e10fa693ee1c9a877a05563a33d.svg?generation=1778677419722542&amp;alt=media" className="block size-full" />
+                <img src="/icons/5061bb77ab260e10fa693ee1c9a877a05563a33d.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">

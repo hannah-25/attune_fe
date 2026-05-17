@@ -2,7 +2,7 @@ import React from 'react';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
 const notificationIcon =
-  'https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fecc79c56d83d223eb08c89b79b70e84caf9360dd.svg?generation=1778677419880265&alt=media';
+  '/icons/ecc79c56d83d223eb08c89b79b70e84caf9360dd.svg';
 
 export default function NotificationSettingsPage() {
   return (
@@ -107,7 +107,7 @@ export default function NotificationSettingsPage() {
                   중요 복약
                 </div>
                 <div className="overflow-hidden w-[11px] h-[11px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc7cea99060a480d5e2826ffe0e1a60dac4080b20.svg?generation=1778677419900928&amp;alt=media" className="block size-full" />
+                  <img src="/icons/c7cea99060a480d5e2826ffe0e1a60dac4080b20.svg" className="block size-full" />
                 </div>
               </div>
             </div>

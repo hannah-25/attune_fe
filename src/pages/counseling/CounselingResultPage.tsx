@@ -18,7 +18,7 @@ export default function CounselingResultPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담 후 기록"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1374f2b16faf6016b6e53e7199458616492fb894.svg?generation=1778677417797896&alt=media" />}
+          left={<HeaderIconButton src="/icons/1374f2b16faf6016b6e53e7199458616492fb894.svg" />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
@@ -94,7 +94,7 @@ export default function CounselingResultPage() {
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="items-center flex gap-2">
               <div className="overflow-hidden w-3 h-3">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6cae536aa2417c12c04efccc757fd2895c7958ab.svg?generation=1778677417793151&amp;alt=media" className="block size-full" />
+                <img src="/icons/6cae536aa2417c12c04efccc757fd2895c7958ab.svg" className="block size-full" />
               </div>
               <div className="leading-[18.85px]">
                 <b className="font-bold">

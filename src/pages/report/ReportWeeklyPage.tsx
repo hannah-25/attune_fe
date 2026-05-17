@@ -61,7 +61,7 @@ export default function ReportWeeklyPage() {
                 <div className="font-bold text-purple-500 text-xs">{WEEKLY_STATS.adherence.delta}</div>
               </div>
               <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F29bab1a2a939a1798ef21544b448b021e92c841b.svg?generation=1778677416843595&amp;alt=media" className="inline w-full h-[22px]" />
+                <img src="/icons/29bab1a2a939a1798ef21544b448b021e92c841b.svg" className="inline w-full h-[22px]" />
               </div>
             </div>
             <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"1 / 2 / 2 / 3"}}>
@@ -71,7 +71,7 @@ export default function ReportWeeklyPage() {
                 <div className="font-bold text-purple-500 text-xs">{WEEKLY_STATS.emotion.delta}</div>
               </div>
               <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F079248c9c05bf2a8ced8a946065bc39baecf7473.svg?generation=1778677416881624&amp;alt=media" className="inline w-full h-[22px]" />
+                <img src="/icons/079248c9c05bf2a8ced8a946065bc39baecf7473.svg" className="inline w-full h-[22px]" />
               </div>
             </div>
             <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"2 / 1 / 3 / 2"}}>
@@ -81,7 +81,7 @@ export default function ReportWeeklyPage() {
                 <div className="font-bold text-purple-500 text-xs">{WEEKLY_STATS.mistakes.delta}</div>
               </div>
               <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff4a6d797bb793072d789367828a443e5a3297fa7.svg?generation=1778677416923648&amp;alt=media" className="inline w-full h-[22px]" />
+                <img src="/icons/f4a6d797bb793072d789367828a443e5a3297fa7.svg" className="inline w-full h-[22px]" />
               </div>
             </div>
             <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"2 / 2 / 3 / 3"}}>
@@ -91,7 +91,7 @@ export default function ReportWeeklyPage() {
                 <div className="font-bold text-purple-500 text-xs">{WEEKLY_STATS.goalAchievement.delta}</div>
               </div>
               <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F87ed74a4448280e959a96d7e4625b1ee725f06bb.svg?generation=1778677416944396&amp;alt=media" className="inline w-full h-[22px]" />
+                <img src="/icons/87ed74a4448280e959a96d7e4625b1ee725f06bb.svg" className="inline w-full h-[22px]" />
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function ReportWeeklyPage() {
               </div>
               <div className="grow basis-[0%]"></div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F388852ae9b8893331e137329a4bd0b282dce0126.svg?generation=1778677416950867&amp;alt=media" className="block size-full" />
+                <img src="/icons/388852ae9b8893331e137329a4bd0b282dce0126.svg" className="block size-full" />
               </div>
             </div>
             <div className="mb-2 text-gray-800 leading-[20.15px]">

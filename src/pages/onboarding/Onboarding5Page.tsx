@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '@src/imports/logo.png';
+import logoImage from '@src/assets/logo.png';
 import { TopBar } from '../../app/components/TopBar';
 
 export default function Onboarding5Page() {

@@ -12,8 +12,8 @@ export default function CommunityFeedPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="경험 공유"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd50bde0e53580b90a7675bb1533c3628f89ac064.svg?generation=1778677418054080&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa1d93193446d76a49e64b9927201d303b3a37082.svg?generation=1778677418066041&alt=media" />}
+          left={<HeaderIconButton src="/icons/d50bde0e53580b90a7675bb1533c3628f89ac064.svg" />}
+          right={<HeaderIconButton src="/icons/a1d93193446d76a49e64b9927201d303b3a37082.svg" />}
         />
         <div className="flex overflow-auto gap-1.5 pt-0 pr-4 pb-2 pl-4">
           <div className="font-bold whitespace-nowrap bg-[rgb(31,_27,_46)] text-white pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">전체</div>
@@ -33,13 +33,13 @@ export default function CommunityFeedPage() {
             <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-[10px] h-[10px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc066f77fe099dc06ec1d9d71a1dd49ad735337f5.svg?generation=1778677418074333&amp;alt=media" className="block size-full" />
+                  <img src="/icons/c066f77fe099dc06ec1d9d71a1dd49ad735337f5.svg" className="block size-full" />
                 </div>
                 12
               </span>
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-2 h-2">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ffa27671cf7a58eb1d69be0c24922ebe12068820e.svg?generation=1778677418074395&amp;alt=media" className="block size-full" />
+                  <img src="/icons/fa27671cf7a58eb1d69be0c24922ebe12068820e.svg" className="block size-full" />
                 </div>
                 <span className="block">댓글</span>
                 8
@@ -56,13 +56,13 @@ export default function CommunityFeedPage() {
             <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-[10px] h-[10px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F026056801d9edc661de42c35aeb65d56b2669708.svg?generation=1778677418047862&amp;alt=media" className="block size-full" />
+                  <img src="/icons/026056801d9edc661de42c35aeb65d56b2669708.svg" className="block size-full" />
                 </div>
                 24
               </span>
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-2 h-2">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6a1e1feb9c38bab93b9179da531778584800c4c4.svg?generation=1778677418138420&amp;alt=media" className="block size-full" />
+                  <img src="/icons/6a1e1feb9c38bab93b9179da531778584800c4c4.svg" className="block size-full" />
                 </div>
                 <span className="block">댓글</span>
                 14
@@ -79,13 +79,13 @@ export default function CommunityFeedPage() {
             <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-[10px] h-[10px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F069bfac8474d97299e3b30492cfd8e4f8ff3d45d.svg?generation=1778677418152204&amp;alt=media" className="block size-full" />
+                  <img src="/icons/069bfac8474d97299e3b30492cfd8e4f8ff3d45d.svg" className="block size-full" />
                 </div>
                 7
               </span>
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-2 h-2">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Feaf51371d3f19bd29039b829ebcc8a9e0182dbcf.svg?generation=1778677418137879&amp;alt=media" className="block size-full" />
+                  <img src="/icons/eaf51371d3f19bd29039b829ebcc8a9e0182dbcf.svg" className="block size-full" />
                 </div>
                 <span className="block">댓글</span>
                 3
@@ -102,13 +102,13 @@ export default function CommunityFeedPage() {
             <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-[10px] h-[10px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9fd2528ba8379cdb6894826f9c84b0eb9b73b4b1.svg?generation=1778677418179649&amp;alt=media" className="block size-full" />
+                  <img src="/icons/9fd2528ba8379cdb6894826f9c84b0eb9b73b4b1.svg" className="block size-full" />
                 </div>
                 18
               </span>
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-2 h-2">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6cdfe483eda449d1514ecf2e225ced5d59dad218.svg?generation=1778677418178106&amp;alt=media" className="block size-full" />
+                  <img src="/icons/6cdfe483eda449d1514ecf2e225ced5d59dad218.svg" className="block size-full" />
                 </div>
                 <span className="block">댓글</span>
                 22
@@ -125,13 +125,13 @@ export default function CommunityFeedPage() {
             <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-[10px] h-[10px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fcb1ebfde02849925daf22f8dceb1c58376065678.svg?generation=1778677418215553&amp;alt=media" className="block size-full" />
+                  <img src="/icons/cb1ebfde02849925daf22f8dceb1c58376065678.svg" className="block size-full" />
                 </div>
                 9
               </span>
               <span className="items-center flex gap-1">
                 <div className="overflow-hidden w-2 h-2">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F231a8884b67a8e4ff3b2b52bb56cf1fe3f160cdc.svg?generation=1778677418221542&amp;alt=media" className="block size-full" />
+                  <img src="/icons/231a8884b67a8e4ff3b2b52bb56cf1fe3f160cdc.svg" className="block size-full" />
                 </div>
                 <span className="block">댓글</span>
                 5
@@ -144,7 +144,7 @@ export default function CommunityFeedPage() {
         </ScrollArea>
         <div className="items-center flex font-bold absolute h-12 right-4 bottom-[88px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] z-[25] rounded-3xl">
           <div className="overflow-hidden w-[14px] h-[14px]">
-            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fefb65dd04b728dd2a8742de28409d0e279ffaefe.svg?generation=1778677418296855&amp;alt=media" className="block size-full" />
+            <img src="/icons/efb65dd04b728dd2a8742de28409d0e279ffaefe.svg" className="block size-full" />
           </div>
           <span className="block">글쓰기</span>
         </div>

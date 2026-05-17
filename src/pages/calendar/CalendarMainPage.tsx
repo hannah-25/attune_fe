@@ -15,7 +15,7 @@ export default function CalendarMainPage() {
               5월
             </div>
             <div className="overflow-hidden w-[14px] h-[14px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fac51fe5f4a79c14bce84086c3976b584478290f5.svg?generation=1778677416454063&amp;alt=media" className="block size-full" />
+              <img src="/icons/ac51fe5f4a79c14bce84086c3976b584478290f5.svg" className="block size-full" />
             </div>
           </div>
           <div className="flex gap-1.5">
@@ -27,7 +27,7 @@ export default function CalendarMainPage() {
             </div>
             <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc224e786521d13d2d5774b00ba68fd16572a5fb0.svg?generation=1778677416483487&amp;alt=media" className="block size-full" />
+                <img src="/icons/c224e786521d13d2d5774b00ba68fd16572a5fb0.svg" className="block size-full" />
               </div>
             </div>
           </div>

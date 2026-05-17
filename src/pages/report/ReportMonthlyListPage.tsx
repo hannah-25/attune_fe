@@ -12,15 +12,15 @@ export default function ReportMonthlyListPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="월별 리포트"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe14e50b7bdfd7428cbb56e142f1b9b4b4604472f.svg?generation=1778677417128162&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb99cc316ee8c1de6c8ee95421ad392aa380cc367.svg?generation=1778677417146489&alt=media" />}
+          left={<HeaderIconButton src="/icons/e14e50b7bdfd7428cbb56e142f1b9b4b4604472f.svg" />}
+          right={<HeaderIconButton src="/icons/b99cc316ee8c1de6c8ee95421ad392aa380cc367.svg" />}
         />
         <ScrollArea className="flex flex-col gap-2.5">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                 <div className="overflow-hidden w-5 h-5">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fac208f40875f5400bac0798dddf883aef4f81033.svg?generation=1778677417130225&amp;alt=media" className="block size-full" />
+                  <img src="/icons/ac208f40875f5400bac0798dddf883aef4f81033.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -33,7 +33,7 @@ export default function ReportMonthlyListPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                 <div className="overflow-hidden w-5 h-5">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa238e2945fc03c194c8e4f82d833297857660dde.svg?generation=1778677417145875&amp;alt=media" className="block size-full" />
+                  <img src="/icons/a238e2945fc03c194c8e4f82d833297857660dde.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -42,7 +42,7 @@ export default function ReportMonthlyListPage() {
               </div>
               <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-2xl">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F24cb7e5a8ccc1f4217b30518f9cf3a266a3f29b5.svg?generation=1778677417156878&amp;alt=media" className="block size-full" />
+                  <img src="/icons/24cb7e5a8ccc1f4217b30518f9cf3a266a3f29b5.svg" className="block size-full" />
                 </div>
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function ReportMonthlyListPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                 <div className="overflow-hidden w-5 h-5">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3feb942ec51132a0611f361e76167bfee580c937.svg?generation=1778677417211653&amp;alt=media" className="block size-full" />
+                  <img src="/icons/3feb942ec51132a0611f361e76167bfee580c937.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -60,7 +60,7 @@ export default function ReportMonthlyListPage() {
               </div>
               <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-2xl">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa6cc01e07a79b47db32d2899bf71e28148c6ba2d.svg?generation=1778677417202006&amp;alt=media" className="block size-full" />
+                  <img src="/icons/a6cc01e07a79b47db32d2899bf71e28148c6ba2d.svg" className="block size-full" />
                 </div>
               </div>
             </div>
@@ -69,7 +69,7 @@ export default function ReportMonthlyListPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                 <div className="overflow-hidden w-5 h-5">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F801b6c1ef679c1953450c11d91afa25ef367f7b8.svg?generation=1778677417202358&amp;alt=media" className="block size-full" />
+                  <img src="/icons/801b6c1ef679c1953450c11d91afa25ef367f7b8.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -78,7 +78,7 @@ export default function ReportMonthlyListPage() {
               </div>
               <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-2xl">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F82a4c4789d85924077c71bc6bb25e08301e8694c.svg?generation=1778677417211882&amp;alt=media" className="block size-full" />
+                  <img src="/icons/82a4c4789d85924077c71bc6bb25e08301e8694c.svg" className="block size-full" />
                 </div>
               </div>
             </div>

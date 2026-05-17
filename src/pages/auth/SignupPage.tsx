@@ -45,7 +45,7 @@ export default function SignupPage() {
             <div className="items-start flex gap-2 mb-1.5">
               <div className="items-center flex justify-center w-4 h-4 bg-purple-500 rounded shrink-[0] mt-0.5">
                 <div className="overflow-hidden w-2.5 h-2.5">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff65a7410da47c5d2b396b5d6f7c374acd3be6f7e.svg?generation=1778677413507571&alt=media" className="block size-full" />
+                  <img src="/icons/f65a7410da47c5d2b396b5d6f7c374acd3be6f7e.svg" className="block size-full" />
                 </div>
               </div>
               <div className="text-xs leading-relaxed"><span className="underline">이용약관</span>, <span className="underline">개인정보처리방침</span>에 모두 동의합니다. (필수)</div>

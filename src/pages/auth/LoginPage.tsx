@@ -36,7 +36,7 @@ export default function LoginPage() {
           <div className="items-center flex gap-2 mt-4 px-1 text-xs">
             <div className="items-center flex justify-center w-4 h-4 bg-purple-500 rounded shrink-[0]">
               <div className="overflow-hidden w-[10px] h-[10px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fce0c0d0ec8dac7b611e710c38a300ee1b99684e2.svg?generation=1778677414008518&alt=media" className="block size-full" />
+                <img src="/icons/ce0c0d0ec8dac7b611e710c38a300ee1b99684e2.svg" className="block size-full" />
               </div>
             </div>
             <div>

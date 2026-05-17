@@ -23,10 +23,10 @@ export function ReportSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fecdb5dd65f019b6d2be2d1637ad39bcacf9a086a.svg?generation=1778677416843518&amp;alt=media" className="block size-full" />
+                    <img src="/icons/ecdb5dd65f019b6d2be2d1637ad39bcacf9a086a.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F26e3e8a99e4380b20902f9cb9aec3772b2b3f6cb.svg?generation=1778677416860293&amp;alt=media" className="block size-full" />
+                    <img src="/icons/26e3e8a99e4380b20902f9cb9aec3772b2b3f6cb.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -58,7 +58,7 @@ export function ReportSection() {
                         <div className="font-bold text-purple-500 text-xs">+12%</div>
                       </div>
                       <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F29bab1a2a939a1798ef21544b448b021e92c841b.svg?generation=1778677416843595&amp;alt=media" className="inline w-full h-[22px]" />
+                        <img src="/icons/29bab1a2a939a1798ef21544b448b021e92c841b.svg" className="inline w-full h-[22px]" />
                       </div>
                     </div>
                     <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"1 / 2 / 2 / 3"}}>
@@ -68,7 +68,7 @@ export function ReportSection() {
                         <div className="font-bold text-purple-500 text-xs">+0.8</div>
                       </div>
                       <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F079248c9c05bf2a8ced8a946065bc39baecf7473.svg?generation=1778677416881624&amp;alt=media" className="inline w-full h-[22px]" />
+                        <img src="/icons/079248c9c05bf2a8ced8a946065bc39baecf7473.svg" className="inline w-full h-[22px]" />
                       </div>
                     </div>
                     <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"2 / 1 / 3 / 2"}}>
@@ -78,7 +78,7 @@ export function ReportSection() {
                         <div className="font-bold text-purple-500 text-xs">-2</div>
                       </div>
                       <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff4a6d797bb793072d789367828a443e5a3297fa7.svg?generation=1778677416923648&amp;alt=media" className="inline w-full h-[22px]" />
+                        <img src="/icons/f4a6d797bb793072d789367828a443e5a3297fa7.svg" className="inline w-full h-[22px]" />
                       </div>
                     </div>
                     <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"2 / 2 / 3 / 3"}}>
@@ -88,7 +88,7 @@ export function ReportSection() {
                         <div className="font-bold text-purple-500 text-xs">+5%</div>
                       </div>
                       <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F87ed74a4448280e959a96d7e4625b1ee725f06bb.svg?generation=1778677416944396&amp;alt=media" className="inline w-full h-[22px]" />
+                        <img src="/icons/87ed74a4448280e959a96d7e4625b1ee725f06bb.svg" className="inline w-full h-[22px]" />
                       </div>
                     </div>
                   </div>
@@ -102,7 +102,7 @@ export function ReportSection() {
                       </div>
                       <div className="grow basis-[0%]"></div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F388852ae9b8893331e137329a4bd0b282dce0126.svg?generation=1778677416950867&amp;alt=media" className="block size-full" />
+                        <img src="/icons/388852ae9b8893331e137329a4bd0b282dce0126.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="mb-2 text-gray-800 leading-[20.15px]">
@@ -174,10 +174,10 @@ export function ReportSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F56ae02125879aef40bde963f210282660018cb1a.svg?generation=1778677417022472&amp;alt=media" className="block size-full" />
+                    <img src="/icons/56ae02125879aef40bde963f210282660018cb1a.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F94c7dc6ad021cb6d808527b709eca098b54c413f.svg?generation=1778677417050335&amp;alt=media" className="block size-full" />
+                    <img src="/icons/94c7dc6ad021cb6d808527b709eca098b54c413f.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -187,7 +187,7 @@ export function ReportSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe14e50b7bdfd7428cbb56e142f1b9b4b4604472f.svg?generation=1778677417128162&amp;alt=media" className="block size-full" />
+                          <img src="/icons/e14e50b7bdfd7428cbb56e142f1b9b4b4604472f.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -195,7 +195,7 @@ export function ReportSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb99cc316ee8c1de6c8ee95421ad392aa380cc367.svg?generation=1778677417146489&amp;alt=media" className="block size-full" />
+                          <img src="/icons/b99cc316ee8c1de6c8ee95421ad392aa380cc367.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -206,7 +206,7 @@ export function ReportSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                         <div className="overflow-hidden w-5 h-5">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fac208f40875f5400bac0798dddf883aef4f81033.svg?generation=1778677417130225&amp;alt=media" className="block size-full" />
+                          <img src="/icons/ac208f40875f5400bac0798dddf883aef4f81033.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -219,7 +219,7 @@ export function ReportSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                         <div className="overflow-hidden w-5 h-5">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa238e2945fc03c194c8e4f82d833297857660dde.svg?generation=1778677417145875&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a238e2945fc03c194c8e4f82d833297857660dde.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -228,7 +228,7 @@ export function ReportSection() {
                       </div>
                       <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-2xl">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F24cb7e5a8ccc1f4217b30518f9cf3a266a3f29b5.svg?generation=1778677417156878&amp;alt=media" className="block size-full" />
+                          <img src="/icons/24cb7e5a8ccc1f4217b30518f9cf3a266a3f29b5.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -237,7 +237,7 @@ export function ReportSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                         <div className="overflow-hidden w-5 h-5">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3feb942ec51132a0611f361e76167bfee580c937.svg?generation=1778677417211653&amp;alt=media" className="block size-full" />
+                          <img src="/icons/3feb942ec51132a0611f361e76167bfee580c937.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -246,7 +246,7 @@ export function ReportSection() {
                       </div>
                       <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-2xl">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa6cc01e07a79b47db32d2899bf71e28148c6ba2d.svg?generation=1778677417202006&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a6cc01e07a79b47db32d2899bf71e28148c6ba2d.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -255,7 +255,7 @@ export function ReportSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
                         <div className="overflow-hidden w-5 h-5">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F801b6c1ef679c1953450c11d91afa25ef367f7b8.svg?generation=1778677417202358&amp;alt=media" className="block size-full" />
+                          <img src="/icons/801b6c1ef679c1953450c11d91afa25ef367f7b8.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -264,7 +264,7 @@ export function ReportSection() {
                       </div>
                       <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-2xl">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F82a4c4789d85924077c71bc6bb25e08301e8694c.svg?generation=1778677417211882&amp;alt=media" className="block size-full" />
+                          <img src="/icons/82a4c4789d85924077c71bc6bb25e08301e8694c.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -287,10 +287,10 @@ export function ReportSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa4f0cbbb6b8768472b56e338fd510fb9afeee141.svg?generation=1778677417378444&amp;alt=media" className="block size-full" />
+                    <img src="/icons/a4f0cbbb6b8768472b56e338fd510fb9afeee141.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fcbe46bdc16d2e2c15fb2c444a9c5cdf14784b47f.svg?generation=1778677417354572&amp;alt=media" className="block size-full" />
+                    <img src="/icons/cbe46bdc16d2e2c15fb2c444a9c5cdf14784b47f.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export function ReportSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fba3e0bc210beb20976686007d14c25ffe98c31e4.svg?generation=1778677417378325&amp;alt=media" className="block size-full" />
+                          <img src="/icons/ba3e0bc210beb20976686007d14c25ffe98c31e4.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -308,7 +308,7 @@ export function ReportSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe1dfe1879d41815105c23cae3a7327f7b95876ae.svg?generation=1778677417378410&amp;alt=media" className="block size-full" />
+                          <img src="/icons/e1dfe1879d41815105c23cae3a7327f7b95876ae.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -391,7 +391,7 @@ export function ReportSection() {
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
                     <div className="items-center flex mb-2 gap-1.5">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F554d6ce2320195f53a159850cecaca3c1ccfdbc1.svg?generation=1778677417381273&amp;alt=media" className="block size-full" />
+                        <img src="/icons/554d6ce2320195f53a159850cecaca3c1ccfdbc1.svg" className="block size-full" />
                       </div>
                       <div className="font-bold">
                         상관관계 인사이트
@@ -408,7 +408,7 @@ export function ReportSection() {
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
                     <div className="items-center flex mb-2 gap-1.5">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd3ec29d4f07f263a2a453b9617fffe0fcf9c97ed.svg?generation=1778677417394777&amp;alt=media" className="block size-full" />
+                        <img src="/icons/d3ec29d4f07f263a2a453b9617fffe0fcf9c97ed.svg" className="block size-full" />
                       </div>
                       <div className="font-bold">
                         약물 반응
@@ -424,7 +424,7 @@ export function ReportSection() {
                   </div>
                   <div className="items-center flex font-bold justify-center w-full h-[50px] border-gray-900 border text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
                     <div className="overflow-hidden w-[11px] h-[11px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd61ce1645cdee1b65efeea1174a44f4db8d8be0e.svg?generation=1778677417452329&amp;alt=media" className="block size-full" />
+                      <img src="/icons/d61ce1645cdee1b65efeea1174a44f4db8d8be0e.svg" className="block size-full" />
                     </div>
                     <span className="block ml-[6px]">
                       PDF로 내보내기

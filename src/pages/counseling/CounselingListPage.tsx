@@ -12,8 +12,8 @@ export default function CounselingListPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb6ccaea78ae3d5ae886343fe1599532e8d23a688.svg?generation=1778677417483053&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F427d505d9a8d1880ba0c0b74c2fba370c1b3f7a7.svg?generation=1778677417526120&alt=media" />}
+          left={<HeaderIconButton src="/icons/b6ccaea78ae3d5ae886343fe1599532e8d23a688.svg" />}
+          right={<HeaderIconButton src="/icons/427d505d9a8d1880ba0c0b74c2fba370c1b3f7a7.svg" />}
         />
         <ScrollArea className="flex flex-col gap-3">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">

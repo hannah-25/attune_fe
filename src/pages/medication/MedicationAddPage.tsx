@@ -72,7 +72,7 @@ export default function MedicationAddPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="약 추가"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe7d20d8b962bf35f70391b037647deb6e498c04a.svg?generation=1778677415843284&alt=media" />}
+          left={<HeaderIconButton src="/icons/e7d20d8b962bf35f70391b037647deb6e498c04a.svg" />}
           right={
             <button
               type="button"
@@ -98,28 +98,28 @@ export default function MedicationAddPage() {
               <div className="font-semibold w-[84px] text-gray-600">용량/단위</div>
               <div className="grow font-semibold basis-[0%]">18mg · 1정</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff3b25369307edac67566499b953f3615e7f516fe.svg?generation=1778677415862590&amp;alt=media" className="block size-full" />
+                <img src="/icons/f3b25369307edac67566499b953f3615e7f516fe.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="font-semibold w-[84px] text-gray-600">복용 시작일</div>
               <div className="grow font-semibold basis-[0%]">2026.02.03</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0604012b966035933a418367f12cddcc0b9c9044.svg?generation=1778677415871763&amp;alt=media" className="block size-full" />
+                <img src="/icons/0604012b966035933a418367f12cddcc0b9c9044.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
               <div className="grow font-semibold basis-[0%]">복용 중</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0a900ef9cde7b2d73c139c2b1ead895e998b927b.svg?generation=1778677415871615&amp;alt=media" className="block size-full" />
+                <img src="/icons/0a900ef9cde7b2d73c139c2b1ead895e998b927b.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
               <div className="font-semibold w-[84px] text-gray-600">알림</div>
               <div className="grow font-semibold basis-[0%]">하루 2회 · 08:00 / 12:30</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F70864686cfb51667bb85fbc36effb4d3a23d9b27.svg?generation=1778677415927382&amp;alt=media" className="block size-full" />
+                <img src="/icons/70864686cfb51667bb85fbc36effb4d3a23d9b27.svg" className="block size-full" />
               </div>
             </div>
           </div>

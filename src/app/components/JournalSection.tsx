@@ -23,10 +23,10 @@ export function JournalSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8a9bc5a2cc0a37ac56f66295d0817bfcd98280f6.svg?generation=1778677414701541&amp;alt=media" className="block size-full" />
+                    <img src="/icons/8a9bc5a2cc0a37ac56f66295d0817bfcd98280f6.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5ef9cde60da4c595c6321b94fb03d406e013f430.svg?generation=1778677414755385&amp;alt=media" className="block size-full" />
+                    <img src="/icons/5ef9cde60da4c595c6321b94fb03d406e013f430.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -36,7 +36,7 @@ export function JournalSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2a388ad72a45fea2c1c099f07fd840545826255d.svg?generation=1778677414809859&amp;alt=media" className="block size-full" />
+                          <img src="/icons/2a388ad72a45fea2c1c099f07fd840545826255d.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -44,7 +44,7 @@ export function JournalSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fff088739f488f0ef39daa144b05d6bab96fcf844.svg?generation=1778677414809807&amp;alt=media" className="block size-full" />
+                          <img src="/icons/ff088739f488f0ef39daa144b05d6bab96fcf844.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -59,22 +59,22 @@ export function JournalSection() {
                       </div>
                       <div className="grow basis-[0%]"></div>
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F450f132a3b66e58d29e81cd69f97bf150b7ea302.svg?generation=1778677414864370&amp;alt=media" className="block size-full" />
+                        <img src="/icons/450f132a3b66e58d29e81cd69f97bf150b7ea302.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdff531f2ba72287c8710d8c7bda88e2b9ac74b4d.svg?generation=1778677414850449&amp;alt=media" className="block size-full" />
+                          <img src="/icons/dff531f2ba72287c8710d8c7bda88e2b9ac74b4d.svg" className="block size-full" />
 </div>집중 어려움                                        </div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8f9a55689cee3854aa4545497a17d0eca987ea1d.svg?generation=1778677414865458&amp;alt=media" className="block size-full" />
+                          <img src="/icons/8f9a55689cee3854aa4545497a17d0eca987ea1d.svg" className="block size-full" />
 </div>멍해짐                                        </div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">짜증</div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fce4c999ff9f1c86a912948cda308c760bdd13247.svg?generation=1778677414870853&amp;alt=media" className="block size-full" />
+                          <img src="/icons/ce4c999ff9f1c86a912948cda308c760bdd13247.svg" className="block size-full" />
 </div>불안                                        </div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">무기력</div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">초조</div>
@@ -89,14 +89,14 @@ export function JournalSection() {
                       </div>
                       <div className="grow basis-[0%]"></div>
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7db9a3a83b10d767323b3ad4d6fa7b7452792873.svg?generation=1778677414872296&amp;alt=media" className="block size-full" />
+                        <img src="/icons/7db9a3a83b10d767323b3ad4d6fa7b7452792873.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">두통</div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F122522b2a3035025818884670597604055c74b67.svg?generation=1778677414904832&amp;alt=media" className="block size-full" />
+                          <img src="/icons/122522b2a3035025818884670597604055c74b67.svg" className="block size-full" />
 </div>식욕 저하                                        </div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">불면</div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">입마름</div>
@@ -111,19 +111,19 @@ export function JournalSection() {
                       </div>
                       <div className="grow basis-[0%]"></div>
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F93f4ed9952d5d35925418a97c665b2ff4a14bdcc.svg?generation=1778677414941751&amp;alt=media" className="block size-full" />
+                        <img src="/icons/93f4ed9952d5d35925418a97c665b2ff4a14bdcc.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fcaae3d171f4160e534d41ece47a0611c2d7a841b.svg?generation=1778677414919538&amp;alt=media" className="block size-full" />
+                          <img src="/icons/caae3d171f4160e534d41ece47a0611c2d7a841b.svg" className="block size-full" />
 </div>마감 놓침                                        </div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">약속 잊음</div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-800 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">물건 잃어버림</div>
                       <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa57ab3faf1d5f5c01acdb949b9a3ab987741dfc6.svg?generation=1778677414984936&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a57ab3faf1d5f5c01acdb949b9a3ab987741dfc6.svg" className="block size-full" />
 </div>일을 잘게 못 쪼갬                                        </div>
                     </div>
                   </div>
@@ -199,10 +199,10 @@ export function JournalSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F092f1d2b250fa9fdb8389bf204522adb400caa99.svg?generation=1778677415197419&amp;alt=media" className="block size-full" />
+                    <img src="/icons/092f1d2b250fa9fdb8389bf204522adb400caa99.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F769138686d4878c587245f895be78918c00e3155.svg?generation=1778677415223142&amp;alt=media" className="block size-full" />
+                    <img src="/icons/769138686d4878c587245f895be78918c00e3155.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -212,7 +212,7 @@ export function JournalSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5596f8f2c2f41bd0a4f5995e89c038339d171079.svg?generation=1778677415207876&amp;alt=media" className="block size-full" />
+                          <img src="/icons/5596f8f2c2f41bd0a4f5995e89c038339d171079.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -313,7 +313,7 @@ export function JournalSection() {
                   </div>
                   <div className="items-center border-dashed flex font-bold mt-1 border-gray-400 border text-gray-600 gap-2 p-[14px] rounded-2xl">
                     <div className="overflow-hidden w-[14px] h-[14px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2119c34d184031b1023b5f47910171ad846b1874.svg?generation=1778677415261953&amp;alt=media" className="block size-full" />
+                      <img src="/icons/2119c34d184031b1023b5f47910171ad846b1874.svg" className="block size-full" />
                     </div>
                     <span className="block">지금 일어난 일 빠르게 기록</span>
                   </div>
@@ -346,10 +346,10 @@ export function JournalSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9d8ea4c168e6a17db2a52e5f3b8d44c8c75e0d6e.svg?generation=1778677415306595&amp;alt=media" className="block size-full" />
+                    <img src="/icons/9d8ea4c168e6a17db2a52e5f3b8d44c8c75e0d6e.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F44d2d9559ee157f782cb0de01ef379e67bdebbcf.svg?generation=1778677415320259&amp;alt=media" className="block size-full" />
+                    <img src="/icons/44d2d9559ee157f782cb0de01ef379e67bdebbcf.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -359,7 +359,7 @@ export function JournalSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0f148e246b2f2bb3a69872ea8396c06705d1c413.svg?generation=1778677415336099&amp;alt=media" className="block size-full" />
+                          <img src="/icons/0f148e246b2f2bb3a69872ea8396c06705d1c413.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -367,7 +367,7 @@ export function JournalSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff69b80758895256011eb548cf58375ba9863075c.svg?generation=1778677415343589&amp;alt=media" className="block size-full" />
+                          <img src="/icons/f69b80758895256011eb548cf58375ba9863075c.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -376,13 +376,13 @@ export function JournalSection() {
                 <div className="pt-0 pr-4 pb-1 pl-4">
                   <div className="items-center flex mb-2 gap-2">
                     <div className="overflow-hidden w-[14px] h-[14px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg?generation=1778677415378610&amp;alt=media" className="block size-full" />
+                      <img src="/icons/dc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg" className="block size-full" />
                     </div>
                     <div className="font-bold text-lg" style={{"fontFamily":"NanumSquare, system-ui"}}>
                       2026년 5월
                     </div>
                     <div className="overflow-hidden w-[14px] h-[14px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7a6542fea4feea5b0aefcb93656c6349f537576b.svg?generation=1778677415401373&amp;alt=media" className="block size-full" />
+                      <img src="/icons/7a6542fea4feea5b0aefcb93656c6349f537576b.svg" className="block size-full" />
                     </div>
                     <div className="grow basis-[0%]"></div>
                     <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
@@ -481,10 +481,10 @@ export function JournalSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7fc5257136e1dc0064cbe82c943b6145b09c5b71.svg?generation=1778677415488675&amp;alt=media" className="block size-full" />
+                    <img src="/icons/7fc5257136e1dc0064cbe82c943b6145b09c5b71.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6505d3ec50344f9f30ac84ff7604fe9b86052c10.svg?generation=1778677415493477&amp;alt=media" className="block size-full" />
+                    <img src="/icons/6505d3ec50344f9f30ac84ff7604fe9b86052c10.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -494,7 +494,7 @@ export function JournalSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fbcac446ba747bd8f1ec89ed926d88e0f54b23c84.svg?generation=1778677415515783&amp;alt=media" className="block size-full" />
+                          <img src="/icons/bcac446ba747bd8f1ec89ed926d88e0f54b23c84.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -592,7 +592,7 @@ export function JournalSection() {
                 </div>
                 <div className="items-center flex font-bold absolute h-[50px] right-4 bottom-6 bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem]">
                   <div className="overflow-hidden w-[14px] h-[14px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg?generation=1778677415542195&amp;alt=media" className="block size-full" />
+                    <img src="/icons/45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg" className="block size-full" />
                   </div>
                   <span className="block">새 태그</span>
                 </div>

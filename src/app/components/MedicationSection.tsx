@@ -23,10 +23,10 @@ export function MedicationSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1abd88647263f9031f76a0adaefed923aabb0db4.svg?generation=1778677415524088&amp;alt=media" className="block size-full" />
+                    <img src="/icons/1abd88647263f9031f76a0adaefed923aabb0db4.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc6bd029e5c0861271d13df61fd90d04d74511a13.svg?generation=1778677415533057&amp;alt=media" className="block size-full" />
+                    <img src="/icons/c6bd029e5c0861271d13df61fd90d04d74511a13.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -36,7 +36,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fced07539bf3d43afa327439e8d06f98fdbda335c.svg?generation=1778677415577643&amp;alt=media" className="block size-full" />
+                          <img src="/icons/ced07539bf3d43afa327439e8d06f98fdbda335c.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -44,7 +44,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F19cab3f28bf032ab1fda393ddb98fb1eabb87179.svg?generation=1778677415609729&amp;alt=media" className="block size-full" />
+                          <img src="/icons/19cab3f28bf032ab1fda393ddb98fb1eabb87179.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -79,7 +79,7 @@ export function MedicationSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-[38px] h-[38px] bg-purple-300 rounded-xl">
                         <div className="overflow-hidden w-[18px] h-[18px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff487caf883fee29fd8f5d6a6367147ff53ff6eeb.svg?generation=1778677415616709&amp;alt=media" className="block size-full" />
+                          <img src="/icons/f487caf883fee29fd8f5d6a6367147ff53ff6eeb.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -92,14 +92,14 @@ export function MedicationSection() {
                     </div>
                     <div className="items-center flex mt-3 bg-gray-100 text-gray-800 gap-1.5 pt-2 pr-[10px] pb-2 pl-[10px] rounded-xl">
 <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5334f614b5607f110abfe488851205e977f22b14.svg?generation=1778677415671127&amp;alt=media" className="block size-full" />
+                        <img src="/icons/5334f614b5607f110abfe488851205e977f22b14.svg" className="block size-full" />
 </div>하루 2회 · 8:00, 12:30                                      </div>
                   </div>
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-[38px] h-[38px] bg-purple-500 rounded-xl">
                         <div className="overflow-hidden w-[18px] h-[18px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8fb8f0ff61b3f813a2a9b5e18b6950f525e506f3.svg?generation=1778677415651458&amp;alt=media" className="block size-full" />
+                          <img src="/icons/8fb8f0ff61b3f813a2a9b5e18b6950f525e506f3.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -112,7 +112,7 @@ export function MedicationSection() {
                     </div>
                     <div className="items-center flex mt-3 bg-gray-100 text-gray-800 gap-1.5 pt-2 pr-[10px] pb-2 pl-[10px] rounded-xl">
 <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F363f99902730ebd698aff94492d5d4dc0e981bb1.svg?generation=1778677415672889&amp;alt=media" className="block size-full" />
+                        <img src="/icons/363f99902730ebd698aff94492d5d4dc0e981bb1.svg" className="block size-full" />
 </div>하루 1회 · 19:00                                      </div>
                   </div>
                   <div className="font-bold text-gray-600 pt-2 pr-1 pb-0 pl-1">
@@ -122,7 +122,7 @@ export function MedicationSection() {
                     <div className="items-center flex gap-2.5 opacity-[0.7]">
                       <div className="items-center flex justify-center w-[38px] h-[38px] bg-[rgb(208,_201,_189)] rounded-xl">
                         <div className="overflow-hidden w-[18px] h-[18px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F82f6316729e2405770bf424ad5357aa78565cb47.svg?generation=1778677415705856&amp;alt=media" className="block size-full" />
+                          <img src="/icons/82f6316729e2405770bf424ad5357aa78565cb47.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -156,10 +156,10 @@ export function MedicationSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ffb13774eb304073e07c182f9363575e6b9e328f5.svg?generation=1778677415817952&amp;alt=media" className="block size-full" />
+                    <img src="/icons/fb13774eb304073e07c182f9363575e6b9e328f5.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3cde30b1aaf5fb5feca5ec1d1ab272f86789d26a.svg?generation=1778677415789764&amp;alt=media" className="block size-full" />
+                    <img src="/icons/3cde30b1aaf5fb5feca5ec1d1ab272f86789d26a.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe7d20d8b962bf35f70391b037647deb6e498c04a.svg?generation=1778677415843284&amp;alt=media" className="block size-full" />
+                          <img src="/icons/e7d20d8b962bf35f70391b037647deb6e498c04a.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -187,35 +187,35 @@ export function MedicationSection() {
                       <div className="font-semibold w-[84px] text-gray-600">약 이름</div>
                       <div className="grow font-semibold basis-[0%]">콘서타 18mg</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fca02c8082b11cdd7efc3bd4ec920b1b2a09af1d9.svg?generation=1778677415871573&amp;alt=media" className="block size-full" />
+                        <img src="/icons/ca02c8082b11cdd7efc3bd4ec920b1b2a09af1d9.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                       <div className="font-semibold w-[84px] text-gray-600">용량/단위</div>
                       <div className="grow font-semibold basis-[0%]">18mg · 1정</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff3b25369307edac67566499b953f3615e7f516fe.svg?generation=1778677415862590&amp;alt=media" className="block size-full" />
+                        <img src="/icons/f3b25369307edac67566499b953f3615e7f516fe.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                       <div className="font-semibold w-[84px] text-gray-600">복용 시작일</div>
                       <div className="grow font-semibold basis-[0%]">2026.02.03</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0604012b966035933a418367f12cddcc0b9c9044.svg?generation=1778677415871763&amp;alt=media" className="block size-full" />
+                        <img src="/icons/0604012b966035933a418367f12cddcc0b9c9044.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                       <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
                       <div className="grow font-semibold basis-[0%]">복용 중</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0a900ef9cde7b2d73c139c2b1ead895e998b927b.svg?generation=1778677415871615&amp;alt=media" className="block size-full" />
+                        <img src="/icons/0a900ef9cde7b2d73c139c2b1ead895e998b927b.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
                       <div className="font-semibold w-[84px] text-gray-600">알림</div>
                       <div className="grow font-semibold basis-[0%]">하루 2회 · 08:00 / 12:30</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F70864686cfb51667bb85fbc36effb4d3a23d9b27.svg?generation=1778677415927382&amp;alt=media" className="block size-full" />
+                        <img src="/icons/70864686cfb51667bb85fbc36effb4d3a23d9b27.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>
@@ -275,10 +275,10 @@ export function MedicationSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F11e6df68ca37631547a8a85f70cf0ed594d3ac7e.svg?generation=1778677415972223&amp;alt=media" className="block size-full" />
+                    <img src="/icons/11e6df68ca37631547a8a85f70cf0ed594d3ac7e.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc96c697acd3cb9c92102257dd0b71f8f699a8b14.svg?generation=1778677415989454&amp;alt=media" className="block size-full" />
+                    <img src="/icons/c96c697acd3cb9c92102257dd0b71f8f699a8b14.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -288,7 +288,7 @@ export function MedicationSection() {
                     <div className="items-center flex mb-[10px] gap-2.5">
                       <div className="items-center flex justify-center w-9 h-9 bg-purple-500 rounded-lg">
                         <div className="overflow-hidden w-[18px] h-[18px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5534b1eec38b1487b6a5ae5278ae9a3334c8cebf.svg?generation=1778677416046239&amp;alt=media" className="block size-full" />
+                          <img src="/icons/5534b1eec38b1487b6a5ae5278ae9a3334c8cebf.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -309,7 +309,7 @@ export function MedicationSection() {
                     <div className="items-center flex gap-2">
                       <div className="items-center flex font-extrabold justify-center h-11 bg-purple-300 shadow-[rgba(0,0,0,0.1)_0px_2px_0px_0px] text-purple-700 basis-[0%] text-sm gap-1.5 grow-[1.6] rounded-[1.375rem]">
                         <div className="overflow-hidden w-[14px] h-[14px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2348d6782ef2c773bb3d7f6f6753005c36ff4e76.svg?generation=1778677416004687&amp;alt=media" className="block size-full" />
+                          <img src="/icons/2348d6782ef2c773bb3d7f6f6753005c36ff4e76.svg" className="block size-full" />
                         </div>
                         <span className="block">복용</span>
                       </div>
@@ -349,10 +349,10 @@ export function MedicationSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fce5ef0b5c33d319f503fb44b2fb16f260613d66d.svg?generation=1778677416006229&amp;alt=media" className="block size-full" />
+                    <img src="/icons/ce5ef0b5c33d319f503fb44b2fb16f260613d66d.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F047d54919e261e5da19751ad9660ab7906a98a74.svg?generation=1778677416026670&amp;alt=media" className="block size-full" />
+                    <img src="/icons/047d54919e261e5da19751ad9660ab7906a98a74.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -362,7 +362,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F71214aeb3e9a91025992e6bbed95b42b12e12682.svg?generation=1778677416089994&amp;alt=media" className="block size-full" />
+                          <img src="/icons/71214aeb3e9a91025992e6bbed95b42b12e12682.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -370,7 +370,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4f2752d1870c89f1c02d35a998d91a08dae99f79.svg?generation=1778677416033234&amp;alt=media" className="block size-full" />
+                          <img src="/icons/4f2752d1870c89f1c02d35a998d91a08dae99f79.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export function MedicationSection() {
                     <div className="items-center flex gap-3">
                       <div className="items-center flex justify-center w-14 h-14 bg-white rounded-[1.125rem]">
                         <div className="overflow-hidden w-[26px] h-[26px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F82fbda66cf3604653aa601ba1b04657d51b7af89.svg?generation=1778677416049480&amp;alt=media" className="block size-full" />
+                          <img src="/icons/82fbda66cf3604653aa601ba1b04657d51b7af89.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -405,7 +405,7 @@ export function MedicationSection() {
                       </div>
                     </div>
                     <div className="inline overflow-hidden w-full h-20">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F41543b7a9b5b5e291515e6237df211289780a1d3.svg?generation=1778677416090375&amp;alt=media" className="inline w-full h-20" />
+                      <img src="/icons/41543b7a9b5b5e291515e6237df211289780a1d3.svg" className="inline w-full h-20" />
                     </div>
                     <div className="flex justify-between mt-1 text-gray-500 text-xs">
                       <div>06시</div>
@@ -475,10 +475,10 @@ export function MedicationSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F09481d8f1ee6bfbd5cc2381680a6deadb1c52792.svg?generation=1778677416113100&amp;alt=media" className="block size-full" />
+                    <img src="/icons/09481d8f1ee6bfbd5cc2381680a6deadb1c52792.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb57340d868e556a70373a2d9693df14bf6e50524.svg?generation=1778677416151588&amp;alt=media" className="block size-full" />
+                    <img src="/icons/b57340d868e556a70373a2d9693df14bf6e50524.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -488,7 +488,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F369584f11b1ffb755e198bea7e2638a7cd84109c.svg?generation=1778677416178768&amp;alt=media" className="block size-full" />
+                          <img src="/icons/369584f11b1ffb755e198bea7e2638a7cd84109c.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -496,7 +496,7 @@ export function MedicationSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fab8b2af29af823aa9e78ed534c6dece815a3c7eb.svg?generation=1778677416158829&amp;alt=media" className="block size-full" />
+                          <img src="/icons/ab8b2af29af823aa9e78ed534c6dece815a3c7eb.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -535,7 +535,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F553aadff6c732777ebf05fd7879f8ace0c08808a.svg?generation=1778677416186674&amp;alt=media" className="block size-full" />
+                            <img src="/icons/553aadff6c732777ebf05fd7879f8ace0c08808a.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">08:00 콘서타 18mg</div>
@@ -544,7 +544,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb8a302e36ea60d69f9992783ad06a14925a796f1.svg?generation=1778677416189119&amp;alt=media" className="block size-full" />
+                            <img src="/icons/b8a302e36ea60d69f9992783ad06a14925a796f1.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">12:30 콘서타 18mg</div>
@@ -563,7 +563,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc31c4c0925d22f49ca58fec0a3e791abffca3580.svg?generation=1778677416233923&amp;alt=media" className="block size-full" />
+                            <img src="/icons/c31c4c0925d22f49ca58fec0a3e791abffca3580.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">08:00 콘서타 18mg</div>
@@ -572,7 +572,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F719f555dcc9b8aaf4c575aa9cbfc52e2ee272988.svg?generation=1778677416247566&amp;alt=media" className="block size-full" />
+                            <img src="/icons/719f555dcc9b8aaf4c575aa9cbfc52e2ee272988.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">12:30 콘서타 18mg</div>
@@ -581,7 +581,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3">
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1196b0549314af128fc7d97294ec92ba1d96593d.svg?generation=1778677416247140&amp;alt=media" className="block size-full" />
+                            <img src="/icons/1196b0549314af128fc7d97294ec92ba1d96593d.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">19:00 스트라테라 40mg</div>
@@ -595,7 +595,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ffa6bbf8b97533e585241d6a212c73d52139abc7e.svg?generation=1778677416258367&amp;alt=media" className="block size-full" />
+                            <img src="/icons/fa6bbf8b97533e585241d6a212c73d52139abc7e.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">08:00 콘서타 18mg</div>
@@ -604,7 +604,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F49bc90d075790a4096bd013fa7ecd0d5f355895a.svg?generation=1778677416303916&amp;alt=media" className="block size-full" />
+                            <img src="/icons/49bc90d075790a4096bd013fa7ecd0d5f355895a.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">12:30 콘서타 18mg</div>
@@ -613,7 +613,7 @@ export function MedicationSection() {
                       <div className="items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3">
                         <div className="items-center flex justify-center w-[18px] h-[18px] bg-purple-300 rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe64256a64d85adaec88e5c4afbf9732379418611.svg?generation=1778677416319297&amp;alt=media" className="block size-full" />
+                            <img src="/icons/e64256a64d85adaec88e5c4afbf9732379418611.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%]">19:00 스트라테라 40mg</div>

@@ -316,8 +316,8 @@ export default function JournalFullPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={formatDate(new Date())}
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2a388ad72a45fea2c1c099f07fd840545826255d.svg?generation=1778677414809859&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fff088739f488f0ef39daa144b05d6bab96fcf844.svg?generation=1778677414809807&alt=media" />}
+          left={<HeaderIconButton src="/icons/2a388ad72a45fea2c1c099f07fd840545826255d.svg" />}
+          right={<HeaderIconButton src="/icons/ff088739f488f0ef39daa144b05d6bab96fcf844.svg" />}
         />
 
         <ScrollArea className="flex flex-col gap-10 pt-2">

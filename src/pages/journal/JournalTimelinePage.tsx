@@ -166,7 +166,7 @@ export default function JournalTimelinePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="오늘 일지"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5596f8f2c2f41bd0a4f5995e89c038339d171079.svg?generation=1778677415207876&alt=media" />}
+          left={<HeaderIconButton src="/icons/5596f8f2c2f41bd0a4f5995e89c038339d171079.svg" />}
           subtitle={formatDate(new Date())}
         />
 

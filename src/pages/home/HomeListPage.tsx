@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '@src/imports/logo.png';
+import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
@@ -18,7 +18,7 @@ export default function HomeListPage() {
           <div className="items-center flex gap-2 shrink-0">
             <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-full shrink-0">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F65f847e691f2e01088069fffb3ba8a278705ebdd.svg?generation=1778677414177110&alt=media" className="block size-full" />
+                <img src="/icons/65f847e691f2e01088069fffb3ba8a278705ebdd.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full shrink-0">

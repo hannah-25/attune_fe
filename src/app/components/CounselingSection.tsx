@@ -23,10 +23,10 @@ export function CounselingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F37d36d2649e0167668e10933bbff173ac0add099.svg?generation=1778677417462841&amp;alt=media" className="block size-full" />
+                    <img src="/icons/37d36d2649e0167668e10933bbff173ac0add099.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3b862619e74a247eab84539e35a73ea3978624af.svg?generation=1778677417471722&amp;alt=media" className="block size-full" />
+                    <img src="/icons/3b862619e74a247eab84539e35a73ea3978624af.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -36,7 +36,7 @@ export function CounselingSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb6ccaea78ae3d5ae886343fe1599532e8d23a688.svg?generation=1778677417483053&amp;alt=media" className="block size-full" />
+                          <img src="/icons/b6ccaea78ae3d5ae886343fe1599532e8d23a688.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -44,7 +44,7 @@ export function CounselingSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F427d505d9a8d1880ba0c0b74c2fba370c1b3f7a7.svg?generation=1778677417526120&amp;alt=media" className="block size-full" />
+                          <img src="/icons/427d505d9a8d1880ba0c0b74c2fba370c1b3f7a7.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -124,10 +124,10 @@ export function CounselingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F798f91846f39a0cf39093f778e669f9a05034418.svg?generation=1778677417626356&amp;alt=media" className="block size-full" />
+                    <img src="/icons/798f91846f39a0cf39093f778e669f9a05034418.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6b4a6b18d6b06336e7e9fd595980986147201bde.svg?generation=1778677417637940&amp;alt=media" className="block size-full" />
+                    <img src="/icons/6b4a6b18d6b06336e7e9fd595980986147201bde.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export function CounselingSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa7a5bb7f1924955f362f7eae70db182206a69aa8.svg?generation=1778677417620184&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a7a5bb7f1924955f362f7eae70db182206a69aa8.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -163,7 +163,7 @@ export function CounselingSection() {
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
                     <div className="items-center flex mb-[10px] gap-1.5">
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd6f01a918e96084e1d681d7d62364e44c857d2d4.svg?generation=1778677417638074&amp;alt=media" className="block size-full" />
+                        <img src="/icons/d6f01a918e96084e1d681d7d62364e44c857d2d4.svg" className="block size-full" />
                       </div>
                       <div className="font-bold">
                         자동 요약
@@ -200,7 +200,7 @@ export function CounselingSection() {
                       <div className="items-start flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] mt-[2px] bg-purple-500 shrink-[0] rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fefc3d1b8024eaed0f9ca68769c039657e53d1ed2.svg?generation=1778677417694608&amp;alt=media" className="block size-full" />
+                            <img src="/icons/efc3d1b8024eaed0f9ca68769c039657e53d1ed2.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%] leading-normal">아침 식욕이 너무 없어요. 다른 약으로 바 꿔야 할까요?</div>
@@ -208,7 +208,7 @@ export function CounselingSection() {
                       <div className="items-start flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                         <div className="items-center flex justify-center w-[18px] h-[18px] mt-[2px] bg-purple-500 shrink-[0] rounded-[0.5625rem]">
                           <div className="overflow-hidden w-[10px] h-[10px]">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F37b80fb315a843d30ffa649f97fc8c6c3e826533.svg?generation=1778677417714583&amp;alt=media" className="block size-full" />
+                            <img src="/icons/37b80fb315a843d30ffa649f97fc8c6c3e826533.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="grow basis-[0%] leading-normal">오후 4시 이후 약효가 빨리 떨어지는 느 낌이에요</div>
@@ -219,7 +219,7 @@ export function CounselingSection() {
                       </div>
                       <div className="items-center flex text-gray-600 gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px]">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc6af67f80f7ec4d48ab0b1984f79c9c47ed17688.svg?generation=1778677417709738&amp;alt=media" className="block size-full" />
+                          <img src="/icons/c6af67f80f7ec4d48ab0b1984f79c9c47ed17688.svg" className="block size-full" />
                         </div>
                         <span className="block">질문 추가</span>
                       </div>
@@ -253,10 +253,10 @@ export function CounselingSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F037b7365aa7a2240ccb80b61d2e3a2e01743ddb3.svg?generation=1778677417726050&amp;alt=media" className="block size-full" />
+                    <img src="/icons/037b7365aa7a2240ccb80b61d2e3a2e01743ddb3.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9b9c1214bbdf4834e088c0f59bde5fd38061c1bd.svg?generation=1778677417725174&amp;alt=media" className="block size-full" />
+                    <img src="/icons/9b9c1214bbdf4834e088c0f59bde5fd38061c1bd.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -266,7 +266,7 @@ export function CounselingSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1374f2b16faf6016b6e53e7199458616492fb894.svg?generation=1778677417797896&amp;alt=media" className="block size-full" />
+                          <img src="/icons/1374f2b16faf6016b6e53e7199458616492fb894.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -351,7 +351,7 @@ export function CounselingSection() {
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
                     <div className="items-center flex gap-2">
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6cae536aa2417c12c04efccc757fd2895c7958ab.svg?generation=1778677417793151&amp;alt=media" className="block size-full" />
+                        <img src="/icons/6cae536aa2417c12c04efccc757fd2895c7958ab.svg" className="block size-full" />
                       </div>
                       <div className="leading-[18.85px]">
                         <b className="font-bold">

@@ -22,10 +22,10 @@ export function AuthenticationSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4d91f6cfcc54fb4d477ac26752de11074c8d1824.svg?generation=1778677414005319&amp;alt=media" className="block size-full" />
+                    <img src="/icons/4d91f6cfcc54fb4d477ac26752de11074c8d1824.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe904701bb788df68260a85d359e50844387558fb.svg?generation=1778677414008297&amp;alt=media" className="block size-full" />
+                    <img src="/icons/e904701bb788df68260a85d359e50844387558fb.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -68,7 +68,7 @@ export function AuthenticationSection() {
                   <div className="items-center flex gap-2 mt-4 px-1 text-xs">
                     <div className="items-center flex justify-center w-4 h-4 bg-purple-500 rounded shrink-[0]">
                       <div className="overflow-hidden w-[10px] h-[10px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fce0c0d0ec8dac7b611e710c38a300ee1b99684e2.svg?generation=1778677414008518&amp;alt=media" className="block size-full" />
+                        <img src="/icons/ce0c0d0ec8dac7b611e710c38a300ee1b99684e2.svg" className="block size-full" />
                       </div>
                     </div>
                     <div>
@@ -129,8 +129,8 @@ export function AuthenticationSection() {
                 <div>9:41</div>
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
-                  <div className="overflow-hidden w-[15px] h-[10px]"><img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6df7c45cbcc4c7e6978f93d4874b673cc12f47a3.svg?generation=1778677414040986&amp;alt=media" className="block size-full" /></div>
-                  <div className="overflow-hidden w-5 h-[10px]"><img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Faa5839bf6180e7903c601a69d557d6271775d179.svg?generation=1778677414062004&amp;alt=media" className="block size-full" /></div>
+                  <div className="overflow-hidden w-[15px] h-[10px]"><img src="/icons/6df7c45cbcc4c7e6978f93d4874b673cc12f47a3.svg" className="block size-full" /></div>
+                  <div className="overflow-hidden w-5 h-[10px]"><img src="/icons/aa5839bf6180e7903c601a69d557d6271775d179.svg" className="block size-full" /></div>
                 </div>
               </div>
               <div className="flex flex-col absolute left-0 top-0 right-0 bottom-0 pt-11 pr-0 pb-0 pl-0">
@@ -166,8 +166,8 @@ export function AuthenticationSection() {
                 <div>9:41</div>
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
-                  <div className="overflow-hidden w-[15px] h-[10px]"><img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6df7c45cbcc4c7e6978f93d4874b673cc12f47a3.svg?generation=1778677414040986&amp;alt=media" className="block size-full" /></div>
-                  <div className="overflow-hidden w-5 h-[10px]"><img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Faa5839bf6180e7903c601a69d557d6271775d179.svg?generation=1778677414062004&amp;alt=media" className="block size-full" /></div>
+                  <div className="overflow-hidden w-[15px] h-[10px]"><img src="/icons/6df7c45cbcc4c7e6978f93d4874b673cc12f47a3.svg" className="block size-full" /></div>
+                  <div className="overflow-hidden w-5 h-[10px]"><img src="/icons/aa5839bf6180e7903c601a69d557d6271775d179.svg" className="block size-full" /></div>
                 </div>
               </div>
               <div className="flex flex-col absolute left-0 top-0 right-0 bottom-0 pt-11 pr-0 pb-0 pl-0">
@@ -206,8 +206,8 @@ export function AuthenticationSection() {
                 <div>9:41</div>
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
-                  <div className="overflow-hidden w-[15px] h-[10px]"><img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6df7c45cbcc4c7e6978f93d4874b673cc12f47a3.svg?generation=1778677414040986&amp;alt=media" className="block size-full" /></div>
-                  <div className="overflow-hidden w-5 h-[10px]"><img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Faa5839bf6180e7903c601a69d557d6271775d179.svg?generation=1778677414062004&amp;alt=media" className="block size-full" /></div>
+                  <div className="overflow-hidden w-[15px] h-[10px]"><img src="/icons/6df7c45cbcc4c7e6978f93d4874b673cc12f47a3.svg" className="block size-full" /></div>
+                  <div className="overflow-hidden w-5 h-[10px]"><img src="/icons/aa5839bf6180e7903c601a69d557d6271775d179.svg" className="block size-full" /></div>
                 </div>
               </div>
               <div className="flex flex-col absolute left-0 top-0 right-0 bottom-0 pt-11 pr-0 pb-0 pl-0">

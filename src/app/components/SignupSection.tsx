@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import logoImage from '../../imports/logo_with_brand.png';
+import logoImage from '../../assets/logo_with_brand.png';
 
 export function SignupSection() {
   return (
@@ -23,10 +23,10 @@ export function SignupSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F91c84df0f3791ffb9aa8a93e56f33dcf7f8c7cee.svg?generation=1778677413494809&amp;alt=media" className="block size-full" />
+                    <img src="/icons/91c84df0f3791ffb9aa8a93e56f33dcf7f8c7cee.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2b4fd0b38333d39898997999f0da73ac7098b27c.svg?generation=1778677413526057&amp;alt=media" className="block size-full" />
+                    <img src="/icons/2b4fd0b38333d39898997999f0da73ac7098b27c.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -63,10 +63,10 @@ export function SignupSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa6abc6e0b118d2cf07d930da7d7bd059a691b347.svg?generation=1778677413987242&amp;alt=media" className="block size-full" />
+                    <img src="/icons/a6abc6e0b118d2cf07d930da7d7bd059a691b347.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F018bb5ce3d2b0dbe7fc1d7b937d5dede44db8dff.svg?generation=1778677414016567&amp;alt=media" className="block size-full" />
+                    <img src="/icons/018bb5ce3d2b0dbe7fc1d7b937d5dede44db8dff.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -118,7 +118,7 @@ export function SignupSection() {
                     <div className="items-start flex gap-2 mb-1.5">
                       <div className="items-center flex justify-center w-4 h-4 bg-purple-500 rounded shrink-[0] mt-0.5">
                         <div className="overflow-hidden w-2.5 h-2.5">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff65a7410da47c5d2b396b5d6f7c374acd3be6f7e.svg?generation=1778677413507571&amp;alt=media" className="block size-full" />
+                          <img src="/icons/f65a7410da47c5d2b396b5d6f7c374acd3be6f7e.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="text-xs leading-relaxed"><span className="underline">이용약관</span>, <span className="underline">개인정보처리방침</span>에 모두 동의합니다. (필수)</div>
@@ -175,10 +175,10 @@ export function SignupSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa6abc6e0b118d2cf07d930da7d7bd059a691b347.svg?generation=1778677413987242&amp;alt=media" className="block size-full" />
+                    <img src="/icons/a6abc6e0b118d2cf07d930da7d7bd059a691b347.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F018bb5ce3d2b0dbe7fc1d7b937d5dede44db8dff.svg?generation=1778677414016567&amp;alt=media" className="block size-full" />
+                    <img src="/icons/018bb5ce3d2b0dbe7fc1d7b937d5dede44db8dff.svg" className="block size-full" />
                   </div>
                 </div>
               </div>

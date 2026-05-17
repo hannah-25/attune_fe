@@ -66,8 +66,8 @@ export default function JournalCalendarPage() {
 
         <TopBar
           title="캘린더"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0f148e246b2f2bb3a69872ea8396c06705d1c413.svg?generation=1778677415336099&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff69b80758895256011eb548cf58375ba9863075c.svg?generation=1778677415343589&alt=media" />}
+          left={<HeaderIconButton src="/icons/0f148e246b2f2bb3a69872ea8396c06705d1c413.svg" />}
+          right={<HeaderIconButton src="/icons/f69b80758895256011eb548cf58375ba9863075c.svg" />}
         />
 
         {/* 스크롤 영역 전체 */}
@@ -77,13 +77,13 @@ export default function JournalCalendarPage() {
           <div className="pt-0 pr-4 pb-1 pl-4">
             <div className="items-center flex mb-2 gap-2">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg?generation=1778677415378610&alt=media" className="block size-full" />
+                <img src="/icons/dc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg" className="block size-full" />
               </div>
               <div className="font-bold text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>
                 {CURRENT_YEAR}년 {CURRENT_MONTH + 1}월
               </div>
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7a6542fea4feea5b0aefcb93656c6349f537576b.svg?generation=1778677415401373&alt=media" className="block size-full" />
+                <img src="/icons/7a6542fea4feea5b0aefcb93656c6349f537576b.svg" className="block size-full" />
               </div>
               <div className="grow basis-[0%]" />
               <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[9px] rounded-full">

@@ -38,8 +38,8 @@ export default function CommunityPostPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="글 상세"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd77b1743156ca690dcd7dbf0664fde91d06c07f9.svg?generation=1778677418382924&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg?generation=1778677418394861&alt=media" />}
+          left={<HeaderIconButton src="/icons/d77b1743156ca690dcd7dbf0664fde91d06c07f9.svg" />}
+          right={<HeaderIconButton src="/icons/b22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg" />}
         />
 
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-0 pt-0 pr-4 pb-20 pl-4">
@@ -64,7 +64,7 @@ export default function CommunityPostPage() {
             <div className="items-center flex grow justify-center bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] basis-0 gap-1.5 p-2 rounded-[0.875rem]">
               <div className="overflow-hidden w-3 h-3">
                 <img
-                  src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd56f1bf80e3434cc00cc898c29df9c362f23fc35.svg?generation=1778677418392682&amp;alt=media"
+                  src="/icons/d56f1bf80e3434cc00cc898c29df9c362f23fc35.svg"
                   className="block size-full"
                   alt=""
                 />
@@ -74,7 +74,7 @@ export default function CommunityPostPage() {
             <div className="items-center flex grow justify-center bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] basis-0 gap-1.5 p-2 rounded-[0.875rem]">
               <div className="overflow-hidden w-[10px] h-[10px]">
                 <img
-                  src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdf2703919175f9503d8dbe6dc130030c0dfd0974.svg?generation=1778677418398252&amp;alt=media"
+                  src="/icons/df2703919175f9503d8dbe6dc130030c0dfd0974.svg"
                   className="block size-full"
                   alt=""
                 />
@@ -120,7 +120,7 @@ export default function CommunityPostPage() {
           <div className="items-center flex justify-center w-9 h-9 bg-[rgb(31,_27,_46)] text-white rounded-[1.125rem]">
             <div className="overflow-hidden w-3 h-3">
               <img
-                src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3caa747b918bbc5b5d58d1adcb49875f2ddc837b.svg?generation=1778677418442128&amp;alt=media"
+                src="/icons/3caa747b918bbc5b5d58d1adcb49875f2ddc837b.svg"
                 className="block size-full"
                 alt=""
               />

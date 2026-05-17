@@ -19,8 +19,8 @@ export default function EventDetailPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg?generation=1778677416599644&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F475b6a4f82b963544d4c155b022adc602cc4d023.svg?generation=1778677416696966&alt=media" />}
+          left={<HeaderIconButton src="/icons/b7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg" />}
+          right={<HeaderIconButton src="/icons/475b6a4f82b963544d4c155b022adc602cc4d023.svg" />}
         />
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
           <div className="items-center flex mb-[14px] gap-2">

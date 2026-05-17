@@ -17,15 +17,15 @@ export default function MedicationInfoPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={MEDICATION.name}
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F71214aeb3e9a91025992e6bbed95b42b12e12682.svg?generation=1778677416089994&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4f2752d1870c89f1c02d35a998d91a08dae99f79.svg?generation=1778677416033234&alt=media" />}
+          left={<HeaderIconButton src="/icons/71214aeb3e9a91025992e6bbed95b42b12e12682.svg" />}
+          right={<HeaderIconButton src="/icons/4f2752d1870c89f1c02d35a998d91a08dae99f79.svg" />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
             <div className="items-center flex gap-3">
               <div className="items-center flex justify-center w-14 h-14 bg-white rounded-[1.125rem]">
                 <div className="overflow-hidden w-[26px] h-[26px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F82fbda66cf3604653aa601ba1b04657d51b7af89.svg?generation=1778677416049480&amp;alt=media" className="block size-full" />
+                  <img src="/icons/82fbda66cf3604653aa601ba1b04657d51b7af89.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -49,7 +49,7 @@ export default function MedicationInfoPage() {
               </div>
             </div>
             <div className="inline overflow-hidden w-full h-20">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F41543b7a9b5b5e291515e6237df211289780a1d3.svg?generation=1778677416090375&amp;alt=media" className="inline w-full h-20" />
+              <img src="/icons/41543b7a9b5b5e291515e6237df211289780a1d3.svg" className="inline w-full h-20" />
             </div>
             <div className="flex justify-between mt-1 text-gray-500 text-xs">
               <div>06시</div>
