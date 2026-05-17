@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import logoImage from '../../imports/logo.png';
+import logoImage from '../../assets/logo.png';
 import { TabBar } from './TabBar';
 
 export function EmptyStatesSection() {
@@ -24,10 +24,10 @@ export function EmptyStatesSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fca9222e835a7c6998203facb7800d486736fb127.svg?generation=1778677418499477&amp;alt=media" className="block size-full" />
+                    <img src="/icons/ca9222e835a7c6998203facb7800d486736fb127.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4f22e5a0a505b3d2e326f398224dfcb2aea537b2.svg?generation=1778677418516888&amp;alt=media" className="block size-full" />
+                    <img src="/icons/4f22e5a0a505b3d2e326f398224dfcb2aea537b2.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -37,7 +37,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa661aedb84aa79c6a3b2e710ca7b9f1064b5aea7.svg?generation=1778677418544330&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a661aedb84aa79c6a3b2e710ca7b9f1064b5aea7.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -45,7 +45,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F55c9c7102106ee9fe76c6f15a70c64598dab46d3.svg?generation=1778677418557065&amp;alt=media" className="block size-full" />
+                          <img src="/icons/55c9c7102106ee9fe76c6f15a70c64598dab46d3.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -87,10 +87,10 @@ export function EmptyStatesSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd4af774746874a1201927737055135a66d5661d3.svg?generation=1778677418726300&amp;alt=media" className="block size-full" />
+                    <img src="/icons/d4af774746874a1201927737055135a66d5661d3.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc206a4b5c37278a09707d923240d4ff9842078db.svg?generation=1778677418730013&amp;alt=media" className="block size-full" />
+                    <img src="/icons/c206a4b5c37278a09707d923240d4ff9842078db.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -100,7 +100,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff921e8c85af86e51ecbc0dd728facb51bb4127c0.svg?generation=1778677418726204&amp;alt=media" className="block size-full" />
+                          <img src="/icons/f921e8c85af86e51ecbc0dd728facb51bb4127c0.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -108,7 +108,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc1b04de901d7982dcd4a65a2b9d530c8ba5d7dbd.svg?generation=1778677418781770&amp;alt=media" className="block size-full" />
+                          <img src="/icons/c1b04de901d7982dcd4a65a2b9d530c8ba5d7dbd.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -119,7 +119,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex gap-3">
                       <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[1.375rem]">
                         <div className="overflow-hidden w-5 h-5">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa9451c5d24783726972f1f38c1ada1a23c9347ec.svg?generation=1778677418843010&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a9451c5d24783726972f1f38c1ada1a23c9347ec.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -191,10 +191,10 @@ export function EmptyStatesSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc6c151ccaccbf6d4f27c353b63b2bcd12df76e18.svg?generation=1778677418897488&amp;alt=media" className="block size-full" />
+                    <img src="/icons/c6c151ccaccbf6d4f27c353b63b2bcd12df76e18.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5bb7a16bc2464cd65cd5dc20d5d0ce02db98a426.svg?generation=1778677418876595&amp;alt=media" className="block size-full" />
+                    <img src="/icons/5bb7a16bc2464cd65cd5dc20d5d0ce02db98a426.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -206,12 +206,12 @@ export function EmptyStatesSection() {
                   <div className="flex gap-1.5">
                     <div className="items-center flex justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc9e88ecb3a87f7274e3e7692f5801de092f97e1f.svg?generation=1778677418898949&amp;alt=media" className="block size-full" />
+                        <img src="/icons/c9e88ecb3a87f7274e3e7692f5801de092f97e1f.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3c178cf4154d75bbfdb8a67c0f62d2d2b4f48a05.svg?generation=1778677418942841&amp;alt=media" className="block size-full" />
+                        <img src="/icons/3c178cf4154d75bbfdb8a67c0f62d2d2b4f48a05.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>
@@ -266,10 +266,10 @@ export function EmptyStatesSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F28f734661b12bf31bf069a1fb1bd01859f05b995.svg?generation=1778677419046180&amp;alt=media" className="block size-full" />
+                    <img src="/icons/28f734661b12bf31bf069a1fb1bd01859f05b995.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd443d486cf369cadcfdfadca55a875835fc05871.svg?generation=1778677419047153&amp;alt=media" className="block size-full" />
+                    <img src="/icons/d443d486cf369cadcfdfadca55a875835fc05871.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -291,7 +291,7 @@ export function EmptyStatesSection() {
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
                     <div className="items-center flex mb-2 gap-1.5">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb8e7213d731b537eff064e9a8ad31fe60230f42a.svg?generation=1778677419056750&amp;alt=media" className="block size-full" />
+                        <img src="/icons/b8e7213d731b537eff064e9a8ad31fe60230f42a.svg" className="block size-full" />
                       </div>
                       <div className="font-bold text-purple-800 text-xs">
                         리포트 준비 중
@@ -307,7 +307,7 @@ export function EmptyStatesSection() {
                       <div className="grow text-center basis-[0%]">
                         <div className="items-center flex justify-center text-center h-8 bg-purple-500 rounded-lg">
                           <div className="overflow-hidden text-center w-3 h-3">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe64d3fa44079721a57a35f94ca85c71607ad8956.svg?generation=1778677419118493&amp;alt=media" className="block size-full" />
+                            <img src="/icons/e64d3fa44079721a57a35f94ca85c71607ad8956.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="font-semibold text-center mt-1 text-gray-600 text-xs">월</div>
@@ -315,7 +315,7 @@ export function EmptyStatesSection() {
                       <div className="grow text-center basis-[0%]">
                         <div className="items-center flex justify-center text-center h-8 bg-purple-500 rounded-lg">
                           <div className="overflow-hidden text-center w-3 h-3">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6816b13950c23418e62e134875aa2b372fdbe0d7.svg?generation=1778677419124011&amp;alt=media" className="block size-full" />
+                            <img src="/icons/6816b13950c23418e62e134875aa2b372fdbe0d7.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="font-semibold text-center mt-1 text-gray-600 text-xs">화</div>
@@ -323,7 +323,7 @@ export function EmptyStatesSection() {
                       <div className="grow text-center basis-[0%]">
                         <div className="items-center flex justify-center text-center h-8 bg-purple-500 rounded-lg">
                           <div className="overflow-hidden text-center w-3 h-3">
-                            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F31a1b88a449546fa3ee9c599889bac848b0b67fc.svg?generation=1778677419127027&amp;alt=media" className="block size-full" />
+                            <img src="/icons/31a1b88a449546fa3ee9c599889bac848b0b67fc.svg" className="block size-full" />
                           </div>
                         </div>
                         <div className="font-semibold text-center mt-1 text-gray-600 text-xs">수</div>
@@ -350,7 +350,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-9 h-9 bg-gray-100 rounded-xl">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa9bfb190aeec59d19f0011156a73da9e6b89a0b6.svg?generation=1778677419142670&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a9bfb190aeec59d19f0011156a73da9e6b89a0b6.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -364,7 +364,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-9 h-9 bg-gray-100 rounded-xl">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3b8884a093141f0a6fa191341316aae00a5f96d2.svg?generation=1778677419178522&amp;alt=media" className="block size-full" />
+                          <img src="/icons/3b8884a093141f0a6fa191341316aae00a5f96d2.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -378,7 +378,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex gap-2.5">
                       <div className="items-center flex justify-center w-9 h-9 bg-gray-100 rounded-xl">
                         <div className="overflow-hidden w-3 h-3">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2228c80c9fbb3441b7c5a69cde45290326828c2a.svg?generation=1778677419198316&amp;alt=media" className="block size-full" />
+                          <img src="/icons/2228c80c9fbb3441b7c5a69cde45290326828c2a.svg" className="block size-full" />
                         </div>
                       </div>
                       <div className="grow basis-[0%]">
@@ -410,10 +410,10 @@ export function EmptyStatesSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fbba48bbacae99320ce90f02f87f03cc297dced1f.svg?generation=1778677419287484&amp;alt=media" className="block size-full" />
+                    <img src="/icons/bba48bbacae99320ce90f02f87f03cc297dced1f.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4cf9ba0398e7965e88357d6f55ea11957ccb8669.svg?generation=1778677419288207&amp;alt=media" className="block size-full" />
+                    <img src="/icons/4cf9ba0398e7965e88357d6f55ea11957ccb8669.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -423,7 +423,7 @@ export function EmptyStatesSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg?generation=1778677419299929&amp;alt=media" className="block size-full" />
+                          <img src="/icons/58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -433,14 +433,14 @@ export function EmptyStatesSection() {
                 <div className="pt-0 pr-4 pb-2 pl-4">
                   <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] gap-2 p-[10px] rounded-[0.875rem]">
                     <div className="overflow-hidden w-[14px] h-[14px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa531887dd688406d037c6913b8808b9c4141813a.svg?generation=1778677419332244&amp;alt=media" className="block size-full" />
+                      <img src="/icons/a531887dd688406d037c6913b8808b9c4141813a.svg" className="block size-full" />
                     </div>
                     <div className="grow font-bold basis-[0%]">
                       "주말 약 쉬기"
                     </div>
                     <div className="items-center flex justify-center w-7 h-7 bg-gray-100 rounded-[0.875rem]">
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F96f65ceee7d22efcca2adc2e46c0399576b96b96.svg?generation=1778677419358174&amp;alt=media" className="block size-full" />
+                        <img src="/icons/96f65ceee7d22efcca2adc2e46c0399576b96b96.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>
@@ -466,7 +466,7 @@ export function EmptyStatesSection() {
                   <div className="text-center h-1"></div>
                   <div className="items-center flex font-bold justify-center text-center h-[50px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
                     <div className="overflow-hidden text-center w-[13px] h-[13px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9ad6e44aa94a072b9df2689dc321e5f682009317.svg?generation=1778677419429995&amp;alt=media" className="block size-full" />
+                      <img src="/icons/9ad6e44aa94a072b9df2689dc321e5f682009317.svg" className="block size-full" />
                     </div>
                     <span className="block text-center ml-[6px]">
                       <span className="text-center">이 주제로 글쓰기</span>

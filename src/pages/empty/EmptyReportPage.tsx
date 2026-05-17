@@ -26,7 +26,7 @@ export default function EmptyReportPage() {
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
             <div className="items-center flex mb-2 gap-1.5">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb8e7213d731b537eff064e9a8ad31fe60230f42a.svg?generation=1778677419056750&amp;alt=media" className="block size-full" />
+                <img src="/icons/b8e7213d731b537eff064e9a8ad31fe60230f42a.svg" className="block size-full" />
               </div>
               <div className="font-bold text-purple-800 text-xs">
                 리포트 준비 중
@@ -42,7 +42,7 @@ export default function EmptyReportPage() {
               <div className="grow text-center basis-[0%]">
                 <div className="items-center flex justify-center text-center h-8 bg-purple-500 rounded-lg">
                   <div className="overflow-hidden text-center w-3 h-3">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe64d3fa44079721a57a35f94ca85c71607ad8956.svg?generation=1778677419118493&amp;alt=media" className="block size-full" />
+                    <img src="/icons/e64d3fa44079721a57a35f94ca85c71607ad8956.svg" className="block size-full" />
                   </div>
                 </div>
                 <div className="font-semibold text-center mt-1 text-gray-600 text-xs">월</div>
@@ -50,7 +50,7 @@ export default function EmptyReportPage() {
               <div className="grow text-center basis-[0%]">
                 <div className="items-center flex justify-center text-center h-8 bg-purple-500 rounded-lg">
                   <div className="overflow-hidden text-center w-3 h-3">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6816b13950c23418e62e134875aa2b372fdbe0d7.svg?generation=1778677419124011&amp;alt=media" className="block size-full" />
+                    <img src="/icons/6816b13950c23418e62e134875aa2b372fdbe0d7.svg" className="block size-full" />
                   </div>
                 </div>
                 <div className="font-semibold text-center mt-1 text-gray-600 text-xs">화</div>
@@ -58,7 +58,7 @@ export default function EmptyReportPage() {
               <div className="grow text-center basis-[0%]">
                 <div className="items-center flex justify-center text-center h-8 bg-purple-500 rounded-lg">
                   <div className="overflow-hidden text-center w-3 h-3">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F31a1b88a449546fa3ee9c599889bac848b0b67fc.svg?generation=1778677419127027&amp;alt=media" className="block size-full" />
+                    <img src="/icons/31a1b88a449546fa3ee9c599889bac848b0b67fc.svg" className="block size-full" />
                   </div>
                 </div>
                 <div className="font-semibold text-center mt-1 text-gray-600 text-xs">수</div>
@@ -85,7 +85,7 @@ export default function EmptyReportPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-9 h-9 bg-gray-100 rounded-xl">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa9bfb190aeec59d19f0011156a73da9e6b89a0b6.svg?generation=1778677419142670&amp;alt=media" className="block size-full" />
+                  <img src="/icons/a9bfb190aeec59d19f0011156a73da9e6b89a0b6.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -99,7 +99,7 @@ export default function EmptyReportPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-9 h-9 bg-gray-100 rounded-xl">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3b8884a093141f0a6fa191341316aae00a5f96d2.svg?generation=1778677419178522&amp;alt=media" className="block size-full" />
+                  <img src="/icons/3b8884a093141f0a6fa191341316aae00a5f96d2.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -113,7 +113,7 @@ export default function EmptyReportPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-9 h-9 bg-gray-100 rounded-xl">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2228c80c9fbb3441b7c5a69cde45290326828c2a.svg?generation=1778677419198316&amp;alt=media" className="block size-full" />
+                  <img src="/icons/2228c80c9fbb3441b7c5a69cde45290326828c2a.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">

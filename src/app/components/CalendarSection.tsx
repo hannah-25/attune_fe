@@ -23,10 +23,10 @@ export function CalendarSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1733c7ce02ad90949478f228d4f164bf55806003.svg?generation=1778677416445608&amp;alt=media" className="block size-full" />
+                    <img src="/icons/1733c7ce02ad90949478f228d4f164bf55806003.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4de72f9b114e87ba852510458ce94477d7c86eb1.svg?generation=1778677416420642&amp;alt=media" className="block size-full" />
+                    <img src="/icons/4de72f9b114e87ba852510458ce94477d7c86eb1.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -37,7 +37,7 @@ export function CalendarSection() {
                       5월
                     </div>
                     <div className="overflow-hidden w-[14px] h-[14px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fac51fe5f4a79c14bce84086c3976b584478290f5.svg?generation=1778677416454063&amp;alt=media" className="block size-full" />
+                      <img src="/icons/ac51fe5f4a79c14bce84086c3976b584478290f5.svg" className="block size-full" />
                     </div>
                   </div>
                   <div className="flex gap-1.5">
@@ -49,7 +49,7 @@ export function CalendarSection() {
                     </div>
                     <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc224e786521d13d2d5774b00ba68fd16572a5fb0.svg?generation=1778677416483487&amp;alt=media" className="block size-full" />
+                        <img src="/icons/c224e786521d13d2d5774b00ba68fd16572a5fb0.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>
@@ -251,10 +251,10 @@ export function CalendarSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F80aea4a43aea9334a517bd212cd16beed9a8c2fb.svg?generation=1778677416598209&amp;alt=media" className="block size-full" />
+                    <img src="/icons/80aea4a43aea9334a517bd212cd16beed9a8c2fb.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fbe7a3f3de4a4a658707f1a31180858b6ed094f8f.svg?generation=1778677416594119&amp;alt=media" className="block size-full" />
+                    <img src="/icons/be7a3f3de4a4a658707f1a31180858b6ed094f8f.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export function CalendarSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg?generation=1778677416599644&amp;alt=media" className="block size-full" />
+                          <img src="/icons/b7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -272,7 +272,7 @@ export function CalendarSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F475b6a4f82b963544d4c155b022adc602cc4d023.svg?generation=1778677416696966&amp;alt=media" className="block size-full" />
+                          <img src="/icons/475b6a4f82b963544d4c155b022adc602cc4d023.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -341,10 +341,10 @@ export function CalendarSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3dbd40547dcb49bf45db6ee57f96d9bdb571ba85.svg?generation=1778677416654842&amp;alt=media" className="block size-full" />
+                    <img src="/icons/3dbd40547dcb49bf45db6ee57f96d9bdb571ba85.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe2eda540d8e820ee1f6c34ed125071dd78d3d880.svg?generation=1778677416654823&amp;alt=media" className="block size-full" />
+                    <img src="/icons/e2eda540d8e820ee1f6c34ed125071dd78d3d880.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -354,7 +354,7 @@ export function CalendarSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd79c2e541070847ef9bbaaa2ba1496f075cbb058.svg?generation=1778677416688876&amp;alt=media" className="block size-full" />
+                          <img src="/icons/d79c2e541070847ef9bbaaa2ba1496f075cbb058.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -411,21 +411,21 @@ export function CalendarSection() {
                       <div className="grow font-semibold basis-[0%]">알림</div>
                       <div className="text-gray-600">없음</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fcd9b488c97d95c8b78b422e04f658c2cc6aa1a03.svg?generation=1778677416685231&amp;alt=media" className="block size-full" />
+                        <img src="/icons/cd9b488c97d95c8b78b422e04f658c2cc6aa1a03.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                       <div className="grow font-semibold basis-[0%]">위치</div>
                       <div className="text-gray-600">추가</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdf73d4774c6f7327c8ad736a4ec91a37128919ab.svg?generation=1778677416726157&amp;alt=media" className="block size-full" />
+                        <img src="/icons/df73d4774c6f7327c8ad736a4ec91a37128919ab.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px]">
                       <div className="grow font-semibold basis-[0%]">메모</div>
                       <div className="text-gray-600">추가</div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8a6c4d23a5e4d6c2436e7637e387e4bd7996730f.svg?generation=1778677416713101&amp;alt=media" className="block size-full" />
+                        <img src="/icons/8a6c4d23a5e4d6c2436e7637e387e4bd7996730f.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>
@@ -446,10 +446,10 @@ export function CalendarSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8ed127c6fde991c466cb490d383b87e41157ce50.svg?generation=1778677416781496&amp;alt=media" className="block size-full" />
+                    <img src="/icons/8ed127c6fde991c466cb490d383b87e41157ce50.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa55680cfb9a83fc1cdcecc0da6274be68fc68fd5.svg?generation=1778677416782078&amp;alt=media" className="block size-full" />
+                    <img src="/icons/a55680cfb9a83fc1cdcecc0da6274be68fc68fd5.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -459,7 +459,7 @@ export function CalendarSection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F69b9506be14cb1cfd9fad41f5e5b691f2f2a39b4.svg?generation=1778677416782809&amp;alt=media" className="block size-full" />
+                          <img src="/icons/69b9506be14cb1cfd9fad41f5e5b691f2f2a39b4.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -506,7 +506,7 @@ export function CalendarSection() {
                         </div>
                       </div>
                       <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F94612fc4446546e6fe33a94b3be3019ed330f60b.svg?generation=1778677416855363&amp;alt=media" className="block size-full" />
+                        <img src="/icons/94612fc4446546e6fe33a94b3be3019ed330f60b.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>

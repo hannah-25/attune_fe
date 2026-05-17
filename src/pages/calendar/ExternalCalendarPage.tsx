@@ -10,7 +10,7 @@ export default function ExternalCalendarPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="캘린더 연동"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F69b9506be14cb1cfd9fad41f5e5b691f2f2a39b4.svg?generation=1778677416782809&alt=media" />}
+          left={<HeaderIconButton src="/icons/69b9506be14cb1cfd9fad41f5e5b691f2f2a39b4.svg" />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.375rem]">
@@ -52,7 +52,7 @@ export default function ExternalCalendarPage() {
                 </div>
               </div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F94612fc4446546e6fe33a94b3be3019ed330f60b.svg?generation=1778677416855363&amp;alt=media" className="block size-full" />
+                <img src="/icons/94612fc4446546e6fe33a94b3be3019ed330f60b.svg" className="block size-full" />
               </div>
             </div>
           </div>

@@ -28,7 +28,7 @@ export default function Onboarding2Page() {
           <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
             <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen(v => !v)}>
               <div className="overflow-hidden w-3 h-3 shrink-0">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F51c0b100c6c8da5a7080133c33e0d3164ca5032a.svg?generation=1778677413712073&alt=media" className="block size-full" style={{ filter: "invert(26%) sepia(89%) saturate(1583%) hue-rotate(248deg) brightness(97%) contrast(98%)" }} />
+                <img src="/icons/51c0b100c6c8da5a7080133c33e0d3164ca5032a.svg" className="block size-full" style={{ filter: "invert(26%) sepia(89%) saturate(1583%) hue-rotate(248deg) brightness(97%) contrast(98%)" }} />
               </div>
               <div className="font-bold text-purple-700">
                 증상 서술 가이드라인 보기

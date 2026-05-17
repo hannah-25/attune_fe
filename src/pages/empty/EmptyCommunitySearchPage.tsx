@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '@src/imports/logo.png';
+import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -13,19 +13,19 @@ export default function EmptyCommunitySearchPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="경험 공유"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg?generation=1778677419299929&alt=media" />}
+          left={<HeaderIconButton src="/icons/58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg" />}
         />
         <div className="pt-0 pr-4 pb-2 pl-4">
           <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] gap-2 p-[10px] rounded-[0.875rem]">
             <div className="overflow-hidden w-[14px] h-[14px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa531887dd688406d037c6913b8808b9c4141813a.svg?generation=1778677419332244&amp;alt=media" className="block size-full" />
+              <img src="/icons/a531887dd688406d037c6913b8808b9c4141813a.svg" className="block size-full" />
             </div>
             <div className="grow font-bold basis-[0%]">
               &quot;주말 약 쉬기&quot;
             </div>
             <div className="items-center flex justify-center w-7 h-7 bg-gray-100 rounded-[0.875rem]">
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F96f65ceee7d22efcca2adc2e46c0399576b96b96.svg?generation=1778677419358174&amp;alt=media" className="block size-full" />
+                <img src="/icons/96f65ceee7d22efcca2adc2e46c0399576b96b96.svg" className="block size-full" />
               </div>
             </div>
           </div>
@@ -51,7 +51,7 @@ export default function EmptyCommunitySearchPage() {
           <div className="text-center h-1"></div>
           <div className="items-center flex font-bold justify-center text-center h-[50px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
             <div className="overflow-hidden text-center w-[13px] h-[13px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9ad6e44aa94a072b9df2689dc321e5f682009317.svg?generation=1778677419429995&amp;alt=media" className="block size-full" />
+              <img src="/icons/9ad6e44aa94a072b9df2689dc321e5f682009317.svg" className="block size-full" />
             </div>
             <span className="block text-center ml-[6px]">
               <span className="text-center">이 주제로 글쓰기</span>

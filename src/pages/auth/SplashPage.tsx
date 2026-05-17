@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '../../imports/logo_with_brand.png';
+import logoImage from '../../assets/logo_with_brand.png';
 
 export default function SplashPage() {
   return (

@@ -12,8 +12,8 @@ export default function MedicationListPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 중인 약"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fced07539bf3d43afa327439e8d06f98fdbda335c.svg?generation=1778677415577643&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F19cab3f28bf032ab1fda393ddb98fb1eabb87179.svg?generation=1778677415609729&alt=media" />}
+          left={<HeaderIconButton src="/icons/ced07539bf3d43afa327439e8d06f98fdbda335c.svg" />}
+          right={<HeaderIconButton src="/icons/19cab3f28bf032ab1fda393ddb98fb1eabb87179.svg" />}
         />
         <ScrollArea className="flex flex-col gap-3 pt-1">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
@@ -44,7 +44,7 @@ export default function MedicationListPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-[38px] h-[38px] bg-purple-300 rounded-xl">
                 <div className="overflow-hidden w-[18px] h-[18px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff487caf883fee29fd8f5d6a6367147ff53ff6eeb.svg?generation=1778677415616709&amp;alt=media" className="block size-full" />
+                  <img src="/icons/f487caf883fee29fd8f5d6a6367147ff53ff6eeb.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -57,7 +57,7 @@ export default function MedicationListPage() {
             </div>
             <div className="items-center flex mt-3 bg-gray-100 text-gray-800 gap-1.5 pt-2 pr-[10px] pb-2 pl-[10px] rounded-xl">
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5334f614b5607f110abfe488851205e977f22b14.svg?generation=1778677415671127&amp;alt=media" className="block size-full" />
+                <img src="/icons/5334f614b5607f110abfe488851205e977f22b14.svg" className="block size-full" />
               </div>
               하루 2회 · 8:00, 12:30
             </div>
@@ -66,7 +66,7 @@ export default function MedicationListPage() {
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-[38px] h-[38px] bg-purple-500 rounded-xl">
                 <div className="overflow-hidden w-[18px] h-[18px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8fb8f0ff61b3f813a2a9b5e18b6950f525e506f3.svg?generation=1778677415651458&amp;alt=media" className="block size-full" />
+                  <img src="/icons/8fb8f0ff61b3f813a2a9b5e18b6950f525e506f3.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -79,7 +79,7 @@ export default function MedicationListPage() {
             </div>
             <div className="items-center flex mt-3 bg-gray-100 text-gray-800 gap-1.5 pt-2 pr-[10px] pb-2 pl-[10px] rounded-xl">
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F363f99902730ebd698aff94492d5d4dc0e981bb1.svg?generation=1778677415672889&amp;alt=media" className="block size-full" />
+                <img src="/icons/363f99902730ebd698aff94492d5d4dc0e981bb1.svg" className="block size-full" />
               </div>
               하루 1회 · 19:00
             </div>
@@ -91,7 +91,7 @@ export default function MedicationListPage() {
             <div className="items-center flex gap-2.5 opacity-[0.7]">
               <div className="items-center flex justify-center w-[38px] h-[38px] bg-[rgb(208,_201,_189)] rounded-xl">
                 <div className="overflow-hidden w-[18px] h-[18px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F82f6316729e2405770bf424ad5357aa78565cb47.svg?generation=1778677415705856&amp;alt=media" className="block size-full" />
+                  <img src="/icons/82f6316729e2405770bf424ad5357aa78565cb47.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">

@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '@src/imports/logo.png';
+import logoImage from '@src/assets/logo.png';
 
 export default function Onboarding1Page() {
   return (

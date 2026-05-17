@@ -23,10 +23,10 @@ export function CommunitySection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F11168dda22f4982590bfe6e38842d8d8da90e0ff.svg?generation=1778677417792456&amp;alt=media" className="block size-full" />
+                    <img src="/icons/11168dda22f4982590bfe6e38842d8d8da90e0ff.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2fb96eb3d293c4d79cef2186468c54618c100c09.svg?generation=1778677417807122&amp;alt=media" className="block size-full" />
+                    <img src="/icons/2fb96eb3d293c4d79cef2186468c54618c100c09.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -36,7 +36,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6d07fc7b7d550d443283422ac15fea3de29aaa18.svg?generation=1778677417828465&amp;alt=media" className="block size-full" />
+                          <img src="/icons/6d07fc7b7d550d443283422ac15fea3de29aaa18.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -44,7 +44,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg?generation=1778677417852825&amp;alt=media" className="block size-full" />
+                          <img src="/icons/54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -54,7 +54,7 @@ export function CommunitySection() {
                   <div className="items-center flex bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
                     <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb29419fe5049084df816425a309c1fc382ccbb0e.svg?generation=1778677417885099&amp;alt=media" className="block size-full" />
+                        <img src="/icons/b29419fe5049084df816425a309c1fc382ccbb0e.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="grow basis-[0%]">
@@ -66,7 +66,7 @@ export function CommunitySection() {
                       </div>
                     </div>
                     <div className="overflow-hidden w-[11px] h-[11px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg?generation=1778677417884149&amp;alt=media" className="block size-full" />
+                      <img src="/icons/0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg" className="block size-full" />
                     </div>
                   </div>
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
@@ -107,10 +107,10 @@ export function CommunitySection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Feac1fa0f6cf18838f87ca435f70f5e6525df8a96.svg?generation=1778677418020180&amp;alt=media" className="block size-full" />
+                    <img src="/icons/eac1fa0f6cf18838f87ca435f70f5e6525df8a96.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F4198be971fe471d50496a28dcd0fe78835e68330.svg?generation=1778677418012190&amp;alt=media" className="block size-full" />
+                    <img src="/icons/4198be971fe471d50496a28dcd0fe78835e68330.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd50bde0e53580b90a7675bb1533c3628f89ac064.svg?generation=1778677418054080&amp;alt=media" className="block size-full" />
+                          <img src="/icons/d50bde0e53580b90a7675bb1533c3628f89ac064.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -128,7 +128,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa1d93193446d76a49e64b9927201d303b3a37082.svg?generation=1778677418066041&amp;alt=media" className="block size-full" />
+                          <img src="/icons/a1d93193446d76a49e64b9927201d303b3a37082.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -152,11 +152,11 @@ export function CommunitySection() {
                     <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc066f77fe099dc06ec1d9d71a1dd49ad735337f5.svg?generation=1778677418074333&amp;alt=media" className="block size-full" />
+                          <img src="/icons/c066f77fe099dc06ec1d9d71a1dd49ad735337f5.svg" className="block size-full" />
 </div>12                                        </span>
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-2 h-2">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ffa27671cf7a58eb1d69be0c24922ebe12068820e.svg?generation=1778677418074395&amp;alt=media" className="block size-full" />
+                          <img src="/icons/fa27671cf7a58eb1d69be0c24922ebe12068820e.svg" className="block size-full" />
 </div><span className="block">댓글</span>8                                        </span>
                     </div>
                   </div>
@@ -170,11 +170,11 @@ export function CommunitySection() {
                     <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F026056801d9edc661de42c35aeb65d56b2669708.svg?generation=1778677418047862&amp;alt=media" className="block size-full" />
+                          <img src="/icons/026056801d9edc661de42c35aeb65d56b2669708.svg" className="block size-full" />
 </div>24                                        </span>
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-2 h-2">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6a1e1feb9c38bab93b9179da531778584800c4c4.svg?generation=1778677418138420&amp;alt=media" className="block size-full" />
+                          <img src="/icons/6a1e1feb9c38bab93b9179da531778584800c4c4.svg" className="block size-full" />
 </div><span className="block">댓글</span>14                                        </span>
                     </div>
                   </div>
@@ -188,11 +188,11 @@ export function CommunitySection() {
                     <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F069bfac8474d97299e3b30492cfd8e4f8ff3d45d.svg?generation=1778677418152204&amp;alt=media" className="block size-full" />
+                          <img src="/icons/069bfac8474d97299e3b30492cfd8e4f8ff3d45d.svg" className="block size-full" />
 </div>7                                        </span>
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-2 h-2">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Feaf51371d3f19bd29039b829ebcc8a9e0182dbcf.svg?generation=1778677418137879&amp;alt=media" className="block size-full" />
+                          <img src="/icons/eaf51371d3f19bd29039b829ebcc8a9e0182dbcf.svg" className="block size-full" />
 </div><span className="block">댓글</span>3                                        </span>
                     </div>
                   </div>
@@ -206,11 +206,11 @@ export function CommunitySection() {
                     <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9fd2528ba8379cdb6894826f9c84b0eb9b73b4b1.svg?generation=1778677418179649&amp;alt=media" className="block size-full" />
+                          <img src="/icons/9fd2528ba8379cdb6894826f9c84b0eb9b73b4b1.svg" className="block size-full" />
 </div>18                                        </span>
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-2 h-2">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6cdfe483eda449d1514ecf2e225ced5d59dad218.svg?generation=1778677418178106&amp;alt=media" className="block size-full" />
+                          <img src="/icons/6cdfe483eda449d1514ecf2e225ced5d59dad218.svg" className="block size-full" />
 </div><span className="block">댓글</span>22                                        </span>
                     </div>
                   </div>
@@ -224,18 +224,18 @@ export function CommunitySection() {
                     <div className="flex font-bold mt-2 text-gray-500 text-xs gap-3">
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-[10px] h-[10px]">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fcb1ebfde02849925daf22f8dceb1c58376065678.svg?generation=1778677418215553&amp;alt=media" className="block size-full" />
+                          <img src="/icons/cb1ebfde02849925daf22f8dceb1c58376065678.svg" className="block size-full" />
 </div>9                                        </span>
                       <span className="items-center flex gap-1">
 <div className="overflow-hidden w-2 h-2">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F231a8884b67a8e4ff3b2b52bb56cf1fe3f160cdc.svg?generation=1778677418221542&amp;alt=media" className="block size-full" />
+                          <img src="/icons/231a8884b67a8e4ff3b2b52bb56cf1fe3f160cdc.svg" className="block size-full" />
 </div><span className="block">댓글</span>5                                        </span>
                     </div>
                   </div>
                 </div>
                 <div className="items-center flex font-bold absolute h-12 right-4 bottom-[88px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] z-[25] rounded-3xl">
                   <div className="overflow-hidden w-[14px] h-[14px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fefb65dd04b728dd2a8742de28409d0e279ffaefe.svg?generation=1778677418296855&amp;alt=media" className="block size-full" />
+                    <img src="/icons/efb65dd04b728dd2a8742de28409d0e279ffaefe.svg" className="block size-full" />
                   </div>
                   <span className="block">글쓰기</span>
                 </div>
@@ -256,10 +256,10 @@ export function CommunitySection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2b54faf9b9d3d802b6227655b72d489bb71f5dcf.svg?generation=1778677418328008&amp;alt=media" className="block size-full" />
+                    <img src="/icons/2b54faf9b9d3d802b6227655b72d489bb71f5dcf.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff694de7083a84ca69edc3e1f0285db359b4af245.svg?generation=1778677418360591&amp;alt=media" className="block size-full" />
+                    <img src="/icons/f694de7083a84ca69edc3e1f0285db359b4af245.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -269,7 +269,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd77b1743156ca690dcd7dbf0664fde91d06c07f9.svg?generation=1778677418382924&amp;alt=media" className="block size-full" />
+                          <img src="/icons/d77b1743156ca690dcd7dbf0664fde91d06c07f9.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -277,7 +277,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg?generation=1778677418394861&amp;alt=media" className="block size-full" />
+                          <img src="/icons/b22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>
@@ -305,7 +305,7 @@ export function CommunitySection() {
                   <div className="flex mt-4 gap-2">
                     <div className="items-center flex grow justify-center bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] basis-[0%] gap-1.5 p-2 rounded-[0.875rem]">
                       <div className="overflow-hidden w-3 h-3">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd56f1bf80e3434cc00cc898c29df9c362f23fc35.svg?generation=1778677418392682&amp;alt=media" className="block size-full" />
+                        <img src="/icons/d56f1bf80e3434cc00cc898c29df9c362f23fc35.svg" className="block size-full" />
                       </div>
                       <div className="font-bold">
                         공감 12
@@ -313,7 +313,7 @@ export function CommunitySection() {
                     </div>
                     <div className="items-center flex grow justify-center bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] basis-[0%] gap-1.5 p-2 rounded-[0.875rem]">
                       <div className="overflow-hidden w-[10px] h-[10px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdf2703919175f9503d8dbe6dc130030c0dfd0974.svg?generation=1778677418398252&amp;alt=media" className="block size-full" />
+                        <img src="/icons/df2703919175f9503d8dbe6dc130030c0dfd0974.svg" className="block size-full" />
                       </div>
                       <div className="font-bold">
                         댓글 8
@@ -373,7 +373,7 @@ export function CommunitySection() {
                   </div>
                   <div className="items-center flex justify-center w-9 h-9 bg-[rgb(31,_27,_46)] text-white rounded-[1.125rem]">
                     <div className="overflow-hidden w-3 h-3">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3caa747b918bbc5b5d58d1adcb49875f2ddc837b.svg?generation=1778677418442128&amp;alt=media" className="block size-full" />
+                      <img src="/icons/3caa747b918bbc5b5d58d1adcb49875f2ddc837b.svg" className="block size-full" />
                     </div>
                   </div>
                 </div>
@@ -393,10 +393,10 @@ export function CommunitySection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Faad13594332f5e5c54e7adcd6db56e7e59175346.svg?generation=1778677418459267&amp;alt=media" className="block size-full" />
+                    <img src="/icons/aad13594332f5e5c54e7adcd6db56e7e59175346.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F9f1bfc930cf5dc279a978e32a6ae8a29c8b8b505.svg?generation=1778677418457615&amp;alt=media" className="block size-full" />
+                    <img src="/icons/9f1bfc930cf5dc279a978e32a6ae8a29c8b8b505.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -406,7 +406,7 @@ export function CommunitySection() {
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                         <div className="overflow-hidden w-4 h-4">
-                          <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F748bff70642e790d3da4f67ab0478b2847c249a0.svg?generation=1778677418486773&amp;alt=media" className="block size-full" />
+                          <img src="/icons/748bff70642e790d3da4f67ab0478b2847c249a0.svg" className="block size-full" />
                         </div>
                       </div>
                     </div>

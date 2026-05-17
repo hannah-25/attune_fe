@@ -12,7 +12,7 @@ export default function MedicationAlarmPage() {
             <div className="items-center flex mb-[10px] gap-2.5">
               <div className="items-center flex justify-center w-9 h-9 bg-purple-500 rounded-lg">
                 <div className="overflow-hidden w-[18px] h-[18px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5534b1eec38b1487b6a5ae5278ae9a3334c8cebf.svg?generation=1778677416046239&amp;alt=media" className="block size-full" />
+                  <img src="/icons/5534b1eec38b1487b6a5ae5278ae9a3334c8cebf.svg" className="block size-full" />
                 </div>
               </div>
               <div className="grow basis-[0%]">
@@ -33,7 +33,7 @@ export default function MedicationAlarmPage() {
             <div className="items-center flex gap-2">
               <div className="items-center flex font-extrabold justify-center h-11 bg-purple-300 shadow-[rgba(0,0,0,0.1)_0px_2px_0px_0px] text-purple-700 basis-[0%] text-sm gap-1.5 grow-[1.6] rounded-[1.375rem]">
                 <div className="overflow-hidden w-[14px] h-[14px]">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2348d6782ef2c773bb3d7f6f6753005c36ff4e76.svg?generation=1778677416004687&amp;alt=media" className="block size-full" />
+                  <img src="/icons/2348d6782ef2c773bb3d7f6f6753005c36ff4e76.svg" className="block size-full" />
                 </div>
                 <span className="block">복용</span>
               </div>

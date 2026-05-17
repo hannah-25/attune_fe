@@ -12,7 +12,7 @@ export default function JournalTagsPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="태그 관리"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fbcac446ba747bd8f1ec89ed926d88e0f54b23c84.svg?generation=1778677415515783&alt=media" />}
+          left={<HeaderIconButton src="/icons/bcac446ba747bd8f1ec89ed926d88e0f54b23c84.svg" />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
@@ -105,7 +105,7 @@ export default function JournalTagsPage() {
         </ScrollArea>
         <div className="items-center flex font-bold absolute h-[50px] right-4 bottom-[92px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem]">
           <div className="overflow-hidden w-[14px] h-[14px]">
-            <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg?generation=1778677415542195&alt=media" className="block size-full" />
+            <img src="/icons/45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg" className="block size-full" />
           </div>
           <span className="block">새 태그</span>
         </div>

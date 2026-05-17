@@ -12,14 +12,14 @@ export default function CommunityNoticePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="공지사항"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6d07fc7b7d550d443283422ac15fea3de29aaa18.svg?generation=1778677417828465&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg?generation=1778677417852825&alt=media" />}
+          left={<HeaderIconButton src="/icons/6d07fc7b7d550d443283422ac15fea3de29aaa18.svg" />}
+          right={<HeaderIconButton src="/icons/54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg" />}
         />
         <ScrollArea className="flex flex-col gap-2">
           <div className="items-center flex bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
             <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
               <div className="overflow-hidden w-3 h-3">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb29419fe5049084df816425a309c1fc382ccbb0e.svg?generation=1778677417885099&amp;alt=media" className="block size-full" />
+                <img src="/icons/b29419fe5049084df816425a309c1fc382ccbb0e.svg" className="block size-full" />
               </div>
             </div>
             <div className="grow basis-[0%]">
@@ -31,7 +31,7 @@ export default function CommunityNoticePage() {
               </div>
             </div>
             <div className="overflow-hidden w-[11px] h-[11px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg?generation=1778677417884149&amp;alt=media" className="block size-full" />
+              <img src="/icons/0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg" className="block size-full" />
             </div>
           </div>
           <div className="h-2" />

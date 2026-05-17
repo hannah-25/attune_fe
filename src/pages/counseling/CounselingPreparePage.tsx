@@ -24,7 +24,7 @@ export default function CounselingPreparePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담 전 준비"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa7a5bb7f1924955f362f7eae70db182206a69aa8.svg?generation=1778677417620184&alt=media" />}
+          left={<HeaderIconButton src="/icons/a7a5bb7f1924955f362f7eae70db182206a69aa8.svg" />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
@@ -45,7 +45,7 @@ export default function CounselingPreparePage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-[10px] gap-1.5">
               <div className="overflow-hidden w-3 h-3">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd6f01a918e96084e1d681d7d62364e44c857d2d4.svg?generation=1778677417638074&amp;alt=media" className="block size-full" />
+                <img src="/icons/d6f01a918e96084e1d681d7d62364e44c857d2d4.svg" className="block size-full" />
               </div>
               <div className="font-bold">
                 자동 요약
@@ -92,7 +92,7 @@ export default function CounselingPreparePage() {
               ))}
               <div className="items-center flex text-gray-600 gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px]">
                 <div className="overflow-hidden w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc6af67f80f7ec4d48ab0b1984f79c9c47ed17688.svg?generation=1778677417709738&amp;alt=media" className="block size-full" />
+                  <img src="/icons/c6af67f80f7ec4d48ab0b1984f79c9c47ed17688.svg" className="block size-full" />
                 </div>
                 <span className="block">질문 추가</span>
               </div>

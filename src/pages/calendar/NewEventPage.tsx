@@ -15,7 +15,7 @@ export default function NewEventPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="새 일정"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd79c2e541070847ef9bbaaa2ba1496f075cbb058.svg?generation=1778677416688876&alt=media" />}
+          left={<HeaderIconButton src="/icons/d79c2e541070847ef9bbaaa2ba1496f075cbb058.svg" />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
@@ -73,21 +73,21 @@ export default function NewEventPage() {
               <div className="grow font-semibold basis-[0%]">알림</div>
               <div className="text-gray-600">없음</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fcd9b488c97d95c8b78b422e04f658c2cc6aa1a03.svg?generation=1778677416685231&amp;alt=media" className="block size-full" />
+                <img src="/icons/cd9b488c97d95c8b78b422e04f658c2cc6aa1a03.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
               <div className="grow font-semibold basis-[0%]">위치</div>
               <div className="text-gray-600">추가</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdf73d4774c6f7327c8ad736a4ec91a37128919ab.svg?generation=1778677416726157&amp;alt=media" className="block size-full" />
+                <img src="/icons/df73d4774c6f7327c8ad736a4ec91a37128919ab.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px]">
               <div className="grow font-semibold basis-[0%]">메모</div>
               <div className="text-gray-600">추가</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F8a6c4d23a5e4d6c2436e7637e387e4bd7996730f.svg?generation=1778677416713101&amp;alt=media" className="block size-full" />
+                <img src="/icons/8a6c4d23a5e4d6c2436e7637e387e4bd7996730f.svg" className="block size-full" />
               </div>
             </div>
           </div>

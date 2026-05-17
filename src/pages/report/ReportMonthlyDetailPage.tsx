@@ -10,8 +10,8 @@ export default function ReportMonthlyDetailPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="2026년 4월"
-          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fba3e0bc210beb20976686007d14c25ffe98c31e4.svg?generation=1778677417378325&alt=media" />}
-          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe1dfe1879d41815105c23cae3a7327f7b95876ae.svg?generation=1778677417378410&alt=media" />}
+          left={<HeaderIconButton src="/icons/ba3e0bc210beb20976686007d14c25ffe98c31e4.svg" />}
+          right={<HeaderIconButton src="/icons/e1dfe1879d41815105c23cae3a7327f7b95876ae.svg" />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
@@ -90,7 +90,7 @@ export default function ReportMonthlyDetailPage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-2 gap-1.5">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F554d6ce2320195f53a159850cecaca3c1ccfdbc1.svg?generation=1778677417381273&amp;alt=media" className="block size-full" />
+                <img src="/icons/554d6ce2320195f53a159850cecaca3c1ccfdbc1.svg" className="block size-full" />
               </div>
               <div className="font-bold">
                 상관관계 인사이트
@@ -107,7 +107,7 @@ export default function ReportMonthlyDetailPage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-2 gap-1.5">
               <div className="overflow-hidden w-[14px] h-[14px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd3ec29d4f07f263a2a453b9617fffe0fcf9c97ed.svg?generation=1778677417394777&amp;alt=media" className="block size-full" />
+                <img src="/icons/d3ec29d4f07f263a2a453b9617fffe0fcf9c97ed.svg" className="block size-full" />
               </div>
               <div className="font-bold">
                 약물 반응
@@ -123,7 +123,7 @@ export default function ReportMonthlyDetailPage() {
           </div>
           <div className="items-center flex font-bold justify-center w-full h-[50px] border-gray-900 border text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
             <div className="overflow-hidden w-[11px] h-[11px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd61ce1645cdee1b65efeea1174a44f4db8d8be0e.svg?generation=1778677417452329&amp;alt=media" className="block size-full" />
+              <img src="/icons/d61ce1645cdee1b65efeea1174a44f4db8d8be0e.svg" className="block size-full" />
             </div>
             <span className="block ml-[6px]">
               PDF로 내보내기

@@ -1,5 +1,5 @@
 ﻿import React from 'react';
-import logoImage from '../../imports/logo.png';
+import logoImage from '../../assets/logo.png';
 import { TabBar } from './TabBar';
 
 export function HomeSection() {
@@ -24,10 +24,10 @@ export function HomeSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc0215afb456e1b9fb428a6df38a839ecfb4059ba.svg?generation=1778677414140805&amp;alt=media" className="block size-full" />
+                    <img src="/icons/c0215afb456e1b9fb428a6df38a839ecfb4059ba.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa769290e3c8b8e1fbb67a725fd8618778f713b0e.svg?generation=1778677414189123&amp;alt=media" className="block size-full" />
+                    <img src="/icons/a769290e3c8b8e1fbb67a725fd8618778f713b0e.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -40,7 +40,7 @@ export function HomeSection() {
                   <div className="items-center flex gap-2 shrink-0">
                     <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-full shrink-0">
                       <div className="overflow-hidden w-[14px] h-[14px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F65f847e691f2e01088069fffb3ba8a278705ebdd.svg?generation=1778677414177110&amp;alt=media" className="block size-full" />
+                        <img src="/icons/65f847e691f2e01088069fffb3ba8a278705ebdd.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full shrink-0">
@@ -161,10 +161,10 @@ export function HomeSection() {
                 <div className="absolute w-[92px] h-[26px] left-[50%] top-2 bg-gray-950 translate-x-[-50%] rounded-2xl"></div>
                 <div className="items-center flex gap-1">
                   <div className="overflow-hidden w-[15px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F2f33dbf5354cfee928df3ee53c57c579efffca04.svg?generation=1778677414585215&amp;alt=media" className="block size-full" />
+                    <img src="/icons/2f33dbf5354cfee928df3ee53c57c579efffca04.svg" className="block size-full" />
                   </div>
                   <div className="overflow-hidden w-5 h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1ddc2dcfd6ea13c62faa6a59a040de832ffd1093.svg?generation=1778677414644803&amp;alt=media" className="block size-full" />
+                    <img src="/icons/1ddc2dcfd6ea13c62faa6a59a040de832ffd1093.svg" className="block size-full" />
                   </div>
                 </div>
               </div>
@@ -176,12 +176,12 @@ export function HomeSection() {
                   <div className="flex gap-2">
                     <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
                       <div className="overflow-hidden w-[13px] h-[13px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5d8d993a0397c0c32edf0c73ae3fd195ca241b6f.svg?generation=1778677414699694&amp;alt=media" className="block size-full" />
+                        <img src="/icons/5d8d993a0397c0c32edf0c73ae3fd195ca241b6f.svg" className="block size-full" />
                       </div>
                     </div>
                     <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
                       <div className="overflow-hidden w-[13px] h-[13px]">
-                        <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F441d181493fed6f91159f901fc2b85bc102346e0.svg?generation=1778677414646994&amp;alt=media" className="block size-full" />
+                        <img src="/icons/441d181493fed6f91159f901fc2b85bc102346e0.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>

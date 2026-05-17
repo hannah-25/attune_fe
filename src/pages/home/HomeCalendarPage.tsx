@@ -16,12 +16,12 @@ export default function HomeCalendarPage() {
           <div className="flex gap-2">
             <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
               <div className="overflow-hidden w-[13px] h-[13px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5d8d993a0397c0c32edf0c73ae3fd195ca241b6f.svg?generation=1778677414699694&alt=media" className="block size-full" />
+                <img src="/icons/5d8d993a0397c0c32edf0c73ae3fd195ca241b6f.svg" className="block size-full" />
               </div>
             </div>
             <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
               <div className="overflow-hidden w-[13px] h-[13px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F441d181493fed6f91159f901fc2b85bc102346e0.svg?generation=1778677414646994&alt=media" className="block size-full" />
+                <img src="/icons/441d181493fed6f91159f901fc2b85bc102346e0.svg" className="block size-full" />
               </div>
             </div>
           </div>
