@@ -263,6 +263,7 @@ export default function JournalFullPage() {
   const [goals, setGoals] = useState(initialGoals);
   const [memo, setMemo] = useState("점심 이후 집중이 흐려졌고, 일을 잘게 나누면 다시 시작하기 쉬웠다.");
   const [memoSaved, setMemoSaved] = useState(true);
+  const [memoFocused, setMemoFocused] = useState(false);
 
   const toggleTag = (sectionTitle: string, label: string) => {
     setSections((currentSections) =>
@@ -401,8 +402,8 @@ export default function JournalFullPage() {
             </div>
           </section>
 
-            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
-              <div className="flex items-center justify-between mb-2">
+            <div className={`bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl transition-colors ${memoFocused ? 'border-purple-500' : 'border-gray-100'}`}>
+              <div className="flex items-center justify-between mb-3">
                 <div className="font-semibold text-gray-800">메모</div>
                 {!memoSaved && (
                   <button
@@ -416,9 +417,11 @@ export default function JournalFullPage() {
               <textarea
                 value={memo}
                 onChange={(e) => { setMemo(e.target.value); setMemoSaved(false); }}
+                onFocus={() => setMemoFocused(true)}
+                onBlur={() => setMemoFocused(false)}
                 placeholder="메모를 입력하세요"
-                rows={3}
-                className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none placeholder:text-gray-300"
+                rows={4}
+                className="w-full text-sm text-gray-700 leading-relaxed resize-none outline-none placeholder:text-gray-300"
               />
             </div>
           </div>
