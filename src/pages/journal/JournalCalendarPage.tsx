@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatMonthDay } from '@/lib/date';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 type DotColor = 'purple' | 'orange' | 'blue' | 'green';
 
@@ -63,26 +64,11 @@ export default function JournalCalendarPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
 
-        {/* 탑바 */}
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0f148e246b2f2bb3a69872ea8396c06705d1c413.svg?generation=1778677415336099&alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">캘린더</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff69b80758895256011eb548cf58375ba9863075c.svg?generation=1778677415343589&alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          title="캘린더"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0f148e246b2f2bb3a69872ea8396c06705d1c413.svg?generation=1778677415336099&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff69b80758895256011eb548cf58375ba9863075c.svg?generation=1778677415343589&alt=media" />}
+        />
 
         {/* 스크롤 영역 전체 */}
         <ScrollArea>

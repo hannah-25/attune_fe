@@ -14,6 +14,7 @@ type TopBarProps = {
   reserveRight?: boolean;
   right?: React.ReactNode;
   showBack?: boolean;
+  subtitle?: React.ReactNode;
   title?: React.ReactNode;
 };
 
@@ -56,6 +57,7 @@ export function TopBar({
   left,
   right,
   showBack = false,
+  subtitle,
   title,
 }: TopBarProps) {
   const leftContent = left ?? (showBack ? <BackButton /> : <div className="w-11 h-11" />);
@@ -68,6 +70,7 @@ export function TopBar({
         <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">{title}</div>
         {rightContent}
       </div>
+      {subtitle && <div className="text-center text-gray-600 text-xs">{subtitle}</div>}
     </div>
   );
 }

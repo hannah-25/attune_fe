@@ -1,4 +1,5 @@
 import React from 'react';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 const postContent = [
   '콘서타를 시작한 지 일주일 정도 됐는데, 오전에는 확실히 머릿속이 조용해지는 느낌이 있어요. 할 일을 하나씩 붙잡고 끝까지 가져가는 시간이 조금 늘었습니다.',
@@ -35,33 +36,11 @@ export default function CommunityPostPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-0">
-          <div className="items-center flex justify-between relative">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img
-                    src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd77b1743156ca690dcd7dbf0664fde91d06c07f9.svg?generation=1778677418382924&amp;alt=media"
-                    className="block size-full"
-                    alt=""
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="absolute left-1/2 -translate-x-1/2 font-bold text-base">글 상세</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img
-                    src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg?generation=1778677418394861&amp;alt=media"
-                    className="block size-full"
-                    alt=""
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          title="글 상세"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd77b1743156ca690dcd7dbf0664fde91d06c07f9.svg?generation=1778677418382924&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg?generation=1778677418394861&alt=media" />}
+        />
 
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-0 pt-0 pr-4 pb-20 pl-4">
           <div className="items-center flex mb-[10px] gap-1.5">

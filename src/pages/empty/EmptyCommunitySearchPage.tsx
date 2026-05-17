@@ -2,6 +2,7 @@ import React from 'react';
 import logoImage from '@src/imports/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 export default function EmptyCommunitySearchPage() {
   return (
@@ -10,18 +11,10 @@ export default function EmptyCommunitySearchPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg?generation=1778677419299929&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">경험 공유</div>
-          </div>
-        </div>
+        <TopBar
+          title="경험 공유"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg?generation=1778677419299929&alt=media" />}
+        />
         <div className="pt-0 pr-4 pb-2 pl-4">
           <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] gap-2 p-[10px] rounded-[0.875rem]">
             <div className="overflow-hidden w-[14px] h-[14px]">

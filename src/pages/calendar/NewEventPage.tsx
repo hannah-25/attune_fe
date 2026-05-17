@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatFullDateTime } from '@/lib/date';
+import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
 const now = new Date();
 const startDefault = formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0));
@@ -12,25 +13,17 @@ export default function NewEventPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
+        <TopBar
+          title="새 일정"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd79c2e541070847ef9bbaaa2ba1496f075cbb058.svg?generation=1778677416688876&alt=media" />}
+          right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fd79c2e541070847ef9bbaaa2ba1496f075cbb058.svg?generation=1778677416688876&amp;alt=media" className="block size-full" />
-                </div>
+                <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">저장</div>
               </div>
             </div>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">새 일정</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">
-                  저장
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          }
+        />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <input
