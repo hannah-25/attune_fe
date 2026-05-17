@@ -1,4 +1,5 @@
 import React from 'react';
+import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
 const EVENT_DETAIL = {
   category: '상담',
@@ -17,25 +18,10 @@ export default function EventDetailPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg?generation=1778677416599644&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base"></div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F475b6a4f82b963544d4c155b022adc602cc4d023.svg?generation=1778677416696966&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg?generation=1778677416599644&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F475b6a4f82b963544d4c155b022adc602cc4d023.svg?generation=1778677416696966&alt=media" />}
+        />
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
           <div className="items-center flex mb-[14px] gap-2">
             <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">

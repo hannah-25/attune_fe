@@ -2,6 +2,7 @@ import React from 'react';
 import logoImage from '@src/imports/emotion2.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 export default function EmptyJournalPage() {
   return (
@@ -10,25 +11,11 @@ export default function EmptyJournalPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa661aedb84aa79c6a3b2e710ca7b9f1064b5aea7.svg?generation=1778677418544330&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">오늘 일지</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F55c9c7102106ee9fe76c6f15a70c64598dab46d3.svg?generation=1778677418557065&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          title="오늘 일지"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa661aedb84aa79c6a3b2e710ca7b9f1064b5aea7.svg?generation=1778677418544330&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F55c9c7102106ee9fe76c6f15a70c64598dab46d3.svg?generation=1778677418557065&alt=media" />}
+        />
         <ScrollArea className="items-center flex flex-col justify-center text-center gap-4 pt-5 px-6">
           <div className="flex items-center justify-center text-center w-28 h-28 mb-1">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />

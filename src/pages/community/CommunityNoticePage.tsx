@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 export default function CommunityNoticePage() {
   return (
@@ -9,25 +10,11 @@ export default function CommunityNoticePage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6d07fc7b7d550d443283422ac15fea3de29aaa18.svg?generation=1778677417828465&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">공지사항</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg?generation=1778677417852825&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          title="공지사항"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6d07fc7b7d550d443283422ac15fea3de29aaa18.svg?generation=1778677417828465&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg?generation=1778677417852825&alt=media" />}
+        />
         <ScrollArea className="flex flex-col gap-2">
           <div className="items-center flex bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
             <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">

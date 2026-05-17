@@ -174,24 +174,14 @@ export function MedicationSection() {
                       </div>
                     </div>
                     <div className="font-bold text-sm">약 추가</div>
-                    <div className="items-center flex justify-center w-11 h-11">
-                      <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="font-bold text-purple-500">
-                          저장
-                        </div>
+                    <div className="items-center flex justify-end min-w-11 h-11">
+                      <div className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl">
+                        저장하기
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">
-                  <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2 p-3 rounded-[1.125rem]">
-                    <div className="overflow-hidden w-[14px] h-[14px]">
-                      <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F617c79ed681b011cf58378b7ab214e9fffdccd9a.svg?generation=1778677415843289&amp;alt=media" className="block size-full" />
-                    </div>
-                    <div className="text-gray-600">
-                      약 이름 또는 성분
-                    </div>
-                  </div>
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
                     <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
                       <div className="font-semibold w-[84px] text-gray-600">약 이름</div>
@@ -229,18 +219,35 @@ export function MedicationSection() {
                       </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="font-bold mb-[6px] text-gray-600">
-                      요일 반복
+                  <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+                    <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
+                      <div className="grow basis-[0%]">
+                        <div className="font-semibold text-gray-700">요일 반복</div>
+                        <div className="mt-1 text-gray-500 text-xs">선택한 요일마다 알려드려요</div>
+                      </div>
+                      <div className="relative w-[46px] h-[26px] bg-purple-500 shrink-0 rounded-[0.8125rem]">
+                        <div className="absolute w-[22px] h-[22px] left-[22px] top-0.5 bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.6875rem]"></div>
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">월</div>
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">화</div>
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">수</div>
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">목</div>
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">금</div>
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-50 text-gray-600 basis-[0%] rounded-xl">토</div>
-                      <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-50 text-gray-600 basis-[0%] rounded-xl">일</div>
+                    <div className="pt-3 pr-[10px] pb-3 pl-[10px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
+                      <div className="flex gap-1">
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">월</div>
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">화</div>
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">수</div>
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">목</div>
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-300 text-white basis-[0%] rounded-xl">금</div>
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-50 text-gray-600 basis-[0%] rounded-xl">토</div>
+                        <div className="items-center flex grow font-bold justify-center h-[38px] bg-purple-50 text-gray-600 basis-[0%] rounded-xl">일</div>
+                      </div>
+                    </div>
+                    <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
+                      <div className="grow basis-[0%]">
+                        <div className="font-semibold text-gray-700">휴일에 복용</div>
+                        <div className="mt-1 text-gray-500 text-xs">공휴일에는 알림을 쉬어요</div>
+                      </div>
+                      <div className="relative w-[46px] h-[26px] bg-gray-200 shrink-0 rounded-[0.8125rem]">
+                        <div className="absolute w-[22px] h-[22px] left-0.5 top-0.5 bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.6875rem]"></div>
+                      </div>
                     </div>
                   </div>
                   <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">

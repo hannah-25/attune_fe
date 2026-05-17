@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { formatUpcomingDateTime } from '@/lib/date';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 const SUMMARY_STATS = { adherence: '88%', emotion: '6.2', mistakes: '7회' };
 const SUMMARY_TEXT = '아침 약 복용 후 집중력이 높아지는 패턴이 보여요. 오후 4시 이후 약효 저하와 수면 어려움도 꾸준히 기록되었어요.';
@@ -21,25 +22,17 @@ export default function CounselingPreparePage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
+        <TopBar
+          title="상담 전 준비"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa7a5bb7f1924955f362f7eae70db182206a69aa8.svg?generation=1778677417620184&alt=media" />}
+          right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fa7a5bb7f1924955f362f7eae70db182206a69aa8.svg?generation=1778677417620184&amp;alt=media" className="block size-full" />
-                </div>
+                <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">저장</div>
               </div>
             </div>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">상담 전 준비</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">
-                  저장
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          }
+        />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="font-bold text-gray-600 text-xs">

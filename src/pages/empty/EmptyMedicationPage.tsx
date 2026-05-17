@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 export default function EmptyMedicationPage() {
   return (
@@ -9,25 +10,11 @@ export default function EmptyMedicationPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff921e8c85af86e51ecbc0dd728facb51bb4127c0.svg?generation=1778677418726204&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">복용 중인 약</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc1b04de901d7982dcd4a65a2b9d530c8ba5d7dbd.svg?generation=1778677418781770&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          title="복용 중인 약"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff921e8c85af86e51ecbc0dd728facb51bb4127c0.svg?generation=1778677418726204&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc1b04de901d7982dcd4a65a2b9d530c8ba5d7dbd.svg?generation=1778677418781770&alt=media" />}
+        />
         <ScrollArea className="flex flex-col gap-[14px] pt-3 px-5">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
             <div className="items-center flex gap-3">

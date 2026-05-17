@@ -1,4 +1,5 @@
 import React from 'react';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 export default function ReportMonthlyDetailPage() {
   return (
@@ -7,25 +8,11 @@ export default function ReportMonthlyDetailPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fba3e0bc210beb20976686007d14c25ffe98c31e4.svg?generation=1778677417378325&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">2026년 4월</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe1dfe1879d41815105c23cae3a7327f7b95876ae.svg?generation=1778677417378410&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopBar
+          title="2026년 4월"
+          left={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fba3e0bc210beb20976686007d14c25ffe98c31e4.svg?generation=1778677417378325&alt=media" />}
+          right={<HeaderIconButton src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fe1dfe1879d41815105c23cae3a7327f7b95876ae.svg?generation=1778677417378410&alt=media" />}
+        />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
             <div className="font-bold text-gray-600">
