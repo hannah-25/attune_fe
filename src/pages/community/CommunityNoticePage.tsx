@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function CommunityNoticePage() {
@@ -27,7 +28,7 @@ export default function CommunityNoticePage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-0 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-2">
           <div className="items-center flex bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
             <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
               <div className="overflow-hidden w-3 h-3">
@@ -66,7 +67,7 @@ export default function CommunityNoticePage() {
             <div className="font-semibold">v2.0 정식 출시 — 주간 리포트 추가</div>
             <div className="mt-1 text-gray-600 text-xs">4월 15일</div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="커뮤니티" />
       </div>
     </div>

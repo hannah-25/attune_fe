@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function CalendarMainPage() {
@@ -182,7 +183,7 @@ export default function CalendarMainPage() {
           </div>
         </div>
         <div className="h-px mt-3 ml-[16px] mr-[16px] bg-purple-50"></div>
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-3 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="pt-3">
           <div className="font-bold mb-2">
             5월 13일 · 3개 일정
           </div>
@@ -210,7 +211,7 @@ export default function CalendarMainPage() {
             </div>
             <div className="font-bold text-gray-600 text-xs">상담</div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="캘린더" />
       </div>
     </div>

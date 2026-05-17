@@ -23,7 +23,7 @@
 ## Typography
 
 - 기본 폰트는 `NanumSquare`를 사용한다.
-- 상단 타이틀은 `text-sm font-bold`를 기본으로 한다.
+- 상단 타이틀은 `text-base font-bold`를 기본으로 하고, 항상 화면 중앙에 둔다.
 - 보조 설명은 `text-xs text-gray-600 leading-relaxed` 또는 `text-gray-500` 계열로 낮춘다.
 - 상태 화면의 대상 정보는 `text-xl font-semibold text-gray-900`처럼 명확하게 강조한다.
 - letter spacing은 기본값을 유지하고, 장식적 타이포그래피를 피한다.

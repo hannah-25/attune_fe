@@ -1,4 +1,6 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
+import { TabBar } from '@/components/TabBar';
 
 export default function JournalTagsPage() {
   return (
@@ -26,14 +28,14 @@ export default function JournalTagsPage() {
             </div>
           </div>
         </div>
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-6 pl-4">
+        <ScrollArea className="pt-0">
           <div className="flex gap-1 pt-1 pr-0 pb-3 pl-0">
-            <div className="grow font-bold text-center bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">감정·증상</div>
-            <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">부작용</div>
-            <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">업무</div>
-            <div className="grow font-bold text-center text-gray-600 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">목표</div>
+            <div className="grow font-bold text-center text-purple-700 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">감정·증상</div>
+            <div className="grow font-medium text-center text-gray-400 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">부작용</div>
+            <div className="grow font-medium text-center text-gray-400 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">업무</div>
+            <div className="grow font-medium text-center text-gray-400 basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[0.875rem]">목표</div>
           </div>
-          <div className="font-bold text-gray-600 text-xs pt-1 pr-1 pb-1.5 pl-1">
+          <div className="font-bold text-gray-800 text-xs pt-1 pr-1 pb-1.5 pl-1">
             활성 (8)
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
@@ -43,7 +45,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -53,7 +55,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -63,7 +65,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -73,7 +75,7 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
@@ -83,12 +85,12 @@ export default function JournalTagsPage() {
               <div className="text-gray-600 text-xs">
                 3월부터
               </div>
-              <div className="font-bold text-gray-400">
+              <div className="font-bold text-gray-500">
                 비활성
               </div>
             </div>
           </div>
-          <div className="font-bold text-gray-600 text-xs pt-4 pr-1 pb-1.5 pl-1">
+          <div className="font-bold text-gray-800 text-xs pt-4 pr-1 pb-1.5 pl-1">
             비활성 (2)
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
@@ -107,13 +109,14 @@ export default function JournalTagsPage() {
               </div>
             </div>
           </div>
-        </div>
-        <div className="items-center flex font-bold absolute h-[50px] right-4 bottom-6 bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem]">
+        </ScrollArea>
+        <div className="items-center flex font-bold absolute h-[50px] right-4 bottom-[92px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem]">
           <div className="overflow-hidden w-[14px] h-[14px]">
             <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg?generation=1778677415542195&alt=media" className="block size-full" />
           </div>
           <span className="block">새 태그</span>
         </div>
+        <TabBar active="일지" />
       </div>
     </div>
   );

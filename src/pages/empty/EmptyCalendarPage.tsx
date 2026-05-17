@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function EmptyCalendarPage() {
@@ -25,7 +26,7 @@ export default function EmptyCalendarPage() {
             </div>
           </div>
         </div>
-        <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] gap-[14px] pt-5 pr-6 pb-[100px] pl-6">
+        <ScrollArea className="items-center flex flex-col justify-center text-center gap-[14px] pt-5 px-6">
           <div className="relative text-center w-[180px] pt-4 pr-[10px] pb-[14px] pl-[10px]">
             <div className="items-center flex text-center mb-[10px] gap-2.5 opacity-[0.5]">
               <div className="text-center w-[30px] h-2 bg-purple-50 rounded-sm"></div>
@@ -57,7 +58,7 @@ export default function EmptyCalendarPage() {
           <div className="items-center flex font-bold justify-center text-center h-11 border border-gray-300 text-gray-700 text-sm tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.375rem]">
             <span className="block text-center">Google 캘린더 연동하기</span>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="캘린더" />
       </div>
     </div>

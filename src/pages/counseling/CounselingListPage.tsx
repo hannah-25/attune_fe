@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function CounselingListPage() {
@@ -27,7 +28,7 @@ export default function CounselingListPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-3">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
             <div className="font-bold text-gray-600 text-xs">
               다음 상담까지
@@ -83,7 +84,7 @@ export default function CounselingListPage() {
             <div className="font-semibold">청담심리상담센터</div>
             <div className="mt-1 text-gray-600">초기 상담</div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="상담" variant="counseling" />
       </div>
     </div>

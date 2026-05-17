@@ -53,29 +53,20 @@ export function HeaderIconButton({ alt = '', src }: HeaderIconButtonProps) {
 export function TopBar({
   actionAlt,
   actionIconSrc,
-  centered = false,
   left,
-  reserveLeft,
-  reserveRight,
   right,
   showBack = false,
   title,
 }: TopBarProps) {
-  const shouldReserveLeft = reserveLeft ?? centered;
-  const leftContent = left ?? (showBack ? <BackButton /> : shouldReserveLeft ? <div className="w-11 h-11" /> : null);
-  const rightContent = right ?? (actionIconSrc ? <HeaderIconButton src={actionIconSrc} alt={actionAlt} /> : null);
-  const shouldReserveRight = reserveRight ?? centered;
+  const leftContent = left ?? (showBack ? <BackButton /> : <div className="w-11 h-11" />);
+  const rightContent = right ?? (actionIconSrc ? <HeaderIconButton src={actionIconSrc} alt={actionAlt} /> : <div className="w-11 h-11" />);
 
   return (
-    <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-      <div className={`items-center flex justify-between${centered ? ' relative' : ''}`}>
+    <div className="flex flex-col gap-1 pt-1 pr-3 pb-3 pl-3 shrink-[0]">
+      <div className="items-center flex justify-between relative">
         {leftContent}
-        {centered ? (
-          <div className="absolute left-[50%] translate-x-[-50%] font-bold text-sm">{title}</div>
-        ) : (
-          <div className="font-bold text-sm">{title}</div>
-        )}
-        {rightContent ?? (shouldReserveRight ? <div className="w-11 h-11" /> : null)}
+        <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">{title}</div>
+        {rightContent}
       </div>
     </div>
   );

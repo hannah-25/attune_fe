@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImage from '@src/imports/logo.png';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function HomeListPage() {
@@ -25,7 +26,7 @@ export default function HomeListPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-1 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-2 pt-1">
           <div className="items-center flex justify-between px-1">
             <div className="font-semibold text-sm text-gray-800">주간 통계</div>
             <button className="text-xs text-gray-400">전체보기</button>
@@ -120,7 +121,7 @@ export default function HomeListPage() {
               <path d="M9 18l6-6-6-6"/>
             </svg>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="홈" />
       </div>
     </div>

@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logoImage from '@src/imports/logo.png';
+import { Camera, Check, Pencil, X } from 'lucide-react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
@@ -7,6 +9,28 @@ const settingsIcon =
   'https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F3ee2c90fb8f924ced4748922d30e751a3ae3ffdd.svg?generation=1778677419532828&alt=media';
 
 export default function MyPage() {
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [nickname, setNickname] = useState('봄날의 햇살');
+  const [draftNickname, setDraftNickname] = useState(nickname);
+
+  const startProfileEdit = () => {
+    setDraftNickname(nickname);
+    setIsEditingProfile(true);
+  };
+
+  const saveProfile = () => {
+    const nextNickname = draftNickname.trim();
+    if (nextNickname) {
+      setNickname(nextNickname);
+    }
+    setIsEditingProfile(false);
+  };
+
+  const cancelProfileEdit = () => {
+    setDraftNickname(nickname);
+    setIsEditingProfile(false);
+  };
+
   return (
     <div
       className="w-full h-dvh bg-gray-100  text-sm flex flex-col"
@@ -14,21 +38,62 @@ export default function MyPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title="" right={<HeaderIconButton src={settingsIcon} />} />
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
+        <ScrollArea>
           <div className="text-center pt-1 pr-0 pb-5 pl-0">
-            <div className="inline-block relative text-center" style={{ textDecoration: "none" }}>
+            <button
+              type="button"
+              aria-label={isEditingProfile ? "프로필 사진 변경" : "프로필 편집"}
+              onClick={() => {
+                if (!isEditingProfile) {
+                  startProfileEdit();
+                }
+              }}
+              className="inline-block relative text-center cursor-pointer bg-transparent border-0 p-0"
+              style={{ textDecoration: "none" }}
+            >
               <div className="flex items-center justify-center text-center w-24 h-24">
                 <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
               </div>
-              <div className="items-center flex justify-center absolute text-center w-7 h-7 right-[-4px] bottom-[-2px] bg-white shadow-[rgba(0,0,0,0.1)_0px_2px_6px_0px] rounded-[0.875rem]">
-                <div className="overflow-hidden text-center w-3 h-3">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc07db98ae24847912ff0ceb2a2386acca98f180d.svg?generation=1778677419550599&amp;alt=media" className="block size-full" />
-                </div>
+              <div className="items-center flex justify-center absolute text-center w-7 h-7 right-[-4px] bottom-[-2px] bg-white shadow-[rgba(0,0,0,0.12)_0px_2px_6px_0px] ring-1 ring-gray-200 rounded-[0.875rem]">
+                {isEditingProfile ? (
+                  <Camera className="w-3.5 h-3.5 text-gray-500" strokeWidth={2.25} aria-hidden="true" />
+                ) : (
+                  <Pencil className="w-3.5 h-3.5 text-gray-500" strokeWidth={2.25} aria-hidden="true" />
+                )}
               </div>
-            </div>
-            <div className="font-extrabold text-center mt-3 text-2xl" style={{ fontFamily: "NanumSquare, system-ui" }}>
-              <span className="text-center">봄날의햇살</span>
-            </div>
+            </button>
+            {isEditingProfile ? (
+              <div className="flex items-center justify-center mt-3 gap-1.5">
+                <input
+                  type="text"
+                  value={draftNickname}
+                  onChange={(event) => setDraftNickname(event.target.value)}
+                  className="w-[150px] h-10 bg-white border border-purple-200 shadow-[rgba(60,40,90,0.05)_0px_2px_8px_0px] text-center text-lg font-extrabold px-3 rounded-xl outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                  style={{ fontFamily: "NanumSquare, system-ui" }}
+                  aria-label="닉네임"
+                />
+                <button
+                  type="button"
+                  onClick={cancelProfileEdit}
+                  className="items-center flex justify-center w-9 h-9 bg-white border border-gray-200 text-gray-500 shadow-[rgba(60,40,90,0.05)_0px_2px_8px_0px] rounded-full"
+                  aria-label="프로필 편집 취소"
+                >
+                  <X className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={saveProfile}
+                  className="items-center flex justify-center w-9 h-9 bg-purple-500 text-white shadow-[rgba(60,40,90,0.12)_0px_3px_10px_0px] rounded-full"
+                  aria-label="프로필 저장"
+                >
+                  <Check className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              <div className="font-extrabold text-center mt-3 text-2xl" style={{ fontFamily: "NanumSquare, system-ui" }}>
+                <span className="text-center">{nickname}</span>
+              </div>
+            )}
             <div className="text-center mt-[2px] text-gray-600">
               <span className="text-center">main@gmail.com</span>
             </div>
@@ -45,12 +110,6 @@ export default function MyPage() {
             계정
           </div>
           <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-              <div className="grow font-semibold basis-[0%]">프로필 수정</div>
-              <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F56e87330bfd7b831c9357a94f078bc353a973f2d.svg?generation=1778677419591051&amp;alt=media" className="block size-full" />
-              </div>
-            </div>
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">소셜 연동</div>
               <div className="mr-[6px] text-gray-600">Google · Apple</div>
@@ -71,7 +130,6 @@ export default function MyPage() {
           <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
               <div className="grow font-semibold basis-[0%]">알림</div>
-              <div className="mr-[6px] text-gray-600">복용·리포트</div>
               <div className="overflow-hidden w-[11px] h-[11px]">
                 <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Ff95f43ee67a6cbe2ddde07b8c0f9b11d04de3472.svg?generation=1778677419625273&amp;alt=media" className="block size-full" />
               </div>
@@ -114,20 +172,17 @@ export default function MyPage() {
                 <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F5061bb77ab260e10fa693ee1c9a877a05563a33d.svg?generation=1778677419722542&amp;alt=media" className="block size-full" />
               </div>
             </div>
-            <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-              <div className="grow font-semibold basis-[0%]">이용약관</div>
-              <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb0a0a8889758f34e4d6f165c0d823bda195d224f.svg?generation=1778677419745312&amp;alt=media" className="block size-full" />
-              </div>
-            </div>
-            <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
+            <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
               <div className="grow font-semibold basis-[0%]">로그아웃</div>
             </div>
-            <div className="items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-              <div className="grow font-semibold text-red-500 basis-[0%]">회원 탈퇴</div>
-            </div>
           </div>
-        </div>
+          <button
+            type="button"
+            className="block mt-3 ml-1 bg-transparent border-0 p-0 text-xs font-medium text-gray-400 underline underline-offset-2"
+          >
+            회원 탈퇴
+          </button>
+        </ScrollArea>
         <TabBar />
       </div>
     </div>

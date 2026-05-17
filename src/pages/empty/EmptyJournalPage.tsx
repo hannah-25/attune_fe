@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImage from '@src/imports/logo.png';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function EmptyJournalPage() {
@@ -28,7 +29,7 @@ export default function EmptyJournalPage() {
             </div>
           </div>
         </div>
-        <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] gap-4 pt-5 pr-6 pb-[100px] pl-6">
+        <ScrollArea className="items-center flex flex-col justify-center text-center gap-4 pt-5 px-6">
           <div className="flex items-center justify-center text-center w-28 h-28 mb-1">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
           </div>
@@ -49,7 +50,7 @@ export default function EmptyJournalPage() {
           <div className="text-center text-gray-500 text-xs">
             <span className="text-center">걸리는 시간 · 평균 18초</span>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="일지" />
       </div>
     </div>

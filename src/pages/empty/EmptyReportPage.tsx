@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function EmptyReportPage() {
@@ -21,7 +22,7 @@ export default function EmptyReportPage() {
             <span className="block">D-4</span>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-3 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-3 pt-3">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
             <div className="items-center flex mb-2 gap-1.5">
               <div className="overflow-hidden w-[14px] h-[14px]">
@@ -126,7 +127,7 @@ export default function EmptyReportPage() {
           <div className="items-center flex font-bold justify-center w-full h-[50px] bg-purple-500 shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
             <span className="block">오늘 일지 마저 쓰기</span>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="홈" />
       </div>
     </div>

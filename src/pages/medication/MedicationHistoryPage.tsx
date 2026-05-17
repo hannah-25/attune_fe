@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function MedicationHistoryPage() {
@@ -33,7 +34,7 @@ export default function MedicationHistoryPage() {
           <div className="items-center flex grow font-bold justify-center h-[30px] bg-white basis-[0%] rounded-[0.9375rem]">3달</div>
           <div className="items-center flex grow font-bold justify-center h-[30px] bg-white basis-[0%] rounded-[0.9375rem]">직접</div>
         </div>
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-[100px] pl-4">
+        <ScrollArea>
           <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
             <div className="flex justify-around">
               <div className="text-center">
@@ -146,7 +147,7 @@ export default function MedicationHistoryPage() {
               </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="약" />
       </div>
     </div>

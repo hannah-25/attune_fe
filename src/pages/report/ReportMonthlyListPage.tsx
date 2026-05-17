@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function ReportMonthlyListPage() {
@@ -27,7 +28,7 @@ export default function ReportMonthlyListPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2.5 pt-0 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-2.5">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex gap-2.5">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[0.875rem]">
@@ -95,7 +96,7 @@ export default function ReportMonthlyListPage() {
               </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="리포트" variant="report" />
       </div>
     </div>
