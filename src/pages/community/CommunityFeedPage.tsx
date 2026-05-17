@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function CommunityFeedPage() {
@@ -34,7 +35,7 @@ export default function CommunityFeedPage() {
           <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">아데랄</div>
           <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">일반</div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2.5 pt-1 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-2.5 pt-1">
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
             <div className="items-center flex mb-[6px] gap-1.5">
               <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">콘서타</div>
@@ -150,7 +151,7 @@ export default function CommunityFeedPage() {
               </span>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <div className="items-center flex font-bold absolute h-12 right-4 bottom-[88px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] z-[25] rounded-3xl">
           <div className="overflow-hidden w-[14px] h-[14px]">
             <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fefb65dd04b728dd2a8742de28409d0e279ffaefe.svg?generation=1778677418296855&amp;alt=media" className="block size-full" />

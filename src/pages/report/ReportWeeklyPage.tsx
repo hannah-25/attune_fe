@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function ReportWeeklyPage() {
@@ -26,7 +27,7 @@ export default function ReportWeeklyPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-2 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-3 pt-2">
           <div className="grid-cols-2 grid gap-2">
             <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl" style={{"gridArea":"1 / 1 / 2 / 2"}}>
               <div className="font-bold text-gray-600 text-xs">복용률</div>
@@ -133,7 +134,7 @@ export default function ReportWeeklyPage() {
               </div>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="리포트" variant="report" />
       </div>
     </div>

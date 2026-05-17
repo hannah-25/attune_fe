@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function EmptyMedicationPage() {
@@ -27,7 +28,7 @@ export default function EmptyMedicationPage() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-3 pr-5 pb-[100px] pl-5">
+        <ScrollArea className="flex flex-col gap-[14px] pt-3 px-5">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
             <div className="items-center flex gap-3">
               <div className="items-center flex justify-center w-11 h-11 bg-white rounded-[1.375rem]">
@@ -86,7 +87,7 @@ export default function EmptyMedicationPage() {
             </b>
             <span className="text-center">도 가능해요</span>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="약" />
       </div>
     </div>

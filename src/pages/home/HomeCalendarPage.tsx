@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function HomeCalendarPage() {
@@ -62,7 +63,7 @@ export default function HomeCalendarPage() {
             <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 rounded-xs"></div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2.5 pt-3 pr-4 pb-[100px] pl-4">
+        <ScrollArea className="flex flex-col gap-2.5 pt-3">
           <div className="items-center flex gap-3">
             <div className="font-semibold w-[38px] text-gray-600 text-xs">08:00</div>
             <div className="w-2 h-2 bg-purple-300 shrink-[0] rounded-sm"></div>
@@ -111,7 +112,7 @@ export default function HomeCalendarPage() {
               저녁 식사 전 1번 더 기록해보세요
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="캘린더" />
       </div>
     </div>

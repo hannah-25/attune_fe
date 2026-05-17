@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Check, Plus, X } from 'lucide-react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 type Tone = 'purple' | 'orange' | 'blue';
@@ -333,7 +334,7 @@ export default function JournalFullPage() {
           </div>
         </div>
 
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-10 pt-2 pr-4 pb-[104px] pl-4">
+        <ScrollArea className="flex flex-col gap-10 pt-2">
           <section>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
@@ -421,11 +422,11 @@ export default function JournalFullPage() {
                 onBlur={() => setMemoFocused(false)}
                 placeholder="메모를 입력하세요"
                 rows={4}
-                className="w-full text-sm text-gray-700 leading-relaxed resize-none outline-none placeholder:text-gray-300"
+                className="w-full text-base text-gray-900 leading-relaxed resize-none outline-none placeholder:text-gray-300"
               />
             </div>
           </div>
-        </div>
+        </ScrollArea>
 
         <TabBar active="일지" />
       </div>

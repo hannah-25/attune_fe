@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 type DotColor = 'purple' | 'orange' | 'blue' | 'green';
@@ -76,115 +77,115 @@ export default function JournalCalendarPage() {
           </div>
         </div>
 
-        {/* 월 네비게이션 + 뷰 전환 */}
-        <div className="pt-0 pr-4 pb-1 pl-4">
-          <div className="items-center flex mb-2 gap-2">
-            <div className="overflow-hidden w-[14px] h-[14px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg?generation=1778677415378610&alt=media" className="block size-full" />
-            </div>
-            <div className="font-bold text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-              2026년 5월
-            </div>
-            <div className="overflow-hidden w-[14px] h-[14px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7a6542fea4feea5b0aefcb93656c6349f537576b.svg?generation=1778677415401373&alt=media" className="block size-full" />
-            </div>
-            <div className="grow basis-[0%]" />
-            {/* 선택됨: 월 */}
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[9px] rounded-full">
-              <Check className="w-[10px] h-[10px] shrink-0" strokeWidth={3} />
-              <span className="block">월</span>
-            </div>
-            {/* 비선택: 주 */}
-            <div className="items-center flex font-semibold whitespace-nowrap text-gray-500 text-xs tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-full">
-              <span className="block">주</span>
-            </div>
-          </div>
-        </div>
+        {/* 스크롤 영역 전체 */}
+        <ScrollArea>
 
-        {/* 캘린더 */}
-        <div className="pt-0 pr-3 pb-0 pl-3">
-          {/* 요일 헤더 */}
-          <div className="grid-cols-7 grid mb-[6px] gap-1">
-            {DOW.map((d, i) => (
-              <div
-                key={d}
-                className="font-bold text-center text-gray-600 text-xs"
-                style={{ gridArea: `1 / ${i + 1} / 2 / ${i + 2}` }}
-              >
-                {d}
+          {/* 월 네비게이션 + 뷰 전환 */}
+          <div className="pt-0 pr-4 pb-1 pl-4">
+            <div className="items-center flex mb-2 gap-2">
+              <div className="overflow-hidden w-[14px] h-[14px]">
+                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg?generation=1778677415378610&alt=media" className="block size-full" />
               </div>
-            ))}
+              <div className="font-bold text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                2026년 5월
+              </div>
+              <div className="overflow-hidden w-[14px] h-[14px]">
+                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7a6542fea4feea5b0aefcb93656c6349f537576b.svg?generation=1778677415401373&alt=media" className="block size-full" />
+              </div>
+              <div className="grow basis-[0%]" />
+              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border border-[rgb(185,166,255)] text-purple-800 text-xs gap-1 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[9px] rounded-full">
+                <Check className="w-[10px] h-[10px] shrink-0" strokeWidth={3} />
+                <span className="block">월</span>
+              </div>
+              <div className="items-center flex font-semibold whitespace-nowrap text-gray-500 text-xs tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-full">
+                <span className="block">주</span>
+              </div>
+            </div>
           </div>
 
-          {/* 날짜 셀 */}
-          <div className="grid-cols-7 grid gap-1">
-            {ROWS.flatMap(row =>
-              COLS.map(col => {
-                const day = getDay(row, col);
-                const gridArea = `${row} / ${col} / ${row + 1} / ${col + 1}`;
+          {/* 캘린더 */}
+          <div className="pt-0 pr-3 pb-0 pl-3">
+            <div className="grid-cols-7 grid mb-[6px] gap-1">
+              {DOW.map((d, i) => (
+                <div
+                  key={d}
+                  className="font-bold text-center text-gray-600 text-xs"
+                  style={{ gridArea: `1 / ${i + 1} / 2 / ${i + 2}` }}
+                >
+                  {d}
+                </div>
+              ))}
+            </div>
+            <div className="grid-cols-7 grid gap-1">
+              {ROWS.flatMap(row =>
+                COLS.map(col => {
+                  const day = getDay(row, col);
+                  const gridArea = `${row} / ${col} / ${row + 1} / ${col + 1}`;
 
-                if (day === null) {
-                  return <div key={`empty-${row}-${col}`} className="aspect-square rounded-xl" style={{ gridArea }} />;
-                }
+                  if (day === null) {
+                    return <div key={`empty-${row}-${col}`} className="aspect-square rounded-xl" style={{ gridArea }} />;
+                  }
 
-                if (day === TODAY) {
+                  if (day === TODAY) {
+                    return (
+                      <div
+                        key={day}
+                        className="items-center aspect-square flex font-extrabold justify-center relative bg-[rgb(31,27,46)] text-white rounded-xl"
+                        style={{ gridArea }}
+                      >
+                        {day}
+                      </div>
+                    );
+                  }
+
+                  const records = dayRecords[day] ?? [];
                   return (
                     <div
                       key={day}
-                      className="items-center aspect-square flex font-extrabold justify-center relative bg-[rgb(31,27,46)] text-white rounded-xl"
+                      className="items-center aspect-square flex font-semibold justify-center relative rounded-xl"
                       style={{ gridArea }}
                     >
                       {day}
+                      {records.length > 0 && (
+                        <div className="absolute flex left-[50%] bottom-[3px] translate-x-[-50%] gap-[2px]">
+                          {records.map((color, i) => (
+                            <div key={i} className={`w-1 h-1 rounded-full ${dotColorClass[color]}`} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
-                }
+                })
+              )}
+            </div>
+          </div>
 
-                const records = dayRecords[day] ?? [];
-                return (
-                  <div
-                    key={day}
-                    className="items-center aspect-square flex font-semibold justify-center relative rounded-xl"
-                    style={{ gridArea }}
-                  >
-                    {day}
-                    {records.length > 0 && (
-                      <div className="absolute flex left-[50%] bottom-[3px] translate-x-[-50%] gap-[2px]">
-                        {records.map((color, i) => (
-                          <div key={i} className={`w-1 h-1 rounded-full ${dotColorClass[color]}`} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
+          {/* 범례 */}
+          <div className="flex text-gray-500 text-xs gap-2.5 pt-4 pr-5 pb-1.5 pl-5">
+            <div className="items-center flex gap-1"><div className="w-2 h-2 bg-purple-500 rounded-full" />감정</div>
+            <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(255,140,80)] rounded-full" />부작용</div>
+            <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(80,140,220)] rounded-full" />업무</div>
+            <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(80,190,130)] rounded-full" />좋은 날</div>
           </div>
-        </div>
 
-        {/* 범례 */}
-        <div className="flex text-gray-500 text-xs gap-2.5 pt-4 pr-5 pb-1.5 pl-5">
-          <div className="items-center flex gap-1"><div className="w-2 h-2 bg-purple-500 rounded-full" />감정</div>
-          <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(255,140,80)] rounded-full" />부작용</div>
-          <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(80,140,220)] rounded-full" />업무</div>
-          <div className="items-center flex gap-1"><div className="w-2 h-2 bg-[rgb(80,190,130)] rounded-full" />좋은 날</div>
-        </div>
+          {/* 최근 기록 */}
+          <div className="pt-2 pr-4 pl-4">
+            <div className="font-bold mb-2 text-gray-900">최근 기록</div>
+            <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div className="text-xs text-gray-500">5/12 월</div>
+              <div className="font-semibold mt-[2px]">집중 어려움 · 두통 · 약속 잊음</div>
+            </div>
+            <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div className="text-xs text-gray-500">5/11 일</div>
+              <div className="font-semibold mt-[2px]">몰입 · 평온</div>
+            </div>
+            <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div className="text-xs text-gray-500">5/10 토</div>
+              <div className="font-semibold mt-[2px]">식욕 저하 · 무기력</div>
+            </div>
+          </div>
 
-        {/* 최근 기록 */}
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-2 pr-4 pb-[100px] pl-4">
-          <div className="font-bold mb-2 text-gray-900">최근 기록</div>
-          <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="text-xs text-gray-500">5/12 월</div>
-            <div className="font-semibold mt-[2px]">집중 어려움 · 두통 · 약속 잊음</div>
-          </div>
-          <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="text-xs text-gray-500">5/11 일</div>
-            <div className="font-semibold mt-[2px]">몰입 · 평온</div>
-          </div>
-          <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="text-xs text-gray-500">5/10 토</div>
-            <div className="font-semibold mt-[2px]">식욕 저하 · 무기력</div>
-          </div>
-        </div>
+        </ScrollArea>
 
         <TabBar active="일지" />
       </div>

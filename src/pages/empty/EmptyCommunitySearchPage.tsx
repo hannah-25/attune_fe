@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImage from '@src/imports/logo.png';
+import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function EmptyCommunitySearchPage() {
@@ -36,7 +37,7 @@ export default function EmptyCommunitySearchPage() {
             </div>
           </div>
         </div>
-        <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] gap-[14px] pt-5 pr-6 pb-[100px] pl-6">
+        <ScrollArea className="items-center flex flex-col justify-center text-center gap-[14px] pt-5 px-6">
           <div className="flex items-center justify-center text-center w-24 h-24">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
           </div>
@@ -66,7 +67,7 @@ export default function EmptyCommunitySearchPage() {
           <div className="items-center flex font-bold justify-center text-center h-11 text-sm tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.375rem]">
             <span className="block text-center">전체 글 둘러보기</span>
           </div>
-        </div>
+        </ScrollArea>
         <TabBar active="커뮤니티" />
       </div>
     </div>
