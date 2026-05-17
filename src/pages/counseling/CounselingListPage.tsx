@@ -39,34 +39,22 @@ export default function CounselingListPage() {
             지난 상담
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
-            <div className="items-center flex mb-[6px] gap-2">
+            <div className="mb-[6px]">
               <div className="font-bold text-gray-600">4월 16일 금</div>
-              <div className="grow basis-[0%]"></div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                <span className="block">완료</span>
-              </div>
             </div>
             <div className="font-semibold">청담심리상담센터</div>
             <div className="mt-1 text-gray-600">처방 유지 · 콘서타 18mg</div>
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
-            <div className="items-center flex mb-[6px] gap-2">
+            <div className="mb-[6px]">
               <div className="font-bold text-gray-600">3월 19일 금</div>
-              <div className="grow basis-[0%]"></div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                <span className="block">완료</span>
-              </div>
             </div>
             <div className="font-semibold">청담심리상담센터</div>
             <div className="mt-1 text-gray-600">용량 조정 18 → 27mg 검토</div>
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
-            <div className="items-center flex mb-[6px] gap-2">
+            <div className="mb-[6px]">
               <div className="font-bold text-gray-600">2월 20일 금</div>
-              <div className="grow basis-[0%]"></div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                <span className="block">완료</span>
-              </div>
             </div>
             <div className="font-semibold">청담심리상담센터</div>
             <div className="mt-1 text-gray-600">초기 상담</div>
