@@ -29,7 +29,7 @@ export default function CommunityNoticePage() {
           </div>
         </div>
         <ScrollArea className="flex flex-col gap-2">
-          <div className="items-center flex bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
+          <div className="items-center flex bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
             <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
               <div className="overflow-hidden w-3 h-3">
                 <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb29419fe5049084df816425a309c1fc382ccbb0e.svg?generation=1778677417885099&amp;alt=media" className="block size-full" />
@@ -47,6 +47,7 @@ export default function CommunityNoticePage() {
               <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg?generation=1778677417884149&amp;alt=media" className="block size-full" />
             </div>
           </div>
+          <div className="h-2" />
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="font-semibold">v2.1 업데이트 — 캘린더 연동 추가</div>
             <div className="mt-1 text-gray-600 text-xs">5월 10일</div>
@@ -66,6 +67,11 @@ export default function CommunityNoticePage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="font-semibold">v2.0 정식 출시 — 주간 리포트 추가</div>
             <div className="mt-1 text-gray-600 text-xs">4월 15일</div>
+          </div>
+          <div className="items-center flex justify-center gap-1.5 pt-2 pb-1">
+            <div className="w-[6px] h-[6px] bg-purple-500 rounded-full" />
+            <div className="w-[6px] h-[6px] bg-purple-100 rounded-full" />
+            <div className="w-[6px] h-[6px] bg-purple-100 rounded-full" />
           </div>
         </ScrollArea>
         <TabBar active="커뮤니티" />
