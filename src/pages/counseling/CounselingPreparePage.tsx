@@ -1,6 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { formatUpcomingDateTime } from '@/lib/date';
+
+const SUMMARY_STATS = { adherence: '88%', emotion: '6.2', mistakes: '7회' };
+const SUMMARY_TEXT = '아침 약 복용 후 집중력이 높아지는 패턴이 보여요. 오후 4시 이후 약효 저하와 수면 어려움도 꾸준히 기록되었어요.';
+const QUESTIONS = [
+  { text: '아침 식욕이 너무 없어요. 다른 약으로 바꿔야 할까요?', checked: true },
+  { text: '오후 4시 이후 약효가 빨리 떨어지는 느낌이에요', checked: true },
+  { text: '수면제와 함께 복용해도 괜찮을까요?', checked: false },
+];
+
+const nextAppointment = new Date();
+nextAppointment.setDate(nextAppointment.getDate() + 7);
+nextAppointment.setHours(14, 0, 0, 0);
 
 export default function CounselingPreparePage() {
+  const [goal, setGoal] = useState('');
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
@@ -29,7 +43,7 @@ export default function CounselingPreparePage() {
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="font-bold text-gray-600 text-xs">
-              5월 16일 금 14:00까지
+              {formatUpcomingDateTime(nextAppointment)}
             </div>
             <div className="font-extrabold mt-1 text-lg leading-[24.3px]" style={{ fontFamily: "NanumSquare, system-ui" }}>
               최근 2주, 이렇게 지냈어요
@@ -51,47 +65,38 @@ export default function CounselingPreparePage() {
             <div className="grid-cols-3 grid mb-[10px] gap-1.5">
               <div className="text-center bg-gray-100 p-[10px] rounded-xl" style={{ gridArea: "1 / 1 / 2 / 2" }}>
                 <div className="font-bold text-center text-gray-600 text-xs">복용</div>
-                <div className="font-extrabold text-center mt-[2px] text-base" style={{ fontFamily: "NanumSquare, system-ui" }}>88%</div>
+                <div className="font-extrabold text-center mt-[2px] text-base" style={{ fontFamily: "NanumSquare, system-ui" }}>{SUMMARY_STATS.adherence}</div>
               </div>
               <div className="text-center bg-gray-100 p-[10px] rounded-xl" style={{ gridArea: "1 / 2 / 2 / 3" }}>
                 <div className="font-bold text-center text-gray-600 text-xs">감정</div>
-                <div className="font-extrabold text-center mt-[2px] text-base" style={{ fontFamily: "NanumSquare, system-ui" }}>6.2</div>
+                <div className="font-extrabold text-center mt-[2px] text-base" style={{ fontFamily: "NanumSquare, system-ui" }}>{SUMMARY_STATS.emotion}</div>
               </div>
               <div className="text-center bg-gray-100 p-[10px] rounded-xl" style={{ gridArea: "1 / 3 / 2 / 4" }}>
                 <div className="font-bold text-center text-gray-600 text-xs">실수</div>
-                <div className="font-extrabold text-center mt-[2px] text-base" style={{ fontFamily: "NanumSquare, system-ui" }}>7회</div>
+                <div className="font-extrabold text-center mt-[2px] text-base" style={{ fontFamily: "NanumSquare, system-ui" }}>{SUMMARY_STATS.mistakes}</div>
               </div>
             </div>
-            <div className="flex flex-col gap-[7px]">
-              <div className="w-[90%] h-[6px] bg-purple-50 rounded-md"></div>
-              <div className="w-[60%] h-[6px] bg-purple-50 rounded-md"></div>
-            </div>
+            <div className="text-gray-700 text-sm leading-relaxed">{SUMMARY_TEXT}</div>
           </div>
           <div>
             <div className="font-bold mb-[6px] text-gray-600">
               의사에게 묻고 싶은 것
             </div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
-              <div className="items-start flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-                <div className="items-center flex justify-center w-[18px] h-[18px] mt-[2px] bg-purple-500 shrink-[0] rounded-[0.5625rem]">
-                  <div className="overflow-hidden w-[10px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fefc3d1b8024eaed0f9ca68769c039657e53d1ed2.svg?generation=1778677417694608&amp;alt=media" className="block size-full" />
+              {QUESTIONS.map((q, idx) => (
+                <div
+                  key={idx}
+                  className={`items-start flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${idx < QUESTIONS.length - 1 ? 'border-b' : ''}`}
+                  style={idx < QUESTIONS.length - 1 ? { borderBottomColor: "rgb(233, 228, 220)" } : undefined}
+                >
+                  <div className={`items-center flex justify-center w-[18px] h-[18px] mt-[2px] shrink-[0] rounded-[0.5625rem] ${q.checked ? 'bg-purple-500' : 'border border-gray-400'}`}>
+                    {q.checked && (
+                      <div className="w-[6px] h-[6px] bg-white rounded-full" />
+                    )}
                   </div>
+                  <div className="grow basis-[0%] leading-normal">{q.text}</div>
                 </div>
-                <div className="grow basis-[0%] leading-normal">아침 식욕이 너무 없어요. 다른 약으로 바 꿔야 할까요?</div>
-              </div>
-              <div className="items-start flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-                <div className="items-center flex justify-center w-[18px] h-[18px] mt-[2px] bg-purple-500 shrink-[0] rounded-[0.5625rem]">
-                  <div className="overflow-hidden w-[10px] h-[10px]">
-                    <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F37b80fb315a843d30ffa649f97fc8c6c3e826533.svg?generation=1778677417714583&amp;alt=media" className="block size-full" />
-                  </div>
-                </div>
-                <div className="grow basis-[0%] leading-normal">오후 4시 이후 약효가 빨리 떨어지는 느 낌이에요</div>
-              </div>
-              <div className="items-start flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px]">
-                <div className="items-center flex justify-center w-[18px] h-[18px] mt-[2px] border-gray-400 border shrink-[0] rounded-[0.5625rem]"></div>
-                <div className="grow basis-[0%] leading-normal">수면제와 함께 복용해도 괜찮을까요?</div>
-              </div>
+              ))}
               <div className="items-center flex text-gray-600 gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px]">
                 <div className="overflow-hidden w-3 h-3">
                   <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fc6af67f80f7ec4d48ab0b1984f79c9c47ed17688.svg?generation=1778677417709738&amp;alt=media" className="block size-full" />
@@ -105,10 +110,13 @@ export default function CounselingPreparePage() {
               다음 달 치료 목표
             </div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
-              <div className="flex flex-col gap-2.5">
-                <div className="w-[80%] h-2 bg-purple-50 rounded-lg"></div>
-                <div className="w-[40%] h-2 bg-purple-50 rounded-lg"></div>
-              </div>
+              <textarea
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="다음 달 치료 목표를 입력해 주세요"
+                rows={3}
+                className="w-full text-base text-gray-900 leading-relaxed bg-transparent outline-none resize-none placeholder:text-gray-300"
+              />
             </div>
           </div>
         </div>

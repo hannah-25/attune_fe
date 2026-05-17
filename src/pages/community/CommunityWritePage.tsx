@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function CommunityWritePage() {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
@@ -28,9 +31,6 @@ export default function CommunityWritePage() {
         </div>
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-2 pl-4">
           <div className="flex mb-3 gap-1.5">
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
-              <span className="block">콘서타</span>
-            </div>
             <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-700 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
               <span className="block">+ 카테고리</span>
             </div>
@@ -39,17 +39,20 @@ export default function CommunityWritePage() {
               <span className="block">익명</span>
             </div>
           </div>
-          <div className="font-bold mb-1 text-lg" style={{ fontFamily: "NanumSquare, system-ui" }}>
-            제목
-          </div>
-          <div className="w-[68%] h-[9px] bg-purple-50 rounded-[0.5625rem]"></div>
-          <div className="h-[14px]"></div>
-          <div className="flex flex-col gap-[9px]">
-            <div className="w-[92%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            <div className="w-[78%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            <div className="w-[85%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            <div className="w-[40%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-          </div>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="제목을 입력해 주세요"
+            className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-300 mb-3"
+            style={{ fontFamily: "NanumSquare, system-ui" }}
+          />
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="내용을 입력해 주세요"
+            rows={8}
+            className="w-full text-base text-gray-900 leading-relaxed bg-transparent outline-none resize-none placeholder:text-gray-300"
+          />
         </div>
       </div>
     </div>

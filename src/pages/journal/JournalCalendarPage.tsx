@@ -2,6 +2,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { formatMonthDay } from '@/lib/date';
 
 type DotColor = 'purple' | 'orange' | 'blue' | 'green';
 
@@ -36,12 +37,18 @@ const dayRecords: Record<number, DotColor[]> = {
   27: ['purple'],
 };
 
-const TODAY = 13;
+const TODAY_DATE = new Date();
+const TODAY = TODAY_DATE.getDate();
+const CURRENT_YEAR = TODAY_DATE.getFullYear();
+const CURRENT_MONTH = TODAY_DATE.getMonth(); // 0-indexed
 
-// 2026년 5월: 1일이 금요일(col 6). day = (row-1)*7 + col - 5
+const firstDayOfMonth = new Date(CURRENT_YEAR, CURRENT_MONTH, 1).getDay(); // 0=Sun
+const daysInMonth = new Date(CURRENT_YEAR, CURRENT_MONTH + 1, 0).getDate();
+
+// col offset from Sunday (col=1). startCol = firstDayOfMonth + 1
 function getDay(row: number, col: number): number | null {
-  const day = (row - 1) * 7 + col - 5;
-  return day >= 1 && day <= 31 ? day : null;
+  const day = (row - 1) * 7 + col - firstDayOfMonth;
+  return day >= 1 && day <= daysInMonth ? day : null;
 }
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
@@ -87,7 +94,7 @@ export default function JournalCalendarPage() {
                 <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fdc481ce5ba4d58b23a7460e5c99b3dfedea9c82a.svg?generation=1778677415378610&alt=media" className="block size-full" />
               </div>
               <div className="font-bold text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                2026년 5월
+                {CURRENT_YEAR}년 {CURRENT_MONTH + 1}월
               </div>
               <div className="overflow-hidden w-[14px] h-[14px]">
                 <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F7a6542fea4feea5b0aefcb93656c6349f537576b.svg?generation=1778677415401373&alt=media" className="block size-full" />
@@ -171,18 +178,19 @@ export default function JournalCalendarPage() {
           {/* 최근 기록 */}
           <div className="pt-2 pr-4 pl-4">
             <div className="font-bold mb-2 text-gray-900">최근 기록</div>
-            <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-              <div className="text-xs text-gray-500">5/12 월</div>
-              <div className="font-semibold mt-[2px]">집중 어려움 · 두통 · 약속 잊음</div>
-            </div>
-            <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-              <div className="text-xs text-gray-500">5/11 일</div>
-              <div className="font-semibold mt-[2px]">몰입 · 평온</div>
-            </div>
-            <div className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-              <div className="text-xs text-gray-500">5/10 토</div>
-              <div className="font-semibold mt-[2px]">식욕 저하 · 무기력</div>
-            </div>
+            {[1, 2, 3].map((offset) => {
+              const d = new Date(TODAY_DATE);
+              d.setDate(TODAY_DATE.getDate() - offset);
+              const label = formatMonthDay(d);
+              const records = dayRecords[d.getDate()];
+              if (!records || records.length === 0) return null;
+              return (
+                <div key={offset} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+                  <div className="text-xs text-gray-500">{label}</div>
+                  <div className="font-semibold mt-[2px] text-gray-400 text-xs">기록 있음</div>
+                </div>
+              );
+            })}
           </div>
 
         </ScrollArea>

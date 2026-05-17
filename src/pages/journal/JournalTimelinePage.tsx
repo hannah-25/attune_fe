@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Check, Plus } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { formatDate } from '@/lib/date';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
 
@@ -59,9 +60,11 @@ type SimpleEntry = {
 
 type TimelineEntry = TagEntry | SimpleEntry;
 
+const MEDICATION_NAME = '콘서타 18mg';
+
 const initialEntries: TimelineEntry[] = [
-  { id: 'e1', time: '08:00', kind: 'medication', label: '복용', content: '콘서타 18mg' },
-  { id: 'e2', time: '09:30', kind: 'tags', category: '감정·증상', tags: ['😰 불안', '멍해짐'] },
+  { id: 'e1', time: '08:00', kind: 'medication', label: '복용', content: MEDICATION_NAME },
+  { id: 'e2', time: '09:30', kind: 'tags', category: '감정·증상', tags: ['불안', '멍해짐'] },
   { id: 'e3', time: '12:00', kind: 'meal', label: '식사', content: '점심 ✓' },
   { id: 'e4', time: '14:20', kind: 'tags', category: '업무 실수', tags: ['마감 놓침'] },
   { id: 'e5', time: '15:00', kind: 'tags', category: '부작용', tags: ['식욕 저하'] },
@@ -172,7 +175,7 @@ export default function JournalTimelinePage() {
             <div className="font-bold text-sm">오늘 일지</div>
             <div className="w-11 h-11"></div>
           </div>
-          <div className="text-center text-gray-600 text-xs">5월 13일 화 · 6번째 기록</div>
+          <div className="text-center text-gray-600 text-xs">{formatDate(new Date())}</div>
         </div>
 
         <ScrollArea className="pt-0">

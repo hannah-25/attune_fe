@@ -1,4 +1,9 @@
 import React from 'react';
+import { formatFullDateTime } from '@/lib/date';
+
+const now = new Date();
+const startDefault = formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0));
+const endDefault = formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0));
 
 export default function NewEventPage() {
   return (
@@ -28,9 +33,15 @@ export default function NewEventPage() {
         </div>
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
-            <div className="w-[65%] h-[10px] bg-purple-50 rounded-lg"></div>
-            <div className="h-3"></div>
-            <div className="w-[40%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
+            <input
+              placeholder="제목"
+              className="w-full font-bold text-base bg-transparent outline-none placeholder:text-gray-300 mb-2"
+              style={{ fontFamily: "NanumSquare, system-ui" }}
+            />
+            <input
+              placeholder="위치 추가"
+              className="w-full text-sm text-gray-600 bg-transparent outline-none placeholder:text-gray-300"
+            />
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
@@ -41,11 +52,11 @@ export default function NewEventPage() {
             </div>
             <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
               <div className="grow font-semibold basis-[0%]">시작</div>
-              <div className="text-gray-600">5월 13일 화 14:00</div>
+              <div className="text-gray-600">{startDefault}</div>
             </div>
             <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
               <div className="grow font-semibold basis-[0%]">종료</div>
-              <div className="text-gray-600">5월 13일 화 15:00</div>
+              <div className="text-gray-600">{endDefault}</div>
             </div>
             <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px]">
               <div className="grow font-semibold basis-[0%]">반복</div>

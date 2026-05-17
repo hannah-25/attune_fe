@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check, Plus, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { formatDate } from '@/lib/date';
 
 type Tone = 'purple' | 'orange' | 'blue';
 type Tag = { label: string; selected?: boolean };
@@ -34,10 +35,10 @@ const initialSections: Section[] = [
     title: '감정 · 증상',
     tone: 'purple',
     tags: [
-      { label: '집중 어려움', selected: true },
-      { label: '멍해짐', selected: true },
+      { label: '집중 어려움' },
+      { label: '멍해짐' },
       { label: '짜증' },
-      { label: '불안', selected: true },
+      { label: '불안' },
       { label: '무기력' },
       { label: '초조' },
       { label: '몰입' },
@@ -48,7 +49,7 @@ const initialSections: Section[] = [
     tone: 'orange',
     tags: [
       { label: '두통' },
-      { label: '식욕 저하', selected: true },
+      { label: '식욕 저하' },
       { label: '불면' },
       { label: '입마름' },
       { label: '두근거림' },
@@ -58,18 +59,18 @@ const initialSections: Section[] = [
     title: '업무 실수 · 불편',
     tone: 'blue',
     tags: [
-      { label: '마감 놓침', selected: true },
+      { label: '마감 놓침' },
       { label: '약속 잊음' },
       { label: '물건 잃어버림' },
-      { label: '일을 잘게 못 쪼갬', selected: true },
+      { label: '일을 잘게 못 쪼갬' },
     ],
   },
 ];
 
 const initialGoals = [
-  { label: '한 가지 일에 30분 집중하기', value: 7 },
-  { label: '해야 할 일을 10분 안에 시작하기', value: 6 },
-  { label: '약속/일정 10분 전에 준비 완료하기', value: 8 },
+  { label: '한 가지 일에 30분 집중하기', value: 0 },
+  { label: '해야 할 일을 10분 안에 시작하기', value: 0 },
+  { label: '약속/일정 10분 전에 준비 완료하기', value: 0 },
 ];
 
 function EditableTagChip({
@@ -262,7 +263,7 @@ export default function JournalFullPage() {
   const [sections, setSections] = useState(initialSections);
   const [editingSections, setEditingSections] = useState<Record<string, boolean>>({});
   const [goals, setGoals] = useState(initialGoals);
-  const [memo, setMemo] = useState("점심 이후 집중이 흐려졌고, 일을 잘게 나누면 다시 시작하기 쉬웠다.");
+  const [memo, setMemo] = useState('');
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
 
@@ -322,7 +323,7 @@ export default function JournalFullPage() {
                 />
               </div>
             </div>
-            <div className="font-bold text-sm">5월 13일 화</div>
+            <div className="font-bold text-sm">{formatDate(new Date())}</div>
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                 <img
@@ -342,13 +343,13 @@ export default function JournalFullPage() {
                   <span className="text-sm">🌙</span>
                   <div className="font-semibold text-xs text-gray-600">수면</div>
                 </div>
-                <div className="font-bold text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                  6.5시간
+                <div className="font-bold text-lg text-gray-300" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                  —
                 </div>
                 <div className="flex mt-[6px] gap-[2px]">
-                  <div className="grow h-1 bg-purple-200 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-purple-200 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-purple-200 basis-[0%] rounded-xs"></div>
+                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
+                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
+                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
                   <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
                   <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
                 </div>
@@ -359,9 +360,9 @@ export default function JournalFullPage() {
                   <div className="font-semibold text-xs text-gray-600">식사</div>
                 </div>
                 <div className="flex mt-[6px] gap-1.5">
-                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-purple-100 text-purple-800 rounded-[0.875rem]">아</div>
-                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-purple-100 text-purple-800 rounded-[0.875rem]">점</div>
-                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-600 rounded-[0.875rem]">저</div>
+                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-[0.875rem]">아</div>
+                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-[0.875rem]">점</div>
+                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-[0.875rem]">저</div>
                 </div>
               </div>
             </div>

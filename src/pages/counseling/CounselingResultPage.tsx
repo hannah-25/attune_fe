@@ -1,5 +1,13 @@
 import React from 'react';
 
+const SESSION = {
+  date: '4월 16일 금',
+  clinic: '청담심리상담센터',
+  duration: '40분 진료 · 처방 변경 있음',
+  advice: '식욕 저하는 아침 식사를 가볍게 먼저 하고 약 복용을 권장합니다. 오후 약효 저하는 증량으로 조정하고 2주 후 재평가할 예정입니다.',
+  nextDate: '5월 16일',
+};
+
 export default function CounselingResultPage() {
   return (
     <div
@@ -29,10 +37,10 @@ export default function CounselingResultPage() {
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
             <div className="font-bold text-gray-600">
-              4월 16일 금 · 청담심리상담센터
+              {SESSION.date} · {SESSION.clinic}
             </div>
             <div className="mt-1">
-              40분 진료 · 처방 변경 있음
+              {SESSION.duration}
             </div>
           </div>
           <div>
@@ -40,11 +48,7 @@ export default function CounselingResultPage() {
               의사 조언
             </div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
-              <div className="flex flex-col gap-[9px]">
-                <div className="w-[92%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-                <div className="w-[78%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-                <div className="w-[50%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-              </div>
+              <div className="text-gray-700 text-sm leading-relaxed">{SESSION.advice}</div>
             </div>
           </div>
           <div>
@@ -101,9 +105,9 @@ export default function CounselingResultPage() {
               </div>
               <div className="leading-[18.85px]">
                 <b className="font-bold">
-                  다음 진료 5월 16일
+                  다음 진료 {SESSION.nextDate}
                 </b>
-                {' '}알림으로 미리 알려드릴 게요
+                {' '}알림으로 미리 알려드릴게요
               </div>
             </div>
           </div>

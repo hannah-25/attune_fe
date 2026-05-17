@@ -30,15 +30,15 @@ export default function CommunityFeedPage() {
         </div>
         <div className="flex overflow-auto gap-1.5 pt-0 pr-4 pb-2 pl-4">
           <div className="font-bold whitespace-nowrap bg-[rgb(31,_27,_46)] text-white pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">전체</div>
-          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">콘서타</div>
-          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">스트라테라</div>
-          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">아데랄</div>
-          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">일반</div>
+          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">질병 정보</div>
+          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">약물 치료</div>
+          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">일상생활</div>
+          <div className="font-bold whitespace-nowrap bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem]">미분류</div>
         </div>
         <ScrollArea className="flex flex-col gap-2.5 pt-1">
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
             <div className="items-center flex mb-[6px] gap-1.5">
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">콘서타</div>
+              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">약물 치료</div>
               <div className="font-bold text-gray-500 text-xs">익명 · 2시간 전</div>
             </div>
             <div className="font-bold leading-[18.2px]">콘서타 1주차 후기 — 아침 식욕이 너무 없어요</div>
@@ -61,7 +61,7 @@ export default function CommunityFeedPage() {
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
             <div className="items-center flex mb-[6px] gap-1.5">
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">스트라테라</div>
+              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">약물 치료</div>
               <div className="font-bold text-gray-500 text-xs">루나 · 5시간 전</div>
             </div>
             <div className="font-bold leading-[18.2px]">스트라테라로 바꾼 지 한달</div>
@@ -84,7 +84,7 @@ export default function CommunityFeedPage() {
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
             <div className="items-center flex mb-[6px] gap-1.5">
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">일반</div>
+              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">약물 치료</div>
               <div className="font-bold text-gray-500 text-xs">익명 · 어제</div>
             </div>
             <div className="font-bold leading-[18.2px]">약 먹고 졸린 분 계신가요?</div>
@@ -107,7 +107,7 @@ export default function CommunityFeedPage() {
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
             <div className="items-center flex mb-[6px] gap-1.5">
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">일반</div>
+              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">질병 정보</div>
               <div className="font-bold text-gray-500 text-xs">제이 · 어제</div>
             </div>
             <div className="font-bold leading-[18.2px]">처음 진료 받으러 가는데 너무 떨려요</div>
@@ -130,7 +130,7 @@ export default function CommunityFeedPage() {
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
             <div className="items-center flex mb-[6px] gap-1.5">
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">콘서타</div>
+              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">약물 치료</div>
               <div className="font-bold text-gray-500 text-xs">익명 · 2일 전</div>
             </div>
             <div className="font-bold leading-[18.2px]">콘서타 27mg 증량 후기</div>
@@ -150,6 +150,9 @@ export default function CommunityFeedPage() {
                 5
               </span>
             </div>
+          </div>
+          <div className="flex justify-center py-4">
+            <div className="w-5 h-5 border-2 border-purple-200 border-t-purple-500 rounded-full animate-spin" />
           </div>
         </ScrollArea>
         <div className="items-center flex font-bold absolute h-12 right-4 bottom-[88px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] z-[25] rounded-3xl">

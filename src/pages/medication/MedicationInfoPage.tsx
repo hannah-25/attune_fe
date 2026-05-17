@@ -1,5 +1,12 @@
 import React from 'react';
 
+const MEDICATION = {
+  name: '콘서타 18mg',
+  ingredient: '메틸페니데이트 · 서방형',
+  efficacy: '주의력결핍 과잉행동장애(ADHD) 증상을 개선합니다. 도파민과 노르에피네프린 재흡수를 억제하여 집중력과 충동 조절을 도와줍니다.',
+  sideEffects: ['식욕 저하', '불면', '두통', '입마름', '두근거림'],
+};
+
 export default function MedicationInfoPage() {
   return (
     <div
@@ -16,7 +23,7 @@ export default function MedicationInfoPage() {
                 </div>
               </div>
             </div>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">콘서타 18mg</div>
+            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">{MEDICATION.name}</div>
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                 <div className="overflow-hidden w-4 h-4">
@@ -36,10 +43,10 @@ export default function MedicationInfoPage() {
               </div>
               <div className="grow basis-[0%]">
                 <div className="font-extrabold text-2xl" style={{ fontFamily: "NanumSquare, system-ui" }}>
-                  콘서타 18mg
+                  {MEDICATION.name}
                 </div>
                 <div className="mt-[2px] text-gray-600">
-                  메틸페니데이트 · 서방형
+                  {MEDICATION.ingredient}
                 </div>
               </div>
             </div>
@@ -81,11 +88,7 @@ export default function MedicationInfoPage() {
             <div className="font-bold mb-2">
               효능
             </div>
-            <div className="flex flex-col gap-2">
-              <div className="w-[92%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-              <div className="w-[78%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-              <div className="w-[55%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            </div>
+            <div className="text-gray-700 text-sm leading-relaxed">{MEDICATION.efficacy}</div>
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-2 gap-1.5">
@@ -98,11 +101,9 @@ export default function MedicationInfoPage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">식욕 저하</div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">불면</div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">두통</div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">입마름</div>
-              <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">두근거림</div>
+              {MEDICATION.sideEffects.map((effect) => (
+                <div key={effect} className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">{effect}</div>
+              ))}
             </div>
           </div>
           <div className="text-gray-500 text-xs leading-[17.6px] pt-1 pr-2 pb-1 pl-2">
