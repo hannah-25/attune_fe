@@ -97,7 +97,7 @@ guidelines/
 ### 공통 레이아웃
 - 화면 배경: `bg-gray-50`
 - 탑바: `pt-1 pr-3 pb-[10px] pl-3` + 좌우 `w-11 h-11` 버튼 영역
-- 탑바 타이틀: `font-bold text-sm` 중앙 정렬
+- 탑바 타이틀: `font-bold text-base` 절대 중앙 정렬 (`absolute left-[50%] translate-x-[-50%]`)
 - 탭바: `<TabBar active="탭명" />` 컴포넌트 사용, 직접 재정의 금지
 - 스크롤 영역: `grow min-h-0 overflow-y-auto overscroll-contain basis-[0%]`
 

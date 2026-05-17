@@ -8,7 +8,7 @@ export default function CounselingResultPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
+          <div className="items-center flex justify-between relative">
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                 <div className="overflow-hidden w-4 h-4">
@@ -16,7 +16,7 @@ export default function CounselingResultPage() {
                 </div>
               </div>
             </div>
-            <div className="font-bold text-sm">상담 후 기록</div>
+            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">상담 후 기록</div>
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
                 <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">
