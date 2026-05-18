@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
+const WEEK_DAYS = [
+  { day: '월', date: 12, hasEvent: true },
+  { day: '화', date: 13, hasEvent: true },
+  { day: '수', date: 14, hasEvent: true },
+  { day: '목', date: 15, hasEvent: false },
+  { day: '금', date: 16, hasEvent: true },
+  { day: '토', date: 17, hasEvent: true },
+  { day: '일', date: 18, hasEvent: false },
+];
+
 export default function HomeCalendarPage() {
+  const [selectedDate, setSelectedDate] = useState(13);
+
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
@@ -27,41 +39,27 @@ export default function HomeCalendarPage() {
           </div>
         </div>
         <div className="flex gap-1 pt-1.5 pr-3 pb-0 pl-3">
-          <div className="grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">월</div>
-            <div className="font-bold text-center mt-[2px] text-base">12</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 bg-purple-300 rounded-xs"></div>
-          </div>
-          <div className="grow text-center bg-[rgb(31,_27,_46)] text-white basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">화</div>
-            <div className="font-bold text-center mt-[2px] text-base">13</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 bg-purple-300 rounded-xs"></div>
-          </div>
-          <div className="grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">수</div>
-            <div className="font-bold text-center mt-[2px] text-base">14</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 bg-purple-300 rounded-xs"></div>
-          </div>
-          <div className="grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">목</div>
-            <div className="font-bold text-center mt-[2px] text-base">15</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 rounded-xs"></div>
-          </div>
-          <div className="grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">금</div>
-            <div className="font-bold text-center mt-[2px] text-base">16</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 bg-purple-300 rounded-xs"></div>
-          </div>
-          <div className="grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">토</div>
-            <div className="font-bold text-center mt-[2px] text-base">17</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 bg-purple-300 rounded-xs"></div>
-          </div>
-          <div className="grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem]">
-            <div className="font-semibold text-center text-xs opacity-[0.7]">일</div>
-            <div className="font-bold text-center mt-[2px] text-base">18</div>
-            <div className="ml-auto mr-auto text-center w-1 h-1 mt-1 rounded-xs"></div>
-          </div>
+          {WEEK_DAYS.map(({ day, date, hasEvent }) => {
+            const selected = selectedDate === date;
+
+            return (
+              <button
+                key={date}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setSelectedDate(date)}
+                className={`grow text-center basis-[0%] pt-2 pr-0 pb-2 pl-0 rounded-[1.375rem] transition-all active:scale-[0.97] ${
+                  selected ? 'bg-[rgb(31,27,46)] text-white' : 'text-gray-900'
+                }`}
+              >
+                <span className="block font-semibold text-center text-xs opacity-[0.7]">{day}</span>
+                <span className="block font-bold text-center mt-[2px] text-base">{date}</span>
+                <span className={`block ml-auto mr-auto text-center w-1 h-1 mt-1 rounded-xs ${
+                  hasEvent ? 'bg-purple-300' : ''
+                }`} />
+              </button>
+            );
+          })}
         </div>
         <ScrollArea className="flex flex-col gap-2.5 pt-3">
           <div className="items-center flex gap-3">
@@ -106,7 +104,7 @@ export default function HomeCalendarPage() {
           </div>
           <div className="mt-1 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="font-semibold text-gray-600">
-              오늘 일지
+              {selectedDate === 13 ? '오늘 일지' : `${selectedDate}일 일지`}
             </div>
             <div className="font-bold mt-[2px] text-sm">
               저녁 식사 전 1번 더 기록해보세요

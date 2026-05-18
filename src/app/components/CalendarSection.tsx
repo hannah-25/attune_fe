@@ -477,7 +477,7 @@ export function CalendarSection() {
                     연결된 계정
                   </div>
                   <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-                    <div className="items-center flex gap-2.5 pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
+                    <div className="items-center flex gap-2.5 pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
                       <div className="items-center flex font-extrabold justify-center w-8 h-8 bg-purple-100 text-[rgb(185, 166, 255)] text-sm rounded-2xl">
                         <span className="block">G</span>
                       </div>
@@ -491,22 +491,6 @@ export function CalendarSection() {
                       </div>
                       <div className="relative w-[38px] h-[22px] bg-purple-300 rounded-[0.6875rem]">
                         <div className="absolute w-[18px] h-[18px] left-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.5625rem]"></div>
-                      </div>
-                    </div>
-                    <div className="items-center flex gap-2.5 pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-                      <div className="items-center flex font-extrabold justify-center w-8 h-8 bg-purple-50 text-gray-600 text-sm rounded-2xl">
-                        <span className="block">O</span>
-                      </div>
-                      <div className="grow basis-[0%]">
-                        <div className="font-bold text-gray-500">
-                          Outlook · 연결되지 않음
-                        </div>
-                        <div className="text-gray-500 text-xs">
-                          탭하여 연결
-                        </div>
-                      </div>
-                      <div className="overflow-hidden w-[11px] h-[11px]">
-                        <img src="/icons/94612fc4446546e6fe33a94b3be3019ed330f60b.svg" className="block size-full" />
                       </div>
                     </div>
                   </div>

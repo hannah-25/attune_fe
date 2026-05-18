@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function CalendarMainPage() {
+  const [viewMode, setViewMode] = useState<'월' | '주'>('월');
+
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
@@ -10,21 +13,33 @@ export default function CalendarMainPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <div className="items-center flex justify-between pt-2 pr-4 pb-1 pl-4">
-          <div className="items-center flex gap-1.5">
+          <button
+            type="button"
+            className="items-center flex gap-1 rounded-xl pr-1 transition-all active:scale-[0.97]"
+            aria-label="월 선택"
+          >
             <div className="font-extrabold text-2xl" style={{"fontFamily":"NanumSquare, system-ui"}}>
               5월
             </div>
-            <div className="overflow-hidden w-[14px] h-[14px]">
-              <img src="/icons/ac51fe5f4a79c14bce84086c3976b584478290f5.svg" className="block size-full" />
-            </div>
-          </div>
+            <ChevronDown className="mt-0.5 h-4 w-4 text-gray-500" strokeWidth={2.5} />
+          </button>
           <div className="flex gap-1.5">
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-              <span className="block">월</span>
-            </div>
-            <div className="items-center flex font-semibold whitespace-nowrap border-black/0 border text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-              <span className="block">주</span>
-            </div>
+            {(['월', '주'] as const).map((mode) => {
+              const selected = viewMode === mode;
+
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewMode(mode)}
+                  className={`items-center flex font-semibold whitespace-nowrap border-black/0 border text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${
+                    selected ? 'bg-purple-100 text-purple-800' : 'text-gray-500'
+                  }`}
+                >
+                  <span className="block">{mode}</span>
+                </button>
+              );
+            })}
             <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
               <div className="overflow-hidden w-[14px] h-[14px]">
                 <img src="/icons/c224e786521d13d2d5774b00ba68fd16572a5fb0.svg" className="block size-full" />

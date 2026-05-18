@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 import logoImage from '../../assets/logo_with_brand.png';
 
 export default function SplashPage() {
+  const navigate = useNavigate();
+
   return (
     <div
       className="flex h-dvh min-h-dvh w-full flex-col overflow-hidden bg-purple-100 text-sm"
@@ -16,10 +19,18 @@ export default function SplashPage() {
             하루의 작은 변화를<br />함께 살펴봐요
           </p>
           <div className="flex flex-col w-full mt-10 gap-2.5">
-            <button className="flex items-center font-semibold justify-center w-full h-[52px] bg-gray-900 hover:bg-black shadow-sm text-white text-base rounded-xl transition-colors">
+            <button
+              type="button"
+              onClick={() => navigate('/signup')}
+              className="flex items-center font-semibold justify-center w-full h-[52px] bg-gray-900 text-white text-base rounded-xl select-none transition-all active:scale-[0.97] active:bg-black"
+            >
               시작하기
             </button>
-            <button className="flex items-center font-medium justify-center w-full h-[52px] border border-gray-300 hover:border-gray-500 bg-white/50 text-gray-800 text-base rounded-xl transition-colors">
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="flex items-center font-medium justify-center w-full h-[52px] border border-gray-300 bg-white/50 text-gray-800 text-base rounded-xl select-none transition-all active:scale-[0.97] active:bg-white/80"
+            >
               이미 계정이 있어요
             </button>
           </div>
