@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CalendarDays, ChevronLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -53,8 +54,8 @@ export default function MedicationHistoryPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 이력"
-          left={<HeaderIconButton src="/icons/369584f11b1ffb755e198bea7e2638a7cd84109c.svg" />}
-          right={<HeaderIconButton src="/icons/ab8b2af29af823aa9e78ed534c6dece815a3c7eb.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<CalendarDays className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <div className="flex gap-1.5 pt-0 pr-4 pb-3 pl-4">
           {PERIODS.map((period) => {

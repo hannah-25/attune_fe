@@ -2,8 +2,9 @@ import React from 'react';
 
 type HeaderIconButtonProps = {
   alt?: string;
+  icon?: React.ReactNode;
   onClick?: () => void;
-  src: string;
+  src?: string;
 };
 
 type TopBarProps = {
@@ -40,12 +41,14 @@ export function BackButton({ ariaLabel = '이전 화면' }: { ariaLabel?: string
   );
 }
 
-export function HeaderIconButton({ alt = '', onClick, src }: HeaderIconButtonProps) {
+export function HeaderIconButton({ alt = '', icon, onClick, src }: HeaderIconButtonProps) {
   const inner = (
     <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-      <div className="overflow-hidden w-4 h-4">
-        <img src={src} alt={alt} className="block size-full" />
-      </div>
+      {icon ?? (src ? (
+        <div className="overflow-hidden w-4 h-4">
+          <img src={src} alt={alt} className="block size-full" />
+        </div>
+      ) : null)}
     </div>
   );
   if (onClick) {

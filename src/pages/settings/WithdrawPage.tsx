@@ -1,9 +1,7 @@
 import React from 'react';
 import emotionImage from '@src/assets/emotion7.png';
+import { AlertTriangle } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
-
-const withdrawIcon =
-  '/icons/f0071d92959cfc25f75d6812bbca366b70c646d6.svg';
 
 export default function WithdrawPage() {
   return (
@@ -12,7 +10,7 @@ export default function WithdrawPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <TopBar left={<HeaderIconButton src={withdrawIcon} />} title="회원 탈퇴" centered />
+        <TopBar left={<HeaderIconButton icon={<AlertTriangle className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />} title="회원 탈퇴" centered />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-5 pt-3 pr-5 pb-8 pl-5">
           <div className="flex items-center justify-center text-center pt-1 pr-0 pb-1 pl-0">
             <div className="w-36 h-36">

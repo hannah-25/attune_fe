@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 export default function CommunityWritePage() {
@@ -13,7 +14,7 @@ export default function CommunityWritePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="새 글"
-          left={<HeaderIconButton src="/icons/748bff70642e790d3da4f67ab0478b2847c249a0.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">

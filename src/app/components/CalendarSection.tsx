@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { TabBar } from './TabBar';
 
 export function CalendarSection() {
@@ -263,17 +264,13 @@ export function CalendarSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/b7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm"></div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/475b6a4f82b963544d4c155b022adc602cc4d023.svg" className="block size-full" />
-                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -353,9 +350,7 @@ export function CalendarSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/d79c2e541070847ef9bbaaa2ba1496f075cbb058.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">새 일정</div>
@@ -458,9 +453,7 @@ export function CalendarSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/69b9506be14cb1cfd9fad41f5e5b691f2f2a39b4.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">캘린더 연동</div>

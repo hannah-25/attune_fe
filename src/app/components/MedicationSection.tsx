@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { CalendarDays, ChevronLeft, MoreHorizontal, Plus } from 'lucide-react';
 import { TabBar } from './TabBar';
 
 export function MedicationSection() {
@@ -35,17 +36,13 @@ export function MedicationSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/ced07539bf3d43afa327439e8d06f98fdbda335c.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">복용 중인 약</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/19cab3f28bf032ab1fda393ddb98fb1eabb87179.svg" className="block size-full" />
-                        </div>
+                        <Plus className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -168,9 +165,7 @@ export function MedicationSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/e7d20d8b962bf35f70391b037647deb6e498c04a.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">약 추가</div>
@@ -361,17 +356,13 @@ export function MedicationSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/71214aeb3e9a91025992e6bbed95b42b12e12682.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">콘서타 18mg</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/4f2752d1870c89f1c02d35a998d91a08dae99f79.svg" className="block size-full" />
-                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -487,17 +478,13 @@ export function MedicationSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/369584f11b1ffb755e198bea7e2638a7cd84109c.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">복용 이력</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/ab8b2af29af823aa9e78ed534c6dece815a3c7eb.svg" className="block size-full" />
-                        </div>
+                        <CalendarDays className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>

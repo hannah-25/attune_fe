@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { formatUpcomingDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -51,7 +52,7 @@ export default function CounselingPreparePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담 전 준비"
-          left={<HeaderIconButton src="/icons/a7a5bb7f1924955f362f7eae70db182206a69aa8.svg" onClick={() => navigate(-1)} />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               {showSaveButton ? (

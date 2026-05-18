@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { TabBar } from './TabBar';
 
 export function CounselingSection() {
@@ -35,17 +36,13 @@ export function CounselingSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/b6ccaea78ae3d5ae886343fe1599532e8d23a688.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">상담</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/427d505d9a8d1880ba0c0b74c2fba370c1b3f7a7.svg" className="block size-full" />
-                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -136,9 +133,7 @@ export function CounselingSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/a7a5bb7f1924955f362f7eae70db182206a69aa8.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">상담 전 준비</div>
@@ -265,9 +260,7 @@ export function CounselingSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/1374f2b16faf6016b6e53e7199458616492fb894.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">상담 후 기록</div>

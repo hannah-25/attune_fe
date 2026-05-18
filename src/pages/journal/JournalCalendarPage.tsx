@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatMonthDay } from '@/lib/date';
@@ -66,8 +66,8 @@ export default function JournalCalendarPage() {
 
         <TopBar
           title="캘린더"
-          left={<HeaderIconButton src="/icons/0f148e246b2f2bb3a69872ea8396c06705d1c413.svg" />}
-          right={<HeaderIconButton src="/icons/f69b80758895256011eb548cf58375ba9863075c.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<ChevronRight className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
 
         {/* 스크롤 영역 전체 */}

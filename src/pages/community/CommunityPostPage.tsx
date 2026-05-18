@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 const postContent = [
@@ -38,8 +39,8 @@ export default function CommunityPostPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="글 상세"
-          left={<HeaderIconButton src="/icons/d77b1743156ca690dcd7dbf0664fde91d06c07f9.svg" />}
-          right={<HeaderIconButton src="/icons/b22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
 
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-0 pt-0 pr-4 pb-20 pl-4">
