@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 
 export type Tab = '홈' | '일지' | '약' | '캘린더' | '커뮤니티' | '리포트' | '상담';
 export type TabBarVariant = 'main' | 'report' | 'counseling';
@@ -52,25 +53,41 @@ const TAB_PRESETS: Record<TabBarVariant, Tab[]> = {
   counseling: ['홈', '일지', '약', '캘린더', '상담'],
 };
 
+const TAB_ROUTES: Record<Tab, string> = {
+  홈: '/home',
+  일지: '/journal',
+  약: '/medication',
+  캘린더: '/calendar',
+  커뮤니티: '/community',
+  리포트: '/report',
+  상담: '/counseling',
+};
+
 interface TabBarProps {
   active?: Tab;
   variant?: TabBarVariant;
   tabs?: Tab[];
 }
 
-function TabBarItem({ active, tab }: { active: boolean; tab: Tab }) {
+function TabBarItem({ active, onClick, tab }: { active: boolean; onClick: () => void; tab: Tab }) {
   return (
-    <div
-      className={`items-center flex flex-col grow justify-center basis-[0%] text-xs gap-1 min-h-11 ${active ? 'font-bold' : 'font-medium text-gray-500'}`}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`items-center flex flex-col grow justify-center basis-[0%] text-xs gap-1 min-h-11 rounded-2xl transition-all active:scale-[0.94] ${
+        active ? 'font-bold text-gray-950' : 'font-medium text-gray-500'
+      }`}
       aria-current={active ? 'page' : undefined}
+      aria-label={`${tab} 탭으로 이동`}
     >
       {icons[tab]}
       {tab}
-    </div>
+    </button>
   );
 }
 
 export function TabBar({ active, variant = 'main', tabs }: TabBarProps) {
+  const navigate = useNavigate();
   const visibleTabs = tabs ?? TAB_PRESETS[variant];
 
   return (
@@ -79,7 +96,16 @@ export function TabBar({ active, variant = 'main', tabs }: TabBarProps) {
       aria-label="하단 내비게이션"
     >
       {visibleTabs.map(tab => (
-        <TabBarItem key={tab} tab={tab} active={active === tab} />
+        <TabBarItem
+          key={tab}
+          tab={tab}
+          active={active === tab}
+          onClick={() => {
+            if (active !== tab) {
+              navigate(TAB_ROUTES[tab]);
+            }
+          }}
+        />
       ))}
     </nav>
   );

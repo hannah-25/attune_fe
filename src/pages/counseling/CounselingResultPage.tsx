@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 const SESSION = {
@@ -9,7 +10,29 @@ const SESSION = {
   nextDate: '5월 16일',
 };
 
+type PrescriptionStatus = '증량' | '감량' | '유지';
+
+const STATUS_OPTIONS: PrescriptionStatus[] = ['증량', '감량', '유지'];
+
+const INITIAL_PRESCRIPTIONS = [
+  { id: 'concerta', name: '콘서타', before: '18mg', after: '27mg', status: '증량' as PrescriptionStatus },
+  { id: 'strattera', name: '스트라테라 40mg', before: null, after: null, status: '유지' as PrescriptionStatus },
+];
+
 export default function CounselingResultPage() {
+  const navigate = useNavigate();
+  const [prescriptions, setPrescriptions] = useState(INITIAL_PRESCRIPTIONS);
+  const [saved, setSaved] = useState(true);
+
+  const updatePrescriptionStatus = (id: string, status: PrescriptionStatus) => {
+    setPrescriptions((current) =>
+      current.map((prescription) =>
+        prescription.id === id ? { ...prescription, status } : prescription,
+      ),
+    );
+    setSaved(false);
+  };
+
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
@@ -18,12 +41,18 @@ export default function CounselingResultPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담 후 기록"
-          left={<HeaderIconButton src="/icons/1374f2b16faf6016b6e53e7199458616492fb894.svg" />}
+          left={<HeaderIconButton src="/icons/1374f2b16faf6016b6e53e7199458616492fb894.svg" onClick={() => navigate(-1)} />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">저장</div>
-              </div>
+              {!saved ? (
+                <button
+                  type="button"
+                  onClick={() => setSaved(true)}
+                  className="text-xs px-2.5 py-1 rounded-lg font-bold text-white bg-[rgb(31,27,46)] transition-all active:scale-[0.97]"
+                >
+                  저장
+                </button>
+              ) : null}
             </div>
           }
         />
@@ -49,31 +78,51 @@ export default function CounselingResultPage() {
               처방 변경
             </div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
-              <div className="items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
-                <div className="grow basis-[0%]">
-                  콘서타{' '}
-                  <s className="line-through text-gray-500" style={{ textDecoration: "line-through" }}>
-                    <span style={{ textDecoration: "none" }}>18mg</span>
-                  </s>
-                  {' '}→{' '}
-                  <b className="font-bold">
-                    27mg
-                  </b>
+              {prescriptions.map((prescription, index) => (
+                <div
+                  key={prescription.id}
+                  className={`items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${index < prescriptions.length - 1 ? 'border-b' : ''}`}
+                  style={index < prescriptions.length - 1 ? { borderBottomColor: "rgb(233, 228, 220)" } : undefined}
+                >
+                  <div className="w-2 h-2 bg-purple-300 rounded-sm" />
+                  <div className="grow basis-[0%]">
+                    {prescription.before && prescription.after ? (
+                      <>
+                        {prescription.name}{' '}
+                        <s className="line-through text-gray-500" style={{ textDecoration: "line-through" }}>
+                          <span style={{ textDecoration: "none" }}>{prescription.before}</span>
+                        </s>
+                        {' '}→{' '}
+                        <b className="font-bold">{prescription.after}</b>
+                      </>
+                    ) : (
+                      <>
+                        {prescription.name} · {prescription.status}
+                      </>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    {STATUS_OPTIONS.map((status) => {
+                      const selected = prescription.status === status;
+
+                      return (
+                        <button
+                          key={status}
+                          type="button"
+                          onClick={() => updatePrescriptionStatus(prescription.id, status)}
+                          className={`items-center flex font-semibold whitespace-nowrap border-black/0 border text-xs tracking-tight pt-[7px] pr-[10px] pb-[7px] pl-[10px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${
+                            selected
+                              ? 'bg-purple-500 text-white'
+                              : 'bg-purple-50 text-purple-700'
+                          }`}
+                        >
+                          <span className="block">{status}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-black/0 border text-white text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                  <span className="block">증량</span>
-                </div>
-              </div>
-              <div className="items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px]">
-                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
-                <div className="grow basis-[0%]">
-                  스트라테라 40mg · 유지
-                </div>
-                <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                  <span className="block">유지</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
           <div>

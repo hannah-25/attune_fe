@@ -1,73 +1,158 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
 const EVENT_DETAIL = {
+  alarmOptions: ['30분 전 · 1시간 전', '10분 전', '알림 없음'],
   category: '상담',
+  repeatOptions: ['월 1회', '반복 안 함', '매주'],
   source: 'Google 캘린더 연동',
   title: '정신건강의학과\n정기 진료',
-  when: '5월 13일 화 · 14:00 — 14:40',
-  where: '청담심리상담센터',
-  alarm: '30분 전 · 1시간 전',
-  repeat: '월 1회',
+  whenOptions: ['5월 13일 화 · 14:00 — 14:40', '5월 13일 화 · 15:00 — 15:40', '5월 14일 수 · 14:00 — 14:40'],
+  whereOptions: ['청담심리상담센터', '서울 마음클리닉', '온라인 상담'],
 };
 
 export default function EventDetailPage() {
+  const navigate = useNavigate();
+  const memoRef = useRef<HTMLTextAreaElement>(null);
+  const [whenIndex, setWhenIndex] = useState(0);
+  const [whereIndex, setWhereIndex] = useState(0);
+  const [alarmIndex, setAlarmIndex] = useState(0);
+  const [repeatIndex, setRepeatIndex] = useState(0);
+  const [memo, setMemo] = useState('');
+  const [memoFocused, setMemoFocused] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+
   return (
     <div
-      className="w-full h-dvh bg-purple-100  text-sm flex flex-col"
+      className="w-full h-dvh bg-purple-100 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          left={<HeaderIconButton src="/icons/b7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg" />}
-          right={<HeaderIconButton src="/icons/475b6a4f82b963544d4c155b022adc602cc4d023.svg" />}
+          left={<HeaderIconButton src="/icons/b7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg" onClick={() => navigate(-1)} />}
+          right={<HeaderIconButton src="/icons/475b6a4f82b963544d4c155b022adc602cc4d023.svg" onClick={() => setShowActions((value) => !value)} />}
         />
+        {showActions ? (
+          <div className="absolute right-4 top-[58px] z-30 w-32 overflow-hidden rounded-2xl bg-white shadow-[rgba(60,40,90,0.16)_0px_10px_26px_0px]">
+            <button
+              type="button"
+              onClick={() => navigate('/calendar/new')}
+              className="w-full px-4 py-3 text-left font-semibold active:bg-purple-50"
+            >
+              수정
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowActions(false)}
+              className="w-full border-t px-4 py-3 text-left font-semibold text-red-500 active:bg-red-50"
+              style={{ borderTopColor: 'rgb(233, 228, 220)' }}
+            >
+              삭제
+            </button>
+          </div>
+        ) : null}
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
           <div className="items-center flex mb-[14px] gap-2">
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
+            <button
+              type="button"
+              className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97]"
+            >
               <span className="block">{EVENT_DETAIL.category}</span>
-            </div>
+            </button>
             <div className="text-gray-600 text-xs">
               {EVENT_DETAIL.source}
             </div>
           </div>
-          <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{"fontFamily":"NanumSquare, system-ui"}}>
+          <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
             {EVENT_DETAIL.title}
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            <div className="items-start flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
-              <div className="font-semibold w-[60px] text-gray-600">언제</div>
-              <div className="grow basis-[0%]">{EVENT_DETAIL.when}</div>
-            </div>
-            <div className="items-start flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
-              <div className="font-semibold w-[60px] text-gray-600">어디서</div>
-              <div className="grow basis-[0%]">{EVENT_DETAIL.where}</div>
-            </div>
-            <div className="items-start flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{"borderBottomColor":"rgb(233, 228, 220)"}}>
-              <div className="font-semibold w-[60px] text-gray-600">알림</div>
-              <div className="grow basis-[0%]">{EVENT_DETAIL.alarm}</div>
-            </div>
-            <div className="items-start flex pt-3 pr-[14px] pb-3 pl-[14px]">
-              <div className="font-semibold w-[60px] text-gray-600">반복</div>
-              <div className="grow basis-[0%]">{EVENT_DETAIL.repeat}</div>
-            </div>
+            <DetailRow
+              label="언제"
+              value={EVENT_DETAIL.whenOptions[whenIndex]}
+              onClick={() => setWhenIndex((index) => (index + 1) % EVENT_DETAIL.whenOptions.length)}
+            />
+            <DetailRow
+              label="어디서"
+              value={EVENT_DETAIL.whereOptions[whereIndex]}
+              onClick={() => setWhereIndex((index) => (index + 1) % EVENT_DETAIL.whereOptions.length)}
+            />
+            <DetailRow
+              label="알림"
+              value={EVENT_DETAIL.alarmOptions[alarmIndex]}
+              onClick={() => setAlarmIndex((index) => (index + 1) % EVENT_DETAIL.alarmOptions.length)}
+            />
+            <DetailRow
+              label="반복"
+              value={EVENT_DETAIL.repeatOptions[repeatIndex]}
+              last
+              onClick={() => setRepeatIndex((index) => (index + 1) % EVENT_DETAIL.repeatOptions.length)}
+            />
           </div>
           <div className="font-bold text-gray-600 pt-4 pr-1 pb-1.5 pl-1">
             메모
           </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
-            <div className="text-gray-400 text-sm">메모 없음</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => memoRef.current?.focus()}
+            className={`block w-full text-left bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem] transition-colors ${
+              memoFocused ? 'border-purple-300' : 'border-transparent'
+            }`}
+          >
+            <textarea
+              ref={memoRef}
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              onFocus={() => setMemoFocused(true)}
+              onBlur={() => setMemoFocused(false)}
+              placeholder="메모 없음"
+              rows={2}
+              className="w-full resize-none bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
+            />
+          </button>
           <div className="flex mt-4 gap-2">
-            <div className="items-center flex grow font-bold justify-center h-[50px] border-gray-900 border basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
+            <button
+              type="button"
+              onClick={() => navigate('/calendar/new')}
+              className="items-center flex grow font-bold justify-center h-[50px] border-gray-900 border basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem] transition-all active:scale-[0.97]"
+            >
               <span className="block">수정</span>
-            </div>
-            <div className="items-center flex grow font-bold justify-center h-[50px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/counseling/prepare')}
+              className="items-center flex grow font-bold justify-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem] transition-all active:scale-[0.97]"
+            >
               <span className="block">상담 준비</span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function DetailRow({
+  label,
+  last = false,
+  onClick,
+  value,
+}: {
+  label: string;
+  last?: boolean;
+  onClick: () => void;
+  value: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`items-start flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${last ? '' : 'border-b'}`}
+      style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}
+    >
+      <div className="font-semibold w-[60px] text-gray-600">{label}</div>
+      <div className="grow basis-[0%]">{value}</div>
+    </button>
   );
 }

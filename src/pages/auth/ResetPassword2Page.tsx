@@ -19,7 +19,12 @@ export default function ResetPassword2Page() {
           </div>
           <div className="items-center flex flex-col text-center mt-6 text-xs leading-relaxed">
             <div className="text-gray-600">재설정 메일을 받지 못하셨나요?</div>
-            <button className="font-bold text-purple-700 underline mt-1">재설정 메일 재발송</button>
+            <button
+              type="button"
+              className="font-bold text-purple-700 underline mt-1 select-none transition-all active:scale-[0.97] active:opacity-70"
+            >
+              재설정 메일 재발송
+            </button>
           </div>
         </div>
       </div>
