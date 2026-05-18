@@ -1,8 +1,6 @@
 import React from 'react';
+import { Bell } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
-
-const notificationIcon =
-  '/icons/ecc79c56d83d223eb08c89b79b70e84caf9360dd.svg';
 
 export default function NotificationSettingsPage() {
   return (
@@ -11,7 +9,7 @@ export default function NotificationSettingsPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <TopBar left={<HeaderIconButton src={notificationIcon} />} title="알림 설정" centered />
+        <TopBar left={<HeaderIconButton icon={<Bell className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />} title="알림 설정" centered />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <div className="font-bold text-gray-600">

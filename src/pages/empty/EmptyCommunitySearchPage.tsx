@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImage from '@src/assets/logo.png';
+import { Search } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -13,7 +14,7 @@ export default function EmptyCommunitySearchPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="경험 공유"
-          left={<HeaderIconButton src="/icons/58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg" />}
+          left={<HeaderIconButton icon={<Search className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <div className="pt-0 pr-4 pb-2 pl-4">
           <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] gap-2 p-[10px] rounded-[0.875rem]">

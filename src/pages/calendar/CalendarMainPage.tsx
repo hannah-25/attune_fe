@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
 export default function CalendarMainPage() {
@@ -8,10 +7,10 @@ export default function CalendarMainPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
+      className="w-full min-h-dvh bg-gray-50 text-sm flex flex-col pb-[96px]"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
-      <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex min-h-dvh flex-col">
         <div className="items-center flex justify-between pt-2 pr-4 pb-1 pl-4">
           <button
             type="button"
@@ -198,7 +197,7 @@ export default function CalendarMainPage() {
           </div>
         </div>
         <div className="h-px mt-3 ml-[16px] mr-[16px] bg-purple-50"></div>
-        <ScrollArea className="pt-3">
+        <div className="px-4 pt-3">
           <div className="font-bold mb-2">
             5월 13일 · 3개 일정
           </div>
@@ -226,7 +225,7 @@ export default function CalendarMainPage() {
             </div>
             <div className="font-bold text-gray-600 text-xs">상담</div>
           </div>
-        </ScrollArea>
+        </div>
         <TabBar active="캘린더" />
       </div>
     </div>

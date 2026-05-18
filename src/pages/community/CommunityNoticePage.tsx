@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronLeft, Search } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -12,8 +13,8 @@ export default function CommunityNoticePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="공지사항"
-          left={<HeaderIconButton src="/icons/6d07fc7b7d550d443283422ac15fea3de29aaa18.svg" />}
-          right={<HeaderIconButton src="/icons/54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<Search className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <ScrollArea className="flex flex-col gap-2">
           <div className="items-center flex bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">

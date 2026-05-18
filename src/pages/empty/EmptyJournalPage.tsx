@@ -1,5 +1,6 @@
 import React from 'react';
 import logoImage from '@src/assets/emotion2.png';
+import { ChevronLeft, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -13,8 +14,8 @@ export default function EmptyJournalPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="오늘 일지"
-          left={<HeaderIconButton src="/icons/a661aedb84aa79c6a3b2e710ca7b9f1064b5aea7.svg" />}
-          right={<HeaderIconButton src="/icons/55c9c7102106ee9fe76c6f15a70c64598dab46d3.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<X className="h-4 w-4 text-gray-700" strokeWidth={2.4} />} />}
         />
         <ScrollArea className="items-center flex flex-col justify-center text-center gap-4 pt-5 px-6">
           <div className="flex items-center justify-center text-center w-28 h-28 mb-1">

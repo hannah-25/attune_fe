@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
@@ -30,8 +31,8 @@ export default function EventDetailPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          left={<HeaderIconButton src="/icons/b7c467a84d7bdfd6c40db4d7610ae2cacb0312cf.svg" onClick={() => navigate(-1)} />}
-          right={<HeaderIconButton src="/icons/475b6a4f82b963544d4c155b022adc602cc4d023.svg" onClick={() => setShowActions((value) => !value)} />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => setShowActions((value) => !value)} />}
         />
         {showActions ? (
           <div className="absolute right-4 top-[58px] z-30 w-32 overflow-hidden rounded-2xl bg-white shadow-[rgba(60,40,90,0.16)_0px_10px_26px_0px]">

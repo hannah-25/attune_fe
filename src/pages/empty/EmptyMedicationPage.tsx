@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
@@ -15,8 +16,8 @@ export default function EmptyMedicationPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 중인 약"
-          left={<HeaderIconButton src="/icons/f921e8c85af86e51ecbc0dd728facb51bb4127c0.svg" />}
-          right={<HeaderIconButton src="/icons/c1b04de901d7982dcd4a65a2b9d530c8ba5d7dbd.svg" onClick={() => navigate('/medication/add')} />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<Plus className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate('/medication/add')} />}
         />
         <ScrollArea className="flex flex-col gap-[14px] pt-3 px-5">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">

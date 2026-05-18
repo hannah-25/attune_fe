@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { ChevronLeft, MoreHorizontal, Pencil, Search } from 'lucide-react';
 import { TabBar } from './TabBar';
 
 export function CommunitySection() {
@@ -35,17 +36,13 @@ export function CommunitySection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/6d07fc7b7d550d443283422ac15fea3de29aaa18.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">공지사항</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg" className="block size-full" />
-                        </div>
+                        <Search className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -119,17 +116,13 @@ export function CommunitySection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/d50bde0e53580b90a7675bb1533c3628f89ac064.svg" className="block size-full" />
-                        </div>
+                        <Search className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">경험 공유</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/a1d93193446d76a49e64b9927201d303b3a37082.svg" className="block size-full" />
-                        </div>
+                        <Pencil className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -268,17 +261,13 @@ export function CommunitySection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/d77b1743156ca690dcd7dbf0664fde91d06c07f9.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm"></div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/b22a03c0a3fd06b85a7db92a93b2d633dc42599c.svg" className="block size-full" />
-                        </div>
+                        <MoreHorizontal className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -405,9 +394,7 @@ export function CommunitySection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/748bff70642e790d3da4f67ab0478b2847c249a0.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">새 글</div>

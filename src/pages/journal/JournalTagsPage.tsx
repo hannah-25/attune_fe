@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
@@ -50,7 +51,7 @@ export default function JournalTagsPage() {
           title="태그 관리"
           left={
             <HeaderIconButton
-              src="/icons/bcac446ba747bd8f1ec89ed926d88e0f54b23c84.svg"
+              icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />}
               onClick={() => navigate(-1)}
             />
           }
@@ -94,9 +95,7 @@ export default function JournalTagsPage() {
           type="button"
           className="items-center flex font-bold absolute h-[50px] right-4 bottom-[92px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem] transition-all active:scale-[0.97]"
         >
-          <div className="overflow-hidden w-[14px] h-[14px]">
-            <img src="/icons/45b5c98660fdbad2a3fd50732df0b7dfbf18c395.svg" alt="" className="block size-full" />
-          </div>
+          <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />
           <span className="block">새 태그</span>
         </button>
         <TabBar active="일지" />

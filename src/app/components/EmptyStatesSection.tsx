@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { ChevronLeft, Plus, Search, X } from 'lucide-react';
 import logoImage from '../../assets/logo.png';
 import { TabBar } from './TabBar';
 
@@ -36,17 +37,13 @@ export function EmptyStatesSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/a661aedb84aa79c6a3b2e710ca7b9f1064b5aea7.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">오늘 일지</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/55c9c7102106ee9fe76c6f15a70c64598dab46d3.svg" className="block size-full" />
-                        </div>
+                        <X className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -99,17 +96,13 @@ export function EmptyStatesSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/f921e8c85af86e51ecbc0dd728facb51bb4127c0.svg" className="block size-full" />
-                        </div>
+                        <ChevronLeft className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">복용 중인 약</div>
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/c1b04de901d7982dcd4a65a2b9d530c8ba5d7dbd.svg" className="block size-full" />
-                        </div>
+                        <Plus className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                   </div>
@@ -422,9 +415,7 @@ export function EmptyStatesSection() {
                   <div className="items-center flex justify-between">
                     <div className="items-center flex justify-center w-11 h-11">
                       <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                        <div className="overflow-hidden w-4 h-4">
-                          <img src="/icons/58fb2171c8e1e8d4620d12371f2c857d3f9bc06a.svg" className="block size-full" />
-                        </div>
+                        <Search className="w-4 h-4 text-gray-700" strokeWidth={2.5} />
                       </div>
                     </div>
                     <div className="font-bold text-sm">경험 공유</div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Pencil, Search } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
@@ -43,8 +44,8 @@ export default function CommunityFeedPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="경험 공유"
-          left={<HeaderIconButton src="/icons/d50bde0e53580b90a7675bb1533c3628f89ac064.svg" />}
-          right={<HeaderIconButton src="/icons/a1d93193446d76a49e64b9927201d303b3a37082.svg" />}
+          left={<HeaderIconButton icon={<Search className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
+          right={<HeaderIconButton icon={<Pencil className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} onClick={() => navigate('/community/write')} />}
         />
         <div className="flex overflow-auto gap-1.5 pt-0 pr-4 pb-2 pl-4">
           {FILTERS.map((filter) => (

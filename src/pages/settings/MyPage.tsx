@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import logoImage from '@src/assets/logo.png';
-import { Camera, Check, Pencil, X } from 'lucide-react';
+import { Camera, Check, Pencil, Settings, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
-
-const settingsIcon =
-  '/icons/3ee2c90fb8f924ced4748922d30e751a3ae3ffdd.svg';
 
 export default function MyPage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -37,7 +34,7 @@ export default function MyPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <TopBar title="" right={<HeaderIconButton src={settingsIcon} />} />
+        <TopBar title="" right={<HeaderIconButton icon={<Settings className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />} />
         <ScrollArea>
           <div className="text-center pt-1 pr-0 pb-5 pl-0">
             <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Check, Plus } from 'lucide-react';
+import { Check, ChevronLeft, Plus, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
@@ -166,7 +166,7 @@ export default function JournalTimelinePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="오늘 일지"
-          left={<HeaderIconButton src="/icons/5596f8f2c2f41bd0a4f5995e89c038339d171079.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
           subtitle={formatDate(new Date())}
         />
 

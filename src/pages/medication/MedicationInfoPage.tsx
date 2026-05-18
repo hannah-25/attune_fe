@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 const MEDICATION = {
@@ -17,8 +18,8 @@ export default function MedicationInfoPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={MEDICATION.name}
-          left={<HeaderIconButton src="/icons/71214aeb3e9a91025992e6bbed95b42b12e12682.svg" />}
-          right={<HeaderIconButton src="/icons/4f2752d1870c89f1c02d35a998d91a08dae99f79.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">

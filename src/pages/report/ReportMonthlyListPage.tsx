@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -12,8 +13,8 @@ export default function ReportMonthlyListPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="월별 리포트"
-          left={<HeaderIconButton src="/icons/e14e50b7bdfd7428cbb56e142f1b9b4b4604472f.svg" />}
-          right={<HeaderIconButton src="/icons/b99cc316ee8c1de6c8ee95421ad392aa380cc367.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<ChevronRight className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
         <ScrollArea className="flex flex-col gap-2.5">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">

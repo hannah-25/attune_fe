@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Check, ChevronDown, ChevronLeft, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 
@@ -16,7 +17,9 @@ const CALENDAR_OPTIONS: CalendarOption[] = [
 
 export default function ExternalCalendarPage() {
   const navigate = useNavigate();
-  const [googleConnected, setGoogleConnected] = useState(true);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [lastSynced, setLastSynced] = useState('4분 전 동기화');
+  const [syncing, setSyncing] = useState(false);
   const [visibleCalendars, setVisibleCalendars] = useState<Record<string, boolean>>({
     work: true,
     personal: true,
@@ -27,9 +30,32 @@ export default function ExternalCalendarPage() {
     setVisibleCalendars((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const visibleCount = CALENDAR_OPTIONS.filter((option) => visibleCalendars[option.id]).length;
+  const allVisible = visibleCount === CALENDAR_OPTIONS.length;
+
+  const toggleAllCalendars = () => {
+    const nextVisible = !allVisible;
+    setVisibleCalendars(
+      CALENDAR_OPTIONS.reduce<Record<string, boolean>>((next, option) => {
+        next[option.id] = nextVisible;
+        return next;
+      }, {}),
+    );
+  };
+
+  const syncCalendar = () => {
+    if (syncing) return;
+
+    setSyncing(true);
+    window.setTimeout(() => {
+      setLastSynced('방금 동기화');
+      setSyncing(false);
+    }, 700);
+  };
+
   return (
     <div
-      className="w-full h-dvh bg-gray-100 text-sm flex flex-col"
+      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -37,81 +63,112 @@ export default function ExternalCalendarPage() {
           title="캘린더 연동"
           left={
             <HeaderIconButton
-              src="/icons/69b9506be14cb1cfd9fad41f5e5b691f2f2a39b4.svg"
+              icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />}
               onClick={() => navigate(-1)}
             />
           }
+          right={
+            <button
+              type="button"
+              onClick={syncCalendar}
+              className="items-center flex justify-center w-11 h-11"
+              aria-label="캘린더 동기화"
+            >
+              <span className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
+                <RefreshCw className={`h-4 w-4 text-gray-700 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
+              </span>
+            </button>
+          }
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.375rem]">
+          <div className="bg-purple-100 border border-purple-50 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.375rem]">
             <div className="font-extrabold text-lg leading-[23.4px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-              병원·회사 일정도
+              {visibleCount}개 캘린더를
               <br />
-              한 곳에서 봐요
+              함께 보고 있어요
             </div>
             <div className="mt-[6px] text-gray-600 leading-normal">
-              외부 캘린더는 색상으로 구분해 표시돼요
+              {syncing ? 'Google 캘린더와 동기화 중이에요' : `Google 캘린더 · ${lastSynced}`}
             </div>
           </div>
 
           <div className="font-bold text-gray-600 text-xs pt-1 pr-1 pb-0 pl-1">
             연결된 계정
           </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <button
               type="button"
-              onClick={() => setGoogleConnected((prev) => !prev)}
+              onClick={() => setAccountOpen((open) => !open)}
               className="items-center flex w-full text-left gap-2.5 pt-[13px] pr-[14px] pb-[13px] pl-[14px] rounded-[0.875rem] transition-all active:scale-[0.99]"
+              aria-expanded={accountOpen}
             >
-              <div className={`items-center flex font-extrabold justify-center w-8 h-8 text-sm rounded-2xl ${
-                googleConnected ? 'bg-purple-100 text-[rgb(185,166,255)]' : 'bg-gray-100 text-gray-400'
-              }`}>
+              <div className="items-center flex font-extrabold justify-center w-8 h-8 bg-purple-100 text-[rgb(185,166,255)] text-sm rounded-2xl">
                 <span className="block">G</span>
               </div>
               <div className="grow basis-[0%]">
-                <div className={`font-bold ${googleConnected ? 'text-gray-900' : 'text-gray-500'}`}>
+                <div className="font-bold text-gray-900">
                   Google 캘린더
                 </div>
-                <div className={`text-xs ${googleConnected ? 'text-gray-600' : 'text-gray-500'}`}>
-                  {googleConnected ? 'main@gmail.com · 4분 전 동기화' : '연결되지 않음'}
+                <div className="text-xs text-gray-600">
+                  main@gmail.com · {lastSynced}
                 </div>
               </div>
-              <ToggleSwitch active={googleConnected} />
+              <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
             </button>
+            {accountOpen ? (
+              <div className="mx-[14px] mb-3 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                <div className="items-center flex justify-between gap-2">
+                  <span>가져온 일정</span>
+                  <span className="font-bold text-gray-900">{visibleCount}개 표시 중</span>
+                </div>
+                <div className="items-center flex justify-between gap-2 mt-1.5">
+                  <span>동기화 상태</span>
+                  <span className="items-center inline-flex gap-1 font-bold text-purple-700">
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.4} />
+                    정상
+                  </span>
+                </div>
+              </div>
+            ) : null}
           </div>
 
-          <div className="font-bold text-gray-600 text-xs pt-1 pr-1 pb-0 pl-1">
-            표시 옵션
+          <div className="items-center flex justify-between pt-1 pr-1 pb-0 pl-1">
+            <div className="font-bold text-gray-600 text-xs">
+              표시 옵션
+            </div>
+            <button
+              type="button"
+              onClick={toggleAllCalendars}
+              className="font-bold text-xs text-purple-700 transition-all active:scale-[0.97]"
+            >
+              {allVisible ? '모두 숨기기' : '모두 표시'}
+            </button>
           </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             {CALENDAR_OPTIONS.map((option, index) => {
               const active = visibleCalendars[option.id];
-              const disabled = !googleConnected;
 
               return (
                 <button
                   key={option.id}
                   type="button"
-                  onClick={() => {
-                    if (!disabled) toggleCalendar(option.id);
-                  }}
-                  disabled={disabled}
+                  onClick={() => toggleCalendar(option.id)}
                   className={`items-center flex w-full text-left gap-2.5 pt-[11px] pr-[14px] pb-[11px] pl-[14px] transition-all active:scale-[0.99] disabled:opacity-45 ${
                     index < CALENDAR_OPTIONS.length - 1 ? 'border-b' : ''
                   }`}
                   style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
                 >
-                  <div className={`w-3 h-3 rounded-md ${active && !disabled ? option.colorClass : 'bg-purple-50'}`} />
+                  <div className={`w-3 h-3 rounded-md ${active ? option.colorClass : 'bg-purple-50'}`} />
                   <div className="grow basis-[0%]">{option.label}</div>
-                  <ToggleSwitch active={active && !disabled} />
+                  <ToggleSwitch active={active} />
                 </button>
               );
             })}
           </div>
 
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+          <div className="bg-purple-100 border border-purple-50 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="text-gray-800 leading-normal">
-              연결 해제 시 동기화된 외부 일정과 토큰이 모두 삭제돼요.
+              숨긴 캘린더의 일정은 메인 캘린더에서만 보이지 않아요.
             </div>
           </div>
         </div>

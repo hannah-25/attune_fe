@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Search, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 
 const MEDICATION_OPTIONS = [
@@ -72,7 +72,7 @@ export default function MedicationAddPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="약 추가"
-          left={<HeaderIconButton src="/icons/e7d20d8b962bf35f70391b037647deb6e498c04a.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
           right={
             <button
               type="button"

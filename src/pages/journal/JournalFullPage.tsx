@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Plus, X } from 'lucide-react';
+import { Check, ChevronLeft, Plus, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
@@ -339,8 +339,8 @@ export default function JournalFullPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={formatDate(new Date())}
-          left={<HeaderIconButton src="/icons/2a388ad72a45fea2c1c099f07fd840545826255d.svg" />}
-          right={<HeaderIconButton src="/icons/ff088739f488f0ef39daa144b05d6bab96fcf844.svg" />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          right={<HeaderIconButton icon={<X className="h-4 w-4 text-gray-700" strokeWidth={2.4} />} />}
         />
 
         <ScrollArea className="flex flex-col gap-10 pt-2">

@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { formatFullDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
@@ -65,7 +66,7 @@ export default function NewEventPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="새 일정"
-          left={<HeaderIconButton src="/icons/d79c2e541070847ef9bbaaa2ba1496f075cbb058.svg" onClick={() => navigate(-1)} />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <button
