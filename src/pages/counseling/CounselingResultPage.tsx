@@ -2,23 +2,13 @@ import React, { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockSession, mockPrescriptions, mockQnA, type PrescriptionStatus } from '@/mocks/counseling.mock';
 
-const SESSION = {
-  date: '4월 16일 금',
-  clinic: '청담심리상담센터',
-  duration: '40분 진료 · 처방 변경 있음',
-  advice: '식욕 저하는 아침 식사를 가볍게 먼저 하고 약 복용을 권장합니다. 오후 약효 저하는 증량으로 조정하고 2주 후 재평가할 예정입니다.',
-  nextDate: '5월 16일',
-};
-
-type PrescriptionStatus = '증량' | '감량' | '유지';
+const SESSION = mockSession;
 
 const STATUS_OPTIONS: PrescriptionStatus[] = ['증량', '감량', '유지'];
 
-const INITIAL_PRESCRIPTIONS = [
-  { id: 'concerta', name: '콘서타', before: '18mg', after: '27mg', status: '증량' as PrescriptionStatus },
-  { id: 'strattera', name: '스트라테라 40mg', before: null, after: null, status: '유지' as PrescriptionStatus },
-];
+const INITIAL_PRESCRIPTIONS = mockPrescriptions;
 
 export default function CounselingResultPage() {
   const navigate = useNavigate();
@@ -131,14 +121,16 @@ export default function CounselingResultPage() {
               오늘 받은 답변
             </div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
-              <div className="pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-                <div className="font-bold">Q. 아침 식욕이 너무 없어요</div>
-                <div className="mt-1 text-gray-600 leading-normal">아침 식사를 가볍게 먼저 하고 약 복용을 권장</div>
-              </div>
-              <div className="pt-3 pr-[14px] pb-3 pl-[14px]">
-                <div className="font-bold">Q. 약효가 빨리 떨어져요</div>
-                <div className="mt-1 text-gray-600 leading-normal">증량으로 조정 — 2주 후 재평가</div>
-              </div>
+              {mockQnA.map((item, index) => (
+                <div
+                  key={item.question}
+                  className={`pt-3 pr-[14px] pb-3 pl-[14px] ${index < mockQnA.length - 1 ? 'border-b' : ''}`}
+                  style={index < mockQnA.length - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+                >
+                  <div className="font-bold">Q. {item.question}</div>
+                  <div className="mt-1 text-gray-600 leading-normal">{item.answer}</div>
+                </div>
+              ))}
             </div>
           </div>
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">

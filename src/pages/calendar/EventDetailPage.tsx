@@ -2,15 +2,16 @@ import React, { useRef, useState } from 'react';
 import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { mockEventDetail } from '@/mocks/calendar.mock';
 
 const EVENT_DETAIL = {
-  alarmOptions: ['30분 전 · 1시간 전', '10분 전', '알림 없음'],
-  category: '상담',
-  repeatOptions: ['월 1회', '반복 안 함', '매주'],
-  source: 'Google 캘린더 연동',
-  title: '정신건강의학과\n정기 진료',
-  whenOptions: ['5월 13일 화 · 14:00 — 14:40', '5월 13일 화 · 15:00 — 15:40', '5월 14일 수 · 14:00 — 14:40'],
-  whereOptions: ['청담심리상담센터', '서울 마음클리닉', '온라인 상담'],
+  alarmOptions: [mockEventDetail.alarm],
+  category: mockEventDetail.category,
+  repeatOptions: [mockEventDetail.repeat],
+  source: mockEventDetail.source,
+  title: mockEventDetail.title,
+  whenOptions: [mockEventDetail.when],
+  whereOptions: [mockEventDetail.where],
 };
 
 export default function EventDetailPage() {

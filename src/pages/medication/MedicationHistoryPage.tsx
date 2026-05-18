@@ -3,44 +3,15 @@ import { CalendarDays, ChevronLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockHistoryStats, mockHistoryGroups } from '@/mocks/medication.mock';
 
 type Period = '1주' | '1개월' | '3개월' | '직접';
 
 const PERIODS: Period[] = ['1주', '1개월', '3개월', '직접'];
 
-const STATS_MAP: Record<Period, { rate: string; taken: string; missed: string; delayed: string }> = {
-  '1주': { rate: '91%', taken: '19', missed: '2', delayed: '1' },
-  '1개월': { rate: '86%', taken: '52', missed: '8', delayed: '3' },
-  '3개월': { rate: '88%', taken: '156', missed: '20', delayed: '9' },
-  직접: { rate: '86%', taken: '52', missed: '8', delayed: '3' },
-};
+const STATS_MAP = mockHistoryStats;
 
-const HISTORY_GROUPS = [
-  {
-    date: '5월 13일',
-    items: [
-      { icon: '/icons/553aadff6c732777ebf05fd7879f8ace0c08808a.svg', text: '08:00 콘서타 18mg', status: '복용' },
-      { icon: '/icons/b8a302e36ea60d69f9992783ad06a14925a796f1.svg', text: '12:30 콘서타 18mg', status: '복용' },
-      { text: '19:00 스트라테라 40mg', status: '예정', muted: true },
-    ],
-  },
-  {
-    date: '5월 12일',
-    items: [
-      { icon: '/icons/c31c4c0925d22f49ca58fec0a3e791abffca3580.svg', text: '08:00 콘서타 18mg', status: '복용' },
-      { icon: '/icons/719f555dcc9b8aaf4c575aa9cbfc52e2ee272988.svg', text: '12:30 콘서타 18mg', status: '건너뜀' },
-      { icon: '/icons/1196b0549314af128fc7d97294ec92ba1d96593d.svg', text: '19:00 스트라테라 40mg', status: '복용' },
-    ],
-  },
-  {
-    date: '5월 11일',
-    items: [
-      { icon: '/icons/fa6bbf8b97533e585241d6a212c73d52139abc7e.svg', text: '08:00 콘서타 18mg', status: '복용' },
-      { icon: '/icons/49bc90d075790a4096bd013fa7ecd0d5f355895a.svg', text: '12:30 콘서타 18mg', status: '복용' },
-      { icon: '/icons/e64256a64d85adaec88e5c4afbf9732379418611.svg', text: '19:00 스트라테라 40mg', status: '복용' },
-    ],
-  },
-];
+const HISTORY_GROUPS = mockHistoryGroups;
 
 export default function MedicationHistoryPage() {
   const [activePeriod, setActivePeriod] = useState<Period>('1개월');

@@ -1,13 +1,9 @@
 import React from 'react';
 import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockMedicationInfo } from '@/mocks/medication.mock';
 
-const MEDICATION = {
-  name: '콘서타 18mg',
-  ingredient: '메틸페니데이트 · 서방형',
-  efficacy: '주의력결핍 과잉행동장애(ADHD) 증상을 개선합니다. 도파민과 노르에피네프린 재흡수를 억제하여 집중력과 충동 조절을 도와줍니다.',
-  sideEffects: ['식욕 저하', '불면', '두통', '입마름', '두근거림'],
-};
+const MEDICATION = mockMedicationInfo;
 
 export default function MedicationInfoPage() {
   return (

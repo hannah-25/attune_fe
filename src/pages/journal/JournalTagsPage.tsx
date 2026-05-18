@@ -4,18 +4,11 @@ import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockTags } from '@/mocks/journal.mock';
 
 const CATEGORIES = ['감정·증상', '부작용', '업무', '목표'];
 
-const INITIAL_TAGS = [
-  { id: 'focus', label: '집중 어려움', count: '3회', active: true },
-  { id: 'blank', label: '멍해짐', count: '3회', active: true },
-  { id: 'irritation', label: '짜증', count: '3회', active: true },
-  { id: 'anxiety', label: '불안', count: '3회', active: true },
-  { id: 'lethargy', label: '무기력', count: '3회', active: true },
-  { id: 'headache', label: '두근거림', active: false },
-  { id: 'sleepy', label: '졸림', active: false },
-];
+const INITIAL_TAGS = mockTags;
 
 export default function JournalTagsPage() {
   const navigate = useNavigate();

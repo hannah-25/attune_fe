@@ -4,14 +4,12 @@ import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockMedications, mockNextDose, mockPastMedications } from '@/mocks/medication.mock';
 
 const INITIAL_SECONDS = 2 * 60 + 14; // 2:14
 const SNOOZE_SECONDS = 10 * 60;
 
-const initialMedications = [
-  { id: 1, name: '콘서타 18mg', detail: '메틸페니데이트 · 2월 3일~', schedule: '하루 2회 · 8:00, 12:30', active: true, iconSrc: '/icons/f487caf883fee29fd8f5d6a6367147ff53ff6eeb.svg', bg: 'bg-purple-300' },
-  { id: 2, name: '스트라테라 40mg', detail: '아토목세틴 · 4월 1일~', schedule: '하루 1회 · 19:00', active: true, iconSrc: '/icons/8fb8f0ff61b3f813a2a9b5e18b6950f525e506f3.svg', bg: 'bg-purple-500' },
-];
+const initialMedications = mockMedications;
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -62,7 +60,7 @@ export default function MedicationListPage() {
               </div>
               {!taken && (
                 <div className="font-bold text-gray-500">
-                  · 콘서타 18mg · 12:30
+                  · {mockNextDose.name} · {mockNextDose.time}
                 </div>
               )}
             </div>
@@ -123,27 +121,29 @@ export default function MedicationListPage() {
             </div>
           ))}
           <div className="font-bold text-gray-600 pt-2 pr-1 pb-0 pl-1">
-            지난 약 (1)
+            지난 약 ({mockPastMedications.length})
           </div>
-          <div className="bg-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
-            <div className="items-center flex gap-2.5 opacity-[0.7]">
-              <div className="items-center flex justify-center w-[38px] h-[38px] bg-[rgb(208,_201,_189)] rounded-xl">
-                <div className="overflow-hidden w-[18px] h-[18px]">
-                  <img src="/icons/82f6316729e2405770bf424ad5357aa78565cb47.svg" className="block size-full" />
+          {mockPastMedications.map((med) => (
+            <div key={med.id} className="bg-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+              <div className="items-center flex gap-2.5 opacity-[0.7]">
+                <div className="items-center flex justify-center w-[38px] h-[38px] bg-[rgb(208,201,189)] rounded-xl">
+                  <div className="overflow-hidden w-[18px] h-[18px]">
+                    <img src={med.iconSrc} className="block size-full" />
+                  </div>
                 </div>
+                <div className="grow basis-[0%]">
+                  <div className="font-bold text-sm">{med.name}</div>
+                  <div className="text-gray-600 text-xs">{med.period}</div>
+                </div>
+                <button
+                  type="button"
+                  className="items-center flex font-semibold whitespace-nowrap border border-gray-300 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]"
+                >
+                  <span className="block">이력</span>
+                </button>
               </div>
-              <div className="grow basis-[0%]">
-                <div className="font-bold text-sm">아데랄 10mg</div>
-                <div className="text-gray-600 text-xs">1월 14일 — 2월 28일</div>
-              </div>
-              <button
-                type="button"
-                className="items-center flex font-semibold whitespace-nowrap border border-gray-300 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]"
-              >
-                <span className="block">이력</span>
-              </button>
             </div>
-          </div>
+          ))}
         </ScrollArea>
         <TabBar active="약" />
       </div>
