@@ -1,34 +1,10 @@
 import React from 'react';
 import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockPostDetail, mockComments } from '@/mocks/community.mock';
 
-const postContent = [
-  '콘서타를 시작한 지 일주일 정도 됐는데, 오전에는 확실히 머릿속이 조용해지는 느낌이 있어요. 할 일을 하나씩 붙잡고 끝까지 가져가는 시간이 조금 늘었습니다.',
-  '다만 오후 3시쯤부터 속이 비고 예민해지는 느낌이 있고, 잠들기 전까지 긴장이 남아 있는 날도 있네요. 물을 자주 마시고 점심을 챙겨 먹으면 조금 덜한 것 같아요.',
-  '비슷한 시기에 적응하신 분들은 언제쯤 몸이 편해졌나요? 병원에 가기 전까지 기록해두면 좋을 증상이나 생활 팁이 있으면 공유 부탁드려요.',
-];
-
-const comments = [
-  {
-    author: '루나',
-    avatarClass: 'bg-[rgb(208,_201,_189)]',
-    meta: '방금',
-    body: '저도 비슷했어요. 식사랑 수면 기록을 같이 적어두면 진료 때 설명하기 좋더라고요.',
-  },
-  {
-    author: '글쓴이',
-    avatarClass: 'bg-purple-300',
-    meta: '방금',
-    body: '감사합니다. 오늘부터 시간대별로 메모해볼게요.',
-    isAuthor: true,
-  },
-  {
-    author: '익명',
-    avatarClass: 'bg-[rgb(208,_201,_189)]',
-    meta: '방금',
-    body: '오후에 카페인을 줄이면 덜 예민해지는 경우도 있었어요. 무리하지 말고 천천히 보세요.',
-  },
-];
+const postContent = mockPostDetail.paragraphs;
+const comments = mockComments;
 
 export default function CommunityPostPage() {
   return (
@@ -46,13 +22,13 @@ export default function CommunityPostPage() {
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-0 pt-0 pr-4 pb-20 pl-4">
           <div className="items-center flex mb-[10px] gap-1.5">
             <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-              <span className="block">약물 치료</span>
+              <span className="block">{mockPostDetail.category}</span>
             </div>
-            <div className="font-bold text-gray-500 text-xs">익명 · 2시간 전</div>
+            <div className="font-bold text-gray-500 text-xs">{mockPostDetail.author} · {mockPostDetail.time}</div>
           </div>
 
           <div className="font-extrabold mb-5 text-lg leading-[23.4px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-            콘서타 1주차 후기, 오후에 살짝 예민해져요
+            {mockPostDetail.title}
           </div>
 
           <div className="flex flex-col gap-3 text-[15px] leading-[1.7] text-gray-700">
@@ -70,7 +46,7 @@ export default function CommunityPostPage() {
                   alt=""
                 />
               </div>
-              <div className="font-bold">공감 12</div>
+              <div className="font-bold">공감 {mockPostDetail.likes}</div>
             </div>
             <div className="items-center flex grow justify-center bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] basis-0 gap-1.5 p-2 rounded-[0.875rem]">
               <div className="overflow-hidden w-[10px] h-[10px]">
@@ -80,12 +56,12 @@ export default function CommunityPostPage() {
                   alt=""
                 />
               </div>
-              <div className="font-bold">댓글 8</div>
+              <div className="font-bold">댓글 {mockPostDetail.commentCount}</div>
             </div>
           </div>
 
           <div className="h-px mt-4 mb-4 bg-purple-50" />
-          <div className="font-bold mb-2 text-gray-600">댓글 8</div>
+          <div className="font-bold mb-2 text-gray-600">댓글 {mockPostDetail.commentCount}</div>
 
           {comments.map((comment) => (
             <div className="flex mb-4 gap-2" key={`${comment.author}-${comment.body}`}>

@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatMonthDay } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockDayRecords } from '@/mocks/journal.mock';
 
 type DotColor = 'purple' | 'orange' | 'blue' | 'green';
 
@@ -14,29 +15,7 @@ const dotColorClass: Record<DotColor, string> = {
   green: 'bg-[rgb(80,190,130)]',
 };
 
-// 날짜별 기록 카테고리 (mock data)
-const dayRecords: Record<number, DotColor[]> = {
-  2:  ['purple'],
-  3:  ['purple', 'blue'],
-  5:  ['orange'],
-  6:  ['purple', 'orange'],
-  7:  ['purple'],
-  8:  ['green'],
-  9:  ['purple', 'blue'],
-  11: ['orange', 'blue'],
-  12: ['purple', 'green'],
-  16: ['purple'],
-  17: ['orange'],
-  18: ['purple', 'blue'],
-  19: ['purple'],
-  20: ['green'],
-  22: ['purple', 'orange'],
-  23: ['blue'],
-  24: ['purple'],
-  25: ['green', 'purple'],
-  26: ['purple', 'orange'],
-  27: ['purple'],
-};
+const dayRecords = mockDayRecords;
 
 const TODAY_DATE = new Date();
 const TODAY = TODAY_DATE.getDate();

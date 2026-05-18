@@ -4,12 +4,9 @@ import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { mockTodos, mockScheduleItems, mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
 
-const initialTodos = [
-  { id: 1, text: '병원 서류 챙기기', done: true },
-  { id: 2, text: '리포트 초안 제출', done: false },
-  { id: 3, text: '저녁 약 챙기기', done: false },
-];
+const initialTodos = mockTodos;
 
 export default function HomeListPage() {
   const navigate = useNavigate();
@@ -49,11 +46,11 @@ export default function HomeListPage() {
           <div className="flex gap-2">
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">달성률</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>71%</div>
+              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{mockWeeklyStats.goalAchievement}</div>
             </div>
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">복약률</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>86%</div>
+              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{mockWeeklyStats.adherence}</div>
             </div>
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">일지 작성</div>
@@ -113,24 +110,14 @@ export default function HomeListPage() {
             <button type="button" onClick={() => navigate('/calendar')} className="text-xs text-gray-400">전체보기</button>
           </div>
           <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-3 py-2 rounded-2xl flex flex-col">
-            <div className="items-center flex gap-3 py-2">
-              <div className="font-medium text-[11px] text-purple-500 w-[34px] shrink-0">오늘</div>
-              <div className="w-2 h-2 bg-purple-500 shrink-0 rounded-full"></div>
-              <div className="font-semibold text-xs text-gray-800 grow">병원 진료</div>
-              <div className="text-[10px] text-gray-400 shrink-0">14:00</div>
-            </div>
-            <div className="items-center flex gap-3 py-2 border-t border-gray-100">
-              <div className="font-medium text-[11px] text-gray-400 w-[34px] shrink-0">내일</div>
-              <div className="w-2 h-2 bg-purple-300 shrink-0 rounded-full"></div>
-              <div className="font-semibold text-xs text-gray-800 grow">팀 미팅</div>
-              <div className="text-[10px] text-gray-400 shrink-0">09:00</div>
-            </div>
-            <div className="items-center flex gap-3 py-2 border-t border-gray-100">
-              <div className="font-medium text-[11px] text-gray-400 w-[34px] shrink-0">목</div>
-              <div className="w-2 h-2 bg-purple-300 shrink-0 rounded-full"></div>
-              <div className="font-semibold text-xs text-gray-800 grow">정신건강의학과 상담</div>
-              <div className="text-[10px] text-gray-400 shrink-0">14:00</div>
-            </div>
+            {mockScheduleItems.map((item, index) => (
+              <div key={item.title} className={`items-center flex gap-3 py-2 ${index > 0 ? 'border-t border-gray-100' : ''}`}>
+                <div className={`font-medium text-[11px] ${item.labelColor} w-[34px] shrink-0`}>{item.label}</div>
+                <div className={`w-2 h-2 ${item.dotColor} shrink-0 rounded-full`} />
+                <div className="font-semibold text-xs text-gray-800 grow">{item.title}</div>
+                <div className="text-[10px] text-gray-400 shrink-0">{item.time}</div>
+              </div>
+            ))}
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">주간 인사이트</div>
@@ -148,8 +135,8 @@ export default function HomeListPage() {
               </svg>
             </div>
             <div className="grow">
-              <div className="font-bold text-xs text-gray-900 leading-tight whitespace-nowrap">복용 2시간 후 집중력 <span className="text-purple-600">+24%</span></div>
-              <div className="text-[10px] text-gray-500 mt-1">복약률 86% · 달성률 71%</div>
+              <div className="font-bold text-xs text-gray-900 leading-tight whitespace-nowrap">{mockInsight.title.replace(mockInsight.highlight, '')} <span className="text-purple-600">{mockInsight.highlight}</span></div>
+              <div className="text-[10px] text-gray-500 mt-1">{mockInsight.subtitle}</div>
             </div>
             <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6"/>

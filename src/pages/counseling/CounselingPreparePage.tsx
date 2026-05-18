@@ -3,14 +3,11 @@ import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { formatUpcomingDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { mockSummaryStats, mockSummaryText, mockQuestions } from '@/mocks/counseling.mock';
 
-const SUMMARY_STATS = { adherence: '88%', emotion: '6.2', mistakes: '7회' };
-const SUMMARY_TEXT = '아침 약 복용 후 집중력이 높아지는 패턴이 보여요. 오후 4시 이후 약효 저하와 수면 어려움도 꾸준히 기록되었어요.';
-const INITIAL_QUESTIONS = [
-  { text: '아침 식욕이 너무 없어요. 다른 약으로 바꿔야 할까요?', checked: true },
-  { text: '오후 4시 이후 약효가 빨리 떨어지는 느낌이에요', checked: true },
-  { text: '수면제와 함께 복용해도 괜찮을까요?', checked: false },
-];
+const SUMMARY_STATS = mockSummaryStats;
+const SUMMARY_TEXT = mockSummaryText;
+const INITIAL_QUESTIONS = mockQuestions;
 
 const nextAppointment = new Date();
 nextAppointment.setDate(nextAppointment.getDate() + 7);
