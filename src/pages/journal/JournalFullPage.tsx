@@ -74,6 +74,12 @@ const initialGoals = [
   { label: '약속/일정 10분 전에 준비 완료하기', value: 0 },
 ];
 
+const SLEEP_OPTIONS = ['4h-', '5h', '6h', '7h', '8h', '9h+'] as const;
+type SleepOption = typeof SLEEP_OPTIONS[number];
+
+const MEAL_OPTIONS = ['아', '점', '저'] as const;
+type MealKey = typeof MEAL_OPTIONS[number];
+
 function EditableTagChip({
   label,
   selected,
@@ -179,7 +185,7 @@ function TagSection({
               onBlur={() => { if (!draft.trim()) setIsAdding(false); }}
               onKeyDown={(e) => { if (e.key === 'Escape') { setDraft(''); setIsAdding(false); } }}
               placeholder="태그 이름"
-              className="h-9 w-28 bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-sm"
+              className="h-9 w-28 bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-base focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
             />
             <button
               type="submit"
@@ -268,6 +274,20 @@ export default function JournalFullPage() {
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
 
+  // 수면
+  const [sleep, setSleep] = useState<SleepOption | null>(null);
+  // 식사
+  const [meals, setMeals] = useState<Set<MealKey>>(new Set());
+
+  const toggleMeal = (meal: MealKey) => {
+    setMeals((prev) => {
+      const next = new Set(prev);
+      if (next.has(meal)) next.delete(meal);
+      else next.add(meal);
+      return next;
+    });
+  };
+
   const toggleTag = (sectionTitle: string, label: string) => {
     setSections((currentSections) =>
       currentSections.map((section) =>
@@ -308,6 +328,9 @@ export default function JournalFullPage() {
     setEditingSections((current) => ({ ...current, [sectionTitle]: !current[sectionTitle] }));
   };
 
+  const sleepLabel = sleep ?? '—';
+  const sleepBarCount = sleep ? SLEEP_OPTIONS.indexOf(sleep) + 1 : 0;
+
   return (
     <div
       className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
@@ -323,31 +346,61 @@ export default function JournalFullPage() {
         <ScrollArea className="flex flex-col gap-10 pt-2">
           <section>
             <div className="grid grid-cols-2 gap-3">
+              {/* 수면 카드 */}
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
-                <div className="flex items-center gap-1 mb-1">
+                <div className="flex items-center gap-1 mb-2">
                   <span className="text-sm">🌙</span>
                   <div className="font-semibold text-xs text-gray-600">수면</div>
                 </div>
-                <div className="font-bold text-lg text-gray-300" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                  —
+                <div className="font-bold text-lg text-gray-800" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                  {sleepLabel}
                 </div>
                 <div className="flex mt-[6px] gap-[2px]">
-                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
-                  <div className="grow h-1 bg-gray-100 basis-[0%] rounded-xs"></div>
+                  {SLEEP_OPTIONS.map((opt, i) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setSleep(sleep === opt ? null : opt)}
+                      className={`grow h-1 rounded-xs transition-colors ${i < sleepBarCount ? 'bg-purple-400' : 'bg-gray-100'}`}
+                      aria-label={opt}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between mt-1">
+                  {SLEEP_OPTIONS.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => setSleep(sleep === opt ? null : opt)}
+                      className={`text-[9px] font-medium transition-colors ${sleep === opt ? 'text-purple-600 font-bold' : 'text-gray-300'}`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
                 </div>
               </div>
+              {/* 식사 카드 */}
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
-                <div className="flex items-center gap-1 mb-1">
+                <div className="flex items-center gap-1 mb-2">
                   <span className="text-sm">🍽️</span>
                   <div className="font-semibold text-xs text-gray-600">식사</div>
                 </div>
-                <div className="flex mt-[6px] gap-1.5">
-                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-[0.875rem]">아</div>
-                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-[0.875rem]">점</div>
-                  <div className="items-center flex font-bold justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-[0.875rem]">저</div>
+                <div className="flex gap-1.5 mt-1">
+                  {MEAL_OPTIONS.map((meal) => (
+                    <button
+                      key={meal}
+                      type="button"
+                      onClick={() => toggleMeal(meal)}
+                      aria-pressed={meals.has(meal)}
+                      className={`items-center flex font-bold justify-center w-9 h-9 rounded-[0.875rem] transition-colors ${
+                        meals.has(meal)
+                          ? 'bg-purple-400 text-white'
+                          : 'bg-gray-100 text-gray-400'
+                      }`}
+                    >
+                      {meal}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -369,27 +422,27 @@ export default function JournalFullPage() {
 
           <div className="flex flex-col gap-5">
             <section>
-            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
-              <div className="font-bold text-sm mb-4">오늘의 목표</div>
-              <div className="flex flex-col gap-4">
-                {goals.map((goal) => (
-                  <GoalSlider
-                    key={goal.label}
-                    {...goal}
-                    onChange={(value) =>
-                      setGoals((currentGoals) =>
-                        currentGoals.map((currentGoal) =>
-                          currentGoal.label === goal.label ? { ...currentGoal, value } : currentGoal,
-                        ),
-                      )
-                    }
-                  />
-                ))}
+              <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
+                <div className="font-bold text-sm mb-4">오늘의 목표</div>
+                <div className="flex flex-col gap-4">
+                  {goals.map((goal) => (
+                    <GoalSlider
+                      key={goal.label}
+                      {...goal}
+                      onChange={(value) =>
+                        setGoals((currentGoals) =>
+                          currentGoals.map((currentGoal) =>
+                            currentGoal.label === goal.label ? { ...currentGoal, value } : currentGoal,
+                          ),
+                        )
+                      }
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-            <div className={`bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl transition-colors ${memoFocused ? 'border-purple-500' : 'border-gray-100'}`}>
+            <div className={`bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl transition-colors ${memoFocused ? 'border-purple-400' : 'border-gray-100'}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="font-semibold text-gray-800">메모</div>
                 {!memoSaved && (

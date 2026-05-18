@@ -241,7 +241,7 @@ export default function JournalTimelinePage() {
                               onBlur={() => { if (!draftTag.trim()) setIsAddingTag(false); }}
                               onKeyDown={e => { if (e.key === 'Escape') { setDraftTag(''); setIsAddingTag(false); } }}
                               placeholder="태그 이름"
-                              className="h-8 w-24 bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-xs"
+                              className="h-8 w-24 bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-base"
                             />
                             <button
                               type="submit"

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
 
 export default function Onboarding2Page() {
+  const navigate = useNavigate();
   const [guideOpen, setGuideOpen] = useState(false);
+  const [symptomText, setSymptomText] = useState('');
 
   return (
     <div
@@ -21,9 +24,11 @@ export default function Onboarding2Page() {
             <label className="font-semibold text-gray-500 text-[11px] leading-tight">증상 서술</label>
             <textarea
               placeholder="자유롭게 적어주세요. 나중에 일지 태그로 추천해드려요."
-              className="grow w-full min-h-[116px] bg-transparent text-gray-900 text-sm leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
+              value={symptomText}
+              onChange={(e) => setSymptomText(e.target.value.slice(0, 500))}
+              className="grow w-full min-h-[116px] bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
             />
-            <div className="text-right text-gray-400 text-xs leading-tight mt-2">0/500</div>
+            <div className="text-right text-gray-400 text-xs leading-tight mt-2">{symptomText.length}/500</div>
           </div>
           <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
             <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen(v => !v)}>
@@ -60,9 +65,14 @@ export default function Onboarding2Page() {
           </div>
           <div className="grow basis-[0%]"></div>
           <div className="text-center text-gray-500 text-xs">최소 50자 이상 입력해 주세요</div>
-          <div className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base min-h-11 mt-3 pt-0 pr-5 pb-0 pl-5 rounded-xl">
+          <button
+            type="button"
+            onClick={() => navigate('/onboarding/3')}
+            disabled={symptomText.length < 50}
+            className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base min-h-11 mt-3 pt-0 pr-5 pb-0 pl-5 rounded-xl disabled:opacity-40"
+          >
             <span className="block">다음</span>
-          </div>
+          </button>
         </div>
       </div>
     </div>

@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
+const initialTodos = [
+  { id: 1, text: '병원 서류 챙기기', done: true },
+  { id: 2, text: '리포트 초안 제출', done: false },
+  { id: 3, text: '저녁 약 챙기기', done: false },
+];
+
 export default function HomeListPage() {
+  const navigate = useNavigate();
+  const [todos, setTodos] = useState(initialTodos);
+
+  const toggleTodo = (id: number) => {
+    setTodos((current) =>
+      current.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo))
+    );
+  };
+
   return (
     <div
       className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
@@ -29,7 +45,7 @@ export default function HomeListPage() {
         <ScrollArea className="flex flex-col gap-2 pt-1">
           <div className="items-center flex justify-between px-1">
             <div className="font-semibold text-sm text-gray-800">주간 통계</div>
-            <button className="text-xs text-gray-400">전체보기</button>
+            <button type="button" onClick={() => navigate('/report')} className="text-xs text-gray-400">전체보기</button>
           </div>
           <div className="flex gap-2">
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
@@ -42,14 +58,20 @@ export default function HomeListPage() {
             </div>
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">일지 작성</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>3/6</div>
+              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>
+                {todos.filter((t) => t.done).length}/{todos.length}
+              </div>
             </div>
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
-            <button className="text-xs text-gray-400">전체보기</button>
+            <button type="button" onClick={() => navigate('/journal/timeline')} className="text-xs text-gray-400">전체보기</button>
           </div>
-          <div className="items-center flex justify-between bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-2xl">
+          <button
+            type="button"
+            onClick={() => navigate('/journal')}
+            className="items-center flex justify-between bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-2xl w-full text-left"
+          >
             <div>
               <div className="font-semibold text-sm text-gray-800">오늘 일지 작성하기</div>
               <div className="text-[11px] text-purple-600 mt-0.5">감정 · 증상 · 수면 · 목표</div>
@@ -59,28 +81,37 @@ export default function HomeListPage() {
                 <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
               </svg>
             </div>
-          </div>
+          </button>
           <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] p-3 rounded-2xl">
             <div className="flex flex-col gap-2">
-              <div className="items-center flex gap-2">
-                <div className="items-center flex justify-center w-4 h-4 bg-purple-300 shrink-0 rounded-full">
-                  <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-                </div>
-                <div className="text-xs text-gray-400 line-through">병원 서류 챙기기</div>
-              </div>
-              <div className="items-center flex gap-2">
-                <div className="w-4 h-4 border border-gray-300 shrink-0 rounded-full"></div>
-                <div className="text-xs text-gray-700">리포트 초안 제출</div>
-              </div>
-              <div className="items-center flex gap-2">
-                <div className="w-4 h-4 border border-gray-300 shrink-0 rounded-full"></div>
-                <div className="text-xs text-gray-700">저녁 약 챙기기</div>
-              </div>
+              {todos.map((todo) => (
+                <button
+                  key={todo.id}
+                  type="button"
+                  onClick={() => toggleTodo(todo.id)}
+                  className="items-center flex gap-2 text-left w-full"
+                >
+                  <div
+                    className={`items-center flex justify-center w-4 h-4 shrink-0 rounded-full transition-colors ${
+                      todo.done ? 'bg-purple-300' : 'border border-gray-300'
+                    }`}
+                  >
+                    {todo.done && (
+                      <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 13l4 4L19 7"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div className={`text-xs transition-colors ${todo.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                    {todo.text}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">예정 일정</div>
-            <button className="text-xs text-gray-400">전체보기</button>
+            <button type="button" onClick={() => navigate('/calendar')} className="text-xs text-gray-400">전체보기</button>
           </div>
           <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-3 py-2 rounded-2xl flex flex-col">
             <div className="items-center flex gap-3 py-2">
@@ -104,9 +135,13 @@ export default function HomeListPage() {
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">주간 인사이트</div>
-            <button className="text-xs text-gray-400">전체보기</button>
+            <button type="button" onClick={() => navigate('/report')} className="text-xs text-gray-400">전체보기</button>
           </div>
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-[1.375rem] items-center flex gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/report')}
+            className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-[1.375rem] items-center flex gap-3 w-full text-left"
+          >
             <div className="items-center flex justify-center w-9 h-9 bg-purple-200 shrink-0 rounded-xl">
               <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
@@ -120,7 +155,7 @@ export default function HomeListPage() {
             <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6"/>
             </svg>
-          </div>
+          </button>
         </ScrollArea>
         <TabBar active="홈" />
       </div>
