@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
+import { login } from '../../app/api/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -9,6 +10,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      setError('이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await login({ email: email.trim(), password });
+      navigate('/home');
+    } catch {
+      setError('로그인에 실패했습니다. 입력한 정보를 확인해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -46,8 +67,9 @@ export default function LoginPage() {
               비밀번호 찾기
             </button>
           </div>
-          <button type="button" onClick={() => navigate('/home')} className="items-center flex font-bold justify-center w-full h-[46px] mt-6 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl">
-            <span className="block">로그인</span>
+          {error ? <div className="text-red-500 text-xs mt-3 px-1">{error}</div> : null}
+          <button type="button" onClick={handleLogin} disabled={isSubmitting} className="items-center flex font-bold justify-center w-full h-[46px] mt-6 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl disabled:opacity-60">
+            <span className="block">{isSubmitting ? '로그인 중...' : '로그인'}</span>
           </button>
           <div className="text-center text-gray-600 mt-4">
             <span className="text-center">계정이 없으신가요? </span>

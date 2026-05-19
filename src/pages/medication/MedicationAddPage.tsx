@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
 import { Bell, CalendarDays, Check, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { createMedication } from '@/api/medication';
 
 const MEDICATION_OPTIONS = [
-  { name: '콘서타 18mg', ingredient: '메틸페니데이트 · 1정' },
-  { name: '스트라테라 40mg', ingredient: '아토목세틴 · 1캡슐' },
-  { name: '메디키넷 10mg', ingredient: '메틸페니데이트 · 1정' },
+  { id: 1, name: '콘서타 18mg', ingredient: '메틸페니데이트 · 1정' },
+  { id: 2, name: '스트라테라 40mg', ingredient: '아토목세틴 · 1캡슐' },
+  { id: 3, name: '메디키넷 10mg', ingredient: '메틸페니데이트 · 1정' },
 ];
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
 
 export default function MedicationAddPage() {
+  const navigate = useNavigate();
   const [selectedMedication, setSelectedMedication] = useState(MEDICATION_OPTIONS[0]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeDays, setActiveDays] = useState(() => new Set(['월', '화', '수', '목', '금']));
   const [holidayPause, setHolidayPause] = useState(false);
   const [reminderOn, setReminderOn] = useState(true);
+  const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const filteredMedications = MEDICATION_OPTIONS.filter((medication) =>
     medication.name.toLowerCase().includes(query.toLowerCase()) || medication.ingredient.toLowerCase().includes(query.toLowerCase())
@@ -31,6 +36,26 @@ export default function MedicationAddPage() {
     });
   };
 
+  const saveMedication = async () => {
+    setError('');
+    setIsSaving(true);
+    try {
+      await createMedication({
+        medicationId: selectedMedication.id,
+        startedAt: toDateKey(new Date()),
+        schedules: [
+          { doseTime: '08:00:00', label: '아침', dosage: selectedMedication.ingredient },
+          { doseTime: '12:30:00', label: '점심', dosage: selectedMedication.ingredient },
+        ],
+      });
+      navigate('/medication');
+    } catch {
+      setError('약을 등록하지 못했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div
       className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
@@ -40,9 +65,10 @@ export default function MedicationAddPage() {
         <TopBar
           title="약 추가"
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
-          right={<div className="items-center flex justify-end min-w-11 h-11"><button type="button" className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl">저장하기</button></div>}
+          right={<div className="items-center flex justify-end min-w-11 h-11"><button type="button" onClick={saveMedication} disabled={isSaving} className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl disabled:opacity-60">{isSaving ? '저장 중' : '저장하기'}</button></div>}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <button type="button" onClick={() => setSearchOpen(true)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="font-semibold w-[84px] text-gray-600 text-left">약 이름</div>
@@ -146,4 +172,10 @@ function ToggleSwitch({ active }: { active: boolean }) {
       <span className={`absolute w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.5625rem] transition-all ${active ? 'left-[18px]' : 'left-[2px]'}`} />
     </span>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }

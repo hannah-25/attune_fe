@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { TopBar } from '../../app/components/TopBar';
+import { completeOnboarding } from '@/api/onboarding';
 
 export default function Onboarding5Page() {
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const finishOnboarding = async () => {
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await completeOnboarding();
+      navigate('/home');
+    } catch {
+      setError('온보딩 완료 처리에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -23,12 +39,14 @@ export default function Onboarding5Page() {
             <br />
             하루의 작은 변화를 함께 만들어봐요.
           </p>
+          {error ? <div className="text-red-500 text-xs mt-4">{error}</div> : null}
           <button
             type="button"
-            onClick={() => navigate('/home')}
-            className="items-center flex font-bold justify-center text-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base min-h-11 mt-8 pt-0 pr-5 pb-0 pl-5 rounded-xl transition-all active:scale-[0.97]"
+            onClick={finishOnboarding}
+            disabled={isSubmitting}
+            className="items-center flex font-bold justify-center text-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base min-h-11 mt-8 pt-0 pr-5 pb-0 pl-5 rounded-xl transition-all active:scale-[0.97] disabled:opacity-60"
           >
-            <span className="block text-center">앱으로 가기</span>
+            <span className="block text-center">{isSubmitting ? '완료 중...' : '앱으로 가기'}</span>
           </button>
         </div>
       </div>

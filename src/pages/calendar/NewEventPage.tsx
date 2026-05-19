@@ -1,31 +1,41 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Bell, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { formatFullDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import {
+  createSchedule,
+  createScheduleCategory,
+  getSchedule,
+  getScheduleCategories,
+  ScheduleCategory,
+  updateSchedule,
+} from '@/api/schedule';
 
 const now = new Date();
-const startDefault = formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0));
-const endDefault = formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0));
+const startDefaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0);
+const endDefaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0);
 
 const START_OPTIONS = [
-  startDefault,
-  formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0)),
-  formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0)),
+  startDefaultDate,
+  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0),
+  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0),
 ];
 
 const END_OPTIONS = [
-  endDefault,
-  formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0)),
-  formatFullDateTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0)),
+  endDefaultDate,
+  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0),
+  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0),
 ];
 
 const REPEAT_OPTIONS = ['안 함', '매주', '매월'] as const;
 const ALARM_OPTIONS = ['없음', '10분 전', '30분 전', '1시간 전'] as const;
-const INITIAL_CATEGORIES = ['상담', '업무', '복약', '개인'];
+const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
 
 export default function NewEventPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const scheduleId = Number(searchParams.get('id'));
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
@@ -35,25 +45,93 @@ export default function NewEventPage() {
   const [endIndex, setEndIndex] = useState(0);
   const [repeatIndex, setRepeatIndex] = useState(0);
   const [alarmIndex, setAlarmIndex] = useState(0);
-  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
-  const [selectedCategory, setSelectedCategory] = useState('상담');
+  const [categories, setCategories] = useState<ScheduleCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
   const [memo, setMemo] = useState('');
   const [memoOpen, setMemoOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [error, setError] = useState('');
 
   const markDirty = () => setDirty(true);
-  const canSave = title.trim().length > 0 && dirty;
+  const canSave = title.trim().length > 0 && selectedCategoryId !== null && dirty;
 
-  const addCategory = () => {
+  useEffect(() => {
+    let ignore = false;
+
+    Promise.all([
+      getScheduleCategories(),
+      scheduleId ? getSchedule(scheduleId) : Promise.resolve(null),
+    ])
+      .then(([categoryResponse, detail]) => {
+        if (ignore) return;
+        setCategories(categoryResponse.categories);
+        setSelectedCategoryId(categoryResponse.categories[0]?.categoryId ?? null);
+
+        if (detail) {
+          setTitle(detail.title);
+          setLocation(detail.place ?? '');
+          setAllDay(detail.isAllDay);
+          setMemo(detail.description ?? '');
+          setMemoOpen(Boolean(detail.description));
+          setSelectedCategoryId(detail.categoryId);
+          setDirty(false);
+        }
+      })
+      .catch(() => {
+        if (!ignore) setError('일정 정보를 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [scheduleId]);
+
+  const addCategory = async () => {
     const trimmedCategory = newCategory.trim();
     if (!trimmedCategory) return;
-    setCategories((current) => [...current, trimmedCategory]);
-    setSelectedCategory(trimmedCategory);
-    setNewCategory('');
-    setAddingCategory(false);
-    markDirty();
+
+    try {
+      await createScheduleCategory({ categoryName: trimmedCategory, color: DEFAULT_CATEGORY_COLOR });
+      const response = await getScheduleCategories();
+      setCategories(response.categories);
+      setSelectedCategoryId(response.categories.find((category) => category.categoryName === trimmedCategory)?.categoryId ?? response.categories[0]?.categoryId ?? null);
+      setNewCategory('');
+      setAddingCategory(false);
+      markDirty();
+    } catch {
+      setError('카테고리를 추가하지 못했습니다.');
+    }
+  };
+
+  const saveSchedule = async () => {
+    if (!canSave || selectedCategoryId === null) return;
+
+    const alarmedAt = getAlarmedAt(START_OPTIONS[startIndex], ALARM_OPTIONS[alarmIndex]);
+    const payload = {
+      title: title.trim(),
+      description: memo.trim() || undefined,
+      categoryId: selectedCategoryId,
+      place: location.trim() || undefined,
+      isAllDay: allDay,
+      startTime: toLocalIso(START_OPTIONS[startIndex]),
+      endTime: toLocalIso(END_OPTIONS[endIndex]),
+      alarmEnabled: alarmedAt.length > 0,
+      alarmedAt,
+    };
+
+    try {
+      if (scheduleId) {
+        await updateSchedule(scheduleId, payload);
+        navigate(`/calendar/event?id=${scheduleId}`);
+      } else {
+        await createSchedule(payload);
+        navigate('/calendar');
+      }
+    } catch {
+      setError('일정을 저장하지 못했습니다.');
+    }
   };
 
   return (
@@ -63,14 +141,14 @@ export default function NewEventPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          title="새 일정"
+          title={scheduleId ? '일정 수정' : '새 일정'}
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
               <button
                 type="button"
                 disabled={!canSave}
-                onClick={() => setDirty(false)}
+                onClick={saveSchedule}
                 className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-30 disabled:active:scale-100"
               >
                 저장
@@ -79,6 +157,7 @@ export default function NewEventPage() {
           }
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <input
               value={title}
@@ -122,18 +201,18 @@ export default function NewEventPage() {
               <div className="grow font-semibold basis-[0%]">종일</div>
               <ToggleSwitch active={allDay} />
             </button>
-            <RowButton label="시작" value={allDay ? '오늘' : START_OPTIONS[startIndex]} onClick={() => { setStartIndex((index) => (index + 1) % START_OPTIONS.length); markDirty(); }} />
-            <RowButton label="종료" value={allDay ? '오늘' : END_OPTIONS[endIndex]} onClick={() => { setEndIndex((index) => (index + 1) % END_OPTIONS.length); markDirty(); }} />
+            <RowButton label="시작" value={allDay ? '오늘' : formatFullDateTime(START_OPTIONS[startIndex])} onClick={() => { setStartIndex((index) => (index + 1) % START_OPTIONS.length); markDirty(); }} />
+            <RowButton label="종료" value={allDay ? '오늘' : formatFullDateTime(END_OPTIONS[endIndex])} onClick={() => { setEndIndex((index) => (index + 1) % END_OPTIONS.length); markDirty(); }} />
             <RowButton label="반복" value={REPEAT_OPTIONS[repeatIndex]} last onClick={() => { setRepeatIndex((index) => (index + 1) % REPEAT_OPTIONS.length); markDirty(); }} />
           </div>
           <div>
             <div className="font-bold mb-[6px] text-gray-600">카테고리</div>
             <div className="flex flex-wrap gap-1.5">
               {categories.map((category) => {
-                const selected = selectedCategory === category;
+                const selected = selectedCategoryId === category.categoryId;
                 return (
-                  <button key={category} type="button" onClick={() => { setSelectedCategory(category); markDirty(); }} className={`items-center flex font-semibold whitespace-nowrap border-transparent border gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${selected ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700'}`}>
-                    {category}
+                  <button key={category.categoryId} type="button" onClick={() => { setSelectedCategoryId(category.categoryId); markDirty(); }} className={`items-center flex font-semibold whitespace-nowrap border-transparent border gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${selected ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700'}`}>
+                    {category.categoryName}
                   </button>
                 );
               })}
@@ -179,6 +258,30 @@ export default function NewEventPage() {
       </div>
     </div>
   );
+}
+
+function toLocalIso(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+}
+
+function getAlarmedAt(startTime: Date, alarmOption: (typeof ALARM_OPTIONS)[number]) {
+  const minutesBefore = {
+    없음: 0,
+    '10분 전': 10,
+    '30분 전': 30,
+    '1시간 전': 60,
+  }[alarmOption];
+
+  if (!minutesBefore) return [];
+
+  const alarmDate = new Date(startTime);
+  alarmDate.setMinutes(startTime.getMinutes() - minutesBefore);
+  return [toLocalIso(alarmDate)];
 }
 
 function RowButton({ icon, label, last = false, onClick, value }: { icon?: React.ReactNode; label: string; last?: boolean; onClick: () => void; value: string }) {

@@ -1,15 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CalendarDays, Check, ChevronLeft, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
-import { HistoryPeriod, mockHistoryGroups, mockHistoryStats } from '@/mocks/medication.mock';
+import { getAllMedicationLogs, MedicationLogStatus } from '@/api/medication';
 
+type HistoryPeriod = '1주' | '1개월' | '3개월' | '직접';
 const PERIODS: HistoryPeriod[] = ['1주', '1개월', '3개월', '직접'];
+type MedicationLog = {
+  takenAt: string;
+  status: MedicationLogStatus;
+  scheduleId: number;
+};
 
 export default function MedicationHistoryPage() {
   const [activePeriod, setActivePeriod] = useState<HistoryPeriod>('1개월');
-  const stats = mockHistoryStats[activePeriod];
+  const [logs, setLogs] = useState<MedicationLog[]>([]);
+  const [error, setError] = useState('');
+  const range = useMemo(() => getRange(activePeriod), [activePeriod]);
+  const stats = useMemo(() => getStats(logs), [logs]);
+  const groups = useMemo(() => groupLogs(logs), [logs]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getAllMedicationLogs(range)
+      .then((response) => {
+        if (!ignore) setLogs(extractLogs(response));
+      })
+      .catch(() => {
+        if (!ignore) setError('복용 이력을 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [range]);
 
   return (
     <div
@@ -38,6 +64,7 @@ export default function MedicationHistoryPage() {
           })}
         </div>
         <ScrollArea>
+          {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
           <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
             <div className="flex justify-around">
               <Stat value={stats.rate} label="복용률" />
@@ -46,7 +73,7 @@ export default function MedicationHistoryPage() {
               <Stat value={stats.delayed} label="미루기" />
             </div>
           </div>
-          {mockHistoryGroups.map((group) => (
+          {groups.map((group) => (
             <div key={group.date} className="mb-[14px]">
               <div className="font-bold mb-[6px] text-gray-600 pt-0 pr-1 pb-0 pl-1">{group.date}</div>
               <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
@@ -80,4 +107,63 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="text-center mt-[2px] text-gray-600 text-xs">{label}</div>
     </div>
   );
+}
+
+function getRange(period: HistoryPeriod) {
+  const end = new Date();
+  const start = new Date();
+  const days = period === '1주' ? 7 : period === '3개월' ? 90 : 30;
+  start.setDate(end.getDate() - days + 1);
+  return { startDate: toDateKey(start), endDate: toDateKey(end) };
+}
+
+function extractLogs(response: unknown): MedicationLog[] {
+  if (Array.isArray(response)) return response as MedicationLog[];
+  if (response && typeof response === 'object' && 'logs' in response && Array.isArray((response as { logs: unknown }).logs)) {
+    return (response as { logs: MedicationLog[] }).logs;
+  }
+  return [];
+}
+
+function getStats(logs: MedicationLog[]) {
+  const taken = logs.filter((log) => log.status === 'TAKEN').length;
+  const missed = logs.filter((log) => log.status === 'MISSED' || log.status === 'SKIPPED').length;
+  const total = logs.length;
+  const rate = total > 0 ? Math.round((taken / total) * 100) : 0;
+  return { rate: `${rate}%`, taken: String(taken), missed: String(missed), delayed: '0' };
+}
+
+function groupLogs(logs: MedicationLog[]) {
+  const groups = new Map<string, MedicationLog[]>();
+  logs.forEach((log) => {
+    const date = formatDate(log.takenAt);
+    groups.set(date, [...(groups.get(date) ?? []), log]);
+  });
+
+  return Array.from(groups.entries()).map(([date, items]) => ({
+    date,
+    items: items.map((item) => ({
+      text: `${formatTime(item.takenAt)} 스케줄 #${item.scheduleId}`,
+      status: item.status === 'TAKEN' ? '복용' : item.status === 'SKIPPED' ? '건너뜀' : '미복용',
+      muted: item.status !== 'TAKEN',
+    })),
+  }));
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(0, 10);
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(11, 16);
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }

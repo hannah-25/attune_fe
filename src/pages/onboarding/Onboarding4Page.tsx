@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
+import { submitOnboardingGoals } from '@/api/onboarding';
 
 const GOALS = [
   '한 가지 일을 20분 이상 이어가기',
@@ -14,6 +15,9 @@ export default function Onboarding4Page() {
   const navigate = useNavigate();
   const [selectedGoals, setSelectedGoals] = useState<Set<string>>(() => new Set([GOALS[0]]));
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customGoal, setCustomGoal] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleGoal = (goal: string) => {
     setSelectedGoals((prev) => {
@@ -27,6 +31,22 @@ export default function Onboarding4Page() {
 
       return next;
     });
+  };
+
+  const goNext = async () => {
+    const goals = Array.from(selectedGoals);
+    if (customGoal.trim()) goals.push(customGoal.trim());
+
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await submitOnboardingGoals(goals.map((title) => ({ title })));
+      navigate('/onboarding/5');
+    } catch {
+      setError('목표를 저장하지 못했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,18 +97,21 @@ export default function Onboarding4Page() {
           {showCustomInput ? (
             <input
               type="text"
+              value={customGoal}
+              onChange={(event) => setCustomGoal(event.target.value)}
               className="mt-3 w-full h-11 rounded-xl border border-gray-200 bg-white px-3 text-base outline-none focus:border-purple-300"
               placeholder="원하는 목표를 입력해 주세요"
             />
           ) : null}
           <div className="grow basis-[0%]" />
+          {error ? <div className="text-red-500 text-xs text-center mb-2">{error}</div> : null}
           <button
             type="button"
-            onClick={() => navigate('/onboarding/5')}
-            disabled={selectedGoals.size === 0}
+            onClick={goNext}
+            disabled={(selectedGoals.size === 0 && !customGoal.trim()) || isSubmitting}
             className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl transition-all active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100"
           >
-            <span className="block">다음</span>
+            <span className="block">{isSubmitting ? '저장 중...' : '다음'}</span>
           </button>
         </div>
       </div>

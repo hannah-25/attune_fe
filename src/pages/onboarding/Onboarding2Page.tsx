@@ -2,11 +2,33 @@ import React, { useState } from 'react';
 import { ChevronDown, Info } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
+import { submitOnboardingSymptoms } from '@/api/onboarding';
 
 export default function Onboarding2Page() {
   const navigate = useNavigate();
   const [guideOpen, setGuideOpen] = useState(false);
   const [symptomText, setSymptomText] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const goNext = async () => {
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await submitOnboardingSymptoms({ description: symptomText, emotionalEvent: '' });
+      navigate('/onboarding/3');
+    } catch {
+      setError('증상 서술을 저장하지 못했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSymptomTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSymptomText(event.target.value);
+    event.target.style.height = 'auto';
+    event.target.style.height = `${event.target.scrollHeight}px`;
+  };
 
   return (
     <div
@@ -26,10 +48,9 @@ export default function Onboarding2Page() {
             <textarea
               placeholder="자유롭게 적어주세요. 나중에 태그로 추천해드려요."
               value={symptomText}
-              onChange={(e) => setSymptomText(e.target.value.slice(0, 500))}
-              className="grow w-full min-h-[116px] bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
+              onChange={handleSymptomTextChange}
+              className="grow w-full min-h-[116px] overflow-hidden bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
             />
-            <div className="text-right text-gray-400 text-xs leading-tight mt-2">{symptomText.length}/500</div>
           </div>
           <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
             <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen((v) => !v)}>
@@ -56,13 +77,14 @@ export default function Onboarding2Page() {
           </div>
           <div className="grow basis-[0%]"></div>
           <div className="text-center text-gray-500 text-xs">최소 50자 이상 입력해 주세요</div>
+          {error ? <div className="text-red-500 text-xs text-center mt-2">{error}</div> : null}
           <button
             type="button"
-            onClick={() => navigate('/onboarding/3')}
-            disabled={symptomText.length < 50}
+            onClick={goNext}
+            disabled={symptomText.length < 50 || isSubmitting}
             className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base min-h-11 mt-3 pt-0 pr-5 pb-0 pl-5 rounded-xl disabled:opacity-40"
           >
-            <span className="block">다음</span>
+            <span className="block">{isSubmitting ? '저장 중...' : '다음'}</span>
           </button>
         </div>
       </div>

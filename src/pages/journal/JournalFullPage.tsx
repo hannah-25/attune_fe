@@ -1,16 +1,51 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronLeft, Moon, Plus, Utensils, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import {
+  checkCondition,
+  checkSideEffect,
+  checkTrouble,
+  createConditionTag,
+  createJournalGoal,
+  updateJournalGoal,
+  createMemo,
+  createSideEffectTag,
+  createSleepMeal,
+  createTroubleTag,
+  deleteConditionTag,
+  deleteJournalGoal,
+  deleteSideEffectTag,
+  deleteTroubleTag,
+  getConditionTags,
+  getJournal,
+  getSideEffectTags,
+  getSleepMeal,
+  getTroubleTags,
+  scoreJournalGoal,
+  ConditionType,
+  TroubleType,
+} from '@/api/journal';
 
 type Tone = 'purple' | 'orange' | 'blue';
-type Tag = { label: string; selected?: boolean };
+type Tag = {
+  label: string;
+  selected?: boolean;
+  tagId?: number;
+  source?: 'condition' | 'sideEffect' | 'trouble';
+};
 type Section = {
   title: string;
   tone: Tone;
   tags: Tag[];
+};
+type GoalState = {
+  goalId?: number;
+  label: string;
+  value: number;
 };
 
 const toneStyles: Record<Tone, { dot: string; selected: string; unselected: string }> = {
@@ -31,48 +66,28 @@ const toneStyles: Record<Tone, { dot: string; selected: string; unselected: stri
   },
 };
 
-const initialSections: Section[] = [
-  {
-    title: '감정 · 증상',
-    tone: 'purple',
-    tags: [
-      { label: '집중 어려움' },
-      { label: '멍해짐' },
-      { label: '짜증' },
-      { label: '불안' },
-      { label: '무기력' },
-      { label: '초조' },
-      { label: '몰입' },
-    ],
-  },
-  {
-    title: '부작용',
-    tone: 'orange',
-    tags: [
-      { label: '두통' },
-      { label: '식욕 저하' },
-      { label: '불면' },
-      { label: '입마름' },
-      { label: '두근거림' },
-    ],
-  },
-  {
-    title: '업무 실수 · 불편',
-    tone: 'blue',
-    tags: [
-      { label: '마감 놓침' },
-      { label: '약속 잊음' },
-      { label: '물건 잃어버림' },
-      { label: '일을 잘게 못 쪼갬' },
-    ],
-  },
+const emptySections: Section[] = [
+  { title: '감정 · 증상', tone: 'purple', tags: [] },
+  { title: '부작용', tone: 'orange', tags: [] },
+  { title: '업무 실수 · 불편', tone: 'blue', tags: [] },
 ];
 
-const initialGoals = [
-  { label: '한 가지 일에 30분 집중하기', value: 0 },
-  { label: '해야 할 일을 10분 안에 시작하기', value: 0 },
-  { label: '약속/일정 10분 전에 준비 완료하기', value: 0 },
+const TROUBLE_TYPES: { label: string; value: TroubleType }[] = [
+  { label: '주의산만', value: 'INATTENTION' },
+  { label: '과잉행동', value: 'HYPERACTIVITY' },
+  { label: '충동성', value: 'IMPULSIVITY' },
+  { label: '시간관리', value: 'TIME_MANAGEMENT' },
+  { label: '인지오류', value: 'COGNITIVE_ERROR' },
 ];
+
+const CONDITION_TYPES: { label: string; value: ConditionType }[] = [
+  { label: '활력 (고각성)', value: 'UP' },
+  { label: '무기력 (저각성)', value: 'DOWN' },
+  { label: '과긴장 (불안)', value: 'TIGHT' },
+  { label: '멍함', value: 'FOGGY' },
+  { label: '평온', value: 'CALM' },
+];
+
 
 const SLEEP_OPTIONS = ['4h-', '5h', '6h', '7h', '8h', '9h+'] as const;
 type SleepOption = typeof SLEEP_OPTIONS[number];
@@ -134,16 +149,20 @@ function TagSection({
   editing: boolean;
   onToggleTag: (label: string) => void;
   onDeleteTag: (label: string) => void;
-  onAddTag: (label: string) => void;
+  onAddTag: (label: string, metaType?: ConditionType | TroubleType) => void;
   onToggleEditing: () => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState('');
+  const [conditionType, setConditionType] = useState<ConditionType>('CALM');
+  const [troubleType, setTroubleType] = useState<TroubleType>('COGNITIVE_ERROR');
   const styles = toneStyles[tone];
+  const isConditionSection = title === '감정 · 증상';
+  const isTroubleSection = title === '업무 실수 · 불편';
 
   const handleAdd = () => {
     if (!draft.trim()) return;
-    onAddTag(draft.trim());
+    onAddTag(draft.trim(), isConditionSection ? conditionType : isTroubleSection ? troubleType : undefined);
     setDraft('');
     setIsAdding(false);
   };
@@ -175,7 +194,7 @@ function TagSection({
         ))}
         {isAdding ? (
           <form
-            className="flex items-center gap-1"
+            className="flex max-w-full flex-wrap items-center gap-1"
             onSubmit={(e) => { e.preventDefault(); handleAdd(); }}
           >
             <input
@@ -185,8 +204,31 @@ function TagSection({
               onBlur={() => { if (!draft.trim()) setIsAdding(false); }}
               onKeyDown={(e) => { if (e.key === 'Escape') { setDraft(''); setIsAdding(false); } }}
               placeholder="태그 이름"
-              className="h-9 w-28 bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-base focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+              className="h-9 min-w-28 max-w-full bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-base focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+              style={{ width: `${Math.max(7, draft.length + 2)}ch` }}
             />
+            {isConditionSection ? (
+              <select
+                value={conditionType}
+                onChange={(event) => setConditionType(event.target.value as ConditionType)}
+                className="h-9 max-w-full rounded-full border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+              >
+                {CONDITION_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+            ) : null}
+            {isTroubleSection ? (
+              <select
+                value={troubleType}
+                onChange={(event) => setTroubleType(event.target.value as TroubleType)}
+                className="h-9 max-w-full rounded-full border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+              >
+                {TROUBLE_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+            ) : null}
             <button
               type="submit"
               disabled={!draft.trim()}
@@ -214,17 +256,62 @@ function GoalSlider({
   label,
   value,
   onChange,
+  onChangeEnd,
+  editing,
+  onDelete,
+  onLabelChange,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
+  onChangeEnd?: (value: number) => void;
+  editing?: boolean;
+  onDelete?: () => void;
+  onLabelChange?: (newContent: string) => void;
 }) {
   const percent = `${value * 10}%`;
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChange = (newValue: number) => {
+    onChange(newValue);
+    if (onChangeEnd) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => { onChangeEnd(newValue); }, 500);
+    }
+  };
 
   return (
     <div>
       <div className="items-center flex mb-[10px] gap-2">
-        <div className="font-semibold text-gray-800 grow basis-[0%]">{label}</div>
+        {editing ? (
+          <input
+            type="text"
+            defaultValue={label}
+            maxLength={50}
+            onBlur={(e) => {
+              const next = e.target.value.trim();
+              if (next && next !== label) onLabelChange?.(next);
+              else e.target.value = label;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') e.currentTarget.blur();
+              if (e.key === 'Escape') { e.currentTarget.value = label; e.currentTarget.blur(); }
+            }}
+            className="font-semibold text-gray-800 grow basis-[0%] bg-transparent border-b border-purple-300 outline-none text-sm pb-px"
+          />
+        ) : (
+          <div className="font-semibold text-gray-800 grow basis-[0%]">{label}</div>
+        )}
+        {editing ? (
+          <button
+            type="button"
+            aria-label={`${label} 삭제`}
+            onClick={onDelete}
+            className="flex items-center justify-center w-5 h-5 rounded-full text-gray-400"
+          >
+            <X className="w-3.5 h-3.5 shrink-0" strokeWidth={2.4} />
+          </button>
+        ) : null}
         <div className="text-purple-500 text-sm font-bold leading-none">{value}</div>
       </div>
       <div className="items-center flex">
@@ -256,7 +343,7 @@ function GoalSlider({
               step="1"
               value={value}
               aria-label={label}
-              onChange={(event) => onChange(Number(event.target.value))}
+              onChange={(event) => handleChange(Number(event.target.value))}
               className="absolute inset-0 z-10 w-full opacity-0 cursor-pointer"
             />
           </div>
@@ -267,28 +354,102 @@ function GoalSlider({
 }
 
 export default function JournalFullPage() {
-  const [sections, setSections] = useState(initialSections);
+  const navigate = useNavigate();
+  const journalDate = useMemo(() => toDateKey(new Date()), []);
+  const [sections, setSections] = useState(emptySections);
   const [editingSections, setEditingSections] = useState<Record<string, boolean>>({});
-  const [goals, setGoals] = useState(initialGoals);
+  const [goals, setGoals] = useState<GoalState[]>([]);
+  const [editingGoals, setEditingGoals] = useState(false);
+  const [isAddingGoal, setIsAddingGoal] = useState(false);
+  const [draftGoal, setDraftGoal] = useState('');
   const [memo, setMemo] = useState('');
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
+  const [error, setError] = useState('');
 
   // 수면
   const [sleep, setSleep] = useState<SleepOption | null>(null);
   // 식사
   const [meals, setMeals] = useState<Set<MealKey>>(new Set());
 
-  const toggleMeal = (meal: MealKey) => {
-    setMeals((prev) => {
-      const next = new Set(prev);
-      if (next.has(meal)) next.delete(meal);
-      else next.add(meal);
-      return next;
-    });
+  useEffect(() => {
+    let ignore = false;
+
+    Promise.all([
+      getConditionTags(),
+      getSideEffectTags(),
+      getTroubleTags(),
+      getJournal(journalDate).catch(() => null),
+      getSleepMeal(journalDate).catch(() => undefined),
+    ])
+      .then(([conditions, sideEffects, troubles, journal, sleepMealData]) => {
+        if (ignore) return;
+        const checkedConditionIds = new Set(journal?.checked.conditions.map((item) => item.tagId) ?? []);
+        const checkedSideEffectIds = new Set(journal?.checked.sideEffects.map((item) => item.tagId) ?? []);
+        const checkedTroubleIds = new Set(journal?.checked.troubles.map((item) => item.tagId) ?? []);
+
+        setSections([
+          {
+            title: '감정 · 증상',
+            tone: 'purple',
+            tags: conditions.map((tag) => ({ label: tag.condition, selected: checkedConditionIds.has(tag.tagId), tagId: tag.tagId, source: 'condition' })),
+          },
+          {
+            title: '부작용',
+            tone: 'orange',
+            tags: sideEffects.map((tag) => ({ label: tag.sideEffect, selected: checkedSideEffectIds.has(tag.tagId), tagId: tag.tagId, source: 'sideEffect' })),
+          },
+          {
+            title: '업무 실수 · 불편',
+            tone: 'blue',
+            tags: troubles.map((tag) => ({ label: tag.trouble, selected: checkedTroubleIds.has(tag.tagId), tagId: tag.tagId, source: 'trouble' })),
+          },
+        ]);
+
+        if (journal?.checked.memo) {
+          setMemo(journal.checked.memo);
+          setMemoSaved(true);
+        }
+
+        if (sleepMealData) {
+          if (typeof sleepMealData.sleepHour === 'number') {
+            setSleep(hourToSleepOption(sleepMealData.sleepHour));
+          }
+          const nextMeals = new Set<MealKey>();
+          if (sleepMealData.ateBreakfast) nextMeals.add('아');
+          if (sleepMealData.ateLunch) nextMeals.add('점');
+          if (sleepMealData.ateDinner) nextMeals.add('저');
+          setMeals(nextMeals);
+        }
+
+        if (journal?.activeTags.goals.length) {
+          const checkedGoals = new Map(journal.checked.goals.map((goal) => [goal.goalId, goal.score]));
+          setGoals(journal.activeTags.goals.map((goal) => ({
+            goalId: goal.goalId,
+            label: goal.content,
+            value: checkedGoals.get(goal.goalId) ?? 0,
+          })));
+        }
+      })
+      .catch(() => {
+        if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [journalDate]);
+
+  const toggleMeal = async (meal: MealKey) => {
+    const nextMeals = new Set(meals);
+    if (nextMeals.has(meal)) nextMeals.delete(meal);
+    else nextMeals.add(meal);
+    setMeals(nextMeals);
+    await saveSleepMeal(sleep, nextMeals);
   };
 
-  const toggleTag = (sectionTitle: string, label: string) => {
+  const toggleTag = async (sectionTitle: string, label: string) => {
+    const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle
@@ -299,9 +460,20 @@ export default function JournalFullPage() {
           : section,
       ),
     );
+
+    if (!tag?.tagId || !tag.source) return;
+
+    try {
+      if (tag.source === 'condition') await checkCondition(tag.tagId);
+      if (tag.source === 'sideEffect') await checkSideEffect(tag.tagId);
+      if (tag.source === 'trouble') await checkTrouble(tag.tagId);
+    } catch {
+      setError('태그 기록에 실패했습니다.');
+    }
   };
 
-  const deleteTag = (sectionTitle: string, label: string) => {
+  const deleteTag = async (sectionTitle: string, label: string) => {
+    const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle
@@ -312,9 +484,32 @@ export default function JournalFullPage() {
           : section,
       ),
     );
+
+    if (!tag?.tagId || !tag.source) return;
+
+    try {
+      if (tag.source === 'condition') await deleteConditionTag(tag.tagId, journalDate);
+      if (tag.source === 'sideEffect') await deleteSideEffectTag(tag.tagId, journalDate);
+      if (tag.source === 'trouble') await deleteTroubleTag(tag.tagId, journalDate);
+    } catch {
+      setError('태그 삭제에 실패했습니다.');
+    }
   };
 
-  const addTag = (sectionTitle: string, label: string) => {
+  const addTag = async (sectionTitle: string, label: string, metaType?: ConditionType | TroubleType) => {
+    try {
+      if (sectionTitle === '감정 · 증상') {
+        await createConditionTag({ condition: label, conditionType: (metaType as ConditionType | undefined) ?? 'CALM', journalDate });
+      }
+      if (sectionTitle === '부작용') await createSideEffectTag({ sideEffect: label, journalDate });
+      if (sectionTitle === '업무 실수 · 불편') {
+        await createTroubleTag({ trouble: label, type: (metaType as TroubleType | undefined) ?? 'COGNITIVE_ERROR', journalDate });
+      }
+    } catch {
+      setError('태그 추가에 실패했습니다.');
+      return;
+    }
+
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle && !section.tags.some((tag) => tag.label === label)
@@ -322,6 +517,60 @@ export default function JournalFullPage() {
           : section,
       ),
     );
+  };
+
+  const saveSleepMeal = async (nextSleep: SleepOption | null, nextMeals: Set<MealKey>) => {
+    const payload = {
+      sleepHour: sleepOptionToHour(nextSleep),
+      sleepQuality: nextSleep ? 'NORMAL' as const : null,
+      ateBreakfast: nextMeals.has('아'),
+      ateLunch: nextMeals.has('점'),
+      ateDinner: nextMeals.has('저'),
+    };
+
+    try {
+      await createSleepMeal(journalDate, payload);
+    } catch {
+      setError('수면/식사 저장에 실패했습니다.');
+    }
+  };
+
+  const saveMemo = async () => {
+    if (memoSaved) return;
+    try {
+      await createMemo(journalDate, memo);
+      setMemoSaved(true);
+    } catch {
+      setError('메모 저장에 실패했습니다.');
+    }
+  };
+
+  const addGoal = async (content: string) => {
+    const trimmed = content.trim().slice(0, 50);
+    if (!trimmed) return;
+    setIsAddingGoal(false);
+    setDraftGoal('');
+    try {
+      const newGoal = await createJournalGoal({ content: trimmed, journalDate });
+      setGoals((prev) => [...prev, { goalId: newGoal.goalId, label: newGoal.content, value: 0 }]);
+    } catch {
+      setError('목표 추가에 실패했습니다.');
+    }
+  };
+
+  const deleteGoal = async (goal: GoalState) => {
+    setGoals((prev) => prev.filter((g) => g.label !== goal.label));
+    if (goal.goalId == null) return;
+    try {
+      await deleteJournalGoal(goal.goalId, journalDate);
+    } catch {
+      setError('목표 삭제에 실패했습니다.');
+    }
+  };
+
+  const closeJournal = async () => {
+    await saveMemo();
+    navigate(-1);
   };
 
   const toggleSectionEditing = (sectionTitle: string) => {
@@ -339,11 +588,12 @@ export default function JournalFullPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={formatDate(new Date())}
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
-          right={<HeaderIconButton icon={<X className="h-4 w-4 text-gray-700" strokeWidth={2.4} />} />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          right={<HeaderIconButton icon={<X className="h-4 w-4 text-gray-700" strokeWidth={2.4} />} onClick={closeJournal} />}
         />
 
         <ScrollArea className="flex flex-col gap-10 pt-2">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <section>
             <div className="grid grid-cols-2 gap-3">
               {/* 수면 카드 */}
@@ -360,7 +610,11 @@ export default function JournalFullPage() {
                     <button
                       key={opt}
                       type="button"
-                      onClick={() => setSleep(sleep === opt ? null : opt)}
+                      onClick={() => {
+                        const nextSleep = sleep === opt ? null : opt;
+                        setSleep(nextSleep);
+                        void saveSleepMeal(nextSleep, meals);
+                      }}
                       className={`grow h-1 rounded-xs transition-colors ${i < sleepBarCount ? 'bg-purple-400' : 'bg-gray-100'}`}
                       aria-label={opt}
                     />
@@ -371,7 +625,11 @@ export default function JournalFullPage() {
                     <button
                       key={opt}
                       type="button"
-                      onClick={() => setSleep(sleep === opt ? null : opt)}
+                      onClick={() => {
+                        const nextSleep = sleep === opt ? null : opt;
+                        setSleep(nextSleep);
+                        void saveSleepMeal(nextSleep, meals);
+                      }}
                       className={`text-[9px] font-medium transition-colors ${sleep === opt ? 'text-purple-600 font-bold' : 'text-gray-300'}`}
                     >
                       {opt}
@@ -413,7 +671,7 @@ export default function JournalFullPage() {
                 editing={Boolean(editingSections[section.title])}
                 onToggleTag={(label) => toggleTag(section.title, label)}
                 onDeleteTag={(label) => deleteTag(section.title, label)}
-                onAddTag={(label) => addTag(section.title, label)}
+                onAddTag={(label, metaType) => addTag(section.title, label, metaType)}
                 onToggleEditing={() => toggleSectionEditing(section.title)}
                 {...section}
               />
@@ -423,12 +681,32 @@ export default function JournalFullPage() {
           <div className="flex flex-col gap-5">
             <section>
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
-                <div className="font-bold text-sm mb-4">오늘의 목표</div>
+                <div className="flex items-center mb-4">
+                  <div className="font-bold text-sm grow">오늘의 목표</div>
+                  <button
+                    type="button"
+                    onClick={() => { setEditingGoals((prev) => !prev); setIsAddingGoal(false); }}
+                    className="font-bold text-purple-600 text-xs pt-1 pr-2.5 pb-1 pl-2.5 rounded-full"
+                  >
+                    {editingGoals ? '완료' : '편집'}
+                  </button>
+                </div>
                 <div className="flex flex-col gap-4">
                   {goals.map((goal) => (
                     <GoalSlider
-                      key={goal.label}
+                      key={goal.goalId ?? goal.label}
                       {...goal}
+                      editing={editingGoals}
+                      onDelete={() => deleteGoal(goal)}
+                      onLabelChange={async (newContent) => {
+                        if (goal.goalId == null) return;
+                        try {
+                          const updated = await updateJournalGoal(goal.goalId, newContent);
+                          setGoals((prev) => prev.map((g) => g.goalId === goal.goalId ? { ...g, label: updated.content } : g));
+                        } catch {
+                          setError('목표 수정에 실패했습니다.');
+                        }
+                      }}
                       onChange={(value) =>
                         setGoals((currentGoals) =>
                           currentGoals.map((currentGoal) =>
@@ -436,7 +714,44 @@ export default function JournalFullPage() {
                           ),
                         )
                       }
+                      onChangeEnd={(value) => {
+                        if (goal.goalId == null) return;
+                        void scoreJournalGoal(journalDate, { goalId: goal.goalId, score: value });
+                      }}
                     />
+                  ))}
+                  {editingGoals && (isAddingGoal ? (
+                    <form
+                      className="flex items-center gap-1"
+                      onSubmit={(e) => { e.preventDefault(); void addGoal(draftGoal); }}
+                    >
+                      <input
+                        autoFocus
+                        value={draftGoal}
+                        onChange={(e) => setDraftGoal(e.target.value)}
+                        onBlur={() => { if (!draftGoal.trim()) setIsAddingGoal(false); }}
+                        onKeyDown={(e) => { if (e.key === 'Escape') { setDraftGoal(''); setIsAddingGoal(false); } }}
+                        maxLength={50}
+                        placeholder="목표 내용"
+                        className="grow h-9 bg-gray-50 border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-sm focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!draftGoal.trim()}
+                        className="flex items-center justify-center w-9 h-9 bg-[rgb(31,27,46)] disabled:bg-gray-200 rounded-full shrink-0"
+                      >
+                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.8} />
+                      </button>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingGoal(true)}
+                      className="flex items-center gap-1 text-xs font-medium whitespace-nowrap border border-dashed border-gray-300 text-gray-400 self-start pt-[10px] pb-[10px] pl-[12px] pr-[14px] rounded-full"
+                    >
+                      <Plus className="w-3 h-3" strokeWidth={2.5} />
+                      <span>추가</span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -447,7 +762,7 @@ export default function JournalFullPage() {
                 <div className="font-semibold text-gray-800">메모</div>
                 {!memoSaved && (
                   <button
-                    onClick={() => setMemoSaved(true)}
+                    onClick={saveMemo}
                     className="text-sm px-3 py-1 rounded-lg font-medium text-white bg-[rgb(31,27,46)] hover:bg-[rgb(50,44,70)] transition-colors"
                   >
                     저장
@@ -471,4 +786,27 @@ export default function JournalFullPage() {
       </div>
     </div>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function sleepOptionToHour(sleep: SleepOption | null) {
+  if (!sleep) return null;
+  if (sleep === '4h-') return 4;
+  if (sleep === '9h+') return 9;
+  return Number(sleep.replace('h', ''));
+}
+
+function hourToSleepOption(hour: number): SleepOption {
+  if (hour <= 4) return '4h-';
+  if (hour >= 9) return '9h+';
+  const roundedHour = Math.round(hour);
+  if (roundedHour <= 5) return '5h';
+  if (roundedHour === 6) return '6h';
+  if (roundedHour === 7) return '7h';
+  return '8h';
 }

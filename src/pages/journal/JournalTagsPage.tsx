@@ -1,38 +1,116 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
-import { mockTags } from '@/mocks/journal.mock';
+import {
+  createConditionTag,
+  createSideEffectTag,
+  createTroubleTag,
+  deleteConditionTag,
+  deleteSideEffectTag,
+  deleteTroubleTag,
+  getConditionTags,
+  getSideEffectTags,
+  getTroubleTags,
+  ConditionType,
+  TroubleType,
+} from '@/api/journal';
 
-const CATEGORIES = ['감정·증상', '부작용', '업무', '목표'];
-
-const INITIAL_TAGS = mockTags;
+type Category = '감정·증상' | '부작용' | '업무';
+const CATEGORIES: Category[] = ['감정·증상', '부작용', '업무'];
+const CONDITION_TYPES: ConditionType[] = ['UP', 'DOWN', 'TIGHT', 'FOGGY', 'CALM'];
+const TROUBLE_TYPES: TroubleType[] = ['INATTENTION', 'HYPERACTIVITY', 'IMPULSIVITY', 'TIME_MANAGEMENT', 'COGNITIVE_ERROR'];
+const CONDITION_TYPE_HELP = [
+  'UP: 활력 (고각성)',
+  'DOWN: 무기력 (저각성)',
+  'TIGHT: 과긴장 (불안)',
+  'FOGGY: 멍함',
+  'CALM: 평온',
+].join('\n');
 
 export default function JournalTagsPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
-  const [activeTags, setActiveTags] = useState<Set<string>>(
-    () => new Set(INITIAL_TAGS.filter((tag) => tag.active).map((tag) => tag.id)),
-  );
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [error, setError] = useState('');
+  const journalDate = useMemo(() => toDateKey(new Date()), []);
 
-  const toggleTag = (tagId: string) => {
-    setActiveTags((prev) => {
-      const next = new Set(prev);
+  useEffect(() => {
+    void loadTags(activeCategory);
+  }, [activeCategory]);
 
-      if (next.has(tagId)) {
-        next.delete(tagId);
+  const loadTags = async (category: Category) => {
+    setError('');
+    try {
+      if (category === '감정·증상') {
+        const response = await getConditionTags();
+        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.condition, source: 'condition' })));
+      } else if (category === '부작용') {
+        const response = await getSideEffectTags();
+        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.sideEffect, source: 'sideEffect' })));
       } else {
-        next.add(tagId);
+        const response = await getTroubleTags();
+        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.trouble, source: 'trouble' })));
       }
-
-      return next;
-    });
+    } catch {
+      setError('태그를 불러오지 못했습니다.');
+    }
   };
 
-  const activeItems = INITIAL_TAGS.filter((tag) => activeTags.has(tag.id));
-  const inactiveItems = INITIAL_TAGS.filter((tag) => !activeTags.has(tag.id));
+  const addTag = async () => {
+    const label = window.prompt('새 태그 이름을 입력해주세요.');
+    const trimmedLabel = label?.trim();
+    if (!trimmedLabel) return;
+
+    setError('');
+    try {
+      if (activeCategory === '감정·증상') {
+        const selectedType = window.prompt(
+          `감정/증상 유형을 입력해주세요.\n${CONDITION_TYPE_HELP}`,
+          'CALM',
+        ) as ConditionType | null;
+        await createConditionTag({
+          condition: trimmedLabel,
+          conditionType: selectedType && CONDITION_TYPES.includes(selectedType) ? selectedType : 'CALM',
+          journalDate,
+        });
+      } else if (activeCategory === '부작용') {
+        await createSideEffectTag({ sideEffect: trimmedLabel, journalDate });
+      } else {
+        const selectedType = window.prompt(
+          `업무 실수 유형을 입력해주세요.\n${TROUBLE_TYPES.join(', ')}`,
+          'COGNITIVE_ERROR',
+        ) as TroubleType | null;
+        await createTroubleTag({
+          trouble: trimmedLabel,
+          type: selectedType && TROUBLE_TYPES.includes(selectedType) ? selectedType : 'COGNITIVE_ERROR',
+          journalDate,
+        });
+      }
+      await loadTags(activeCategory);
+    } catch {
+      setError('태그를 추가하지 못했습니다.');
+    }
+  };
+
+  const deleteTag = async (tag: Tag) => {
+    setError('');
+    try {
+      const tagId = Number(tag.id);
+      if (tag.source === 'condition') {
+        await deleteConditionTag(tagId, journalDate);
+      } else if (tag.source === 'sideEffect') {
+        await deleteSideEffectTag(tagId, journalDate);
+      } else {
+        await deleteTroubleTag(tagId, journalDate);
+      }
+      setTags((currentTags) => currentTags.filter((item) => item.id !== tag.id));
+    } catch {
+      setError('태그를 삭제하지 못했습니다.');
+    }
+  };
 
   return (
     <div
@@ -81,11 +159,12 @@ export default function JournalTagsPage() {
               );
             })}
           </div>
-          <TagSection title={`활성 (${activeItems.length})`} tags={activeItems} active onToggle={toggleTag} />
-          <TagSection title={`비활성 (${inactiveItems.length})`} tags={inactiveItems} active={false} onToggle={toggleTag} />
+          {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
+          <TagSection title={`활성 (${tags.length})`} tags={tags} active onToggle={deleteTag} />
         </ScrollArea>
         <button
           type="button"
+          onClick={addTag}
           className="items-center flex font-bold absolute h-[44px] right-4 bottom-[92px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem] transition-all active:scale-[0.97]"
         >
           <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />
@@ -101,6 +180,7 @@ type Tag = {
   count?: string;
   id: string;
   label: string;
+  source: 'condition' | 'sideEffect' | 'trouble';
 };
 
 function TagSection({
@@ -110,7 +190,7 @@ function TagSection({
   title,
 }: {
   active: boolean;
-  onToggle: (tagId: string) => void;
+  onToggle: (tag: Tag) => void;
   tags: Tag[];
   title: string;
 }) {
@@ -137,7 +217,7 @@ function TagSection({
             {tag.count ? <div className="text-gray-600 text-xs">{tag.count}</div> : null}
             <button
               type="button"
-              onClick={() => onToggle(tag.id)}
+              onClick={() => onToggle(tag)}
               className={`font-bold ${active ? 'text-gray-500' : 'text-purple-500'}`}
             >
               {active ? '비활성' : '활성'}
@@ -147,4 +227,10 @@ function TagSection({
       </div>
     </>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }

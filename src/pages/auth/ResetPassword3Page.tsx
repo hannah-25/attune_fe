@@ -1,13 +1,63 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
+import { confirmPasswordReset, validatePasswordResetToken } from '../../app/api/auth';
 
 export default function ResetPassword3Page() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') ?? '';
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTokenValid, setIsTokenValid] = useState(!token);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let ignore = false;
+
+    validatePasswordResetToken(token)
+      .then(() => {
+        if (!ignore) setIsTokenValid(true);
+      })
+      .catch(() => {
+        if (!ignore) {
+          setIsTokenValid(false);
+          setError('비밀번호 재설정 링크가 만료되었거나 올바르지 않습니다.');
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
+
+  const handleConfirm = async () => {
+    if (!token) {
+      setError('비밀번호 재설정 토큰이 없습니다.');
+      return;
+    }
+
+    if (!password || password !== confirm) {
+      setError('새 비밀번호와 확인 값이 일치하는지 확인해주세요.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await confirmPasswordReset({ token, newPassword: password });
+      navigate('/login');
+    } catch {
+      setError('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -60,11 +110,13 @@ export default function ResetPassword3Page() {
           </div>
           <button
             type="button"
-            onClick={() => navigate('/login')}
-            className="items-center flex font-bold justify-center w-full h-[46px] mt-6 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black"
+            onClick={handleConfirm}
+            disabled={isSubmitting || !isTokenValid}
+            className="items-center flex font-bold justify-center w-full h-[46px] mt-6 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black disabled:opacity-60"
           >
-            비밀번호 변경하기
+            {isSubmitting ? '변경 중...' : '비밀번호 변경하기'}
           </button>
+          {error ? <div className="text-red-500 text-xs mt-3 px-1">{error}</div> : null}
         </div>
       </div>
     </div>
