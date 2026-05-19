@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ChevronDown, Info } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
 
@@ -15,7 +16,7 @@ export default function Onboarding2Page() {
       <div className="flex flex-col flex-1 min-h-0">
         <OnboardingTopBar
           title="증상 서술"
-          description="어떤 어려움을 겪어오셨나요?"
+          description="어떤 어려움을 겪고 계신가요?"
           progressClassName="w-[25%] bg-purple-500"
           step={1}
         />
@@ -23,7 +24,7 @@ export default function Onboarding2Page() {
           <div className="flex flex-col bg-white shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] min-h-44 p-3.5 rounded-xl border border-gray-300 mt-5 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100">
             <label className="font-semibold text-gray-500 text-[11px] leading-tight">증상 서술</label>
             <textarea
-              placeholder="자유롭게 적어주세요. 나중에 일지 태그로 추천해드려요."
+              placeholder="자유롭게 적어주세요. 나중에 태그로 추천해드려요."
               value={symptomText}
               onChange={(e) => setSymptomText(e.target.value.slice(0, 500))}
               className="grow w-full min-h-[116px] bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
@@ -31,35 +32,25 @@ export default function Onboarding2Page() {
             <div className="text-right text-gray-400 text-xs leading-tight mt-2">{symptomText.length}/500</div>
           </div>
           <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
-            <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen(v => !v)}>
-              <div className="overflow-hidden w-3 h-3 shrink-0">
-                <img src="/icons/51c0b100c6c8da5a7080133c33e0d3164ca5032a.svg" className="block size-full" style={{ filter: "invert(26%) sepia(89%) saturate(1583%) hue-rotate(248deg) brightness(97%) contrast(98%)" }} />
-              </div>
-              <div className="font-bold text-purple-700">
-                증상 서술 가이드라인 보기
-              </div>
+            <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen((v) => !v)}>
+              <Info className="w-3.5 h-3.5 text-purple-600 shrink-0" strokeWidth={2.5} />
+              <div className="font-bold text-purple-700">증상 서술 가이드라인 보기</div>
               <div className="grow basis-[0%]"></div>
-              <svg className={`w-3 h-3 text-purple-500 shrink-0 transition-transform duration-200 ${guideOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
+              <ChevronDown className={`w-3 h-3 text-purple-500 shrink-0 transition-transform duration-200 ${guideOpen ? 'rotate-180' : ''}`} strokeWidth={2.5} />
             </button>
             {guideOpen && (
               <ul className="mt-3 flex flex-col gap-2 overflow-y-auto max-h-36">
                 {[
-                  '최근만이 아니라, 어릴 때부터 반복된 경험을 적어주세요.',
-                  '학교·집·직장 등 여러 환경에서 나타난 경험이면 좋아요.',
-                  '단순한 스트레스나 우울 시기만의 변화와 구분될 수 있게 작성해주세요.',
-                  '"집중이 안 됨"보다 구체적인 상황을 적어주세요.',
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-1.5 text-purple-800 text-xs leading-relaxed">
-                    <span className="shrink-0 mt-0.5">·</span>
+                  '최근만이 아니라 반복해서 겪는 경험을 적어주세요.',
+                  '학교, 직장, 집처럼 여러 환경에서의 어려움을 나눠 적어도 좋아요.',
+                  '단순한 스트레스와 오래 지속된 변화를 구분하면 도움이 됩니다.',
+                  '집중 안 됨보다 구체적인 상황을 적어주세요.',
+                ].map((item) => (
+                  <li key={item} className="flex gap-1.5 text-purple-800 text-xs leading-relaxed">
+                    <span className="shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full bg-purple-400" />
                     <span>{item}</span>
                   </li>
                 ))}
-                <li className="flex gap-1.5 text-purple-500 text-xs leading-relaxed">
-                  <span className="shrink-0 mt-0.5">예)</span>
-                  <span>숙제를 자주 미루고 마감 직전에 함 / 물건을 반복해서 잃어버림</span>
-                </li>
               </ul>
             )}
           </div>

@@ -66,7 +66,7 @@ const MEDICATION_NAME = '콘서타 18mg';
 const initialEntries: TimelineEntry[] = [
   { id: 'e1', time: '08:00', kind: 'medication', label: '복용', content: MEDICATION_NAME },
   { id: 'e2', time: '09:30', kind: 'tags', category: '감정·증상', tags: ['불안', '멍해짐'] },
-  { id: 'e3', time: '12:00', kind: 'meal', label: '식사', content: '점심 ✓' },
+  { id: 'e3', time: '12:00', kind: 'meal', label: '식사', content: '점심 완료' },
   { id: 'e4', time: '14:20', kind: 'tags', category: '업무 실수', tags: ['마감 놓침'] },
   { id: 'e5', time: '15:00', kind: 'tags', category: '부작용', tags: ['식욕 저하'] },
 ];

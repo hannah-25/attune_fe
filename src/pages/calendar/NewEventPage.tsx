@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { Bell, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { formatFullDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
@@ -26,7 +26,6 @@ const INITIAL_CATEGORIES = ['상담', '업무', '복약', '개인'];
 
 export default function NewEventPage() {
   const navigate = useNavigate();
-  const locationInputRef = useRef<HTMLInputElement>(null);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
@@ -50,7 +49,6 @@ export default function NewEventPage() {
   const addCategory = () => {
     const trimmedCategory = newCategory.trim();
     if (!trimmedCategory) return;
-
     setCategories((current) => [...current, trimmedCategory]);
     setSelectedCategory(trimmedCategory);
     setNewCategory('');
@@ -90,20 +88,16 @@ export default function NewEventPage() {
               }}
               placeholder="제목"
               className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-400"
-              style={{ fontFamily: "NanumSquare, system-ui" }}
+              style={{ fontFamily: 'NanumSquare, system-ui' }}
             />
           </div>
-
           <div
             className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-[14px] py-3 rounded-2xl flex items-center gap-3 cursor-text"
             onClick={() => { if (!locationEditing) setLocationEditing(true); }}
           >
-            <div className="overflow-hidden w-3.5 h-3.5 shrink-0 opacity-40">
-              <img src="/icons/df73d4774c6f7327c8ad736a4ec91a37128919ab.svg" alt="" className="block size-full" />
-            </div>
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-gray-400" strokeWidth={2.4} />
             {locationEditing ? (
               <input
-                ref={locationInputRef}
                 autoFocus
                 value={location}
                 onChange={(e) => { setLocation(e.target.value); markDirty(); }}
@@ -112,12 +106,9 @@ export default function NewEventPage() {
                 className="grow text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-400"
               />
             ) : (
-              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>
-                {location || '위치 추가'}
-              </span>
+              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>{location || '위치 추가'}</span>
             )}
           </div>
-
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <button
               type="button"
@@ -126,133 +117,58 @@ export default function NewEventPage() {
                 markDirty();
               }}
               className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] border-b transition-all active:scale-[0.99]"
-              style={{ borderBottomColor: "rgb(233, 228, 220)" }}
+              style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
             >
               <div className="grow font-semibold basis-[0%]">종일</div>
               <ToggleSwitch active={allDay} />
             </button>
-            <RowButton
-              label="시작"
-              value={allDay ? '오늘' : START_OPTIONS[startIndex]}
-              onClick={() => {
-                setStartIndex((index) => (index + 1) % START_OPTIONS.length);
-                markDirty();
-              }}
-            />
-            <RowButton
-              label="종료"
-              value={allDay ? '오늘' : END_OPTIONS[endIndex]}
-              onClick={() => {
-                setEndIndex((index) => (index + 1) % END_OPTIONS.length);
-                markDirty();
-              }}
-            />
-            <RowButton
-              label="반복"
-              value={REPEAT_OPTIONS[repeatIndex]}
-              last
-              onClick={() => {
-                setRepeatIndex((index) => (index + 1) % REPEAT_OPTIONS.length);
-                markDirty();
-              }}
-            />
+            <RowButton label="시작" value={allDay ? '오늘' : START_OPTIONS[startIndex]} onClick={() => { setStartIndex((index) => (index + 1) % START_OPTIONS.length); markDirty(); }} />
+            <RowButton label="종료" value={allDay ? '오늘' : END_OPTIONS[endIndex]} onClick={() => { setEndIndex((index) => (index + 1) % END_OPTIONS.length); markDirty(); }} />
+            <RowButton label="반복" value={REPEAT_OPTIONS[repeatIndex]} last onClick={() => { setRepeatIndex((index) => (index + 1) % REPEAT_OPTIONS.length); markDirty(); }} />
           </div>
-
           <div>
-            <div className="font-bold mb-[6px] text-gray-600">
-              카테고리
-            </div>
+            <div className="font-bold mb-[6px] text-gray-600">카테고리</div>
             <div className="flex flex-wrap gap-1.5">
               {categories.map((category) => {
                 const selected = selectedCategory === category;
-
                 return (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(category);
-                      markDirty();
-                    }}
-                    className={`items-center flex font-semibold whitespace-nowrap border-transparent border gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${
-                      selected ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700'
-                    }`}
-                  >
+                  <button key={category} type="button" onClick={() => { setSelectedCategory(category); markDirty(); }} className={`items-center flex font-semibold whitespace-nowrap border-transparent border gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${selected ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700'}`}>
                     {category}
                   </button>
                 );
               })}
               {addingCategory ? (
                 <div className="items-center flex bg-white border border-gray-300 gap-2 px-3 rounded-[62.4375rem]">
-                  <input
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addCategory();
-                    }}
-                    autoFocus
-                    placeholder="새 분류"
-                    className="w-20 text-base bg-transparent outline-none placeholder:text-gray-300"
-                  />
-                  <button
-                    type="button"
-                    onClick={addCategory}
-                    disabled={!newCategory.trim()}
-                    className="font-bold text-xs text-purple-700 disabled:opacity-30"
-                  >
-                    추가
-                  </button>
+                  <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') addCategory(); }} autoFocus placeholder="새 분류" className="w-20 text-base bg-transparent outline-none placeholder:text-gray-300" />
+                  <button type="button" onClick={addCategory} disabled={!newCategory.trim()} className="font-bold text-xs text-purple-700 disabled:opacity-30">추가</button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setAddingCategory(true)}
-                  className="items-center flex font-semibold whitespace-nowrap bg-white border border-gray-300 text-gray-600 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97]"
-                >
+                <button type="button" onClick={() => setAddingCategory(true)} className="items-center flex font-semibold whitespace-nowrap bg-white border border-gray-300 text-gray-600 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97]">
                   + 새 분류
                 </button>
               )}
             </div>
           </div>
-
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <RowButton
               label="알림"
               value={ALARM_OPTIONS[alarmIndex]}
-              iconSrc="/icons/cd9b488c97d95c8b78b422e04f658c2cc6aa1a03.svg"
-              onClick={() => {
-                setAlarmIndex((index) => (index + 1) % ALARM_OPTIONS.length);
-                markDirty();
-              }}
+              icon={<Bell className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.4} />}
+              onClick={() => { setAlarmIndex((index) => (index + 1) % ALARM_OPTIONS.length); markDirty(); }}
             />
-            <button
-              type="button"
-              onClick={() => {
-                setMemoOpen(true);
-                requestAnimationFrame(() => memoRef.current?.focus());
-              }}
-              className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99]"
-            >
+            <button type="button" onClick={() => { setMemoOpen(true); requestAnimationFrame(() => memoRef.current?.focus()); }} className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99]">
               <div className="grow font-semibold basis-[0%]">메모</div>
-              <div className={`${memo ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>
-                {memo ? '작성됨' : '추가'}
-              </div>
-              <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="/icons/8a6c4d23a5e4d6c2436e7637e387e4bd7996730f.svg" alt="" className="block size-full" />
-              </div>
+              <div className={`${memo ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>{memo ? '작성됨' : '추가'}</div>
+              <ChevronRight className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.5} />
             </button>
           </div>
-
           {memoOpen ? (
             <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
               <div className="font-semibold text-gray-600 mb-2">메모</div>
               <textarea
                 ref={memoRef}
                 value={memo}
-                onChange={(e) => {
-                  setMemo(e.target.value);
-                  markDirty();
-                }}
+                onChange={(e) => { setMemo(e.target.value); markDirty(); }}
                 placeholder="메모를 입력해 주세요"
                 rows={3}
                 className="w-full text-base text-gray-900 leading-relaxed resize-none outline-none placeholder:text-gray-300"
@@ -265,45 +181,20 @@ export default function NewEventPage() {
   );
 }
 
-function RowButton({
-  iconSrc,
-  label,
-  last = false,
-  onClick,
-  value,
-}: {
-  iconSrc?: string;
-  label: string;
-  last?: boolean;
-  onClick: () => void;
-  value: string;
-}) {
+function RowButton({ icon, label, last = false, onClick, value }: { icon?: React.ReactNode; label: string; last?: boolean; onClick: () => void; value: string }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${last ? '' : 'border-b'}`}
-      style={last ? undefined : { borderBottomColor: "rgb(233, 228, 220)" }}
-    >
+    <button type="button" onClick={onClick} className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
       <div className="grow font-semibold basis-[0%]">{label}</div>
       <div className="text-gray-600">{value}</div>
-      {iconSrc ? (
-        <div className="overflow-hidden w-[11px] h-[11px]">
-          <img src={iconSrc} alt="" className="block size-full" />
-        </div>
-      ) : null}
+      {icon ?? null}
     </button>
   );
 }
 
 function ToggleSwitch({ active }: { active: boolean }) {
   return (
-    <span className={`relative block w-[38px] h-[22px] rounded-[0.6875rem] transition-colors ${
-      active ? 'bg-purple-300' : 'bg-purple-50'
-    }`}>
-      <span className={`absolute w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.5625rem] transition-all ${
-        active ? 'left-[18px]' : 'left-[2px]'
-      }`} />
+    <span className={`relative block w-[38px] h-[22px] rounded-[0.6875rem] transition-colors ${active ? 'bg-purple-300' : 'bg-purple-50'}`}>
+      <span className={`absolute w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.5625rem] transition-all ${active ? 'left-[18px]' : 'left-[2px]'}`} />
     </span>
   );
 }

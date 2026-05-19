@@ -1,9 +1,10 @@
 import React from 'react';
+import { Check, Pill } from 'lucide-react';
 
 export default function MedicationAlarmPage() {
   return (
     <div
-      className="w-full h-dvh bg-gray-950  text-white text-sm flex flex-col"
+      className="w-full h-dvh bg-gray-950 text-white text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -11,30 +12,18 @@ export default function MedicationAlarmPage() {
           <div className="ml-[12px] mr-[12px] backdrop-blur-[28px] backdrop-saturate-[1.8] bg-white/12 border-white/20 border p-4 rounded-3xl">
             <div className="items-center flex mb-[10px] gap-2.5">
               <div className="items-center flex justify-center w-9 h-9 bg-purple-500 rounded-lg">
-                <div className="overflow-hidden w-[18px] h-[18px]">
-                  <img src="/icons/5534b1eec38b1487b6a5ae5278ae9a3334c8cebf.svg" className="block size-full" />
-                </div>
+                <Pill className="w-[18px] h-[18px] text-white" strokeWidth={2.4} />
               </div>
               <div className="grow basis-[0%]">
-                <div className="font-bold">
-                  attune
-                </div>
-                <div className="text-white/60 text-xs">
-                  지금 · 복용 알림
-                </div>
+                <div className="font-bold">attune</div>
+                <div className="text-white/60 text-xs">지금 · 복용 알림</div>
               </div>
             </div>
-            <div className="font-bold mb-1 text-sm">
-              콘서타 18mg 복용 시간이에요
-            </div>
-            <div className="mb-3 text-white/70">
-              오후 12:30에 1정 복용
-            </div>
+            <div className="font-bold mb-1 text-sm">콘서타 18mg 복용 시간이에요</div>
+            <div className="mb-3 text-white/70">오후 12:30에 1정 복용</div>
             <div className="items-center flex gap-2">
               <div className="items-center flex font-extrabold justify-center h-11 bg-purple-300 shadow-[rgba(0,0,0,0.1)_0px_2px_0px_0px] text-purple-700 basis-[0%] text-sm gap-1.5 grow-[1.6] rounded-[1.375rem]">
-                <div className="overflow-hidden w-[14px] h-[14px]">
-                  <img src="/icons/2348d6782ef2c773bb3d7f6f6753005c36ff4e76.svg" className="block size-full" />
-                </div>
+                <Check className="w-[14px] h-[14px]" strokeWidth={3} />
                 <span className="block">복용</span>
               </div>
               <div className="items-center flex grow font-bold justify-center h-11 bg-white/14 border-white/18 border basis-[0%] rounded-[1.375rem]">
@@ -52,7 +41,7 @@ export default function MedicationAlarmPage() {
             <div className="text-center opacity-[0.6]">
               <span className="text-center">화요일, 5월 13일</span>
             </div>
-            <div className="text-center text-[56px] leading-[56px]" style={{ fontFamily: "NanumSquare, system-ui" }}>
+            <div className="text-center text-[56px] leading-[56px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
               <span className="text-center">12:30</span>
             </div>
           </div>
