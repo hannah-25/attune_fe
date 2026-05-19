@@ -26,13 +26,13 @@ export default function HomeCalendarPage() {
             5월
           </div>
           <div className="flex gap-2">
-            <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
-              <div className="overflow-hidden w-[13px] h-[13px]">
+            <div className="items-center flex justify-center w-11 h-11 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
+              <div className="overflow-hidden w-[18px] h-[18px]">
                 <img src="/icons/5d8d993a0397c0c32edf0c73ae3fd195ca241b6f.svg" className="block size-full" />
               </div>
             </div>
-            <div className="items-center flex justify-center w-[30px] h-[30px] bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
-              <div className="overflow-hidden w-[13px] h-[13px]">
+            <div className="items-center flex justify-center w-11 h-11 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
+              <div className="overflow-hidden w-[18px] h-[18px]">
                 <img src="/icons/441d181493fed6f91159f901fc2b85bc102346e0.svg" className="block size-full" />
               </div>
             </div>
@@ -102,11 +102,11 @@ export default function HomeCalendarPage() {
               <div className="font-bold text-gray-600 text-xs">복용</div>
             </div>
           </div>
-          <div className="mt-1 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+          <div className="mt-4 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="font-semibold text-gray-600">
               {selectedDate === 13 ? '오늘 일지' : `${selectedDate}일 일지`}
             </div>
-            <div className="font-bold mt-[2px] text-sm">
+            <div className="font-bold mt-[2px] text-sm text-gray-600">
               저녁 식사 전 1번 더 기록해보세요
             </div>
           </div>

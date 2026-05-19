@@ -3,7 +3,8 @@
 export const mockSession = {
   date: '4월 16일 금',
   clinic: '청담심리상담센터',
-  duration: '40분 진료 · 처방 변경 있음',
+  doctor: '김지수 원장',
+  duration: '처방 변경 있음',
   advice: '식욕 저하는 아침 식사를 가볍게 먼저 하고 약 복용을 권장합니다. 오후 약효 저하는 증량으로 조정하고 2주 후 재평가할 예정입니다.',
   nextDate: '5월 16일',
 };

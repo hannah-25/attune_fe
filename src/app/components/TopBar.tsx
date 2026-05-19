@@ -78,7 +78,7 @@ export function TopBar({
   const rightContent = right ?? (actionIconSrc ? <HeaderIconButton src={actionIconSrc} alt={actionAlt} /> : <div className="w-11 h-11" />);
 
   return (
-    <div className="flex flex-col gap-1 pt-1 pr-3 pb-3 pl-3 shrink-[0]">
+    <div className="flex flex-col gap-1 pt-1 pr-3 pb-5 pl-3 shrink-[0]">
       <div className="items-center flex justify-between relative">
         {leftContent}
         <div className="absolute left-[50%] translate-x-[-50%] font-bold text-base">{title}</div>

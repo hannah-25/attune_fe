@@ -15,14 +15,9 @@ nextAppointment.setHours(14, 0, 0, 0);
 
 export default function CounselingPreparePage() {
   const navigate = useNavigate();
-  const [goal, setGoal] = useState('');
-  const [goalSaved, setGoalSaved] = useState(true);
-  const [goalFocused, setGoalFocused] = useState(false);
   const [questions, setQuestions] = useState(INITIAL_QUESTIONS);
   const [addingQuestion, setAddingQuestion] = useState(false);
   const [newQuestion, setNewQuestion] = useState('');
-
-  const showSaveButton = goal.trim().length > 0 && !goalSaved;
 
   const toggleQuestion = (idx: number) => {
     setQuestions((current) =>
@@ -50,19 +45,6 @@ export default function CounselingPreparePage() {
         <TopBar
           title="상담 전 준비"
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
-          right={
-            <div className="items-center flex justify-center w-11 h-11">
-              {showSaveButton ? (
-                <button
-                  type="button"
-                  onClick={() => setGoalSaved(true)}
-                  className="text-xs px-2.5 py-1 rounded-lg font-bold text-white bg-[rgb(31,27,46)] transition-all active:scale-[0.97]"
-                >
-                  저장
-                </button>
-              ) : null}
-            </div>
-          }
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
@@ -156,25 +138,6 @@ export default function CounselingPreparePage() {
                   <span className="block">질문 추가</span>
                 </button>
               )}
-            </div>
-          </div>
-          <div>
-            <div className="font-bold mb-[6px] text-gray-600">
-              다음 달 치료 목표
-            </div>
-            <div className={`bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem] transition-colors ${goalFocused ? 'border-purple-300' : 'border-transparent'}`}>
-              <textarea
-                value={goal}
-                onChange={(e) => {
-                  setGoal(e.target.value);
-                  setGoalSaved(false);
-                }}
-                onFocus={() => setGoalFocused(true)}
-                onBlur={() => setGoalFocused(false)}
-                placeholder="다음 달 치료 목표를 입력해 주세요"
-                rows={3}
-                className="w-full text-base text-gray-900 leading-relaxed bg-transparent outline-none resize-none placeholder:text-gray-300"
-              />
             </div>
           </div>
         </div>

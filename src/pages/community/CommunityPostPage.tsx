@@ -19,7 +19,7 @@ export default function CommunityPostPage() {
           right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
 
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-0 pt-0 pr-4 pb-20 pl-4">
+        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-0 pt-0 pr-4 pb-4 pl-4">
           <div className="items-center flex mb-[10px] gap-1.5">
             <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
               <span className="block">{mockPostDetail.category}</span>
@@ -82,7 +82,7 @@ export default function CommunityPostPage() {
           ))}
         </div>
 
-        <div className="items-center flex absolute left-3 right-3 bottom-4 backdrop-blur-[20px] backdrop-saturate-[1.8] bg-white/85 border-white/70 border shadow-[rgba(60,40,90,0.12)_0px_10px_26px_0px] gap-1.5 p-[6px] rounded-3xl">
+        <div className="items-center flex shrink-0 mx-3 mb-4 mt-1 backdrop-blur-[20px] backdrop-saturate-[1.8] bg-white/85 border-white/70 border shadow-[rgba(60,40,90,0.12)_0px_10px_26px_0px] gap-1.5 p-[6px] rounded-3xl">
           <label className="items-center flex min-h-10 font-semibold whitespace-nowrap text-purple-800 text-sm gap-2 tracking-tight pt-2 pr-2.5 pb-2 pl-2.5 rounded-2xl">
             <input
               type="checkbox"

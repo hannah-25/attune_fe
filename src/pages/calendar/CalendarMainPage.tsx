@@ -7,10 +7,10 @@ export default function CalendarMainPage() {
 
   return (
     <div
-      className="w-full min-h-dvh bg-gray-50 text-sm flex flex-col pb-[96px]"
+      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex h-dvh flex-col min-h-0">
         <div className="items-center flex justify-between pt-2 pr-4 pb-1 pl-4">
           <button
             type="button"
@@ -46,7 +46,7 @@ export default function CalendarMainPage() {
             </div>
           </div>
         </div>
-        <div className="pt-0 pr-3 pb-0 pl-3">
+        <div className="pt-3 pr-3 pb-0 pl-3">
           <div className="grid-cols-7 grid mb-[6px] gap-1">
             <div className="font-bold text-center text-[rgb(185, 166, 255)] text-xs" style={{"gridArea":"1 / 1 / 2 / 2"}}>일</div>
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 2 / 2 / 3"}}>월</div>
@@ -56,6 +56,34 @@ export default function CalendarMainPage() {
             <div className="font-bold text-center text-gray-600 text-xs" style={{"gridArea":"1 / 6 / 2 / 7"}}>금</div>
             <div className="font-bold text-center text-[rgb(185, 166, 255)] text-xs" style={{"gridArea":"1 / 7 / 2 / 8"}}>토</div>
           </div>
+          {viewMode === '주' ? (
+            <div className="grid-cols-7 grid gap-1">
+              {[
+                { day: 11, isToday: false, dots: [] },
+                { day: 12, isToday: false, dots: [{ cls: 'bg-purple-300' }, { cls: 'bg-purple-300' }] },
+                { day: 13, isToday: true,  dots: [{ cls: 'bg-white' }, { cls: 'bg-white' }, { cls: 'bg-white' }] },
+                { day: 14, isToday: false, dots: [] },
+                { day: 15, isToday: false, dots: [] },
+                { day: 16, isToday: false, dots: [{ cls: 'bg-purple-300' }] },
+                { day: 17, isToday: false, dots: [] },
+              ].map(({ day, isToday, dots }, i) => (
+                <div
+                  key={day}
+                  className={`relative text-center aspect-[0.82_/_1] pt-1 pr-0 pb-1 pl-0 rounded-lg ${isToday ? 'bg-[rgb(31,_27,_46)]' : ''}`}
+                  style={{ gridArea: `1 / ${i + 1} / 2 / ${i + 2}` }}
+                >
+                  <div className={`font-${isToday ? 'extrabold' : 'semibold'} text-center ${isToday ? 'text-white' : ''}`}>{day}</div>
+                  {dots.length > 0 && (
+                    <div className="flex justify-center text-center mt-[3px] gap-[2px]">
+                      {dots.map((d, j) => (
+                        <div key={j} className={`text-center w-1 h-1 ${d.cls} rounded-xs`} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
           <div className="grid-cols-7 grid gap-1">
             <div className="relative text-center aspect-[0.82_/_1] pt-1 pr-0 pb-1 pl-0 opacity-[0.35] rounded-lg" style={{"gridArea":"1 / 1 / 2 / 2"}}>
               <div className="font-semibold text-center"></div>
@@ -195,9 +223,10 @@ export default function CalendarMainPage() {
               <div className="font-semibold text-center">31</div>
             </div>
           </div>
+          )}
         </div>
-        <div className="h-px mt-3 ml-[16px] mr-[16px] bg-purple-50"></div>
-        <div className="px-4 pt-3">
+        <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0"></div>
+        <div className="grow min-h-0 overflow-y-auto overscroll-contain px-4 pt-2 pb-[100px]">
           <div className="font-bold mb-2">
             5월 13일 · 3개 일정
           </div>

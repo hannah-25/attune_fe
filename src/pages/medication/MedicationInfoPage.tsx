@@ -13,7 +13,7 @@ export default function MedicationInfoPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          title={MEDICATION.name}
+          title="의약품 정보"
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
           right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />

@@ -34,7 +34,7 @@ export default function Onboarding3Page() {
                 {q.text}
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between w-full">
+                <div className="flex gap-2 w-full">
                   {[1, 2, 3, 4, 5].map((val) => {
                     const selected = answers[q.id] === val;
 
@@ -43,7 +43,7 @@ export default function Onboarding3Page() {
                         key={val}
                         type="button"
                         onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: val }))}
-                        className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all select-none active:scale-[0.95] ${
+                        className={`flex-1 h-11 flex items-center justify-center rounded-xl transition-all select-none active:scale-[0.95] ${
                           selected
                             ? 'bg-purple-500 text-white shadow-sm'
                             : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
@@ -54,7 +54,7 @@ export default function Onboarding3Page() {
                     );
                   })}
                 </div>
-                <div className="flex justify-between w-full text-[10px] text-gray-600">
+                <div className="flex justify-between w-full text-[10px] text-gray-600 px-1.5">
                   <span>전혀</span>
                   <span>매우 자주</span>
                 </div>

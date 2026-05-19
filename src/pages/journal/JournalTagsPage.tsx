@@ -86,7 +86,7 @@ export default function JournalTagsPage() {
         </ScrollArea>
         <button
           type="button"
-          className="items-center flex font-bold absolute h-[50px] right-4 bottom-[92px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem] transition-all active:scale-[0.97]"
+          className="items-center flex font-bold absolute h-[44px] right-4 bottom-[92px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem] transition-all active:scale-[0.97]"
         >
           <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />
           <span className="block">새 태그</span>
