@@ -113,7 +113,13 @@ export default function IndexPage() {
       style={{ fontFamily: 'NanumSquare, -apple-system, system-ui' }}
     >
       <h1 className="font-extrabold text-2xl text-gray-900 mb-0.5">Attune</h1>
-      <p className="text-gray-400 text-xs mb-6">디자인 목업 — 화면 목록</p>
+      <p className="text-gray-400 text-xs mb-3">디자인 목업 — 화면 목록</p>
+      <Link
+        to="/overview"
+        className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-full mb-6"
+      >
+        전체 화면 오버뷰 보기 →
+      </Link>
 
       <div className="flex flex-col gap-6">
         {sections.map(({ group, pages }) => (
