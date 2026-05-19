@@ -1,6 +1,6 @@
 import React from 'react';
 import logoImage from '@src/assets/logo.png';
-import { Search } from 'lucide-react';
+import { Pencil, Search, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -8,7 +8,7 @@ import { HeaderIconButton, TopBar } from '@/components/TopBar';
 export default function EmptyCommunitySearchPage() {
   return (
     <div
-      className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
+      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -18,16 +18,10 @@ export default function EmptyCommunitySearchPage() {
         />
         <div className="pt-0 pr-4 pb-2 pl-4">
           <div className="items-center flex bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] gap-2 p-[10px] rounded-[0.875rem]">
-            <div className="overflow-hidden w-[14px] h-[14px]">
-              <img src="/icons/a531887dd688406d037c6913b8808b9c4141813a.svg" className="block size-full" />
-            </div>
-            <div className="grow font-bold basis-[0%]">
-              &quot;주말 약 쉬기&quot;
-            </div>
+            <Search className="w-[14px] h-[14px] text-gray-500" strokeWidth={2.4} />
+            <div className="grow font-bold basis-[0%]">&quot;주말 약 쉬기&quot;</div>
             <div className="items-center flex justify-center w-7 h-7 bg-gray-100 rounded-[0.875rem]">
-              <div className="overflow-hidden w-[11px] h-[11px]">
-                <img src="/icons/96f65ceee7d22efcca2adc2e46c0399576b96b96.svg" className="block size-full" />
-              </div>
+              <X className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.5} />
             </div>
           </div>
         </div>
@@ -35,35 +29,30 @@ export default function EmptyCommunitySearchPage() {
           <div className="flex items-center justify-center text-center w-24 h-24">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
           </div>
-          <div className="font-extrabold text-center text-2xl leading-[28.6px]" style={{ fontFamily: "NanumSquare, system-ui" }}>
+          <div className="font-extrabold text-center text-2xl leading-[28.6px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
             <span className="text-center">아직 비슷한 이야기가 없어요</span>
           </div>
           <div className="text-center text-gray-600 leading-[20.15px] max-w-60">
-            <span className="text-center">첫 글을 남겨보면 어떨까요? 비슷한 경험을 가진 분들이 답을 줄 수도 있어요.</span>
+            <span className="text-center">첫 글을 남기면 같은 경험을 가진 분들에게 도움이 될 수 있어요.</span>
           </div>
           <div className="flex flex-wrap justify-center text-center mt-1 gap-1.5">
-            <div className="items-center flex font-semibold text-center whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-              <span className="block text-center">관련 · 콘서타</span>
-            </div>
-            <div className="items-center flex font-semibold text-center whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-              <span className="block text-center">관련 · 약 휴식</span>
-            </div>
+            <Chip>관련 · 콘서타</Chip>
+            <Chip>관련 · 약 휴식</Chip>
           </div>
-          <div className="text-center h-1"></div>
-          <div className="items-center flex font-bold justify-center text-center h-[50px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
-            <div className="overflow-hidden text-center w-[13px] h-[13px]">
-              <img src="/icons/9ad6e44aa94a072b9df2689dc321e5f682009317.svg" className="block size-full" />
-            </div>
-            <span className="block text-center ml-[6px]">
-              <span className="text-center">이 주제로 글쓰기</span>
-            </span>
-          </div>
-          <div className="items-center flex font-bold justify-center text-center h-11 text-sm tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.375rem]">
+          <button type="button" className="items-center flex font-bold justify-center text-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
+            <Pencil className="w-[14px] h-[14px] mr-1.5" strokeWidth={2.5} />
+            <span className="block text-center">이 주제로 글쓰기</span>
+          </button>
+          <button type="button" className="items-center flex font-bold justify-center text-center h-11 text-sm tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.375rem]">
             <span className="block text-center">전체 글 둘러보기</span>
-          </div>
+          </button>
         </ScrollArea>
         <TabBar active="커뮤니티" />
       </div>
     </div>
   );
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return <div className="items-center flex font-semibold text-center whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">{children}</div>;
 }

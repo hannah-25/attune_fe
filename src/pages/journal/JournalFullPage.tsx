@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ChevronLeft, Plus, X } from 'lucide-react';
+import { Check, ChevronLeft, Moon, Plus, Utensils, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
@@ -349,7 +349,7 @@ export default function JournalFullPage() {
               {/* 수면 카드 */}
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
                 <div className="flex items-center gap-1 mb-2">
-                  <span className="text-sm">🌙</span>
+                  <Moon className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
                   <div className="font-semibold text-xs text-gray-600">수면</div>
                 </div>
                 <div className="font-bold text-lg text-gray-800" style={{ fontFamily: 'NanumSquare, system-ui' }}>
@@ -382,7 +382,7 @@ export default function JournalFullPage() {
               {/* 식사 카드 */}
               <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
                 <div className="flex items-center gap-1 mb-2">
-                  <span className="text-sm">🍽️</span>
+                  <Utensils className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
                   <div className="font-semibold text-xs text-gray-600">식사</div>
                 </div>
                 <div className="flex gap-1.5 mt-1">
