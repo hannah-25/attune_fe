@@ -35,17 +35,19 @@ export default function MedicationInfoPage() {
               <div className="grow basis-[0%]"></div>
               <div className="text-gray-600 text-xs">오늘 · 24시간</div>
             </div>
-            <div className="relative h-20 rounded-xl bg-purple-50 overflow-hidden">
-              <div className="absolute left-0 right-0 bottom-6 h-[2px] bg-purple-200" />
-              <div className="absolute left-[10%] bottom-6 w-[18%] h-7 rounded-t-full border-t-2 border-purple-500" />
-              <div className="absolute left-[28%] bottom-6 w-[22%] h-12 rounded-t-full border-t-2 border-purple-500" />
-              <div className="absolute left-[50%] bottom-6 w-[24%] h-9 rounded-t-full border-t-2 border-purple-500" />
-              <div className="absolute left-[74%] bottom-6 w-[16%] h-4 rounded-t-full border-t-2 border-purple-500" />
-              <div className="absolute left-[22%] bottom-5 w-2 h-2 bg-purple-300 rounded-sm" />
-              <div className="absolute left-[53%] bottom-5 w-2 h-2 bg-purple-300 rounded-sm" />
-            </div>
+            <BloodConcentrationChart />
             <div className="flex justify-between mt-1 text-gray-500 text-xs">
               <div>06시</div><div>09시</div><div>12시</div><div>15시</div><div>18시</div><div>21시</div><div>24시</div>
+            </div>
+            <div className="flex mt-3 gap-[14px]">
+              <div className="items-center flex text-gray-600 text-xs gap-1">
+                <div className="w-2 h-2 bg-[#ff8e72] rounded-sm"></div>
+                <span className="block">복용 시점</span>
+              </div>
+              <div className="items-center flex text-gray-600 text-xs gap-1">
+                <div className="w-2 h-[2px] bg-purple-400 rounded-[1px]"></div>
+                <span className="block">예상 농도</span>
+              </div>
             </div>
           </div>
           <InfoCard title="효능">{MEDICATION.efficacy}</InfoCard>
@@ -66,6 +68,38 @@ export default function MedicationInfoPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function BloodConcentrationChart() {
+  return (
+    <div className="inline overflow-hidden w-full h-20">
+      <svg
+        aria-hidden="true"
+        className="inline w-full h-20"
+        viewBox="0 0 280 80"
+        preserveAspectRatio="none"
+      >
+        <line x1="0" x2="280" y1="20" y2="20" stroke="rgb(233, 228, 220)" strokeDasharray="2 3" strokeWidth="1" />
+        <line x1="0" x2="280" y1="40" y2="40" stroke="rgb(233, 228, 220)" strokeDasharray="2 3" strokeWidth="1" />
+        <line x1="0" x2="280" y1="60" y2="60" stroke="rgb(233, 228, 220)" strokeDasharray="2 3" strokeWidth="1" />
+        <path
+          d="M0 70 C 40 70, 60 18, 90 22 C 110 25, 120 60, 145 56 C 165 53, 180 14, 210 22 C 230 28, 260 58, 280 60 L 280 80 L 0 80 Z"
+          fill="rgb(185, 166, 255)"
+          opacity="0.25"
+        />
+        <path
+          d="M0 70 C 40 70, 60 18, 90 22 C 110 25, 120 60, 145 56 C 165 53, 180 14, 210 22 C 230 28, 260 58, 280 60"
+          fill="none"
+          stroke="rgb(185, 166, 255)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <circle cx="20" cy="70" r="4" fill="rgb(255, 142, 114)" />
+        <circle cx="130" cy="64" r="4" fill="rgb(255, 142, 114)" />
+        <circle cx="220" cy="40" r="4" fill="rgb(255, 142, 114)" stroke="rgb(255, 255, 255)" strokeWidth="2" />
+      </svg>
     </div>
   );
 }
