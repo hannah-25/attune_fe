@@ -14,10 +14,21 @@ import {
   getConditionTags,
   getSideEffectTags,
   getTroubleTags,
+  ConditionType,
+  TroubleType,
 } from '@/api/journal';
 
 type Category = '감정·증상' | '부작용' | '업무';
 const CATEGORIES: Category[] = ['감정·증상', '부작용', '업무'];
+const CONDITION_TYPES: ConditionType[] = ['UP', 'DOWN', 'TIGHT', 'FOGGY', 'CALM'];
+const TROUBLE_TYPES: TroubleType[] = ['INATTENTION', 'HYPERACTIVITY', 'IMPULSIVITY', 'TIME_MANAGEMENT', 'COGNITIVE_ERROR'];
+const CONDITION_TYPE_HELP = [
+  'UP: 활력 (고각성)',
+  'DOWN: 무기력 (저각성)',
+  'TIGHT: 과긴장 (불안)',
+  'FOGGY: 멍함',
+  'CALM: 평온',
+].join('\n');
 
 export default function JournalTagsPage() {
   const navigate = useNavigate();
@@ -56,11 +67,27 @@ export default function JournalTagsPage() {
     setError('');
     try {
       if (activeCategory === '감정·증상') {
-        await createConditionTag({ condition: trimmedLabel, conditionType: 'CALM', journalDate });
+        const selectedType = window.prompt(
+          `감정/증상 유형을 입력해주세요.\n${CONDITION_TYPE_HELP}`,
+          'CALM',
+        ) as ConditionType | null;
+        await createConditionTag({
+          condition: trimmedLabel,
+          conditionType: selectedType && CONDITION_TYPES.includes(selectedType) ? selectedType : 'CALM',
+          journalDate,
+        });
       } else if (activeCategory === '부작용') {
         await createSideEffectTag({ sideEffect: trimmedLabel, journalDate });
       } else {
-        await createTroubleTag({ trouble: trimmedLabel, type: 'WORK', journalDate });
+        const selectedType = window.prompt(
+          `업무 실수 유형을 입력해주세요.\n${TROUBLE_TYPES.join(', ')}`,
+          'COGNITIVE_ERROR',
+        ) as TroubleType | null;
+        await createTroubleTag({
+          trouble: trimmedLabel,
+          type: selectedType && TROUBLE_TYPES.includes(selectedType) ? selectedType : 'COGNITIVE_ERROR',
+          journalDate,
+        });
       }
       await loadTags(activeCategory);
     } catch {

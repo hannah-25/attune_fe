@@ -24,6 +24,12 @@ export default function Onboarding2Page() {
     }
   };
 
+  const handleSymptomTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setSymptomText(event.target.value);
+    event.target.style.height = 'auto';
+    event.target.style.height = `${event.target.scrollHeight}px`;
+  };
+
   return (
     <div
       className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
@@ -42,10 +48,9 @@ export default function Onboarding2Page() {
             <textarea
               placeholder="자유롭게 적어주세요. 나중에 태그로 추천해드려요."
               value={symptomText}
-              onChange={(e) => setSymptomText(e.target.value.slice(0, 500))}
-              className="grow w-full min-h-[116px] bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
+              onChange={handleSymptomTextChange}
+              className="grow w-full min-h-[116px] overflow-hidden bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
             />
-            <div className="text-right text-gray-400 text-xs leading-tight mt-2">{symptomText.length}/500</div>
           </div>
           <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
             <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen((v) => !v)}>

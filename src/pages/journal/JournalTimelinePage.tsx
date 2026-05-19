@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronLeft, Plus, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
-import { ApiError } from '@/api/client';
 import {
   checkCondition,
   checkSideEffect,
   checkTrouble,
   createMemo,
+  getMemo,
   getConditionTags,
   getSideEffectTags,
   getTroubleTags,
-  updateMemo,
 } from '@/api/journal';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
@@ -90,6 +90,7 @@ function getNow(): string {
 }
 
 export default function JournalTimelinePage() {
+  const navigate = useNavigate();
   const journalDate = useMemo(() => toDateKey(new Date()), []);
   const [entries, setEntries] = useState<TimelineEntry[]>(initialEntries);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
@@ -110,14 +111,23 @@ export default function JournalTimelinePage() {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([getConditionTags(), getSideEffectTags(), getTroubleTags()])
-      .then(([conditions, sideEffects, troubles]) => {
+    Promise.all([
+      getConditionTags(),
+      getSideEffectTags(),
+      getTroubleTags(),
+      getMemo(journalDate).catch(() => undefined),
+    ])
+      .then(([conditions, sideEffects, troubles, memoData]) => {
         if (ignore) return;
         setCategoryTags({
           '감정·증상': conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
           부작용: sideEffects.map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId })),
           '업무 실수': troubles.map((tag) => ({ label: tag.trouble, tagId: tag.tagId })),
         });
+        if (memoData?.memo) {
+          setMemo(memoData.memo);
+          setMemoSaved(true);
+        }
       })
       .catch(() => {
         if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
@@ -209,17 +219,8 @@ export default function JournalTimelinePage() {
 
   const saveMemo = async () => {
     if (memoSaved) return;
-
     try {
-      try {
-        await createMemo(journalDate, memo);
-      } catch (apiError) {
-        if (apiError instanceof ApiError && apiError.status === 409) {
-          await updateMemo(journalDate, memo);
-        } else {
-          throw apiError;
-        }
-      }
+      await createMemo(journalDate, memo);
       setMemoSaved(true);
     } catch {
       setError('메모 저장에 실패했습니다.');
@@ -237,7 +238,7 @@ export default function JournalTimelinePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="오늘 일지"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
           subtitle={formatDate(new Date())}
         />
 
