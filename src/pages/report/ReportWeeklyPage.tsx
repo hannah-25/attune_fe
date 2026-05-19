@@ -42,10 +42,10 @@ export default function ReportWeeklyPage() {
         </div>
         <ScrollArea className="flex flex-col gap-3 pt-2">
           <div className="grid-cols-2 grid gap-2">
-            <MetricCard title="복용률" value={stats.adherence.value} delta={stats.adherence.delta} bars={[30, 44, 34, 52, 48]} />
-            <MetricCard title="감정 점수" value={stats.emotion.value} delta={stats.emotion.delta} bars={[28, 52, 36, 48, 58]} />
-            <MetricCard title="업무 실수" value={stats.mistakes.value} delta={stats.mistakes.delta} bars={[54, 42, 36, 28, 22]} />
-            <MetricCard title="목표 달성" value={stats.goalAchievement.value} delta={stats.goalAchievement.delta} bars={[26, 34, 42, 48, 54]} />
+            <MetricCard title="복용률" value={stats.adherence.value} delta={stats.adherence.delta} color="rgb(255, 142, 114)" />
+            <MetricCard title="감정 점수" value={stats.emotion.value} delta={stats.emotion.delta} color="rgb(185, 166, 255)" />
+            <MetricCard title="업무 실수" value={stats.mistakes.value} delta={stats.mistakes.delta} color="rgb(255, 206, 90)" />
+            <MetricCard title="목표 달성" value={stats.goalAchievement.value} delta={stats.goalAchievement.delta} color="rgb(126, 216, 188)" />
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-2 gap-1.5">
@@ -77,7 +77,7 @@ export default function ReportWeeklyPage() {
   );
 }
 
-function MetricCard({ bars, delta, title, value }: { bars: number[]; delta: string; title: string; value: string }) {
+function MetricCard({ color, delta, title, value }: { color: string; delta: string; title: string; value: string }) {
   return (
     <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
       <div className="font-bold text-gray-600 text-xs">{title}</div>
@@ -85,9 +85,29 @@ function MetricCard({ bars, delta, title, value }: { bars: number[]; delta: stri
         <div className="font-extrabold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>{value}</div>
         <div className="font-bold text-purple-500 text-xs">{delta}</div>
       </div>
-      <div className="items-end flex h-[22px] mt-[6px] gap-1">
-        {bars.map((height, index) => <div key={index} className="grow bg-purple-300 rounded-sm" style={{ height: `${height}%` }} />)}
-      </div>
+      <Sparkline color={color} />
+    </div>
+  );
+}
+
+function Sparkline({ color }: { color: string }) {
+  return (
+    <div className="inline overflow-hidden w-full h-[22px] mt-[6px]">
+      <svg
+        aria-hidden="true"
+        className="inline w-full h-[22px]"
+        viewBox="0 0 80 22"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M0 16 L 12 10 L 24 14 L 36 6 L 48 9 L 60 4 L 72 7 L 80 5"
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
     </div>
   );
 }
