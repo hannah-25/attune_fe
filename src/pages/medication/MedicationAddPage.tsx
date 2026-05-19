@@ -17,14 +17,14 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      className={`relative w-[46px] h-[26px] shrink-0 transition-colors rounded-[0.8125rem] ${
+      className={`relative w-[38px] h-[22px] shrink-0 transition-colors rounded-[0.6875rem] ${
         checked ? 'bg-purple-500' : 'bg-gray-200'
       }`}
       onClick={onChange}
     >
       <span
-        className={`absolute w-[22px] h-[22px] top-0.5 bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] transition-transform rounded-[0.6875rem] ${
-          checked ? 'translate-x-[22px]' : 'translate-x-0.5'
+        className={`absolute left-[2px] w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] transition-transform rounded-[0.5625rem] ${
+          checked ? 'translate-x-[16px]' : 'translate-x-0'
         }`}
       />
     </button>

@@ -70,12 +70,14 @@ import WithdrawPage from '../pages/settings/WithdrawPage';
 
 // Index
 import IndexPage from './pages/IndexPage';
+import OverviewPage from './pages/OverviewPage';
 
 export default function App() {
   return (
     <AppViewport>
       <Routes>
         <Route path="/" element={<IndexPage />} />
+        <Route path="/overview" element={<OverviewPage />} />
 
         {/* Auth */}
         <Route path="/splash" element={<SplashPage />} />

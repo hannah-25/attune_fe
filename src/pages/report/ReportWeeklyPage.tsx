@@ -142,7 +142,7 @@ export default function ReportWeeklyPage() {
             </div>
           </div>
         </ScrollArea>
-        <TabBar active="리포트" variant="report" />
+        <TabBar />
       </div>
     </div>
   );

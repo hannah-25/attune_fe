@@ -7,7 +7,16 @@ type AppViewportProps = {
 
 export function AppViewport({ children }: AppViewportProps) {
   const { pathname } = useLocation();
+  const isOverview = pathname === '/overview';
   const isPageScrollable = pathname === '/' || pathname === '/calendar';
+
+  if (isOverview) {
+    return (
+      <div className="fixed inset-0 overflow-auto bg-white">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 flex h-dvh min-h-dvh w-full flex-col overflow-hidden bg-gray-50">

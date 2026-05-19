@@ -30,7 +30,7 @@ export default function NewEventPage() {
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
-  const [locationFocused, setLocationFocused] = useState(false);
+  const [locationEditing, setLocationEditing] = useState(false);
   const [allDay, setAllDay] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(0);
@@ -68,12 +68,12 @@ export default function NewEventPage() {
           title="새 일정"
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
           right={
-            <div className="items-center flex justify-center w-11 h-11">
+            <div className="h-11 flex items-center">
               <button
                 type="button"
                 disabled={!canSave}
                 onClick={() => setDirty(false)}
-                className="text-xs px-2.5 py-1 rounded-lg font-bold text-white bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-30 disabled:active:scale-100"
+                className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-30 disabled:active:scale-100"
               >
                 저장
               </button>
@@ -89,28 +89,33 @@ export default function NewEventPage() {
                 markDirty();
               }}
               placeholder="제목"
-              className="w-full font-bold text-base bg-transparent outline-none placeholder:text-gray-300 mb-2"
+              className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-400"
               style={{ fontFamily: "NanumSquare, system-ui" }}
             />
-            <div className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors ${
-              locationFocused ? 'border-purple-300 bg-purple-50/40' : 'border-gray-100 bg-gray-50'
-            }`}>
-              <div className="overflow-hidden w-3.5 h-3.5 shrink-0">
-                <img src="/icons/df73d4774c6f7327c8ad736a4ec91a37128919ab.svg" alt="" className="block size-full" />
-              </div>
+          </div>
+
+          <div
+            className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-[14px] py-3 rounded-2xl flex items-center gap-3 cursor-text"
+            onClick={() => { if (!locationEditing) setLocationEditing(true); }}
+          >
+            <div className="overflow-hidden w-3.5 h-3.5 shrink-0 opacity-40">
+              <img src="/icons/df73d4774c6f7327c8ad736a4ec91a37128919ab.svg" alt="" className="block size-full" />
+            </div>
+            {locationEditing ? (
               <input
                 ref={locationInputRef}
+                autoFocus
                 value={location}
-                onChange={(e) => {
-                  setLocation(e.target.value);
-                  markDirty();
-                }}
-                onFocus={() => setLocationFocused(true)}
-                onBlur={() => setLocationFocused(false)}
+                onChange={(e) => { setLocation(e.target.value); markDirty(); }}
+                onBlur={() => setLocationEditing(false)}
                 placeholder="위치 추가"
-                className="w-full text-base text-gray-700 bg-transparent outline-none placeholder:text-gray-300"
+                className="grow text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-400"
               />
-            </div>
+            ) : (
+              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>
+                {location || '위치 추가'}
+              </span>
+            )}
           </div>
 
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
@@ -219,12 +224,6 @@ export default function NewEventPage() {
                 setAlarmIndex((index) => (index + 1) % ALARM_OPTIONS.length);
                 markDirty();
               }}
-            />
-            <RowButton
-              label="위치"
-              value={location || '추가'}
-              iconSrc="/icons/df73d4774c6f7327c8ad736a4ec91a37128919ab.svg"
-              onClick={() => locationInputRef.current?.focus()}
             />
             <button
               type="button"
