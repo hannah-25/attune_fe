@@ -89,11 +89,11 @@ const sections: Group[] = [
   {
     group: '빈 상태',
     pages: [
-      { path: '/empty/journal',          label: '일지 없음',        desc: '첫 진입 안내' },
-      { path: '/empty/medication',       label: '약 없음',          desc: '약 추가 유도' },
-      { path: '/empty/calendar',         label: '일정 없음',        desc: '오늘 일정 0개' },
-      { path: '/empty/report',           label: '리포트 데이터 부족', desc: '데이터 쌓기 유도' },
-      { path: '/empty/community-search', label: '검색 결과 없음',   desc: '커뮤니티 검색' },
+      { path: '/debug/empty/journal',          label: '일지 없음',        desc: '첫 진입 안내' },
+      { path: '/debug/empty/medication',       label: '약 없음',          desc: '약 추가 유도' },
+      { path: '/debug/empty/calendar',         label: '일정 없음',        desc: '오늘 일정 0개' },
+      { path: '/debug/empty/report',           label: '리포트 데이터 부족', desc: '데이터 쌓기 유도' },
+      { path: '/debug/empty/community-search', label: '검색 결과 없음',   desc: '커뮤니티 검색' },
     ],
   },
   {
@@ -113,12 +113,12 @@ export default function IndexPage() {
       style={{ fontFamily: 'NanumSquare, -apple-system, system-ui' }}
     >
       <h1 className="font-extrabold text-2xl text-gray-900 mb-0.5">Attune</h1>
-      <p className="text-gray-400 text-xs mb-3">디자인 목업 — 화면 목록</p>
+      <p className="text-gray-400 text-xs mb-3">개발용 화면 목록</p>
       <Link
-        to="/overview"
+        to="/debug/overview"
         className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-full mb-6"
       >
-        전체 화면 오버뷰 보기 →
+        전체 화면 보기 →
       </Link>
 
       <div className="flex flex-col gap-6">

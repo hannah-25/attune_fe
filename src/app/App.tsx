@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router';
+import { Navigate, Routes, Route } from 'react-router';
 import { AppViewport } from './components/AppViewport';
 
 // Auth
@@ -76,8 +76,7 @@ export default function App() {
   return (
     <AppViewport>
       <Routes>
-        <Route path="/" element={<IndexPage />} />
-        <Route path="/overview" element={<OverviewPage />} />
+        <Route path="/" element={<Navigate to="/splash" replace />} />
 
         {/* Auth */}
         <Route path="/splash" element={<SplashPage />} />
@@ -134,17 +133,25 @@ export default function App() {
         <Route path="/community/post" element={<CommunityPostPage />} />
         <Route path="/community/write" element={<CommunityWritePage />} />
 
-        {/* Empty States */}
-        <Route path="/empty/journal" element={<EmptyJournalPage />} />
-        <Route path="/empty/medication" element={<EmptyMedicationPage />} />
-        <Route path="/empty/calendar" element={<EmptyCalendarPage />} />
-        <Route path="/empty/report" element={<EmptyReportPage />} />
-        <Route path="/empty/community-search" element={<EmptyCommunitySearchPage />} />
-
         {/* Settings */}
         <Route path="/settings" element={<MyPage />} />
         <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
         <Route path="/settings/withdraw" element={<WithdrawPage />} />
+
+        {import.meta.env.DEV && (
+          <>
+            {/* Debug / Mock Review */}
+            <Route path="/debug" element={<IndexPage />} />
+            <Route path="/debug/overview" element={<OverviewPage />} />
+            <Route path="/debug/empty/journal" element={<EmptyJournalPage />} />
+            <Route path="/debug/empty/medication" element={<EmptyMedicationPage />} />
+            <Route path="/debug/empty/calendar" element={<EmptyCalendarPage />} />
+            <Route path="/debug/empty/report" element={<EmptyReportPage />} />
+            <Route path="/debug/empty/community-search" element={<EmptyCommunitySearchPage />} />
+          </>
+        )}
+
+        <Route path="*" element={<Navigate to="/splash" replace />} />
       </Routes>
     </AppViewport>
   );

@@ -7,8 +7,8 @@ type AppViewportProps = {
 
 export function AppViewport({ children }: AppViewportProps) {
   const { pathname } = useLocation();
-  const isOverview = pathname === '/overview';
-  const isPageScrollable = pathname === '/' || pathname === '/calendar';
+  const isOverview = pathname === '/debug/overview';
+  const isPageScrollable = pathname === '/debug' || pathname === '/calendar';
 
   if (isOverview) {
     return (
