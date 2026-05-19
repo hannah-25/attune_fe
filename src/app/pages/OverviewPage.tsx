@@ -119,12 +119,14 @@ const sections: Group[] = [
 
 const totalScreens = sections.reduce((sum, s) => sum + s.pages.length, 0);
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 function PhoneFrame({ path, label }: { path: string; label: string }) {
   return (
     <figure className="flex flex-col items-center shrink-0">
       <div className="relative w-[320px] h-[640px] overflow-hidden bg-gray-50 rounded-[2.75rem] shadow-[rgba(60,40,90,0.1)_0px_24px_50px_0px,_rgba(60,40,90,0.06)_0px_2px_8px_0px,_rgba(40,30,60,0.1)_0px_0px_0px_1.5px]">
         <iframe
-          src={path}
+          src={`${BASE}${path}`}
           className="w-full h-full border-0"
           title={label}
         />
