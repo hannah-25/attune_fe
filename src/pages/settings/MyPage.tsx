@@ -1,24 +1,67 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import logoImage from '@src/assets/logo.png';
 import { Bell, CalendarDays, Camera, Check, ChevronRight, Globe2, HelpCircle, Link2, LogOut, Megaphone, Moon, Pencil, Settings, Shield, X } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { logout } from '../../app/api/auth';
+import { getMyProfile, updateNickname } from '../../app/api/user';
 
 export default function MyPage() {
+  const navigate = useNavigate();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [nickname, setNickname] = useState('윤나래');
   const [draftNickname, setDraftNickname] = useState(nickname);
+  const [email, setEmail] = useState('main@gmail.com');
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    getMyProfile()
+      .then((profile) => {
+        if (ignore) return;
+        setNickname(profile.nickname);
+        setDraftNickname(profile.nickname);
+        setEmail(profile.email);
+        setProfileImageUrl(profile.profileImageUrl ?? null);
+      })
+      .catch(() => {
+        if (!ignore) setProfileError('프로필 정보를 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const startProfileEdit = () => {
     setDraftNickname(nickname);
     setIsEditingProfile(true);
   };
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
     const nextNickname = draftNickname.trim();
-    if (nextNickname) setNickname(nextNickname);
-    setIsEditingProfile(false);
+    if (!nextNickname) return;
+
+    setProfileError('');
+    try {
+      await updateNickname(nextNickname);
+      setNickname(nextNickname);
+      setIsEditingProfile(false);
+    } catch {
+      setProfileError('닉네임 변경에 실패했습니다.');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/login');
+    }
   };
 
   return (
@@ -37,7 +80,7 @@ export default function MyPage() {
               className="inline-block relative text-center cursor-pointer bg-transparent border-0 p-0"
             >
               <div className="flex items-center justify-center text-center w-24 h-24">
-                <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
+                <img src={profileImageUrl ?? logoImage} alt="attune" className="w-full h-full object-contain rounded-full" />
               </div>
               <div className="items-center flex justify-center absolute text-center w-7 h-7 right-[-4px] bottom-[-2px] bg-white shadow-[rgba(0,0,0,0.12)_0px_2px_6px_0px] ring-1 ring-gray-200 rounded-[0.875rem]">
                 {isEditingProfile ? <Camera className="w-3.5 h-3.5 text-gray-500" strokeWidth={2.25} /> : <Pencil className="w-3.5 h-3.5 text-gray-500" strokeWidth={2.25} />}
@@ -63,7 +106,7 @@ export default function MyPage() {
             ) : (
               <div className="font-extrabold text-center mt-3 text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>{nickname}</div>
             )}
-            <div className="text-center mt-[2px] text-gray-600">main@gmail.com</div>
+            <div className="text-center mt-[2px] text-gray-600">{email}</div>
             <div className="flex justify-center text-center mt-3 gap-1.5">
               <Chip>attune 14주차</Chip>
               <Chip>기록 124개</Chip>
@@ -73,6 +116,7 @@ export default function MyPage() {
             <MenuRow icon={<Link2 />} label="소셜 연동" value="Google · Apple" />
             <MenuRow icon={<Shield />} label="비밀번호 변경" last />
           </Section>
+          {profileError ? <div className="text-red-500 text-xs px-1 pb-2">{profileError}</div> : null}
           <Section title="설정">
             <MenuRow icon={<Bell />} label="알림" />
             <MenuRow icon={<CalendarDays />} label="캘린더 연동" value="1개 연결" />
@@ -82,7 +126,7 @@ export default function MyPage() {
           <Section title="지원">
             <MenuRow icon={<Megaphone />} label="공지사항" />
             <MenuRow icon={<HelpCircle />} label="문의하기" />
-            <MenuRow icon={<LogOut />} label="로그아웃" last hideChevron />
+            <MenuRow icon={<LogOut />} label="로그아웃" last hideChevron onClick={handleLogout} />
           </Section>
           <button type="button" className="block mt-3 ml-1 bg-transparent border-0 p-0 text-xs font-medium text-gray-400 underline underline-offset-2">
             회원 탈퇴
@@ -107,13 +151,13 @@ function Section({ children, title }: { children: React.ReactNode; title: string
   );
 }
 
-function MenuRow({ hideChevron, icon, label, last, value }: { hideChevron?: boolean; icon: React.ReactElement; label: string; last?: boolean; value?: string }) {
+function MenuRow({ hideChevron, icon, label, last, onClick, value }: { hideChevron?: boolean; icon: React.ReactElement; label: string; last?: boolean; onClick?: () => void; value?: string }) {
   return (
-    <div className={`items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
+    <button type="button" onClick={onClick} className={`items-center flex w-full text-left pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
       {React.cloneElement(icon, { className: 'w-4 h-4 text-gray-500 mr-2', strokeWidth: 2.35 })}
       <div className="grow font-semibold basis-[0%]">{label}</div>
       {value ? <div className="mr-[6px] text-gray-600">{value}</div> : null}
       {!hideChevron ? <ChevronRight className="w-[11px] h-[11px] text-gray-400" strokeWidth={2.5} /> : null}
-    </div>
+    </button>
   );
 }

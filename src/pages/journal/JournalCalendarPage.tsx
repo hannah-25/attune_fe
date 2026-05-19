@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TabBar } from '@/components/TabBar';
 import { formatMonthDay } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
-import { mockDayRecords } from '@/mocks/journal.mock';
+import { getJournalDates } from '@/api/journal';
 
 type DotColor = 'purple' | 'orange' | 'blue' | 'green';
 type ViewMode = '월' | '주';
@@ -22,7 +22,6 @@ const dotLabel: Record<DotColor, string> = {
   green: '좋은 날',
 };
 
-const dayRecords = mockDayRecords;
 const TODAY_DATE = new Date();
 const TODAY = TODAY_DATE.getDate();
 const CURRENT_YEAR = TODAY_DATE.getFullYear();
@@ -46,6 +45,32 @@ const WEEK_DAYS = Array.from({ length: 7 }, (_, i) => {
 
 export default function JournalCalendarPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('월');
+  const [recordDates, setRecordDates] = useState<Set<string>>(new Set());
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    getJournalDates({
+      startDate: toDateKey(new Date(CURRENT_YEAR, CURRENT_MONTH, 1)),
+      endDate: toDateKey(new Date(CURRENT_YEAR, CURRENT_MONTH + 1, 0)),
+    })
+      .then((response) => {
+        if (!ignore) setRecordDates(new Set(response.dates));
+      })
+      .catch(() => {
+        if (!ignore) setError('일지 기록을 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const recentDates = useMemo(
+    () => Array.from(recordDates).sort((a, b) => b.localeCompare(a)).slice(0, 3),
+    [recordDates],
+  );
 
   return (
     <div
@@ -85,7 +110,7 @@ export default function JournalCalendarPage() {
                 <div key={d} className="font-bold text-center text-gray-600 text-xs" style={{ gridArea: `1 / ${i + 1} / 2 / ${i + 2}` }}>{d}</div>
               ))}
             </div>
-            {viewMode === '주' ? <WeekGrid /> : <MonthGrid />}
+            {viewMode === '주' ? <WeekGrid recordDates={recordDates} /> : <MonthGrid recordDates={recordDates} />}
           </div>
           <div className="flex text-gray-500 text-xs gap-2.5 pt-3 pr-5 pb-2 pl-5">
             {Object.entries(dotLabel).map(([color, label]) => (
@@ -99,13 +124,12 @@ export default function JournalCalendarPage() {
         </div>
         <div className="grow min-h-0 overflow-y-auto overscroll-contain px-4 pt-3 pb-[100px]">
           <div className="font-bold mb-2 text-gray-900">최근 기록</div>
-          {[1, 2, 3].map((offset) => {
-            const d = new Date(TODAY_DATE);
-            d.setDate(TODAY_DATE.getDate() - offset);
-            const records = dayRecords[d.getDate()];
-            if (!records || records.length === 0) return null;
+          {error ? <div className="text-red-500 text-xs mb-2">{error}</div> : null}
+          {recentDates.map((dateKey) => {
+            const d = new Date(dateKey);
+            const records: DotColor[] = ['purple'];
             return (
-              <div key={offset} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div key={dateKey} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
                 <div className="text-xs text-gray-500">{formatMonthDay(d)}</div>
                 <div className="flex flex-wrap gap-2 mt-[6px]">
                   {records.map((color, i) => (
@@ -125,19 +149,20 @@ export default function JournalCalendarPage() {
   );
 }
 
-function WeekGrid() {
+function WeekGrid({ recordDates }: { recordDates: Set<string> }) {
   return (
     <div className="grid-cols-7 grid gap-1">
       {WEEK_DAYS.map((day, i) => {
         const isToday = day === TODAY;
-        const records = dayRecords[day] ?? [];
+        const date = new Date(CURRENT_YEAR, CURRENT_MONTH, day);
+        const records: DotColor[] = recordDates.has(toDateKey(date)) ? ['purple'] : [];
         return <DayCell key={day} day={day} records={records} isToday={isToday} style={{ gridArea: `1 / ${i + 1} / 2 / ${i + 2}` }} />;
       })}
     </div>
   );
 }
 
-function MonthGrid() {
+function MonthGrid({ recordDates }: { recordDates: Set<string> }) {
   return (
     <div className="grid-cols-7 grid gap-1">
       {[1, 2, 3, 4, 5, 6].flatMap((row) =>
@@ -145,11 +170,18 @@ function MonthGrid() {
           const day = getDay(row, col);
           const gridArea = `${row} / ${col} / ${row + 1} / ${col + 1}`;
           if (day === null) return <div key={`empty-${row}-${col}`} className="aspect-square rounded-xl" style={{ gridArea }} />;
-          return <DayCell key={day} day={day} records={dayRecords[day] ?? []} isToday={day === TODAY} style={{ gridArea }} />;
+          const date = new Date(CURRENT_YEAR, CURRENT_MONTH, day);
+          return <DayCell key={day} day={day} records={recordDates.has(toDateKey(date)) ? ['purple'] : []} isToday={day === TODAY} style={{ gridArea }} />;
         })
       )}
     </div>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
 function DayCell({ day, isToday, records, style }: { day: number; isToday: boolean; records: DotColor[]; style: React.CSSProperties }) {

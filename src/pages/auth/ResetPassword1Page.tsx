@@ -1,10 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
+import { requestPasswordReset } from '../../app/api/auth';
 
 export default function ResetPassword1Page() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSendResetEmail = async () => {
+    if (!email.trim()) {
+      setError('이메일을 입력해주세요.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await requestPasswordReset(email.trim());
+      navigate(`/reset-password/2?email=${encodeURIComponent(email.trim())}`);
+    } catch {
+      setError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -27,11 +48,13 @@ export default function ResetPassword1Page() {
           </div>
           <button
             type="button"
-            onClick={() => navigate('/reset-password/2')}
-            className="items-center flex font-bold justify-center w-full h-[46px] mt-5 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black"
+            onClick={handleSendResetEmail}
+            disabled={isSubmitting}
+            className="items-center flex font-bold justify-center w-full h-[46px] mt-5 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black disabled:opacity-60"
           >
-            재설정 링크 보내기
+            {isSubmitting ? '발송 중...' : '재설정 링크 보내기'}
           </button>
+          {error ? <div className="text-red-500 text-xs mt-3 px-1">{error}</div> : null}
         </div>
       </div>
     </div>

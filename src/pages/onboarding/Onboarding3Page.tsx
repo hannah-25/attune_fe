@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
+import { submitAsrs } from '@/api/onboarding';
 
 const QUESTIONS = [
   { id: 'q3', text: '일을 마무리하는 데 얼마나 자주 어려움이 있나요?' },
@@ -11,8 +12,26 @@ const QUESTIONS = [
 export default function Onboarding3Page() {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const allAnswered = QUESTIONS.every((q) => answers[q.id] !== undefined);
+
+  const goNext = async () => {
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await submitAsrs(QUESTIONS.map((question, index) => ({
+        questionId: index + 3,
+        score: Math.max(0, (answers[question.id] ?? 1) - 1),
+      })));
+      navigate('/onboarding/4');
+    } catch {
+      setError('자가 체크 결과를 저장하지 못했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -68,13 +87,14 @@ export default function Onboarding3Page() {
           </div>
         </div>
         <div className="pt-0 pr-5 pb-4 pl-5">
+          {error ? <div className="text-red-500 text-xs text-center mb-2">{error}</div> : null}
           <button
             type="button"
-            onClick={() => navigate('/onboarding/4')}
-            disabled={!allAnswered}
+            onClick={goNext}
+            disabled={!allAnswered || isSubmitting}
             className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black disabled:opacity-40 disabled:active:scale-100"
           >
-            <span className="block">다음</span>
+            <span className="block">{isSubmitting ? '저장 중...' : '다음'}</span>
           </button>
         </div>
       </div>

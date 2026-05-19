@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronLeft, Plus, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { ApiError } from '@/api/client';
+import {
+  checkCondition,
+  checkSideEffect,
+  checkTrouble,
+  createMemo,
+  getConditionTags,
+  getSideEffectTags,
+  getTroubleTags,
+  updateMemo,
+} from '@/api/journal';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
 
@@ -11,7 +22,6 @@ const CATEGORIES: Category[] = ['감정·증상', '부작용', '업무 실수'];
 
 const categoryConfig: Record<Category, {
   dotClass: string;
-  tags: string[];
   cardBg: string;
   chipClass: string;
   sheetChipSelected: string;
@@ -19,7 +29,6 @@ const categoryConfig: Record<Category, {
 }> = {
   '감정·증상': {
     dotClass: 'bg-purple-500',
-    tags: ['집중 어려움', '멍해짐', '짜증', '불안', '무기력', '초조', '몰입'],
     cardBg: 'bg-purple-50',
     chipClass: 'bg-purple-100 border border-[rgb(185,166,255)] text-purple-800',
     sheetChipSelected: 'bg-purple-100 border-[rgb(185,166,255)] text-purple-800',
@@ -27,7 +36,6 @@ const categoryConfig: Record<Category, {
   },
   '부작용': {
     dotClass: 'bg-[rgb(255,140,80)]',
-    tags: ['두통', '식욕 저하', '불면', '입마름', '두근거림'],
     cardBg: 'bg-orange-50',
     chipClass: 'bg-orange-100 border border-orange-200 text-orange-800',
     sheetChipSelected: 'bg-orange-50 border-orange-200 text-orange-800',
@@ -35,7 +43,6 @@ const categoryConfig: Record<Category, {
   },
   '업무 실수': {
     dotClass: 'bg-[rgb(80,140,220)]',
-    tags: ['마감 놓침', '약속 잊음', '물건 잃어버림', '일을 잘게 못 쪼갬'],
     cardBg: 'bg-blue-50',
     chipClass: 'bg-blue-100 border border-blue-200 text-blue-800',
     sheetChipSelected: 'bg-blue-50 border-blue-200 text-blue-800',
@@ -60,6 +67,10 @@ type SimpleEntry = {
 };
 
 type TimelineEntry = TagEntry | SimpleEntry;
+type ApiTag = {
+  label: string;
+  tagId: number;
+};
 
 const MEDICATION_NAME = '콘서타 18mg';
 
@@ -79,15 +90,43 @@ function getNow(): string {
 }
 
 export default function JournalTimelinePage() {
+  const journalDate = useMemo(() => toDateKey(new Date()), []);
   const [entries, setEntries] = useState<TimelineEntry[]>(initialEntries);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [categoryTags, setCategoryTags] = useState<Record<Category, ApiTag[]>>({
+    '감정·증상': [],
+    부작용: [],
+    '업무 실수': [],
+  });
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [draftTag, setDraftTag] = useState('');
   const [memo, setMemo] = useState('');
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    Promise.all([getConditionTags(), getSideEffectTags(), getTroubleTags()])
+      .then(([conditions, sideEffects, troubles]) => {
+        if (ignore) return;
+        setCategoryTags({
+          '감정·증상': conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
+          부작용: sideEffects.map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId })),
+          '업무 실수': troubles.map((tag) => ({ label: tag.trouble, tagId: tag.tagId })),
+        });
+      })
+      .catch(() => {
+        if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const toggleEditing = (entryId: string) => {
     setEditingEntryId(prev => {
@@ -141,8 +180,20 @@ export default function JournalTimelinePage() {
     });
   };
 
-  const handleRecord = () => {
+  const handleRecord = async () => {
     if (!activeCategory || selectedTags.size === 0) return;
+    const selectedApiTags = categoryTags[activeCategory].filter((tag) => selectedTags.has(tag.label));
+
+    try {
+      await Promise.all(selectedApiTags.map((tag) => {
+        if (activeCategory === '감정·증상') return checkCondition(tag.tagId);
+        if (activeCategory === '부작용') return checkSideEffect(tag.tagId);
+        return checkTrouble(tag.tagId);
+      }));
+    } catch {
+      setError('태그 기록에 실패했습니다.');
+    }
+
     setEntries(prev => [
       ...prev,
       {
@@ -156,7 +207,27 @@ export default function JournalTimelinePage() {
     closeSheet();
   };
 
+  const saveMemo = async () => {
+    if (memoSaved) return;
+
+    try {
+      try {
+        await createMemo(journalDate, memo);
+      } catch (apiError) {
+        if (apiError instanceof ApiError && apiError.status === 409) {
+          await updateMemo(journalDate, memo);
+        } else {
+          throw apiError;
+        }
+      }
+      setMemoSaved(true);
+    } catch {
+      setError('메모 저장에 실패했습니다.');
+    }
+  };
+
   const config = activeCategory ? categoryConfig[activeCategory] : null;
+  const sheetTags = activeCategory ? categoryTags[activeCategory] : [];
 
   return (
     <div
@@ -171,6 +242,7 @@ export default function JournalTimelinePage() {
         />
 
         <ScrollArea className="pt-0 pb-[230px]">
+          {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
           <div className="relative pt-0 pr-0 pb-0 pl-[18px]">
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 
@@ -276,7 +348,7 @@ export default function JournalTimelinePage() {
             <div className="flex justify-end mb-2">
               <button
                 type="button"
-                onClick={() => setMemoSaved(true)}
+                onClick={saveMemo}
                 className="text-xs px-2.5 py-1 rounded-lg font-bold text-white bg-[rgb(31,27,46)]"
               >
                 저장
@@ -333,13 +405,13 @@ export default function JournalTimelinePage() {
               </button>
             </div>
             <div className="flex flex-wrap gap-2 mb-6">
-              {config.tags.map(tag => {
-                const isSelected = selectedTags.has(tag);
+              {sheetTags.map(tag => {
+                const isSelected = selectedTags.has(tag.label);
                 return (
                   <button
-                    key={tag}
+                    key={tag.tagId}
                     type="button"
-                    onClick={() => toggleTag(tag)}
+                    onClick={() => toggleTag(tag.label)}
                     className={`flex items-center gap-1.5 font-semibold text-sm whitespace-nowrap border pt-[10px] pb-[10px] pl-[14px] pr-[14px] rounded-full transition-colors ${
                       isSelected
                         ? config.sheetChipSelected
@@ -347,7 +419,7 @@ export default function JournalTimelinePage() {
                     }`}
                   >
                     {isSelected && <Check className="w-[10px] h-[10px] shrink-0" strokeWidth={3} />}
-                    <span>{tag}</span>
+                    <span>{tag.label}</span>
                   </button>
                 );
               })}
@@ -365,4 +437,10 @@ export default function JournalTimelinePage() {
       )}
     </div>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }

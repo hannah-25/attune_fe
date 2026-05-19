@@ -1,8 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
-import { mockPrescriptions, mockSession, PrescriptionStatus } from '@/mocks/counseling.mock';
+import { getConsultation, updateConsultationResult } from '@/api/consultation';
+
+type PrescriptionStatus = '증량' | '감량' | '유지';
 
 const STATUS_OPTIONS: PrescriptionStatus[] = ['증량', '감량', '유지'];
 const STATUS_COLOR: Record<PrescriptionStatus, string> = {
@@ -10,15 +12,53 @@ const STATUS_COLOR: Record<PrescriptionStatus, string> = {
   감량: 'bg-orange-100 text-orange-800',
   유지: 'bg-gray-100 text-gray-700',
 };
+const INITIAL_PRESCRIPTIONS = [
+  { id: 'prescription', name: '처방 내용', before: null as string | null, after: null as string | null, status: '유지' as PrescriptionStatus },
+];
+type ConsultationDetail = {
+  consultationDate: string;
+  place: string;
+  doctorName: string;
+  doctorAdvice?: string;
+  prescriptionNote?: string;
+  nextTreatmentGoal?: string;
+};
 
 export default function CounselingResultPage() {
   const navigate = useNavigate();
-  const [prescriptions, setPrescriptions] = useState(mockPrescriptions);
+  const [searchParams] = useSearchParams();
+  const consultationId = Number(searchParams.get('id'));
+  const [consultation, setConsultation] = useState<ConsultationDetail | null>(null);
+  const [prescriptions, setPrescriptions] = useState(INITIAL_PRESCRIPTIONS);
   const [saved, setSaved] = useState(true);
   const [nextDateRaw, setNextDateRaw] = useState('2026-05-16');
-  const [advice, setAdvice] = useState(mockSession.advice);
+  const [advice, setAdvice] = useState('');
   const [goal, setGoal] = useState('');
+  const [error, setError] = useState('');
   const adviceRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!consultationId) return;
+
+    let ignore = false;
+
+    getConsultation(consultationId)
+      .then((response) => {
+        if (ignore) return;
+        const detail = response as ConsultationDetail;
+        setConsultation(detail);
+        setAdvice(detail.doctorAdvice ?? '');
+        setGoal(detail.nextTreatmentGoal ?? '');
+        setPrescriptions([{ id: 'prescription', name: detail.prescriptionNote || '처방 내용', before: null, after: null, status: '유지' }]);
+      })
+      .catch(() => {
+        if (!ignore) setError('상담 기록을 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [consultationId]);
 
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = 'auto';
@@ -29,6 +69,24 @@ export default function CounselingResultPage() {
     const next = STATUS_OPTIONS[(STATUS_OPTIONS.indexOf(current) + 1) % STATUS_OPTIONS.length];
     setPrescriptions((prev) => prev.map((p) => (p.id === id ? { ...p, status: next } : p)));
     setSaved(false);
+  };
+
+  const saveResult = async () => {
+    if (!consultationId) {
+      setError('상담 ID가 없어 저장할 수 없습니다.');
+      return;
+    }
+
+    try {
+      await updateConsultationResult(consultationId, {
+        doctorAdvice: advice,
+        prescriptionNote: prescriptions.map((prescription) => prescription.name).join('\n'),
+        nextTreatmentGoal: goal,
+      });
+      setSaved(true);
+    } catch {
+      setError('상담 결과를 저장하지 못했습니다.');
+    }
   };
 
   return (
@@ -42,21 +100,22 @@ export default function CounselingResultPage() {
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
-              {!saved ? <button type="button" onClick={() => setSaved(true)} className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]">저장</button> : null}
+              {!saved ? <button type="button" onClick={saveResult} className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]">저장</button> : null}
             </div>
           }
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-5 pt-1 pr-4 pb-8 pl-4">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
             <div className="flex items-center gap-4">
               <div className="shrink-0 text-center">
-                <div className="text-xs text-purple-700 font-semibold">4월</div>
-                <div className="font-extrabold text-3xl leading-none text-gray-700 mt-0.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>16</div>
+                <div className="text-xs text-purple-700 font-semibold">{consultation ? new Date(consultation.consultationDate).getMonth() + 1 : '-'}월</div>
+                <div className="font-extrabold text-3xl leading-none text-gray-700 mt-0.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>{consultation ? new Date(consultation.consultationDate).getDate() : '-'}</div>
               </div>
               <div className="w-px self-stretch bg-purple-200" />
               <div className="min-w-0">
-                <div className="font-bold text-base text-gray-900">{mockSession.clinic}</div>
-                <div className="text-sm text-gray-500 mt-0.5">{mockSession.doctor}</div>
+                <div className="font-bold text-base text-gray-900">{consultation?.place ?? '상담 기록'}</div>
+                <div className="text-sm text-gray-500 mt-0.5">{consultation?.doctorName ?? '-'}</div>
               </div>
             </div>
           </div>

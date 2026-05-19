@@ -1,12 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronLeft, Moon, Plus, Utensils, X } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { ApiError } from '@/api/client';
+import {
+  checkCondition,
+  checkSideEffect,
+  checkTrouble,
+  createConditionTag,
+  createMemo,
+  createSideEffectTag,
+  createSleepMeal,
+  createTroubleTag,
+  deleteConditionTag,
+  deleteSideEffectTag,
+  deleteTroubleTag,
+  getConditionTags,
+  getSideEffectTags,
+  getTroubleTags,
+  updateMemo,
+  updateSleepMeal,
+} from '@/api/journal';
 
 type Tone = 'purple' | 'orange' | 'blue';
-type Tag = { label: string; selected?: boolean };
+type Tag = {
+  label: string;
+  selected?: boolean;
+  tagId?: number;
+  source?: 'condition' | 'sideEffect' | 'trouble';
+};
 type Section = {
   title: string;
   tone: Tone;
@@ -31,41 +55,10 @@ const toneStyles: Record<Tone, { dot: string; selected: string; unselected: stri
   },
 };
 
-const initialSections: Section[] = [
-  {
-    title: '감정 · 증상',
-    tone: 'purple',
-    tags: [
-      { label: '집중 어려움' },
-      { label: '멍해짐' },
-      { label: '짜증' },
-      { label: '불안' },
-      { label: '무기력' },
-      { label: '초조' },
-      { label: '몰입' },
-    ],
-  },
-  {
-    title: '부작용',
-    tone: 'orange',
-    tags: [
-      { label: '두통' },
-      { label: '식욕 저하' },
-      { label: '불면' },
-      { label: '입마름' },
-      { label: '두근거림' },
-    ],
-  },
-  {
-    title: '업무 실수 · 불편',
-    tone: 'blue',
-    tags: [
-      { label: '마감 놓침' },
-      { label: '약속 잊음' },
-      { label: '물건 잃어버림' },
-      { label: '일을 잘게 못 쪼갬' },
-    ],
-  },
+const emptySections: Section[] = [
+  { title: '감정 · 증상', tone: 'purple', tags: [] },
+  { title: '부작용', tone: 'orange', tags: [] },
+  { title: '업무 실수 · 불편', tone: 'blue', tags: [] },
 ];
 
 const initialGoals = [
@@ -267,28 +260,67 @@ function GoalSlider({
 }
 
 export default function JournalFullPage() {
-  const [sections, setSections] = useState(initialSections);
+  const journalDate = useMemo(() => toDateKey(new Date()), []);
+  const [sections, setSections] = useState(emptySections);
   const [editingSections, setEditingSections] = useState<Record<string, boolean>>({});
   const [goals, setGoals] = useState(initialGoals);
   const [memo, setMemo] = useState('');
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
+  const [error, setError] = useState('');
 
   // 수면
   const [sleep, setSleep] = useState<SleepOption | null>(null);
   // 식사
   const [meals, setMeals] = useState<Set<MealKey>>(new Set());
 
-  const toggleMeal = (meal: MealKey) => {
+  useEffect(() => {
+    let ignore = false;
+
+    Promise.all([getConditionTags(), getSideEffectTags(), getTroubleTags()])
+      .then(([conditions, sideEffects, troubles]) => {
+        if (ignore) return;
+        setSections([
+          {
+            title: '감정 · 증상',
+            tone: 'purple',
+            tags: conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId, source: 'condition' })),
+          },
+          {
+            title: '부작용',
+            tone: 'orange',
+            tags: sideEffects.map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId, source: 'sideEffect' })),
+          },
+          {
+            title: '업무 실수 · 불편',
+            tone: 'blue',
+            tags: troubles.map((tag) => ({ label: tag.trouble, tagId: tag.tagId, source: 'trouble' })),
+          },
+        ]);
+      })
+      .catch(() => {
+        if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const toggleMeal = async (meal: MealKey) => {
+    let nextMeals = new Set<MealKey>();
     setMeals((prev) => {
       const next = new Set(prev);
       if (next.has(meal)) next.delete(meal);
       else next.add(meal);
+      nextMeals = next;
       return next;
     });
+    await saveSleepMeal(sleep, nextMeals);
   };
 
-  const toggleTag = (sectionTitle: string, label: string) => {
+  const toggleTag = async (sectionTitle: string, label: string) => {
+    const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle
@@ -299,9 +331,20 @@ export default function JournalFullPage() {
           : section,
       ),
     );
+
+    if (!tag?.tagId || !tag.source) return;
+
+    try {
+      if (tag.source === 'condition') await checkCondition(tag.tagId);
+      if (tag.source === 'sideEffect') await checkSideEffect(tag.tagId);
+      if (tag.source === 'trouble') await checkTrouble(tag.tagId);
+    } catch {
+      setError('태그 기록에 실패했습니다.');
+    }
   };
 
-  const deleteTag = (sectionTitle: string, label: string) => {
+  const deleteTag = async (sectionTitle: string, label: string) => {
+    const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle
@@ -312,9 +355,28 @@ export default function JournalFullPage() {
           : section,
       ),
     );
+
+    if (!tag?.tagId || !tag.source) return;
+
+    try {
+      if (tag.source === 'condition') await deleteConditionTag(tag.tagId, journalDate);
+      if (tag.source === 'sideEffect') await deleteSideEffectTag(tag.tagId, journalDate);
+      if (tag.source === 'trouble') await deleteTroubleTag(tag.tagId, journalDate);
+    } catch {
+      setError('태그 삭제에 실패했습니다.');
+    }
   };
 
-  const addTag = (sectionTitle: string, label: string) => {
+  const addTag = async (sectionTitle: string, label: string) => {
+    try {
+      if (sectionTitle === '감정 · 증상') await createConditionTag({ condition: label, conditionType: 'CALM', journalDate });
+      if (sectionTitle === '부작용') await createSideEffectTag({ sideEffect: label, journalDate });
+      if (sectionTitle === '업무 실수 · 불편') await createTroubleTag({ trouble: label, type: 'WORK', journalDate });
+    } catch {
+      setError('태그 추가에 실패했습니다.');
+      return;
+    }
+
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle && !section.tags.some((tag) => tag.label === label)
@@ -322,6 +384,44 @@ export default function JournalFullPage() {
           : section,
       ),
     );
+  };
+
+  const saveSleepMeal = async (nextSleep: SleepOption | null, nextMeals: Set<MealKey>) => {
+    const payload = {
+      sleepHour: sleepOptionToHour(nextSleep),
+      sleepQuality: nextSleep ? 'NORMAL' as const : null,
+      ateBreakfast: nextMeals.has('아'),
+      ateLunch: nextMeals.has('점'),
+      ateDinner: nextMeals.has('저'),
+    };
+
+    try {
+      await createSleepMeal(journalDate, payload);
+    } catch (apiError) {
+      if (apiError instanceof ApiError && apiError.status === 409) {
+        await updateSleepMeal(journalDate, payload);
+        return;
+      }
+      setError('수면/식사 저장에 실패했습니다.');
+    }
+  };
+
+  const saveMemo = async () => {
+    try {
+      if (memoSaved) return;
+      try {
+        await createMemo(journalDate, memo);
+      } catch (apiError) {
+        if (apiError instanceof ApiError && apiError.status === 409) {
+          await updateMemo(journalDate, memo);
+        } else {
+          throw apiError;
+        }
+      }
+      setMemoSaved(true);
+    } catch {
+      setError('메모 저장에 실패했습니다.');
+    }
   };
 
   const toggleSectionEditing = (sectionTitle: string) => {
@@ -344,6 +444,7 @@ export default function JournalFullPage() {
         />
 
         <ScrollArea className="flex flex-col gap-10 pt-2">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <section>
             <div className="grid grid-cols-2 gap-3">
               {/* 수면 카드 */}
@@ -360,7 +461,11 @@ export default function JournalFullPage() {
                     <button
                       key={opt}
                       type="button"
-                      onClick={() => setSleep(sleep === opt ? null : opt)}
+                      onClick={() => {
+                        const nextSleep = sleep === opt ? null : opt;
+                        setSleep(nextSleep);
+                        void saveSleepMeal(nextSleep, meals);
+                      }}
                       className={`grow h-1 rounded-xs transition-colors ${i < sleepBarCount ? 'bg-purple-400' : 'bg-gray-100'}`}
                       aria-label={opt}
                     />
@@ -371,7 +476,11 @@ export default function JournalFullPage() {
                     <button
                       key={opt}
                       type="button"
-                      onClick={() => setSleep(sleep === opt ? null : opt)}
+                      onClick={() => {
+                        const nextSleep = sleep === opt ? null : opt;
+                        setSleep(nextSleep);
+                        void saveSleepMeal(nextSleep, meals);
+                      }}
                       className={`text-[9px] font-medium transition-colors ${sleep === opt ? 'text-purple-600 font-bold' : 'text-gray-300'}`}
                     >
                       {opt}
@@ -447,7 +556,7 @@ export default function JournalFullPage() {
                 <div className="font-semibold text-gray-800">메모</div>
                 {!memoSaved && (
                   <button
-                    onClick={() => setMemoSaved(true)}
+                    onClick={saveMemo}
                     className="text-sm px-3 py-1 rounded-lg font-medium text-white bg-[rgb(31,27,46)] hover:bg-[rgb(50,44,70)] transition-colors"
                   >
                     저장
@@ -471,4 +580,17 @@ export default function JournalFullPage() {
       </div>
     </div>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function sleepOptionToHour(sleep: SleepOption | null) {
+  if (!sleep) return null;
+  if (sleep === '4h-') return 4;
+  if (sleep === '9h+') return 9;
+  return Number(sleep.replace('h', ''));
 }

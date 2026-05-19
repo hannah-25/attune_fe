@@ -1,16 +1,79 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bell, ChevronRight } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
 
-const CATEGORIES = [
-  { color: 'bg-purple-300', title: '복약 알림', desc: '하루 평균 2-3건', active: true },
-  { color: 'bg-purple-500', title: '주간 리포트', desc: '월요일 아침', active: true },
-  { color: 'bg-purple-300', title: '상담 알림', desc: '하루 전 · 1시간 전', active: true },
-  { color: 'bg-purple-300', title: '커뮤니티', desc: '댓글·공감', active: false },
-  { color: 'bg-[rgb(138,131,152)]', title: '마케팅 이벤트', desc: '월 1-2회', active: false },
-];
+const DEFAULT_SETTINGS: UserSettings = {
+  medicationNotification: true,
+  reportNotification: true,
+  marketingNotification: false,
+  takeMedicationOnHoliday: false,
+  theme: 'SYSTEM',
+};
 
 export default function NotificationSettingsPage() {
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    getUserSettings()
+      .then((nextSettings) => {
+        if (!ignore) setSettings(nextSettings);
+      })
+      .catch(() => {
+        if (!ignore) setError('알림 설정을 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const patchSettings = async (payload: Partial<UserSettings>) => {
+    const previous = settings;
+    const optimistic = { ...settings, ...payload };
+    setSettings(optimistic);
+    setError('');
+
+    try {
+      const nextSettings = await updateUserSettings(payload);
+      setSettings(nextSettings);
+    } catch {
+      setSettings(previous);
+      setError('설정을 저장하지 못했습니다.');
+    }
+  };
+
+  const categories = [
+    {
+      color: 'bg-purple-300',
+      desc: '하루 평균 2-3건',
+      onToggle: () => patchSettings({ medicationNotification: !settings.medicationNotification }),
+      active: settings.medicationNotification,
+      title: '복약 알림',
+    },
+    {
+      color: 'bg-purple-500',
+      desc: '월요일 아침',
+      onToggle: () => patchSettings({ reportNotification: !settings.reportNotification }),
+      active: settings.reportNotification,
+      title: '주간 리포트',
+    },
+    { color: 'bg-purple-300', title: '상담 알림', desc: '하루 전 · 1시간 전', active: true },
+    { color: 'bg-purple-300', title: '커뮤니티', desc: '댓글·공감', active: false },
+    {
+      color: 'bg-[rgb(138,131,152)]',
+      desc: '월 1-2회',
+      onToggle: () => patchSettings({ marketingNotification: !settings.marketingNotification }),
+      active: settings.marketingNotification,
+      title: '마케팅 이벤트',
+    },
+  ];
+
+  const allNotifications = settings.medicationNotification && settings.reportNotification && settings.marketingNotification;
+
   return (
     <div
       className="w-full h-dvh bg-gray-100 text-sm flex flex-col"
@@ -23,20 +86,25 @@ export default function NotificationSettingsPage() {
             <div className="font-bold text-gray-600">전체 알림</div>
             <div className="items-center flex mt-[6px] gap-2.5">
               <div className="grow font-extrabold basis-[0%] text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>받기</div>
-              <Toggle active />
+              <Toggle active={allNotifications} onClick={() => patchSettings({
+                medicationNotification: !allNotifications,
+                reportNotification: !allNotifications,
+                marketingNotification: !allNotifications,
+              })} />
             </div>
           </div>
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div>
             <div className="font-bold text-gray-600 text-xs pt-0 pr-1 pb-1.5 pl-1">카테고리별</div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-              {CATEGORIES.map((item, index) => (
-                <div key={item.title} className={`items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${index < CATEGORIES.length - 1 ? 'border-b' : ''}`} style={index < CATEGORIES.length - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
+              {categories.map((item, index) => (
+                <div key={item.title} className={`items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${index < categories.length - 1 ? 'border-b' : ''}`} style={index < categories.length - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
                   <div className={`w-2 h-2 ${item.color} rounded-sm`}></div>
                   <div className="grow basis-[0%]">
                     <div className="font-semibold">{item.title}</div>
                     <div className="mt-[2px] text-gray-600 text-xs">{item.desc}</div>
                   </div>
-                  <Toggle active={item.active} />
+                  <Toggle active={item.active} onClick={item.onToggle} disabled={!item.onToggle} />
                 </div>
               ))}
             </div>
@@ -62,10 +130,10 @@ export default function NotificationSettingsPage() {
   );
 }
 
-function Toggle({ active }: { active: boolean }) {
+function Toggle({ active, disabled, onClick }: { active: boolean; disabled?: boolean; onClick?: () => void }) {
   return (
-    <div className={`relative w-[38px] h-[22px] rounded-[0.6875rem] ${active ? 'bg-purple-500' : 'bg-purple-50'}`}>
+    <button type="button" onClick={onClick} disabled={disabled} className={`relative w-[38px] h-[22px] rounded-[0.6875rem] ${active ? 'bg-purple-500' : 'bg-purple-50'} disabled:opacity-70`}>
       <div className={`absolute w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.5625rem] ${active ? 'left-[18px]' : 'left-[2px]'}`}></div>
-    </div>
+    </button>
   );
 }

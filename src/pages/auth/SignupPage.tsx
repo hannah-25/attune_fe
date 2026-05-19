@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
+import { signup } from '../../app/api/auth';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -11,6 +12,38 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [agreeMarketing, setAgreeMarketing] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSignup = async () => {
+    if (!email.trim() || !password || !nickname.trim()) {
+      setError('이메일, 비밀번호, 닉네임을 모두 입력해주세요.');
+      return;
+    }
+
+    if (!agreeTerms) {
+      setError('필수 약관에 동의해주세요.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await signup({
+        email: email.trim(),
+        password,
+        nickname: nickname.trim(),
+        termsOfService: true,
+        privacyPolicy: true,
+        marketingConsent: agreeMarketing,
+      });
+      navigate(`/verify-email?email=${encodeURIComponent(email.trim())}`);
+    } catch {
+      setError('회원가입에 실패했습니다. 입력한 정보를 확인해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -63,11 +96,13 @@ export default function SignupPage() {
           </div>
           <button
             type="button"
-            onClick={() => navigate('/verify-email')}
-            className="items-center flex font-bold justify-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 mt-5 pt-0 pr-5 pb-0 pl-5 rounded-xl"
+            onClick={handleSignup}
+            disabled={isSubmitting}
+            className="items-center flex font-bold justify-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 mt-5 pt-0 pr-5 pb-0 pl-5 rounded-xl disabled:opacity-60"
           >
-            <span className="block">회원가입</span>
+            <span className="block">{isSubmitting ? '가입 중...' : '회원가입'}</span>
           </button>
+          {error ? <div className="text-red-500 text-xs mt-3 px-1">{error}</div> : null}
           <div className="mt-8">
             <div className="items-center flex gap-2">
               <div className="grow h-px bg-purple-50 basis-[0%]"></div>

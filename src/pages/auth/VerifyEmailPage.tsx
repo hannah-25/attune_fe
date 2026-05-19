@@ -1,7 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
+import { verifyEmail } from '../../app/api/auth';
 
 export default function VerifyEmailPage() {
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get('email') ?? 'name@example.com';
+  const token = searchParams.get('token');
+  const [status, setStatus] = useState(token ? '인증을 확인하고 있습니다.' : '인증 메일이 발송되었습니다.');
+
+  useEffect(() => {
+    if (!token) return;
+
+    let ignore = false;
+
+    verifyEmail(token)
+      .then(() => {
+        if (!ignore) setStatus('메일 인증이 완료되었습니다.');
+      })
+      .catch(() => {
+        if (!ignore) setStatus('메일 인증에 실패했습니다. 링크를 다시 확인해주세요.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
+
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
@@ -17,8 +42,8 @@ export default function VerifyEmailPage() {
                 <path d="M4 7l8 6l8-6" />
               </svg>
             </div>
-            <div className="font-semibold text-gray-900 text-base leading-tight mt-5">인증 메일이 발송되었습니다.</div>
-            <div className="text-gray-500 text-sm leading-tight mt-2">name@example.com</div>
+            <div className="font-semibold text-gray-900 text-base leading-tight mt-5">{status}</div>
+            <div className="text-gray-500 text-sm leading-tight mt-2">{email}</div>
           </div>
           <div className="items-center flex flex-col text-center mt-6 text-xs leading-relaxed">
             <div className="text-gray-600">인증메일을 받지 못하셨나요?</div>
