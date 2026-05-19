@@ -67,7 +67,7 @@ export default function CommunityFeedPage() {
               className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem] text-left w-full"
             >
               <div className="items-center flex mb-[6px] gap-1.5">
-                <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
+                <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-[10px] gap-1 tracking-tight pt-1 pr-2.5 pb-1 pl-2.5 rounded-full">
                   {post.category}
                 </div>
                 <div className="font-bold text-gray-500 text-xs">{post.author} · {post.time}</div>
@@ -108,7 +108,7 @@ export default function CommunityFeedPage() {
         <button
           type="button"
           onClick={() => navigate('/community/write')}
-          className="items-center flex font-bold absolute h-12 right-4 bottom-[88px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] z-[25] rounded-3xl"
+          className="items-center flex font-bold absolute h-10 right-4 bottom-[88px] bg-[rgb(31,_27,_46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[14px] pb-0 pl-[14px] z-[25] rounded-2xl"
         >
           <div className="overflow-hidden w-[14px] h-[14px]">
             <img src="/icons/efb65dd04b728dd2a8742de28409d0e279ffaefe.svg" className="block size-full" />

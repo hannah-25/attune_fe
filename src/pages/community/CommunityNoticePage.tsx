@@ -17,8 +17,8 @@ export default function CommunityNoticePage() {
           right={<HeaderIconButton icon={<Search className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <ScrollArea className="flex flex-col gap-2">
-          <div className="items-center flex bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
-            <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
+          <div className="items-start flex bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-4 rounded-[1.125rem]">
+            <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem] shrink-0 mt-0.5">
               <div className="overflow-hidden w-3 h-3">
                 <img src="/icons/b29419fe5049084df816425a309c1fc382ccbb0e.svg" className="block size-full" />
               </div>
@@ -27,11 +27,29 @@ export default function CommunityNoticePage() {
               <div className="font-extrabold">
                 [중요] 개인정보 처리방침 개정 안내
               </div>
-              <div className="mt-[2px] text-gray-600 text-xs">
+              <div className="mt-1 text-gray-600 text-xs">
                 30일 내 명시적 거부가 없으면 동의로 간주
               </div>
             </div>
-            <div className="overflow-hidden w-[11px] h-[11px]">
+            <div className="overflow-hidden w-[11px] h-[11px] shrink-0 mt-1">
+              <img src="/icons/0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg" className="block size-full" />
+            </div>
+          </div>
+          <div className="items-start flex bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-4 rounded-[1.125rem]">
+            <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem] shrink-0 mt-0.5">
+              <div className="items-center flex justify-center w-full h-full">
+                <span className="font-bold text-purple-600 text-[10px]">NEW</span>
+              </div>
+            </div>
+            <div className="grow basis-[0%]">
+              <div className="font-extrabold">
+                [업데이트] v2.2 — AI 인사이트 기능 출시
+              </div>
+              <div className="mt-1 text-gray-600 text-xs">
+                주간 리포트에서 AI 분석 결과를 확인해 보세요
+              </div>
+            </div>
+            <div className="overflow-hidden w-[11px] h-[11px] shrink-0 mt-1">
               <img src="/icons/0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg" className="block size-full" />
             </div>
           </div>

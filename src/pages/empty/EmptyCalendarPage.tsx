@@ -52,7 +52,7 @@ export default function EmptyCalendarPage() {
             <span className="text-center">예정된 일정이 없어요. 새로 추가하거나 외부 캘 린더를 연동해보세요.</span>
           </div>
           <div className="text-center h-1"></div>
-          <div className="items-center flex font-bold justify-center text-center h-[50px] bg-purple-500 shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[180px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
+          <div className="items-center flex font-bold justify-center text-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[180px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
             <span className="block text-center">+ 새 일정</span>
           </div>
           <div className="items-center flex font-bold justify-center text-center h-11 border border-gray-300 text-gray-700 text-sm tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.375rem]">

@@ -58,15 +58,18 @@
 ### Form Fields
 
 - 입력창 높이, radius, 내부 padding은 화면 간 통일한다.
-- 배경은 흰색, 테두리는 중립 회색을 기본으로 한다.
-- 포커스 상태는 보라색 링으로 명확히 드러낸다.
+- 배경은 흰색, 테두리는 중립 회색(`border border-gray-200`)을 기본으로 한다.
+- 포커스 상태는 보라색 테두리(`border-purple-300`)로 명확히 드러낸다. 포커스 여부는 별도 state로 추적한다.
 - 라벨은 입력창 내부 상단에 두고, placeholder는 낮은 계층으로 둔다.
+- placeholder 색은 `placeholder:text-gray-400`을 기본으로 한다. `text-gray-300`은 너무 연해 가독성이 부족하다.
 - 모바일에서 입력 포커스 시 화면 확대가 발생하지 않도록 `input`, `textarea`, `select`의 실제 입력 텍스트는 최소 16px(`text-base`)로 둔다.
+- auto-resize textarea는 `el.style.height = 'auto'; el.style.height = scrollHeight + 'px'` 패턴을 사용한다. 초기 값이 있는 경우 `useEffect` + `ref`로 마운트 시 초기화한다.
 
 ### Buttons
 
-- Primary CTA는 `bg-gray-900 text-white` 계열의 검정 버튼을 사용한다.
+- Primary CTA는 `bg-[rgb(31,27,46)] text-white` 검정 버튼을 사용한다.
 - 검정 버튼은 제출, 저장, 완료, 시작처럼 되돌리기 어렵거나 흐름을 확정하는 행동에 한정한다.
+- 빈 상태 화면(Empty State)의 CTA도 동일하게 검정 버튼을 사용한다. `bg-purple-500`은 primary CTA로 쓰지 않는다.
 - 단계형 플로우의 중간 이동 버튼은 완료 행동이 아니므로 연한 버튼을 사용한다.
 - 보조 행동은 링크, 아이콘 버튼, 연한 배경 버튼 중 하나로 낮춘다.
 - 버튼 문구는 행동 중심으로 쓴다. 예: "변경 완료"보다 "변경하기".
@@ -79,6 +82,25 @@
 - 미선택: 배경과 테두리 없이 동일 padding과 font를 유지한다.
 - 태그 그룹은 `flex flex-wrap gap-1.5` 흐름을 유지한다.
 - 그룹 헤더는 컬러 dot과 굵은 제목으로 구분한다.
+
+### Compose Layout (작성 화면)
+
+글쓰기, 피드백 입력 등 콘텐츠를 작성하는 화면에 적용한다.
+
+- TopBar에는 취소/뒤로가기만 둔다. 발행/제출 CTA는 TopBar에 올리지 않는다.
+- 스크롤 영역 최하단에 부가 옵션(익명 여부 등)과 CTA를 함께 묶어 배치한다.
+- 부가 옵션은 CTA 바로 위에 작게 두고, CTA는 전체 너비(`w-full`) 검정 버튼으로 마무리한다.
+- CTA는 콘텐츠와 자연스럽게 이어져야 한다. 콘텐츠가 짧을 때 버튼만 화면 최하단에 고정되는 구조는 피한다.
+
+### D-day / 날짜 강조 카드
+
+카운트다운 또는 날짜를 강조하는 정보 카드 패턴이다.
+
+- 구조: `[작은 라벨] / [큰 숫자] | 구분선 | [장소·이름 등 상세 정보]`
+- 라벨은 `text-[10px] text-purple-700 font-semibold`, 숫자는 `text-4xl font-extrabold text-gray-700`.
+- 구분선은 `w-px self-stretch bg-purple-200`.
+- 상세 정보 첫 줄은 `font-bold text-base text-gray-900`, 보조 정보는 `text-sm text-gray-500`, 날짜·시간은 `text-xs text-purple-700 font-semibold`.
+- purple-100 배경 카드 위에서 purple-700 계열 색상이 응집감을 만든다.
 
 ---
 

@@ -124,7 +124,7 @@ export default function EmptyReportPage() {
             </div>
           </div>
           <div className="grow basis-[0%]"></div>
-          <div className="items-center flex font-bold justify-center w-full h-[50px] bg-purple-500 shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
+          <div className="items-center flex font-bold justify-center w-full h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]">
             <span className="block">오늘 일지 마저 쓰기</span>
           </div>
         </ScrollArea>

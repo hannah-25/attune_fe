@@ -51,10 +51,10 @@ export default function Onboarding4Page() {
                   key={goal}
                   type="button"
                   onClick={() => toggleGoal(goal)}
-                  className={`items-center flex font-semibold text-xs gap-1.5 tracking-tight py-1.5 rounded-full transition-all active:scale-[0.97] ${
+                  className={`items-center flex font-semibold text-sm gap-1.5 tracking-tight py-3 rounded-2xl transition-all active:scale-[0.97] ${
                     selected
-                      ? 'bg-purple-500 text-white pl-3 pr-2 shadow-sm'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700 px-3'
+                      ? 'bg-purple-500 text-white pl-5 pr-4 shadow-sm'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700 px-5'
                   }`}
                 >
                   <span className="block">{goal}</span>
@@ -69,7 +69,7 @@ export default function Onboarding4Page() {
             <button
               type="button"
               onClick={() => setShowCustomInput((prev) => !prev)}
-              className="items-center flex font-semibold whitespace-nowrap bg-white hover:bg-gray-50 border-gray-400 border-dashed border text-gray-600 text-xs gap-1.5 tracking-tight py-1.5 px-3 rounded-full transition-all active:scale-[0.97]"
+              className="items-center flex font-semibold whitespace-nowrap bg-white hover:bg-gray-50 border-gray-400 border-dashed border text-gray-600 text-sm gap-1.5 tracking-tight py-3 px-5 rounded-2xl transition-all active:scale-[0.97]"
             >
               <span className="block">+ 직접입력</span>
             </button>

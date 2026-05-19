@@ -170,7 +170,7 @@ export default function JournalTimelinePage() {
           subtitle={formatDate(new Date())}
         />
 
-        <ScrollArea className="pt-0">
+        <ScrollArea className="pt-0 pb-[230px]">
           <div className="relative pt-0 pr-0 pb-0 pl-[18px]">
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 
@@ -269,30 +269,30 @@ export default function JournalTimelinePage() {
             })}
           </div>
 
-          <div className={`mt-1 bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl transition-colors ${memoFocused ? 'border-purple-300' : 'border-transparent'}`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-gray-500 text-xs">메모</span>
-              {!memoSaved && (
-                <button
-                  type="button"
-                  onClick={() => setMemoSaved(true)}
-                  className="text-xs px-2.5 py-1 rounded-lg font-bold text-white bg-[rgb(31,27,46)]"
-                >
-                  저장
-                </button>
-              )}
-            </div>
-            <textarea
-              value={memo}
-              onChange={e => { setMemo(e.target.value); setMemoSaved(false); }}
-              onFocus={() => setMemoFocused(true)}
-              onBlur={() => setMemoFocused(false)}
-              placeholder="메모 남기기"
-              rows={1}
-              className="w-full text-base text-gray-900 leading-relaxed resize-none outline-none placeholder:text-gray-400 bg-transparent"
-            />
-          </div>
         </ScrollArea>
+
+        <div className={`absolute left-4 right-4 bottom-[142px] bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl transition-colors ${memoFocused ? 'border-purple-300' : 'border-transparent'}`}>
+          {!memoSaved && (
+            <div className="flex justify-end mb-2">
+              <button
+                type="button"
+                onClick={() => setMemoSaved(true)}
+                className="text-xs px-2.5 py-1 rounded-lg font-bold text-white bg-[rgb(31,27,46)]"
+              >
+                저장
+              </button>
+            </div>
+          )}
+          <textarea
+            value={memo}
+            onChange={e => { setMemo(e.target.value); setMemoSaved(false); }}
+            onFocus={() => setMemoFocused(true)}
+            onBlur={() => setMemoFocused(false)}
+            placeholder="메모 남기기"
+            rows={1}
+            className="w-full text-base text-gray-900 leading-relaxed resize-none outline-none placeholder:text-gray-400 bg-transparent"
+          />
+        </div>
 
         <div className="items-center flex absolute left-4 right-4 bottom-[78px] backdrop-blur-[18px] bg-white/80 border-white/70 border shadow-[rgba(60,40,90,0.12)_0px_10px_26px_0px] gap-1 pt-2 pr-2 pb-2 pl-2 rounded-3xl">
           {CATEGORIES.map(cat => {

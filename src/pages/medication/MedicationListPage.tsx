@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { ChevronLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
@@ -18,7 +17,7 @@ function formatTime(seconds: number) {
 }
 
 export default function MedicationListPage() {
-  const navigate = useNavigate();
+  const [pastOpen, setPastOpen] = useState(true);
   const [secondsLeft, setSecondsLeft] = useState(INITIAL_SECONDS);
   const [taken, setTaken] = useState(false);
   const [medications, setMedications] = useState(initialMedications);
@@ -47,7 +46,6 @@ export default function MedicationListPage() {
         <TopBar
           title="복용 중인 약"
           left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
-          right={<HeaderIconButton icon={<Plus className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate('/medication/add')} />}
         />
         <ScrollArea className="flex flex-col gap-3 pt-1">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
@@ -108,7 +106,7 @@ export default function MedicationListPage() {
                   className={`relative w-[38px] h-[22px] shrink-0 transition-colors rounded-[0.6875rem] ${med.active ? (med.id === 1 ? 'bg-purple-300' : 'bg-purple-500') : 'bg-gray-200'}`}
                 >
                   <span
-                    className={`absolute w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] transition-transform rounded-[0.5625rem] ${med.active ? 'left-[18px]' : 'left-[2px]'}`}
+                    className={`absolute left-[2px] w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] transition-transform rounded-[0.5625rem] ${med.active ? 'translate-x-[16px]' : 'translate-x-0'}`}
                   />
                 </button>
               </div>
@@ -120,10 +118,18 @@ export default function MedicationListPage() {
               </div>
             </div>
           ))}
-          <div className="font-bold text-gray-600 pt-2 pr-1 pb-0 pl-1">
-            지난 약 ({mockPastMedications.length})
-          </div>
-          {mockPastMedications.map((med) => (
+          <button
+            type="button"
+            onClick={() => setPastOpen((o) => !o)}
+            className="items-center flex w-full text-left pt-2 pr-1 pb-0 pl-1 gap-1"
+          >
+            <div className="font-bold text-gray-600 grow">지난 약 ({mockPastMedications.length})</div>
+            {pastOpen
+              ? <ChevronUp className="w-4 h-4 text-gray-400" strokeWidth={2.5} />
+              : <ChevronDown className="w-4 h-4 text-gray-400" strokeWidth={2.5} />
+            }
+          </button>
+          {pastOpen && mockPastMedications.map((med) => (
             <div key={med.id} className="bg-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
               <div className="items-center flex gap-2.5 opacity-[0.7]">
                 <div className="items-center flex justify-center w-[38px] h-[38px] bg-[rgb(208,201,189)] rounded-xl">
