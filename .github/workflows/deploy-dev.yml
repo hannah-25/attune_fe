@@ -3,7 +3,7 @@ name: Frontend CI/CD (AWS S3 + CloudFront)
 on:
   push:
     branches:
-      - main  # 배포를 트리거할 브랜치
+      - develop  # 배포를 트리거할 브랜치
 
 jobs:
   deploy:
