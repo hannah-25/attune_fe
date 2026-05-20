@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/attune_fe/' : '/',
+  base: '/',
   server: {
     port: 3000,
   },
