@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft } from 'lucide-react';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { useNavigate } from 'react-router';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 
 const CATEGORIES = ['질병 정보', '약물 치료', '일상생활', '미분류'];
 
 export default function CommunityWritePage() {
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [category, setCategory] = useState<string | null>(null);
@@ -20,6 +22,12 @@ export default function CommunityWritePage() {
 
   const canPublish = title.trim().length > 0;
 
+  const handlePublish = () => {
+    if (!canPublish) return;
+    // TODO: call API to create post
+    navigate('/community');
+  };
+
   return (
     <div
       className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
@@ -28,7 +36,7 @@ export default function CommunityWritePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="새 글"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           reserveRight
         />
 
@@ -92,6 +100,7 @@ export default function CommunityWritePage() {
             <button
               type="button"
               disabled={!canPublish}
+              onClick={handlePublish}
               className="w-full h-12 rounded-xl font-bold text-white bg-[rgb(31,27,46)] disabled:opacity-30 transition-all active:scale-[0.97]"
             >
               발행

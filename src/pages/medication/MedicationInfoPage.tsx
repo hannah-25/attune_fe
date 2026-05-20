@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, MoreHorizontal, Pill } from 'lucide-react';
+import { MoreHorizontal, Pill } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { getMedicationStandard } from '@/api/medication';
 
 type MedicationInfo = {
@@ -44,7 +45,7 @@ export default function MedicationInfoPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="약품 정보"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">

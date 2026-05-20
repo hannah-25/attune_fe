@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronLeft, Moon, Plus, Utensils, X } from 'lucide-react';
+import { Check, ChevronRight, Moon, Plus, Utensils, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton, NavCloseButton } from '@/components/NavButtons';
 import {
   checkCondition,
   checkSideEffect,
@@ -588,9 +589,20 @@ export default function JournalFullPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={formatDate(new Date())}
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
-          right={<HeaderIconButton icon={<X className="h-4 w-4 text-gray-700" strokeWidth={2.4} />} onClick={closeJournal} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
+          right={<NavCloseButton onClick={closeJournal} />}
         />
+
+        <div className="flex justify-end px-4 pb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/journal/timeline')}
+            className="flex items-center gap-1 text-xs font-bold text-purple-700 bg-purple-50 border border-[rgb(185,166,255)] px-3 py-1.5 rounded-full"
+          >
+            <span>타임라인 보기</span>
+            <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
+          </button>
+        </div>
 
         <ScrollArea className="flex flex-col gap-10 pt-2">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}

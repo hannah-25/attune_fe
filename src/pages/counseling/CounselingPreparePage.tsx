@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Check, ChevronLeft, Plus, Sparkles } from 'lucide-react';
+import { Check, Plus, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { formatUpcomingDateTime } from '@/lib/date';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { mockQuestions, mockSummaryStats, mockSummaryText } from '@/mocks/counseling.mock';
 
 const nextAppointment = new Date();
@@ -31,7 +32,7 @@ export default function CounselingPreparePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담 전 준비"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">

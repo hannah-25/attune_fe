@@ -1,8 +1,9 @@
 import React from 'react';
-import { BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BarChart3, ChevronRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 
 const MONTHS = [
   { month: '2026년 5월', status: '진행 중 · 5/12 업데이트', current: true },
@@ -20,7 +21,7 @@ export default function ReportMonthlyListPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="월별 리포트"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<ChevronRight className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
         <ScrollArea className="flex flex-col gap-2.5">

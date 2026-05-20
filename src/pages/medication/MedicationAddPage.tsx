@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Bell, CalendarDays, Check, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
+import { Bell, CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { TopBar } from '../../app/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { createMedication } from '@/api/medication';
 
 const MEDICATION_OPTIONS = [
@@ -64,7 +65,7 @@ export default function MedicationAddPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="약 추가"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<div className="items-center flex justify-end min-w-11 h-11"><button type="button" onClick={saveMedication} disabled={isSaving} className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl disabled:opacity-60">{isSaving ? '저장 중' : '저장하기'}</button></div>}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">

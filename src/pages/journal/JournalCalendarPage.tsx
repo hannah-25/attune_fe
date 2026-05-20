@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TabBar } from '@/components/TabBar';
 import { formatMonthDay } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { getJournalDates } from '@/api/journal';
 
 type DotColor = 'purple' | 'orange' | 'blue' | 'green';
@@ -80,7 +81,7 @@ export default function JournalCalendarPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="일지"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<ChevronRight className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
         <div className="shrink-0">

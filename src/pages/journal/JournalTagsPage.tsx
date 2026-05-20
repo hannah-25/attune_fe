@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import {
   createConditionTag,
   createSideEffectTag,
@@ -120,12 +121,7 @@ export default function JournalTagsPage() {
       <div className="relative flex flex-col flex-1 min-h-0">
         <TopBar
           title="태그 관리"
-          left={
-            <HeaderIconButton
-              icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />}
-              onClick={() => navigate(-1)}
-            />
-          }
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <div className="items-center flex justify-center w-11 h-11">
               <button

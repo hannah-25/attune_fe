@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronLeft, RefreshCw } from 'lucide-react';
+import { Check, ChevronDown, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { TopBar } from '../../app/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 
 type CalendarOption = {
   colorClass: string;
@@ -61,12 +62,7 @@ export default function ExternalCalendarPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="캘린더 연동"
-          left={
-            <HeaderIconButton
-              icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />}
-              onClick={() => navigate(-1)}
-            />
-          }
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <button
               type="button"

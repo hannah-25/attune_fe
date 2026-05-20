@@ -1,9 +1,10 @@
 import React from 'react';
 import logoImage from '@src/assets/emotion2.png';
-import { ChevronLeft, Moon, Pill, Smile, Target, X } from 'lucide-react';
+import { Moon, Pill, Smile, Target } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton, NavCloseButton } from '@/components/NavButtons';
 
 export default function EmptyJournalPage() {
   return (
@@ -14,8 +15,8 @@ export default function EmptyJournalPage() {
       <div className="relative flex flex-col flex-1 min-h-0">
         <TopBar
           title="오늘 일지"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
-          right={<HeaderIconButton icon={<X className="h-4 w-4 text-gray-700" strokeWidth={2.4} />} />}
+          left={<NavBackButton />}
+          right={<NavCloseButton />}
         />
         <ScrollArea className="items-center flex flex-col text-center gap-4 pt-10 px-6">
           <div className="flex items-center justify-center text-center w-28 h-28 shrink-0 overflow-visible mb-1">

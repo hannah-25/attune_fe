@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, ChevronLeft, ChevronUp, Clock, Pill, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { mockMedications, mockNextDose, mockPastMedications } from '@/mocks/medication.mock';
 
 const INITIAL_SECONDS = 2 * 60 + 14;
@@ -36,7 +37,7 @@ export default function MedicationListPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 중인 약"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<Plus className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate('/medication/add')} />}
         />
         <ScrollArea className="flex flex-col gap-3 pt-1">

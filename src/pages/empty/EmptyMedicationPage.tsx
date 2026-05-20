@@ -1,9 +1,10 @@
 import React from 'react';
-import { Bell, BookOpen, ChevronLeft, History, Pill, Plus } from 'lucide-react';
+import { Bell, BookOpen, History, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 
 export default function EmptyMedicationPage() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function EmptyMedicationPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 중인 약"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<Plus className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate('/medication/add')} />}
         />
         <ScrollArea className="flex flex-col gap-[14px] pt-3 px-5">
