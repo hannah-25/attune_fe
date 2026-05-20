@@ -12,30 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. pnpm 환경을 먼저 깃허브 가상 서버에 설치합니다
+      # 1. 내 로컬 컴퓨터와 100% 동일한 pnpm 10.30.3 버전을 설치합니다 ⭐️
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8 # 프로젝트 버전에 맞춰 자동 대응 (보통 8이나 9 사용)
+          version: 10.30.3 
 
       # 2. Node.js 설정 및 pnpm 의존성 캐싱 적용
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm' # package-lock.json 대신 pnpm-lock.yaml을 기반으로 캐싱 정석 작동!
+          cache: 'pnpm'
 
-      # 3. pnpm 명령어로 의존성 라이브러리 설치
+      # 3. 버전이 일치하므로 엄격하고 안전한 무결성 설치 옵션을 다시 사용합니다!
       - name: Install dependencies
         run: pnpm install --frozen-lockfile 
-        # --frozen-lockfile은 pnpm에서 npm ci와 같이 락파일을 수정하지 않고 엄격하게 복사 설치하는 정석 옵션이야.
 
       # 4. 프로젝트 빌드
       - name: Build project
         run: pnpm build
-        # 만약 프론트엔드 환경변수(.env) 주입이 필요하다면 여기에 아래처럼 적어주면 돼
-        # env:
-        #   VITE_API_URL: ${{ secrets.VITE_API_URL_DEV }}
 
       # 5. AWS 자격 증명 설정
       - name: Configure AWS credentials
@@ -43,14 +39,14 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2 # 서울 리전
+          aws-region: ap-northeast-2
 
       # 6. 빌드된 dist 폴더를 개발용 S3 버킷에 동기화 업로드
       - name: Deploy to Amazon S3
         run: |
           aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }} --delete
 
-      # 7. 개발용 CloudFront 캐시 무효화 (유저 브라우저에 바로 새 기능이 반영되도록 캐시 강제 갱신)
+      # 7. 개발용 CloudFront 캐시 무효화
       - name: CloudFront Invalidate Cache
         run: |
           aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFLARE_DISTRIBUTION_ID_DEV }} --paths "/*"
