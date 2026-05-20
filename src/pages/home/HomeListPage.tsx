@@ -59,9 +59,8 @@ export default function HomeListPage() {
               </div>
             </div>
           </div>
-          <div className="items-center flex justify-between px-1 mt-3">
+          <div className="px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
-            <button type="button" onClick={() => navigate('/journal/timeline')} className="text-xs text-gray-400">전체보기</button>
           </div>
           <button
             type="button"

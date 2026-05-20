@@ -84,7 +84,7 @@ export default function CalendarMainPage() {
               </div>
             ))}
           </div>
-          <CalendarGrid compact={viewMode === '주'} events={events} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+          <CalendarGrid compact={viewMode === '주'} events={events} selectedDate={selectedDate} onSelectDate={setSelectedDate} onDoubleClickDate={(date) => navigate(`/calendar/new?date=${toDateKey(date)}`)} />
         </div>
         <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0"></div>
         <div className="grow min-h-0 overflow-y-auto overscroll-contain px-4 pt-2 pb-[100px]">
@@ -113,11 +113,13 @@ export default function CalendarMainPage() {
 function CalendarGrid({
   compact,
   events,
+  onDoubleClickDate,
   onSelectDate,
   selectedDate,
 }: {
   compact: boolean;
   events: ScheduleSummary[];
+  onDoubleClickDate: (date: Date) => void;
   onSelectDate: (date: Date) => void;
   selectedDate: Date;
 }) {
@@ -132,7 +134,7 @@ function CalendarGrid({
         const isSelected = day !== null && toDateKey(day) === toDateKey(selectedDate);
         const hasEvent = day !== null && events.some((event) => event.startTime.startsWith(toDateKey(day)));
         return (
-          <button type="button" key={`${day?.toISOString() ?? 'empty'}-${index}`} disabled={day === null} onClick={() => day && onSelectDate(day)} className={`relative text-center aspect-[0.82_/_1] pt-1 pr-0 pb-1 pl-0 rounded-lg ${day === null ? 'opacity-[0.35]' : ''} ${isSelected ? 'bg-[rgb(31,27,46)]' : ''}`}>
+          <button type="button" key={`${day?.toISOString() ?? 'empty'}-${index}`} disabled={day === null} onClick={() => day && onSelectDate(day)} onDoubleClick={() => day && onDoubleClickDate(day)} className={`relative text-center aspect-[0.82_/_1] pt-1 pr-0 pb-1 pl-0 rounded-lg ${day === null ? 'opacity-[0.35]' : ''} ${isSelected ? 'bg-[rgb(31,27,46)]' : ''}`}>
             <div className={`font-${isSelected ? 'extrabold' : 'semibold'} text-center ${isSelected ? 'text-white' : ''}`}>{day?.getDate() ?? ''}</div>
             {hasEvent ? (
               <div className="flex justify-center text-center mt-[3px] gap-[2px]">

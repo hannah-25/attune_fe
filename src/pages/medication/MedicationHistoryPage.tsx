@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, ChevronLeft, Clock } from 'lucide-react';
+import { CalendarDays, Check, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { getAllMedicationLogs, MedicationLogStatus } from '@/api/medication';
 
 type HistoryPeriod = '1주' | '1개월' | '3개월' | '직접';
@@ -45,7 +46,7 @@ export default function MedicationHistoryPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 이력"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<CalendarDays className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <div className="flex gap-1.5 pt-0 pr-4 pb-3 pl-4">

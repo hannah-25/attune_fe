@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, ChevronLeft, Plus, X } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { formatDate } from '@/lib/date';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import {
   checkCondition,
   checkSideEffect,
@@ -12,8 +13,12 @@ import {
   createMemo,
   getMemo,
   getConditionTags,
+  getJournal,
   getSideEffectTags,
   getTroubleTags,
+  uncheckCondition,
+  uncheckSideEffect,
+  uncheckTrouble,
 } from '@/api/journal';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
@@ -50,12 +55,14 @@ const categoryConfig: Record<Category, {
   },
 };
 
+type TagItem = { tagId: number; label: string };
+
 type TagEntry = {
   id: string;
   time: string;
   kind: 'tags';
   category: Category;
-  tags: string[];
+  tags: TagItem[];
 };
 
 type SimpleEntry = {
@@ -67,20 +74,28 @@ type SimpleEntry = {
 };
 
 type TimelineEntry = TagEntry | SimpleEntry;
-type ApiTag = {
-  label: string;
-  tagId: number;
-};
+type ApiTag = { label: string; tagId: number };
 
-const MEDICATION_NAME = '콘서타 18mg';
+function buildTagEntries(
+  conditions: Array<{ tagId: number; condition: string; checkedAt: string }>,
+  sideEffects: Array<{ tagId: number; sideEffect: string; checkedAt: string }>,
+  troubles: Array<{ tagId: number; trouble: string; checkedAt: string }>,
+): TagEntry[] {
+  const map = new Map<string, TagEntry>();
 
-const initialEntries: TimelineEntry[] = [
-  { id: 'e1', time: '08:00', kind: 'medication', label: '복용', content: MEDICATION_NAME },
-  { id: 'e2', time: '09:30', kind: 'tags', category: '감정·증상', tags: ['불안', '멍해짐'] },
-  { id: 'e3', time: '12:00', kind: 'meal', label: '식사', content: '점심 완료' },
-  { id: 'e4', time: '14:20', kind: 'tags', category: '업무 실수', tags: ['마감 놓침'] },
-  { id: 'e5', time: '15:00', kind: 'tags', category: '부작용', tags: ['식욕 저하'] },
-];
+  const add = (category: Category, tagId: number, label: string, checkedAt: string) => {
+    const time = checkedAt.slice(11, 16);
+    const key = `${category}|${time}`;
+    if (!map.has(key)) map.set(key, { id: key, time, kind: 'tags', category, tags: [] });
+    map.get(key)!.tags.push({ tagId, label });
+  };
+
+  conditions.forEach((c) => add('감정·증상', c.tagId, c.condition, c.checkedAt));
+  sideEffects.forEach((s) => add('부작용', s.tagId, s.sideEffect, s.checkedAt));
+  troubles.forEach((t) => add('업무 실수', t.tagId, t.trouble, t.checkedAt));
+
+  return Array.from(map.values()).sort((a, b) => a.time.localeCompare(b.time));
+}
 
 function getNow(): string {
   const now = new Date();
@@ -92,7 +107,7 @@ function getNow(): string {
 export default function JournalTimelinePage() {
   const navigate = useNavigate();
   const journalDate = useMemo(() => toDateKey(new Date()), []);
-  const [entries, setEntries] = useState<TimelineEntry[]>(initialEntries);
+  const [entries, setEntries] = useState<TimelineEntry[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [categoryTags, setCategoryTags] = useState<Record<Category, ApiTag[]>>({
@@ -101,8 +116,6 @@ export default function JournalTimelinePage() {
     '업무 실수': [],
   });
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
-  const [isAddingTag, setIsAddingTag] = useState(false);
-  const [draftTag, setDraftTag] = useState('');
   const [memo, setMemo] = useState('');
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
@@ -116,8 +129,9 @@ export default function JournalTimelinePage() {
       getSideEffectTags(),
       getTroubleTags(),
       getMemo(journalDate).catch(() => undefined),
+      getJournal(journalDate).catch(() => null),
     ])
-      .then(([conditions, sideEffects, troubles, memoData]) => {
+      .then(([conditions, sideEffects, troubles, memoData, journal]) => {
         if (ignore) return;
         setCategoryTags({
           '감정·증상': conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
@@ -127,6 +141,13 @@ export default function JournalTimelinePage() {
         if (memoData?.memo) {
           setMemo(memoData.memo);
           setMemoSaved(true);
+        }
+        if (journal) {
+          setEntries(buildTagEntries(
+            journal.checked.conditions,
+            journal.checked.sideEffects,
+            journal.checked.troubles,
+          ));
         }
       })
       .catch(() => {
@@ -139,36 +160,25 @@ export default function JournalTimelinePage() {
   }, []);
 
   const toggleEditing = (entryId: string) => {
-    setEditingEntryId(prev => {
-      setIsAddingTag(false);
-      setDraftTag('');
-      return prev === entryId ? null : entryId;
-    });
+    setEditingEntryId(prev => prev === entryId ? null : entryId);
   };
 
-  const removeTag = (entryId: string, tag: string) => {
+  const removeTag = (entryId: string, tagId: number, category: Category) => {
+    const apiCall =
+      category === '감정·증상' ? uncheckCondition(tagId, journalDate) :
+      category === '부작용' ? uncheckSideEffect(tagId, journalDate) :
+      uncheckTrouble(tagId, journalDate);
+
+    apiCall.catch(() => setError('태그 삭제에 실패했습니다.'));
+
     setEntries(prev =>
       prev
         .map(entry => {
           if (entry.id !== entryId || entry.kind !== 'tags') return entry;
-          return { ...entry, tags: entry.tags.filter(t => t !== tag) };
+          return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.tagId !== tagId) };
         })
         .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0)
     );
-  };
-
-  const handleAddTag = (entryId: string) => {
-    const trimmed = draftTag.trim();
-    if (!trimmed) return;
-    setEntries(prev =>
-      prev.map(entry => {
-        if (entry.id !== entryId || entry.kind !== 'tags') return entry;
-        if ((entry as TagEntry).tags.includes(trimmed)) return entry;
-        return { ...entry, tags: [...(entry as TagEntry).tags, trimmed] };
-      })
-    );
-    setDraftTag('');
-    setIsAddingTag(false);
   };
 
   const openSheet = (category: Category) => {
@@ -211,7 +221,7 @@ export default function JournalTimelinePage() {
         time: getNow(),
         kind: 'tags',
         category: activeCategory,
-        tags: Array.from(selectedTags),
+        tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
       },
     ]);
     closeSheet();
@@ -238,7 +248,7 @@ export default function JournalTimelinePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="오늘 일지"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           subtitle={formatDate(new Date())}
         />
 
@@ -285,15 +295,15 @@ export default function JournalTimelinePage() {
                     <div className="flex flex-wrap gap-1">
                       {entry.tags.map(tag => (
                         <div
-                          key={tag}
+                          key={tag.tagId}
                           className={`items-center flex font-semibold whitespace-nowrap ${cfg.chipClass} text-xs gap-1 tracking-tight pt-[7px] ${isEditing ? 'pr-2' : 'pr-[11px]'} pb-[7px] pl-[11px] rounded-full`}
                         >
-                          <span className="block">{tag}</span>
+                          <span className="block">{tag.label}</span>
                           {isEditing && (
                             <button
                               type="button"
-                              aria-label={`${tag} 삭제`}
-                              onClick={() => removeTag(entry.id, tag)}
+                              aria-label={`${tag.label} 삭제`}
+                              onClick={() => removeTag(entry.id, tag.tagId, entry.category)}
                               className="flex items-center justify-center w-4 h-4 rounded-full opacity-50"
                             >
                               <X className="w-3 h-3" strokeWidth={2.5} />
@@ -302,38 +312,14 @@ export default function JournalTimelinePage() {
                         </div>
                       ))}
                       {isEditing && (
-                        isAddingTag ? (
-                          <form
-                            className="flex items-center gap-1"
-                            onSubmit={e => { e.preventDefault(); handleAddTag(entry.id); }}
-                          >
-                            <input
-                              autoFocus
-                              value={draftTag}
-                              onChange={e => setDraftTag(e.target.value)}
-                              onBlur={() => { if (!draftTag.trim()) setIsAddingTag(false); }}
-                              onKeyDown={e => { if (e.key === 'Escape') { setDraftTag(''); setIsAddingTag(false); } }}
-                              placeholder="태그 이름"
-                              className="h-8 w-24 bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-base"
-                            />
-                            <button
-                              type="submit"
-                              disabled={!draftTag.trim()}
-                              className="flex items-center justify-center w-8 h-8 bg-[rgb(31,27,46)] disabled:bg-gray-200 rounded-full"
-                            >
-                              <Check className="w-3 h-3 text-white" strokeWidth={2.8} />
-                            </button>
-                          </form>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setIsAddingTag(true)}
-                            className="flex items-center gap-1 text-xs font-medium whitespace-nowrap border border-dashed border-gray-300 text-gray-400 pt-[7px] pb-[7px] pl-[10px] pr-[12px] rounded-full"
-                          >
-                            <Plus className="w-3 h-3" strokeWidth={2.5} />
-                            <span>추가</span>
-                          </button>
-                        )
+                        <button
+                          type="button"
+                          onClick={() => { toggleEditing(entry.id); openSheet(entry.category); }}
+                          className="flex items-center gap-1 text-xs font-medium whitespace-nowrap border border-dashed border-gray-300 text-gray-400 pt-[7px] pb-[7px] pl-[10px] pr-[12px] rounded-full"
+                        >
+                          <Plus className="w-3 h-3" strokeWidth={2.5} />
+                          <span>추가</span>
+                        </button>
                       )}
                     </div>
                   </div>

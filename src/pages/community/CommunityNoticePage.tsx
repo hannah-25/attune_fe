@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Megaphone, Search } from 'lucide-react';
+import { ChevronRight, Megaphone, Search } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { getNotices, NoticeSummary } from '@/api/notice';
 
 export default function CommunityNoticePage() {
@@ -31,7 +32,7 @@ export default function CommunityNoticePage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="공지사항"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<Search className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-0 pr-4 pb-6 pl-4">

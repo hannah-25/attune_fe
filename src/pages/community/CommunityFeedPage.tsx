@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageCircle, Pencil, Search, ThumbsUp } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
-import { mockPosts } from '@/mocks/community.mock';
+import { Category, mockPosts } from '@/mocks/community.mock';
 
-const CATEGORIES = ['전체', '콘서타', '스트라테라', '아데랄', '일반'];
+const CATEGORIES: Category[] = ['전체', '질병 정보', '약물 치료', '일상생활', '미분류'];
 
 export default function CommunityFeedPage() {
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<Category>('전체');
+
+  const visiblePosts = selectedCategory === '전체'
+    ? mockPosts
+    : mockPosts.filter((post) => post.category === selectedCategory);
 
   return (
     <div
@@ -23,12 +28,19 @@ export default function CommunityFeedPage() {
           right={<HeaderIconButton icon={<Pencil className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} onClick={() => navigate('/community/write')} />}
         />
         <div className="flex overflow-auto gap-1.5 pt-0 pr-4 pb-2 pl-4">
-          {CATEGORIES.map((category, index) => (
-            <div key={category} className={`font-bold whitespace-nowrap pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem] ${index === 0 ? 'bg-[rgb(31,27,46)] text-white' : 'bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px]'}`}>{category}</div>
+          {CATEGORIES.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setSelectedCategory(category)}
+              className={`font-bold whitespace-nowrap pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem] transition-colors ${selectedCategory === category ? 'bg-[rgb(31,27,46)] text-white' : 'bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] text-gray-700'}`}
+            >
+              {category}
+            </button>
           ))}
         </div>
         <ScrollArea className="flex flex-col gap-2.5 pt-1">
-          {mockPosts.map((post) => (
+          {visiblePosts.map((post) => (
             <button key={post.id} type="button" onClick={() => navigate('/community/post')} className="text-left bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
               <div className="items-center flex mb-[6px] gap-1.5">
                 <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">{post.category}</div>

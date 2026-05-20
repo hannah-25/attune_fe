@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Bell, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Bell, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { formatFullDateTime } from '@/lib/date';
-import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { TopBar } from '../../app/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import {
   createSchedule,
   createScheduleCategory,
@@ -12,22 +13,6 @@ import {
   updateSchedule,
 } from '@/api/schedule';
 
-const now = new Date();
-const startDefaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0);
-const endDefaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0);
-
-const START_OPTIONS = [
-  startDefaultDate,
-  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0),
-  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0),
-];
-
-const END_OPTIONS = [
-  endDefaultDate,
-  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16, 0),
-  new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0),
-];
-
 const REPEAT_OPTIONS = ['안 함', '매주', '매월'] as const;
 const ALARM_OPTIONS = ['없음', '10분 전', '30분 전', '1시간 전'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
@@ -36,6 +21,26 @@ export default function NewEventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const scheduleId = Number(searchParams.get('id'));
+
+  const { START_OPTIONS, END_OPTIONS } = useMemo(() => {
+    const dateParam = searchParams.get('date');
+    const base = dateParam ? new Date(`${dateParam}T00:00:00`) : new Date();
+    const y = base.getFullYear();
+    const m = base.getMonth();
+    const d = base.getDate();
+    return {
+      START_OPTIONS: [
+        new Date(y, m, d, 14, 0),
+        new Date(y, m, d, 15, 0),
+        new Date(y, m, d, 16, 0),
+      ],
+      END_OPTIONS: [
+        new Date(y, m, d, 15, 0),
+        new Date(y, m, d, 16, 0),
+        new Date(y, m, d, 17, 0),
+      ],
+    };
+  }, []);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
@@ -142,7 +147,7 @@ export default function NewEventPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title={scheduleId ? '일정 수정' : '새 일정'}
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
               <button

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronRight } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { getConsultation, updateConsultationResult } from '@/api/consultation';
 
 type PrescriptionStatus = '증량' | '감량' | '유지';
@@ -97,7 +98,7 @@ export default function CounselingResultPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="상담 후 기록"
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
               {!saved ? <button type="button" onClick={saveResult} className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]">저장</button> : null}

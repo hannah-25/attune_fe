@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { deleteSchedule, getSchedule, getScheduleCategories, ScheduleCategory, ScheduleDetail } from '@/api/schedule';
 
 export default function EventDetailPage() {
@@ -60,7 +61,7 @@ export default function EventDetailPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate(-1)} />}
+          left={<NavBackButton onClick={() => navigate(-1)} />}
           right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => setShowActions((value) => !value)} />}
         />
         {showActions ? (

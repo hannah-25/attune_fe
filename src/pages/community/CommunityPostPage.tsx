@@ -1,6 +1,7 @@
 import React from 'react';
-import { ChevronLeft, MessageCircle, MoreHorizontal, Send, ThumbsUp } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Send, ThumbsUp } from 'lucide-react';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
 import { mockComments, mockPostDetail } from '@/mocks/community.mock';
 
 export default function CommunityPostPage() {
@@ -12,7 +13,7 @@ export default function CommunityPostPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title=""
-          left={<HeaderIconButton icon={<ChevronLeft className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
+          left={<NavBackButton />}
           right={<HeaderIconButton icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} />}
         />
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-20 pl-4">

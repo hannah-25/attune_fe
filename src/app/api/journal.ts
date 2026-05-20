@@ -91,6 +91,10 @@ export function checkCondition(tagId: number) {
   return apiRequest<ConditionTag & { checkedAt: string }>('/api/journals/conditions', { method: 'POST', body: { tagId } });
 }
 
+export function uncheckCondition(tagId: number, date: string) {
+  return apiRequest<void>(`/api/journals/conditions?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
+}
+
 export function getSideEffectTags() {
   return apiRequest<SideEffectTag[]>('/api/journals/side-effect-tags');
 }
@@ -109,6 +113,10 @@ export function checkSideEffect(tagId: number) {
   return apiRequest<SideEffectTag & { checkedAt: string }>('/api/journals/side-effects', { method: 'POST', body: { tagId } });
 }
 
+export function uncheckSideEffect(tagId: number, date: string) {
+  return apiRequest<void>(`/api/journals/side-effects?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
+}
+
 export function getTroubleTags() {
   return apiRequest<TroubleTag[]>('/api/journals/trouble-tags');
 }
@@ -125,6 +133,10 @@ export function deleteTroubleTag(tagId: number, journalDate: string) {
 
 export function checkTrouble(tagId: number) {
   return apiRequest<TroubleTag & { checkedAt: string }>('/api/journals/troubles', { method: 'POST', body: { tagId } });
+}
+
+export function uncheckTrouble(tagId: number, date: string) {
+  return apiRequest<void>(`/api/journals/troubles?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
 }
 
 export type SleepMealRecord = {
