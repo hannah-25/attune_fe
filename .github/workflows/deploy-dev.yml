@@ -3,7 +3,7 @@ name: Frontend CI/CD (AWS S3 + CloudFront)
 on:
   push:
     branches:
-      - develop  # 배포를 트리거할 브랜치
+      - develop  # dev 배포를 트리거할 브랜치
 
 jobs:
   deploy:
@@ -12,20 +12,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 1. pnpm 환경을 먼저 깃허브 가상 서버에 설치합니다
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8 # 프로젝트 버전에 맞춰 자동 대응 (보통 8이나 9 사용)
+
+      # 2. Node.js 설정 및 pnpm 의존성 캐싱 적용
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm' # package-lock.json 대신 pnpm-lock.yaml을 기반으로 캐싱 정석 작동!
 
+      # 3. pnpm 명령어로 의존성 라이브러리 설치
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile 
+        # --frozen-lockfile은 pnpm에서 npm ci와 같이 락파일을 수정하지 않고 엄격하게 복사 설치하는 정석 옵션이야.
 
+      # 4. 프로젝트 빌드
       - name: Build project
-        run: npm run build
-        # 만약 env가 필요하다면 여기에 주입 (예: VITE_API_URL)
+        run: pnpm build
+        # 만약 프론트엔드 환경변수(.env) 주입이 필요하다면 여기에 아래처럼 적어주면 돼
+        # env:
+        #   VITE_API_URL: ${{ secrets.VITE_API_URL_DEV }}
 
-      # 1. AWS 자격 증명 설정
+      # 5. AWS 자격 증명 설정
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -33,13 +45,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2 # 서울 리전
 
-      # 2. 빌드된 dist 폴더를 S3 버킷에 업로드 (기존 파일과 동기화)
+      # 6. 빌드된 dist 폴더를 개발용 S3 버킷에 동기화 업로드
       - name: Deploy to Amazon S3
         run: |
-          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME }} --delete
-        # --delete 옵션은 깃허브 빌드본엔 없고 S3에만 남아있는 옛날 쓰레기 파일들을 지워주는 역할이야.
+          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }} --delete
 
-      # 3. CloudFront 캐시 무효화 (실시간 반영을 위해 필수)
+      # 7. 개발용 CloudFront 캐시 무효화 (유저 브라우저에 바로 새 기능이 반영되도록 캐시 강제 갱신)
       - name: CloudFront Invalidate Cache
         run: |
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFLARE_DISTRIBUTION_ID }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFLARE_DISTRIBUTION_ID_DEV }} --paths "/*"
