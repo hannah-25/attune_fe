@@ -22,25 +22,20 @@ export default function NewEventPage() {
   const [searchParams] = useSearchParams();
   const scheduleId = Number(searchParams.get('id'));
 
-  const { START_OPTIONS, END_OPTIONS } = useMemo(() => {
+  const defaultOptions = useMemo(() => {
     const dateParam = searchParams.get('date');
     const base = dateParam ? new Date(`${dateParam}T00:00:00`) : new Date();
     const y = base.getFullYear();
     const m = base.getMonth();
     const d = base.getDate();
     return {
-      START_OPTIONS: [
-        new Date(y, m, d, 14, 0),
-        new Date(y, m, d, 15, 0),
-        new Date(y, m, d, 16, 0),
-      ],
-      END_OPTIONS: [
-        new Date(y, m, d, 15, 0),
-        new Date(y, m, d, 16, 0),
-        new Date(y, m, d, 17, 0),
-      ],
+      startPresets: [new Date(y, m, d, 14, 0), new Date(y, m, d, 15, 0), new Date(y, m, d, 16, 0)],
+      endPresets: [new Date(y, m, d, 15, 0), new Date(y, m, d, 16, 0), new Date(y, m, d, 17, 0)],
     };
   }, []);
+
+  const [START_OPTIONS, setStartOptions] = useState<Date[]>(defaultOptions.startPresets);
+  const [END_OPTIONS, setEndOptions] = useState<Date[]>(defaultOptions.endPresets);
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
@@ -81,6 +76,31 @@ export default function NewEventPage() {
           setMemo(detail.description ?? '');
           setMemoOpen(Boolean(detail.description));
           setSelectedCategoryId(detail.categoryId);
+
+          const loadedStart = new Date(detail.startTime);
+          const loadedEnd = new Date(detail.endTime);
+          const y = loadedStart.getFullYear(), mo = loadedStart.getMonth(), d = loadedStart.getDate();
+          const startPresets = [new Date(y, mo, d, 14, 0), new Date(y, mo, d, 15, 0), new Date(y, mo, d, 16, 0)];
+          const endPresets = [new Date(y, mo, d, 15, 0), new Date(y, mo, d, 16, 0), new Date(y, mo, d, 17, 0)];
+
+          const startMatchIdx = startPresets.findIndex(p => p.getTime() === loadedStart.getTime());
+          if (startMatchIdx >= 0) {
+            setStartOptions(startPresets);
+            setStartIndex(startMatchIdx);
+          } else {
+            setStartOptions([loadedStart, ...startPresets]);
+            setStartIndex(0);
+          }
+
+          const endMatchIdx = endPresets.findIndex(p => p.getTime() === loadedEnd.getTime());
+          if (endMatchIdx >= 0) {
+            setEndOptions(endPresets);
+            setEndIndex(endMatchIdx);
+          } else {
+            setEndOptions([loadedEnd, ...endPresets]);
+            setEndIndex(0);
+          }
+
           setDirty(false);
         }
       })
@@ -98,10 +118,10 @@ export default function NewEventPage() {
     if (!trimmedCategory) return;
 
     try {
-      await createScheduleCategory({ categoryName: trimmedCategory, color: DEFAULT_CATEGORY_COLOR });
+      const created = await createScheduleCategory({ categoryName: trimmedCategory, color: DEFAULT_CATEGORY_COLOR });
       const response = await getScheduleCategories();
       setCategories(response.categories);
-      setSelectedCategoryId(response.categories.find((category) => category.categoryName === trimmedCategory)?.categoryId ?? response.categories[0]?.categoryId ?? null);
+      setSelectedCategoryId(created.categoryId);
       setNewCategory('');
       setAddingCategory(false);
       markDirty();
