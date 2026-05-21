@@ -3,7 +3,7 @@ import { MoreHorizontal } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-import { deleteSchedule, getSchedule, getScheduleCategories, ScheduleCategory, ScheduleDetail } from '@/api/schedule';
+import { deleteSchedule, getSchedule, getScheduleCategories, updateSchedule, ScheduleCategory, ScheduleDetail } from '@/api/schedule';
 
 export default function EventDetailPage() {
   const navigate = useNavigate();
@@ -14,7 +14,9 @@ export default function EventDetailPage() {
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
   const [memo, setMemo] = useState('');
+  const [memoOriginal, setMemoOriginal] = useState('');
   const [memoFocused, setMemoFocused] = useState(false);
+  const [memoSaving, setMemoSaving] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
   useEffect(() => {
@@ -31,6 +33,7 @@ export default function EventDetailPage() {
         setEventDetail(detail);
         setCategories(categoryResponse.categories);
         setMemo(detail.description ?? '');
+        setMemoOriginal(detail.description ?? '');
       })
       .catch(() => {
         if (!ignore) setError('일정을 불러오지 못했습니다.');
@@ -49,6 +52,19 @@ export default function EventDetailPage() {
       navigate('/calendar');
     } catch {
       setError('일정을 삭제하지 못했습니다.');
+    }
+  };
+
+  const saveMemo = async () => {
+    if (!scheduleId) return;
+    setMemoSaving(true);
+    try {
+      await updateSchedule(scheduleId, { description: memo.trim() || undefined });
+      setMemoOriginal(memo);
+    } catch {
+      setError('메모를 저장하지 못했습니다.');
+    } finally {
+      setMemoSaving(false);
     }
   };
 
@@ -122,8 +138,18 @@ export default function EventDetailPage() {
               onClick={() => undefined}
             />
           </div>
-          <div className="font-bold text-gray-600 pt-4 pr-1 pb-1.5 pl-1">
-            메모
+          <div className="flex items-center justify-between pt-4 pr-1 pb-1.5 pl-1">
+            <div className="font-bold text-gray-600">메모</div>
+            {memo !== memoOriginal && (
+              <button
+                type="button"
+                onClick={saveMemo}
+                disabled={memoSaving}
+                className="text-xs font-bold text-white bg-[rgb(31,27,46)] px-3 py-1 rounded-lg disabled:opacity-50"
+              >
+                저장
+              </button>
+            )}
           </div>
           <button
             type="button"

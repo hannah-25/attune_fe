@@ -1,6 +1,6 @@
 import { apiRequest } from './client';
 
-export type ScheduleSource = 'DIRECT' | 'EXTERNAL';
+export type ScheduleSource = 'MANUAL' | 'IMPORTED';
 
 export type ScheduleCategory = {
   categoryId: number;
@@ -23,10 +23,10 @@ export type SchedulePayload = {
 export type ScheduleSummary = {
   scheduleId: number;
   title: string;
-  categoryId: number;
-  isAllDay: boolean;
   startTime: string;
   endTime: string;
+  color: string;
+  source: ScheduleSource;
 };
 
 export type ScheduleDetail = {
@@ -44,7 +44,7 @@ export function getScheduleCategories() {
 }
 
 export function createScheduleCategory(payload: { categoryName: string; color: string }) {
-  return apiRequest<void>('/api/schedule-categories', { method: 'POST', body: payload });
+  return apiRequest<{ categoryId: number; categoryName: string }>('/api/schedule-categories', { method: 'POST', body: payload });
 }
 
 export function updateScheduleCategory(categoryId: number, payload: { categoryName: string; color: string }) {
