@@ -91,10 +91,10 @@ export default function CalendarMainPage() {
           <div className="font-bold mb-2">{selectedDate.getMonth() + 1}월 {selectedDate.getDate()}일 · {visibleEvents.length}개 일정</div>
           {error ? <div className="text-red-500 text-xs mb-2">{error}</div> : null}
           {visibleEvents.map((event) => {
-            const category = categories.find((item) => item.color === event.color);
+            const category = categories.find((item) => item.categoryId === event.categoryId);
             return (
             <button key={event.scheduleId} type="button" onClick={() => navigate(`/calendar/event?id=${event.scheduleId}`)} className="items-center flex w-full text-left mb-2 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]">
-              <div className="self-stretch w-1 rounded-xs" style={{ backgroundColor: event.color || 'rgb(216,180,254)' }}></div>
+              <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined}></div>
               <div className="grow basis-[0%]">
                 <div className="font-bold">{event.title}</div>
                 <div className="mt-[2px] text-gray-600 text-xs">{formatScheduleTime(event)}</div>
@@ -166,6 +166,7 @@ function toDateKey(date: Date) {
 }
 
 function formatScheduleTime(event: ScheduleSummary) {
+  if (event.isAllDay) return '종일';
   return `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`;
 }
 
