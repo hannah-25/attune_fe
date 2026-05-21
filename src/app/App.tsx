@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router';
+import { AppViewport } from './components/AppViewport';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -69,78 +70,82 @@ import WithdrawPage from '../pages/settings/WithdrawPage';
 
 // Index
 import IndexPage from './pages/IndexPage';
+import OverviewPage from './pages/OverviewPage';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<IndexPage />} />
+    <AppViewport>
+      <Routes>
+        <Route path="/" element={<IndexPage />} />
+        <Route path="/overview" element={<OverviewPage />} />
 
-      {/* Auth */}
-      <Route path="/splash" element={<SplashPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/reset-password/1" element={<ResetPassword1Page />} />
-      <Route path="/reset-password/2" element={<ResetPassword2Page />} />
-      <Route path="/reset-password/3" element={<ResetPassword3Page />} />
+        {/* Auth */}
+        <Route path="/splash" element={<SplashPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/reset-password/1" element={<ResetPassword1Page />} />
+        <Route path="/reset-password/2" element={<ResetPassword2Page />} />
+        <Route path="/reset-password/3" element={<ResetPassword3Page />} />
 
-      {/* Onboarding */}
-      <Route path="/onboarding/1" element={<Onboarding1Page />} />
-      <Route path="/onboarding/2" element={<Onboarding2Page />} />
-      <Route path="/onboarding/3" element={<Onboarding3Page />} />
-      <Route path="/onboarding/4" element={<Onboarding4Page />} />
-      <Route path="/onboarding/5" element={<Onboarding5Page />} />
+        {/* Onboarding */}
+        <Route path="/onboarding/1" element={<Onboarding1Page />} />
+        <Route path="/onboarding/2" element={<Onboarding2Page />} />
+        <Route path="/onboarding/3" element={<Onboarding3Page />} />
+        <Route path="/onboarding/4" element={<Onboarding4Page />} />
+        <Route path="/onboarding/5" element={<Onboarding5Page />} />
 
-      {/* Home */}
-      <Route path="/home" element={<HomeListPage />} />
-      <Route path="/home/calendar" element={<HomeCalendarPage />} />
+        {/* Home */}
+        <Route path="/home" element={<HomeListPage />} />
+        <Route path="/home/calendar" element={<HomeCalendarPage />} />
 
-      {/* Journal */}
-      <Route path="/journal" element={<JournalFullPage />} />
-      <Route path="/journal/timeline" element={<JournalTimelinePage />} />
-      <Route path="/journal/calendar" element={<JournalCalendarPage />} />
-      <Route path="/journal/tags" element={<JournalTagsPage />} />
+        {/* Journal */}
+        <Route path="/journal" element={<JournalFullPage />} />
+        <Route path="/journal/timeline" element={<JournalTimelinePage />} />
+        <Route path="/journal/calendar" element={<JournalCalendarPage />} />
+        <Route path="/journal/tags" element={<JournalTagsPage />} />
 
-      {/* Medication */}
-      <Route path="/medication" element={<MedicationListPage />} />
-      <Route path="/medication/add" element={<MedicationAddPage />} />
-      <Route path="/medication/alarm" element={<MedicationAlarmPage />} />
-      <Route path="/medication/info" element={<MedicationInfoPage />} />
-      <Route path="/medication/history" element={<MedicationHistoryPage />} />
+        {/* Medication */}
+        <Route path="/medication" element={<MedicationListPage />} />
+        <Route path="/medication/add" element={<MedicationAddPage />} />
+        <Route path="/medication/alarm" element={<MedicationAlarmPage />} />
+        <Route path="/medication/info" element={<MedicationInfoPage />} />
+        <Route path="/medication/history" element={<MedicationHistoryPage />} />
 
-      {/* Calendar */}
-      <Route path="/calendar" element={<CalendarMainPage />} />
-      <Route path="/calendar/event" element={<EventDetailPage />} />
-      <Route path="/calendar/new" element={<NewEventPage />} />
-      <Route path="/calendar/external" element={<ExternalCalendarPage />} />
+        {/* Calendar */}
+        <Route path="/calendar" element={<CalendarMainPage />} />
+        <Route path="/calendar/event" element={<EventDetailPage />} />
+        <Route path="/calendar/new" element={<NewEventPage />} />
+        <Route path="/calendar/external" element={<ExternalCalendarPage />} />
 
-      {/* Report */}
-      <Route path="/report" element={<ReportWeeklyPage />} />
-      <Route path="/report/monthly" element={<ReportMonthlyListPage />} />
-      <Route path="/report/monthly/detail" element={<ReportMonthlyDetailPage />} />
+        {/* Report */}
+        <Route path="/report" element={<ReportWeeklyPage />} />
+        <Route path="/report/monthly" element={<ReportMonthlyListPage />} />
+        <Route path="/report/monthly/detail" element={<ReportMonthlyDetailPage />} />
 
-      {/* Counseling */}
-      <Route path="/counseling" element={<CounselingListPage />} />
-      <Route path="/counseling/prepare" element={<CounselingPreparePage />} />
-      <Route path="/counseling/result" element={<CounselingResultPage />} />
+        {/* Counseling */}
+        <Route path="/counseling" element={<CounselingListPage />} />
+        <Route path="/counseling/prepare" element={<CounselingPreparePage />} />
+        <Route path="/counseling/result" element={<CounselingResultPage />} />
 
-      {/* Community */}
-      <Route path="/community/notice" element={<CommunityNoticePage />} />
-      <Route path="/community" element={<CommunityFeedPage />} />
-      <Route path="/community/post" element={<CommunityPostPage />} />
-      <Route path="/community/write" element={<CommunityWritePage />} />
+        {/* Community */}
+        <Route path="/community/notice" element={<CommunityNoticePage />} />
+        <Route path="/community" element={<CommunityFeedPage />} />
+        <Route path="/community/post" element={<CommunityPostPage />} />
+        <Route path="/community/write" element={<CommunityWritePage />} />
 
-      {/* Empty States */}
-      <Route path="/empty/journal" element={<EmptyJournalPage />} />
-      <Route path="/empty/medication" element={<EmptyMedicationPage />} />
-      <Route path="/empty/calendar" element={<EmptyCalendarPage />} />
-      <Route path="/empty/report" element={<EmptyReportPage />} />
-      <Route path="/empty/community-search" element={<EmptyCommunitySearchPage />} />
+        {/* Empty States */}
+        <Route path="/empty/journal" element={<EmptyJournalPage />} />
+        <Route path="/empty/medication" element={<EmptyMedicationPage />} />
+        <Route path="/empty/calendar" element={<EmptyCalendarPage />} />
+        <Route path="/empty/report" element={<EmptyReportPage />} />
+        <Route path="/empty/community-search" element={<EmptyCommunitySearchPage />} />
 
-      {/* Settings */}
-      <Route path="/settings" element={<MyPage />} />
-      <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
-      <Route path="/settings/withdraw" element={<WithdrawPage />} />
-    </Routes>
+        {/* Settings */}
+        <Route path="/settings" element={<MyPage />} />
+        <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
+        <Route path="/settings/withdraw" element={<WithdrawPage />} />
+      </Routes>
+    </AppViewport>
   );
 }

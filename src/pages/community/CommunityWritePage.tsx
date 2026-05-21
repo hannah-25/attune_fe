@@ -1,57 +1,115 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
+
+const CATEGORIES = ['질병 정보', '약물 치료', '일상생활', '미분류'];
 
 export default function CommunityWritePage() {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+  const [anonymous, setAnonymous] = useState(false);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.style.height = 'auto';
+      bodyRef.current.style.height = `${bodyRef.current.scrollHeight}px`;
+    }
+  }, [body]);
+
+  const canPublish = title.trim().length > 0;
+
+  const handlePublish = () => {
+    if (!canPublish) return;
+    // TODO: call API to create post
+    navigate('/community');
+  };
+
   return (
     <div
-      className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
+      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F748bff70642e790d3da4f67ab0478b2847c249a0.svg?generation=1778677418486773&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-            <div className="font-bold text-sm">새 글</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="font-bold text-white bg-[rgb(31,27,46)] px-3 py-1 rounded-lg">
-                  발행
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-2 pl-4">
-          <div className="flex mb-3 gap-1.5">
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-transparent border text-white gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
-              <span className="block">콘서타</span>
-            </div>
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-transparent border text-purple-700 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem]">
-              <span className="block">+ 카테고리</span>
-            </div>
-            <div className="grow basis-[0%]"></div>
-            <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-[rgb(185,166,255)] border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-              <span className="block">익명</span>
+        <TopBar
+          title="새 글"
+          left={<NavBackButton onClick={() => navigate(-1)} />}
+          reserveRight
+        />
+
+        <div className="overflow-y-auto overscroll-contain px-4 pt-1 pb-6 flex flex-col gap-3">
+
+          {/* 카테고리 */}
+          <div>
+            <div className="text-xs font-bold text-purple-600 mb-2">카테고리 선택</div>
+            <div className="flex overflow-x-auto gap-1.5 -mx-4 px-4 pb-0.5">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat === category ? null : cat)}
+                  className={`font-bold whitespace-nowrap pt-1.5 pr-3 pb-1.5 pl-3 rounded-[0.875rem] transition-colors ${
+                    category === cat
+                      ? 'bg-purple-100 border border-[rgb(185,166,255)] text-purple-800'
+                      : 'bg-white shadow-[rgba(0,0,0,0.05)_0px_1px_4px_0px] text-gray-500'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="font-bold mb-1 text-lg" style={{ fontFamily: "NanumSquare, system-ui" }}>
-            제목
+
+          {/* 제목 */}
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl">
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="제목"
+              className="w-full font-bold text-base bg-transparent outline-none placeholder:text-gray-400 px-4 py-4"
+              style={{ fontFamily: 'NanumSquare, system-ui' }}
+            />
           </div>
-          <div className="w-[68%] h-[9px] bg-purple-50 rounded-[0.5625rem]"></div>
-          <div className="h-[14px]"></div>
-          <div className="flex flex-col gap-[9px]">
-            <div className="w-[92%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            <div className="w-[78%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            <div className="w-[85%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-            <div className="w-[40%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
+
+          {/* 본문 */}
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl">
+            <textarea
+              ref={bodyRef}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="내용을 자유롭게 입력하세요"
+              rows={8}
+              className="w-full text-base text-gray-800 leading-relaxed bg-transparent outline-none resize-none overflow-hidden placeholder:text-gray-400 px-4 py-4"
+            />
           </div>
+
+          {/* 익명 + 발행 */}
+          <div className="flex flex-col gap-2.5 pt-1">
+            <label className="flex items-center gap-1.5 font-semibold text-sm text-purple-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={anonymous}
+                onChange={(e) => setAnonymous(e.target.checked)}
+                className="w-[18px] h-[18px] shrink-0 accent-purple-600"
+              />
+              <span>익명 작성</span>
+            </label>
+            <button
+              type="button"
+              disabled={!canPublish}
+              onClick={handlePublish}
+              className="w-full h-12 rounded-xl font-bold text-white bg-[rgb(31,27,46)] disabled:opacity-30 transition-all active:scale-[0.97]"
+            >
+              발행
+            </button>
+          </div>
+
         </div>
       </div>
+
     </div>
   );
 }

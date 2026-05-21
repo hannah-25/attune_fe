@@ -1,23 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { TopBar } from '../../app/components/TopBar';
+import { verifyEmail } from '../../app/api/auth';
 
 export default function VerifyEmailPage() {
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get('email') ?? 'name@example.com';
+  const token = searchParams.get('token');
+  const [status, setStatus] = useState(token ? '인증을 확인하고 있습니다.' : '인증 메일이 발송되었습니다.');
+
+  useEffect(() => {
+    if (!token) return;
+
+    let ignore = false;
+
+    verifyEmail(token)
+      .then(() => {
+        if (!ignore) setStatus('메일 인증이 완료되었습니다.');
+      })
+      .catch(() => {
+        if (!ignore) setStatus('메일 인증에 실패했습니다. 링크를 다시 확인해주세요.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [token]);
+
   return (
     <div
       className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between relative">
-            <button className="items-center flex justify-center w-11 h-11 text-gray-700 rounded-xl hover:bg-white/60 transition-colors" aria-label="이전 화면">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18L9 12L15 6" />
-              </svg>
-            </button>
-            <div className="absolute left-[50%] translate-x-[-50%] font-bold text-sm">메일 인증</div>
-            <div className="w-11 h-11" />
-          </div>
-        </div>
+        <TopBar title="메일 인증" centered showBack />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-16 pr-5 pb-4 pl-5">
           <div className="items-center flex flex-col text-center">
             <div className="items-center flex justify-center w-16 h-16 text-purple-600">
@@ -26,8 +42,8 @@ export default function VerifyEmailPage() {
                 <path d="M4 7l8 6l8-6" />
               </svg>
             </div>
-            <div className="font-semibold text-gray-900 text-base leading-tight mt-5">인증 메일이 발송되었습니다.</div>
-            <div className="text-gray-500 text-sm leading-tight mt-2">name@example.com</div>
+            <div className="font-semibold text-gray-900 text-base leading-tight mt-5">{status}</div>
+            <div className="text-gray-500 text-sm leading-tight mt-2">{email}</div>
           </div>
           <div className="items-center flex flex-col text-center mt-6 text-xs leading-relaxed">
             <div className="text-gray-600">인증메일을 받지 못하셨나요?</div>

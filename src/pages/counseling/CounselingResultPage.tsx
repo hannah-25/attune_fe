@@ -1,113 +1,187 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { CalendarDays, ChevronRight } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
+import { getConsultation, updateConsultationResult } from '@/api/consultation';
+
+type PrescriptionStatus = '증량' | '감량' | '유지';
+
+const STATUS_OPTIONS: PrescriptionStatus[] = ['증량', '감량', '유지'];
+const STATUS_COLOR: Record<PrescriptionStatus, string> = {
+  증량: 'bg-purple-100 text-purple-800',
+  감량: 'bg-orange-100 text-orange-800',
+  유지: 'bg-gray-100 text-gray-700',
+};
+const INITIAL_PRESCRIPTIONS = [
+  { id: 'prescription', name: '처방 내용', before: null as string | null, after: null as string | null, status: '유지' as PrescriptionStatus },
+];
+type ConsultationDetail = {
+  consultationDate: string;
+  place: string;
+  doctorName: string;
+  doctorAdvice?: string;
+  prescriptionNote?: string;
+  nextTreatmentGoal?: string;
+};
 
 export default function CounselingResultPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const consultationId = Number(searchParams.get('id'));
+  const [consultation, setConsultation] = useState<ConsultationDetail | null>(null);
+  const [prescriptions, setPrescriptions] = useState(INITIAL_PRESCRIPTIONS);
+  const [saved, setSaved] = useState(true);
+  const [nextDateRaw, setNextDateRaw] = useState('2026-05-16');
+  const [advice, setAdvice] = useState('');
+  const [goal, setGoal] = useState('');
+  const [error, setError] = useState('');
+  const adviceRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (!consultationId) return;
+
+    let ignore = false;
+
+    getConsultation(consultationId)
+      .then((response) => {
+        if (ignore) return;
+        const detail = response as ConsultationDetail;
+        setConsultation(detail);
+        setAdvice(detail.doctorAdvice ?? '');
+        setGoal(detail.nextTreatmentGoal ?? '');
+        setPrescriptions([{ id: 'prescription', name: detail.prescriptionNote || '처방 내용', before: null, after: null, status: '유지' }]);
+      })
+      .catch(() => {
+        if (!ignore) setError('상담 기록을 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [consultationId]);
+
+  const autoResize = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+
+  const cycleStatus = (id: string, current: PrescriptionStatus) => {
+    const next = STATUS_OPTIONS[(STATUS_OPTIONS.indexOf(current) + 1) % STATUS_OPTIONS.length];
+    setPrescriptions((prev) => prev.map((p) => (p.id === id ? { ...p, status: next } : p)));
+    setSaved(false);
+  };
+
+  const saveResult = async () => {
+    if (!consultationId) {
+      setError('상담 ID가 없어 저장할 수 없습니다.');
+      return;
+    }
+
+    try {
+      await updateConsultationResult(consultationId, {
+        doctorAdvice: advice,
+        prescriptionNote: prescriptions.map((prescription) => prescription.name).join('\n'),
+        nextTreatmentGoal: goal,
+      });
+      setSaved(true);
+    } catch {
+      setError('상담 결과를 저장하지 못했습니다.');
+    }
+  };
+
   return (
     <div
-      className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
+      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F1374f2b16faf6016b6e53e7199458616492fb894.svg?generation=1778677417797896&amp;alt=media" className="block size-full" />
-                </div>
+        <TopBar
+          title="상담 후 기록"
+          left={<NavBackButton onClick={() => navigate(-1)} />}
+          right={
+            <div className="h-11 flex items-center">
+              {!saved ? <button type="button" onClick={saveResult} className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]">저장</button> : null}
+            </div>
+          }
+        />
+        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-5 pt-1 pr-4 pb-8 pl-4">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
+          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
+            <div className="flex items-center gap-4">
+              <div className="shrink-0 text-center">
+                <div className="text-xs text-purple-700 font-semibold">{consultation ? new Date(consultation.consultationDate).getMonth() + 1 : '-'}월</div>
+                <div className="font-extrabold text-3xl leading-none text-gray-700 mt-0.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>{consultation ? new Date(consultation.consultationDate).getDate() : '-'}</div>
+              </div>
+              <div className="w-px self-stretch bg-purple-200" />
+              <div className="min-w-0">
+                <div className="font-bold text-base text-gray-900">{consultation?.place ?? '상담 기록'}</div>
+                <div className="text-sm text-gray-500 mt-0.5">{consultation?.doctorName ?? '-'}</div>
               </div>
             </div>
-            <div className="font-bold text-sm">상담 후 기록</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="font-bold text-white bg-purple-500 px-3 py-1 rounded-lg">
-                  저장
+          </div>
+          <EditableBlock title="의사 조언">
+            <textarea
+              ref={adviceRef}
+              value={advice}
+              onChange={(e) => { setAdvice(e.target.value); setSaved(false); autoResize(e.target); }}
+              rows={3}
+              className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none overflow-hidden bg-transparent placeholder:text-gray-300"
+              placeholder="의사 조언을 입력하세요"
+            />
+          </EditableBlock>
+          <div>
+            <div className="font-bold text-gray-800 mb-2">처방 변경</div>
+            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+              {prescriptions.map((prescription, index) => (
+                <div key={prescription.id} className={`flex items-center gap-3 pt-3 pr-4 pb-3 pl-4 ${index < prescriptions.length - 1 ? 'border-b' : ''}`} style={index < prescriptions.length - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
+                  <div className="w-1.5 h-1.5 bg-purple-300 rounded-full shrink-0" />
+                  <div className="grow basis-[0%] font-semibold">
+                    {prescription.before && prescription.after ? (
+                      <>{prescription.name} <span className="line-through text-gray-400">{prescription.before}</span> - <span className="font-bold">{prescription.after}</span></>
+                    ) : prescription.name}
+                  </div>
+                  <button type="button" onClick={() => cycleStatus(prescription.id, prescription.status)} className={`flex items-center gap-1 font-semibold text-xs px-3 py-1.5 rounded-full transition-all active:scale-[0.97] shrink-0 ${STATUS_COLOR[prescription.status]}`}>
+                    <span>{prescription.status}</span>
+                    <ChevronRight className="w-3 h-3 opacity-50" strokeWidth={2.5} />
+                  </button>
                 </div>
+              ))}
+            </div>
+          </div>
+          <EditableBlock title="다음 달 치료 목표">
+            <textarea
+              value={goal}
+              onChange={(e) => { setGoal(e.target.value); setSaved(false); autoResize(e.target); }}
+              rows={2}
+              className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none overflow-hidden bg-transparent placeholder:text-gray-300"
+              placeholder="다음 상담까지의 목표를 입력하세요"
+            />
+          </EditableBlock>
+          <div className="bg-purple-50 border border-purple-100 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] p-3 rounded-2xl">
+            <div className="flex items-start gap-2">
+              <CalendarDays className="w-4 h-4 text-purple-500 shrink-0 mt-[3px]" strokeWidth={2.4} />
+              <div>
+                <div className="font-bold text-gray-800 flex items-center gap-1.5">
+                  다음 진료
+                  <input type="date" value={nextDateRaw} onChange={(e) => { setNextDateRaw(e.target.value); setSaved(false); }} className="font-bold bg-transparent outline-none text-gray-800 border-b border-gray-300 focus:border-purple-500 text-sm" />
+                </div>
+                <div className="mt-1 text-gray-500 text-xs">알림으로 미리 알려드릴게요</div>
               </div>
             </div>
           </div>
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
-            <div className="font-bold text-gray-600">
-              4월 16일 금 · 청담심리상담센터
-            </div>
-            <div className="mt-1">
-              40분 진료 · 처방 변경 있음
-            </div>
-          </div>
-          <div>
-            <div className="font-bold mb-[6px] text-gray-600">
-              의사 조언
-            </div>
-            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]">
-              <div className="flex flex-col gap-[9px]">
-                <div className="w-[92%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-                <div className="w-[78%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-                <div className="w-[50%] h-[7px] bg-purple-50 rounded-[0.4375rem]"></div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="font-bold mb-[6px] text-gray-600">
-              처방 변경
-            </div>
-            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
-              <div className="items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
-                <div className="grow basis-[0%]">
-                  콘서타{' '}
-                  <s className="line-through text-gray-500" style={{ textDecoration: "line-through" }}>
-                    <span style={{ textDecoration: "none" }}>18mg</span>
-                  </s>
-                  {' '}→{' '}
-                  <b className="font-bold">
-                    27mg
-                  </b>
-                </div>
-                <div className="items-center flex font-semibold whitespace-nowrap bg-purple-500 border-black/0 border text-white text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                  <span className="block">증량</span>
-                </div>
-              </div>
-              <div className="items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px]">
-                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
-                <div className="grow basis-[0%]">
-                  스트라테라 40mg · 유지
-                </div>
-                <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-                  <span className="block">유지</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div className="font-bold mb-[6px] text-gray-600">
-              오늘 받은 답변
-            </div>
-            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
-              <div className="pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: "rgb(233, 228, 220)" }}>
-                <div className="font-bold">Q. 아침 식욕이 너무 없어요</div>
-                <div className="mt-1 text-gray-600 leading-normal">아침 식사를 가볍게 먼저 하고 약 복용을 권장</div>
-              </div>
-              <div className="pt-3 pr-[14px] pb-3 pl-[14px]">
-                <div className="font-bold">Q. 약효가 빨리 떨어져요</div>
-                <div className="mt-1 text-gray-600 leading-normal">증량으로 조정 — 2주 후 재평가</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="items-center flex gap-2">
-              <div className="overflow-hidden w-3 h-3">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6cae536aa2417c12c04efccc757fd2895c7958ab.svg?generation=1778677417793151&amp;alt=media" className="block size-full" />
-              </div>
-              <div className="leading-[18.85px]">
-                <b className="font-bold">
-                  다음 진료 5월 16일
-                </b>
-                {' '}알림으로 미리 알려드릴 게요
-              </div>
-            </div>
-          </div>
-        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditableBlock({ children, title }: { children: React.ReactNode; title: string }) {
+  return (
+    <div>
+      <div className="font-bold text-gray-800 mb-2">{title}</div>
+      <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
+        {children}
       </div>
     </div>
   );

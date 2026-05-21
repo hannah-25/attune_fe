@@ -1,74 +1,67 @@
-import React from 'react';
-import { TabBar } from '@/components/TabBar';
+import React, { useEffect, useState } from 'react';
+import { ChevronRight, Megaphone, Search } from 'lucide-react';
+import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { NavBackButton } from '@/components/NavButtons';
+import { getNotices, NoticeSummary } from '@/api/notice';
 
 export default function CommunityNoticePage() {
+  const [notices, setNotices] = useState<NoticeSummary[]>([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let ignore = false;
+
+    getNotices({ page: 0, size: 20 })
+      .then((response) => {
+        if (!ignore) setNotices(response.notices);
+      })
+      .catch(() => {
+        if (!ignore) setError('공지사항을 불러오지 못했습니다.');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   return (
     <div
-      className="w-full h-dvh bg-gray-50  text-sm flex flex-col"
+      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex flex-col gap-1 pt-1 pr-3 pb-[10px] pl-3 shrink-[0]">
-          <div className="items-center flex justify-between">
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F6d07fc7b7d550d443283422ac15fea3de29aaa18.svg?generation=1778677417828465&amp;alt=media" className="block size-full" />
+        <TopBar
+          title="공지사항"
+          left={<NavBackButton />}
+          right={<HeaderIconButton icon={<Search className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
+        />
+        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-0 pr-4 pb-6 pl-4">
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
+          {notices.map((notice, index) => {
+            const important = index === 0;
+            return (
+            <div key={notice.noticeId} className={`${important ? 'items-center flex bg-purple-100 gap-2.5' : 'bg-white'} shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]`}>
+              {important ? (
+                <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
+                  <Megaphone className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.5} />
                 </div>
+              ) : null}
+              <div className="grow basis-[0%]">
+                <div className={important ? 'font-extrabold' : 'font-semibold'}>{notice.title}</div>
+                <div className="mt-[2px] text-gray-600 text-xs">{formatNoticeDate(notice.createdAt)}</div>
               </div>
+              {important ? <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} /> : null}
             </div>
-            <div className="font-bold text-sm">공지사항</div>
-            <div className="items-center flex justify-center w-11 h-11">
-              <div className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <div className="overflow-hidden w-4 h-4">
-                  <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F54801ab4fa8db759bc53fa6b9af4ca068dee6da9.svg?generation=1778677417852825&amp;alt=media" className="block size-full" />
-                </div>
-              </div>
-            </div>
-          </div>
+          );
+          })}
         </div>
-        <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-2 pt-0 pr-4 pb-[100px] pl-4">
-          <div className="items-center flex bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-3 rounded-[1.125rem]">
-            <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
-              <div className="overflow-hidden w-3 h-3">
-                <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2Fb29419fe5049084df816425a309c1fc382ccbb0e.svg?generation=1778677417885099&amp;alt=media" className="block size-full" />
-              </div>
-            </div>
-            <div className="grow basis-[0%]">
-              <div className="font-extrabold">
-                [중요] 개인정보 처리방침 개정 안내
-              </div>
-              <div className="mt-[2px] text-gray-600 text-xs">
-                30일 내 명시적 거부가 없으면 동의로 간주
-              </div>
-            </div>
-            <div className="overflow-hidden w-[11px] h-[11px]">
-              <img src="https://storage.googleapis.com/download/storage/v1/b/prd-storytodesign.appspot.com/o/h2d-ext-asset%2F0d624e7072e06ed07c07f6aafc3c44b136bfc2b6.svg?generation=1778677417884149&amp;alt=media" className="block size-full" />
-            </div>
-          </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="font-semibold">v2.1 업데이트 — 캘린더 연동 추가</div>
-            <div className="mt-1 text-gray-600 text-xs">5월 10일</div>
-          </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="font-semibold">서버 점검 안내 (5/15 02:00 ~ 04:00)</div>
-            <div className="mt-1 text-gray-600 text-xs">5월 9일</div>
-          </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="font-semibold">상담 기록 PDF 내보내기 베타 오픈</div>
-            <div className="mt-1 text-gray-600 text-xs">5월 2일</div>
-          </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="font-semibold">이용약관 일부 개정 안내</div>
-            <div className="mt-1 text-gray-600 text-xs">4월 28일</div>
-          </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="font-semibold">v2.0 정식 출시 — 주간 리포트 추가</div>
-            <div className="mt-1 text-gray-600 text-xs">4월 15일</div>
-          </div>
-        </div>
-        <TabBar active="커뮤니티" />
       </div>
     </div>
   );
+}
+
+function formatNoticeDate(createdAt: string) {
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return createdAt;
+  return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }

@@ -3,3 +3,26 @@
 @import 'tw-animate-css';
 @import './default_theme.css';
 @import './globals.css';
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+html,
+body {
+  margin: 0;
+  background: #f9fafb;
+}
+
+body,
+#root {
+  min-height: 100dvh;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}

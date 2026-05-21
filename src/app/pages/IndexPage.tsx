@@ -30,7 +30,6 @@ const sections: Group[] = [
     group: '홈',
     pages: [
       { path: '/home',          label: '홈 — 리스트',   desc: '주간 통계 · 오늘 할일' },
-      { path: '/home/calendar', label: '홈 — 캘린더',   desc: '달력 + 타임라인' },
     ],
   },
   {
@@ -55,6 +54,7 @@ const sections: Group[] = [
   {
     group: '캘린더',
     pages: [
+      { path: '/home/calendar', label: '홈 — 캘린더',   desc: '달력 + 타임라인' },
       { path: '/calendar',          label: '캘린더 메인',     desc: '월간 통합뷰 (CAL-001)' },
       { path: '/calendar/event',    label: '일정 상세',        desc: '이벤트 상세 보기' },
       { path: '/calendar/new',      label: '새 일정',          desc: '일정 추가 · 카테고리' },
@@ -113,7 +113,13 @@ export default function IndexPage() {
       style={{ fontFamily: 'NanumSquare, -apple-system, system-ui' }}
     >
       <h1 className="font-extrabold text-2xl text-gray-900 mb-0.5">Attune</h1>
-      <p className="text-gray-400 text-xs mb-6">디자인 목업 — 화면 목록</p>
+      <p className="text-gray-400 text-xs mb-3">디자인 목업 — 화면 목록</p>
+      <Link
+        to="/overview"
+        className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-full mb-6"
+      >
+        전체 화면 오버뷰 보기 →
+      </Link>
 
       <div className="flex flex-col gap-6">
         {sections.map(({ group, pages }) => (

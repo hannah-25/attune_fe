@@ -1,0 +1,52 @@
+name: Frontend DEV CI/CD (AWS S3 + CloudFront)
+
+on:
+  push:
+    branches:
+      - develop  # dev 배포를 트리거할 브랜치
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. 내 로컬 컴퓨터와 100% 동일한 pnpm 10.30.3 버전을 설치합니다 ⭐️
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.30.3 
+
+      # 2. Node.js 설정 및 pnpm 의존성 캐싱 적용
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      # 3. 버전이 일치하므로 엄격하고 안전한 무결성 설치 옵션을 다시 사용합니다!
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile 
+
+      # 4. 프로젝트 빌드
+      - name: Build project
+        run: pnpm build
+
+      # 5. AWS 자격 증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # 6. 빌드된 dist 폴더를 개발용 S3 버킷에 동기화 업로드
+      - name: Deploy to Amazon S3
+        run: |
+          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }} --delete
+
+      # 7. 개발용 CloudFront 캐시 무효화
+      - name: CloudFront Invalidate Cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_DEV }} --paths "/*"
