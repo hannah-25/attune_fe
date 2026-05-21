@@ -1,9 +1,9 @@
-name: Frontend DEV CI/CD (AWS S3 + CloudFront)
+name: Frontend PROD CI/CD 
 
 on:
   push:
     branches:
-      - develop  # dev 배포를 트리거할 브랜치
+      - main  # dev 배포를 트리거할 브랜치
 
 jobs:
   deploy:
@@ -44,9 +44,9 @@ jobs:
       # 6. 빌드된 dist 폴더를 개발용 S3 버킷에 동기화 업로드
       - name: Deploy to Amazon S3
         run: |
-          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }} --delete
+          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_PROD }} --delete
 
       # 7. 개발용 CloudFront 캐시 무효화
       - name: CloudFront Invalidate Cache
         run: |
-          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_DEV }} --paths "/*"
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_PROD }} --paths "/*"
