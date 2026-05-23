@@ -1,4 +1,4 @@
-import { apiRequest, clearAccessToken, setAccessToken } from './client';
+import { apiRequest } from './client';
 
 export type LoginRequest = {
   email: string;
@@ -25,24 +25,21 @@ export type ResetPasswordConfirmRequest = {
 };
 
 export async function login(payload: LoginRequest) {
-  const response = await apiRequest<LoginResponse>('/api/auth/login', {
+  return apiRequest<LoginResponse>('/v1/auth/login', {
     auth: false,
     method: 'POST',
     body: payload,
   });
-  setAccessToken(response.accessToken);
-  return response;
 }
 
 export async function logout() {
-  await apiRequest<void>('/api/auth/logout', {
+  await apiRequest<void>('/v1/auth/logout', {
     method: 'POST',
   });
-  clearAccessToken();
 }
 
 export function signup(payload: SignupRequest) {
-  return apiRequest<{ message: string }>('/api/account/signup', {
+  return apiRequest<{ message: string }>('/v1/account/signup', {
     auth: false,
     method: 'POST',
     body: payload,
@@ -57,7 +54,7 @@ export function verifyEmail(token: string) {
 }
 
 export function requestPasswordReset(email: string) {
-  return apiRequest<void>('/api/account/password/reset', {
+  return apiRequest<void>('/v1/account/password/reset', {
     auth: false,
     method: 'POST',
     body: { email },
@@ -72,7 +69,7 @@ export function validatePasswordResetToken(token: string) {
 }
 
 export function confirmPasswordReset(payload: ResetPasswordConfirmRequest) {
-  return apiRequest<void>('/api/account/password/reset/confirm', {
+  return apiRequest<void>('/v1/account/password/reset/confirm', {
     auth: false,
     method: 'POST',
     body: payload,

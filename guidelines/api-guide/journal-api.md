@@ -8,9 +8,9 @@
 ## 목차
 
 1. [일지 조회/삭제](#1-일지-조회삭제)
-2. [감정/증상 (Condition)](#2-감정증상-condition)
-3. [부작용 (SideEffect)](#3-부작용-sideeffect)
-4. [업무 실수/불편 (Trouble)](#4-업무-실수불편-trouble)
+2. [감정/증상 (Condition)](#2-감정증상-condition) — 태그 CRUD + 체크/체크취소
+3. [부작용 (SideEffect)](#3-부작용-sideeffect) — 태그 CRUD + 체크/체크취소
+4. [업무 실수/불편 (Trouble)](#4-업무-실수불편-trouble) — 태그 CRUD + 체크/체크취소
 5. [목표 성취도 (Goal)](#5-목표-성취도-goal)
 6. [수면/식사 (DailyStatus)](#6-수면식사-dailystatus)
 7. [메모 (Memo)](#7-메모-memo)
@@ -231,6 +231,21 @@ POST /api/journals/conditions
 
 ---
 
+### 감정/증상 체크 취소
+
+```
+DELETE /api/journals/conditions?tagId={tagId}&date={date}
+```
+
+| 파라미터 | 위치 | 타입 | 필수 | 설명 |
+|---|---|---|---|---|
+| tagId | query | `Long` | ✅ | 태그 ID |
+| date | query | `LocalDate` (yyyy-MM-dd) | ✅ | 취소할 날짜 |
+
+**Response `204`** (No Content)
+
+---
+
 ## 3. 부작용 (SideEffect)
 
 ### 태그 목록 조회
@@ -313,6 +328,21 @@ POST /api/journals/side-effects
   "checkedAt": "2026-05-09T11:00:00"
 }
 ```
+
+---
+
+### 부작용 체크 취소
+
+```
+DELETE /api/journals/side-effects?tagId={tagId}&date={date}
+```
+
+| 파라미터 | 위치 | 타입 | 필수 | 설명 |
+|---|---|---|---|---|
+| tagId | query | `Long` | ✅ | 태그 ID |
+| date | query | `LocalDate` (yyyy-MM-dd) | ✅ | 취소할 날짜 |
+
+**Response `204`** (No Content)
 
 ---
 
@@ -401,6 +431,21 @@ POST /api/journals/troubles
   "checkedAt": "2026-05-09T14:00:00"
 }
 ```
+
+---
+
+### 업무 실수/불편 체크 취소
+
+```
+DELETE /api/journals/troubles?tagId={tagId}&date={date}
+```
+
+| 파라미터 | 위치 | 타입 | 필수 | 설명 |
+|---|---|---|---|---|
+| tagId | query | `Long` | ✅ | 태그 ID |
+| date | query | `LocalDate` (yyyy-MM-dd) | ✅ | 취소할 날짜 |
+
+**Response `204`** (No Content)
 
 ---
 

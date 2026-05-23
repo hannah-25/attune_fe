@@ -11,28 +11,28 @@ export type OnboardingGoal = {
 };
 
 export function submitAsrs(answers: AsrsAnswer[]) {
-  return apiRequest<{ totalScore: number; partAScore: number }>('/api/onboarding/asrs', {
+  return apiRequest<{ totalScore: number; partAScore: number }>('/v1/onboarding/asrs', {
     method: 'POST',
     body: { answers },
   });
 }
 
 export function submitOnboardingSymptoms(payload: { description: string; emotionalEvent: string }) {
-  return apiRequest<void>('/api/onboarding/symptoms', {
+  return apiRequest<void>('/v1/onboarding/symptoms', {
     method: 'POST',
     body: payload,
   });
 }
 
 export function submitOnboardingGoals(goals: OnboardingGoal[]) {
-  return apiRequest<void>('/api/onboarding/goals', {
+  return apiRequest<void>('/v1/onboarding/goals', {
     method: 'POST',
     body: { goals },
   });
 }
 
 export function completeOnboarding() {
-  return apiRequest<{ onboardedAt: string }>('/api/onboarding/complete', {
+  return apiRequest<{ onboardedAt: string }>('/v1/onboarding/complete', {
     method: 'POST',
   });
 }
