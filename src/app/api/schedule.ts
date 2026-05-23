@@ -1,6 +1,6 @@
 import { apiRequest } from './client';
 
-export type ScheduleSource = 'MANUAL' | 'IMPORTED';
+export type ScheduleSource = 'DIRECT' | 'EXTERNAL';
 
 export type ScheduleCategory = {
   categoryId: number;
@@ -23,10 +23,10 @@ export type SchedulePayload = {
 export type ScheduleSummary = {
   scheduleId: number;
   title: string;
+  categoryId: number;
+  isAllDay: boolean;
   startTime: string;
   endTime: string;
-  color: string;
-  source: ScheduleSource;
 };
 
 export type ScheduleDetail = {
