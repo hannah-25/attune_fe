@@ -1,5 +1,4 @@
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
-const ACCESS_TOKEN_KEY = 'attune.accessToken';
 
 export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
@@ -22,24 +21,12 @@ export class ApiError extends Error {
 export const apiBaseUrl =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? DEFAULT_API_BASE_URL;
 
-export function getAccessToken() {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
-}
-
-export function setAccessToken(accessToken: string) {
-  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-}
-
-export function clearAccessToken() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-}
-
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
   const response = await request(path, { auth, body, headers, ...init });
 
   if (response.status === 401 && auth && retryOnUnauthorized) {
-    const refreshed = await reissueAccessToken();
+    const refreshed = await reissueSession();
     if (refreshed) {
       return apiRequest<T>(path, { ...options, retryOnUnauthorized: false });
     }
@@ -51,14 +38,9 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
 async function request(path: string, options: ApiRequestOptions) {
   const { auth = true, body, headers, ...init } = options;
   const requestHeaders = new Headers(headers);
-  const token = getAccessToken();
 
   if (body !== undefined && !(body instanceof FormData)) {
     requestHeaders.set('Content-Type', 'application/json');
-  }
-
-  if (auth && token) {
-    requestHeaders.set('Authorization', `Bearer ${token}`);
   }
 
   return fetch(`${apiBaseUrl}${path}`, {
@@ -69,23 +51,19 @@ async function request(path: string, options: ApiRequestOptions) {
   });
 }
 
-async function reissueAccessToken() {
+async function reissueSession() {
   try {
-    const response = await request('/api/auth/reissue', {
-      auth: true,
+    const response = await request('/v1/auth/reissue', {
+      auth: false,
       method: 'POST',
     });
 
     if (!response.ok) {
-      clearAccessToken();
       return false;
     }
 
-    const payload = await parseResponse<{ accessToken: string }>(response);
-    setAccessToken(payload.accessToken);
     return true;
   } catch {
-    clearAccessToken();
     return false;
   }
 }

@@ -22,29 +22,29 @@ export type UserSettings = {
 export type UpdateUserSettingsRequest = Partial<UserSettings>;
 
 export function getMyProfile() {
-  return apiRequest<UserProfile>('/api/users/me/profile');
+  return apiRequest<UserProfile>('/v1/users/me/profile');
 }
 
 export function updateNickname(nickname: string) {
-  return apiRequest<void>('/api/users/me/nickname', {
+  return apiRequest<void>('/v1/users/me/nickname', {
     method: 'PUT',
     body: { nickname },
   });
 }
 
 export function updateProfileImage(profileImageUrl: string) {
-  return apiRequest<void>('/api/users/me/image', {
+  return apiRequest<void>('/v1/users/me/image', {
     method: 'POST',
     body: { profileImageUrl },
   });
 }
 
 export function getUserSettings() {
-  return apiRequest<UserSettings>('/api/users/settings');
+  return apiRequest<UserSettings>('/v1/users/settings');
 }
 
 export function updateUserSettings(payload: UpdateUserSettingsRequest) {
-  return apiRequest<UserSettings>('/api/users/settings', {
+  return apiRequest<UserSettings>('/v1/users/settings', {
     method: 'PATCH',
     body: payload,
   });

@@ -1,5 +1,7 @@
-import { Routes, Route } from 'react-router';
+import { useEffect, useState } from 'react';
+import { Navigate, Routes, Route } from 'react-router';
 import { AppViewport } from './components/AppViewport';
+import { getMyProfile } from './api/user';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -68,15 +70,37 @@ import MyPage from '../pages/settings/MyPage';
 import NotificationSettingsPage from '../pages/settings/NotificationSettingsPage';
 import WithdrawPage from '../pages/settings/WithdrawPage';
 
-// Index
-import IndexPage from './pages/IndexPage';
 import OverviewPage from './pages/OverviewPage';
+
+function RootRoute() {
+  const [destination, setDestination] = useState<string | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getMyProfile()
+      .then(() => {
+        if (!ignore) setDestination('/home');
+      })
+      .catch(() => {
+        if (!ignore) setDestination('/splash');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  if (!destination) return null;
+
+  return <Navigate to={destination} replace />;
+}
 
 export default function App() {
   return (
     <AppViewport>
       <Routes>
-        <Route path="/" element={<IndexPage />} />
+        <Route path="/" element={<RootRoute />} />
         <Route path="/overview" element={<OverviewPage />} />
 
         {/* Auth */}

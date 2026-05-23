@@ -74,11 +74,11 @@ export function deleteJournals(params: JournalDateRange) {
 }
 
 export function getConditionTags() {
-  return apiRequest<ConditionTag[]>('/api/journals/condition-tags');
+  return apiRequest<ConditionTag[]>('/v1/journals/condition-tags');
 }
 
 export function createConditionTag(payload: { condition: string; conditionType: ConditionType; journalDate: string }) {
-  return apiRequest<ConditionTag>('/api/journals/condition-tags', { method: 'POST', body: payload });
+  return apiRequest<ConditionTag>('/v1/journals/condition-tags', { method: 'POST', body: payload });
 }
 
 export function deleteConditionTag(tagId: number, journalDate: string) {
@@ -88,7 +88,7 @@ export function deleteConditionTag(tagId: number, journalDate: string) {
 }
 
 export function checkCondition(tagId: number) {
-  return apiRequest<ConditionTag & { checkedAt: string }>('/api/journals/conditions', { method: 'POST', body: { tagId } });
+  return apiRequest<ConditionTag & { checkedAt: string }>('/v1/journals/conditions', { method: 'POST', body: { tagId } });
 }
 
 export function uncheckCondition(tagId: number, date: string) {
@@ -96,11 +96,11 @@ export function uncheckCondition(tagId: number, date: string) {
 }
 
 export function getSideEffectTags() {
-  return apiRequest<SideEffectTag[]>('/api/journals/side-effect-tags');
+  return apiRequest<SideEffectTag[]>('/v1/journals/side-effect-tags');
 }
 
 export function createSideEffectTag(payload: { sideEffect: string; journalDate: string }) {
-  return apiRequest<SideEffectTag>('/api/journals/side-effect-tags', { method: 'POST', body: payload });
+  return apiRequest<SideEffectTag>('/v1/journals/side-effect-tags', { method: 'POST', body: payload });
 }
 
 export function deleteSideEffectTag(tagId: number, journalDate: string) {
@@ -110,7 +110,7 @@ export function deleteSideEffectTag(tagId: number, journalDate: string) {
 }
 
 export function checkSideEffect(tagId: number) {
-  return apiRequest<SideEffectTag & { checkedAt: string }>('/api/journals/side-effects', { method: 'POST', body: { tagId } });
+  return apiRequest<SideEffectTag & { checkedAt: string }>('/v1/journals/side-effects', { method: 'POST', body: { tagId } });
 }
 
 export function uncheckSideEffect(tagId: number, date: string) {
@@ -118,11 +118,11 @@ export function uncheckSideEffect(tagId: number, date: string) {
 }
 
 export function getTroubleTags() {
-  return apiRequest<TroubleTag[]>('/api/journals/trouble-tags');
+  return apiRequest<TroubleTag[]>('/v1/journals/trouble-tags');
 }
 
 export function createTroubleTag(payload: { trouble: string; type: TroubleType; journalDate: string }) {
-  return apiRequest<TroubleTag>('/api/journals/trouble-tags', { method: 'POST', body: payload });
+  return apiRequest<TroubleTag>('/v1/journals/trouble-tags', { method: 'POST', body: payload });
 }
 
 export function deleteTroubleTag(tagId: number, journalDate: string) {
@@ -132,7 +132,7 @@ export function deleteTroubleTag(tagId: number, journalDate: string) {
 }
 
 export function checkTrouble(tagId: number) {
-  return apiRequest<TroubleTag & { checkedAt: string }>('/api/journals/troubles', { method: 'POST', body: { tagId } });
+  return apiRequest<TroubleTag & { checkedAt: string }>('/v1/journals/troubles', { method: 'POST', body: { tagId } });
 }
 
 export function uncheckTrouble(tagId: number, date: string) {
@@ -166,7 +166,7 @@ export function createSleepMeal(date: string, payload: SleepMealPayload) {
 }
 
 export function createJournalGoal(payload: { content: string; journalDate: string }) {
-  return apiRequest<JournalGoal>('/api/journals/goals', {
+  return apiRequest<JournalGoal>('/v1/journals/goals', {
     method: 'POST',
     body: payload,
   });

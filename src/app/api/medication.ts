@@ -39,7 +39,7 @@ export function getMedicationStandard(medicationId: number) {
 }
 
 export function createMedication(payload: CreateMedicationRequest) {
-  return apiRequest<{ userMedicationId: number }>('/api/medications', {
+  return apiRequest<{ userMedicationId: number }>('/v1/medications', {
     method: 'POST',
     body: payload,
   });

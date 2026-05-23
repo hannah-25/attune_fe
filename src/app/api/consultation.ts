@@ -8,7 +8,7 @@ export type ConsultationPayload = {
 };
 
 export function createConsultation(payload: ConsultationPayload) {
-  return apiRequest<void>('/api/consultations', { method: 'POST', body: payload });
+  return apiRequest<void>('/v1/consultations', { method: 'POST', body: payload });
 }
 
 export function getConsultations(params: { startDate: string; endDate: string }) {
