@@ -4,18 +4,25 @@ import { TopBar } from '../../app/components/TopBar';
 import { NavCloseButton } from '../../app/components/NavButtons';
 import { getMyProfile } from '../../app/api/user';
 import { useEffect } from 'react';
+import { createSupportInquiry, type SupportInquiryType } from '../../app/api/support';
 
-const INQUIRY_TYPES = ['버그 신고', '기능 제안', '사용 문의', '결제권 문의', '기타'] as const;
-type InquiryType = typeof INQUIRY_TYPES[number];
+const INQUIRY_TYPES: Array<{ label: string; value: SupportInquiryType }> = [
+  { label: '버그 신고', value: 'BUG' },
+  { label: '기능 제안', value: 'FEATURE' },
+  { label: '사용 문의', value: 'USAGE' },
+  { label: '결제권 문의', value: 'PAYMENT' },
+  { label: '기타', value: 'OTHER' },
+];
 
 export default function InquiryPage() {
   const navigate = useNavigate();
-  const [type, setType] = useState<InquiryType | null>(null);
+  const [type, setType] = useState<SupportInquiryType | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     getMyProfile()
@@ -27,11 +34,20 @@ export default function InquiryPage() {
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+
     setIsSubmitting(true);
+    setSubmitError('');
+
     try {
-      // TODO: API 연결
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await createSupportInquiry({
+        type,
+        title: title.trim(),
+        content: content.trim(),
+        email: email.trim(),
+      });
       setSubmitted(true);
+    } catch {
+      setSubmitError('문의 제출에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -74,18 +90,18 @@ export default function InquiryPage() {
         <div className="flex flex-col gap-2">
           <label className="font-bold text-gray-700 text-xs">문의 유형</label>
           <div className="flex flex-wrap gap-2">
-            {INQUIRY_TYPES.map((t) => (
+            {INQUIRY_TYPES.map((item) => (
               <button
-                key={t}
+                key={item.value}
                 type="button"
-                onClick={() => setType(t)}
+                onClick={() => setType(item.value)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-                  type === t
+                  type === item.value
                     ? 'bg-purple-100 border-[rgb(185,166,255)] text-purple-800'
                     : 'bg-white border-gray-200 text-gray-600'
                 }`}
               >
-                {t}
+                {item.label}
               </button>
             ))}
           </div>
@@ -114,11 +130,11 @@ export default function InquiryPage() {
               placeholder="문의 내용을 자세히 입력해주세요"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              maxLength={1000}
+              maxLength={5000}
               rows={6}
               className="w-full bg-transparent text-gray-900 text-sm placeholder:text-gray-400 outline-none resize-none leading-relaxed"
             />
-            <div className="text-right text-[11px] text-gray-400">{content.length}/1000</div>
+            <div className="text-right text-[11px] text-gray-400">{content.length}/5000</div>
           </div>
         </div>
 
@@ -131,10 +147,13 @@ export default function InquiryPage() {
               placeholder="이메일 주소"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              maxLength={255}
               className="w-full bg-transparent text-gray-900 text-sm placeholder:text-gray-400 outline-none"
             />
           </div>
         </div>
+
+        {submitError ? <div className="text-red-500 text-xs">{submitError}</div> : null}
 
         <button
           type="button"
