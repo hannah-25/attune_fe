@@ -31,7 +31,7 @@ jobs:
 
       # 4. 프로젝트 빌드
       - name: Build project
-        run: pnpm build
+        run: pnpm build --mode development
 
       # 5. AWS 자격 증명 설정
       - name: Configure AWS credentials
