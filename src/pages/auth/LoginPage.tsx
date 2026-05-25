@@ -3,6 +3,7 @@ import { Check } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { login } from '../../app/api/auth';
+import { setAccessToken } from '../../app/api/client';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ export default function LoginPage() {
     setError('');
     setIsSubmitting(true);
     try {
-      await login({ email: email.trim(), password });
+      const { accessToken } = await login({ email: email.trim(), password });
+      setAccessToken(accessToken);
       navigate('/home');
     } catch {
       setError('로그인에 실패했습니다. 입력한 정보를 확인해주세요.');

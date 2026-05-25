@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, ChevronRight, MapPin } from 'lucide-react';
+import { Bell, ChevronDown, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { formatFullDateTime } from '@/lib/date';
 import { TopBar } from '../../app/components/TopBar';
@@ -13,14 +13,27 @@ import {
   updateSchedule,
 } from '@/api/schedule';
 
-const REPEAT_OPTIONS = ['안 함', '매주', '매월'] as const;
-const ALARM_OPTIONS = ['없음', '10분 전', '30분 전', '1시간 전'] as const;
+const REPEAT_OPTIONS = ['\uC5C6\uC74C', '\uB9E4\uC8FC', '\uB9E4\uC6D4'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
+
+type AlarmOptionKey = 'none' | '5m' | '10m' | '15m' | '30m' | '1h' | 'custom';
+
+const ALARM_PRESETS: Array<{ key: AlarmOptionKey; label: string; minutes: number | null }> = [
+  { key: 'none', label: '\uC5C6\uC74C', minutes: null },
+  { key: '5m', label: '5\uBD84 \uC804', minutes: 5 },
+  { key: '10m', label: '10\uBD84 \uC804', minutes: 10 },
+  { key: '15m', label: '15\uBD84 \uC804', minutes: 15 },
+  { key: '30m', label: '30\uBD84 \uC804', minutes: 30 },
+  { key: '1h', label: '1\uC2DC\uAC04 \uC804', minutes: 60 },
+  { key: 'custom', label: '\uB9DE\uCDA4', minutes: null },
+];
 
 export default function NewEventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const scheduleId = Number(searchParams.get('id'));
+  const scheduleIdParam = searchParams.get('id');
+  const scheduleId = scheduleIdParam ? Number(scheduleIdParam) : null;
+  const isEditMode = scheduleId !== null && Number.isFinite(scheduleId) && scheduleId > 0;
 
   const { START_OPTIONS, END_OPTIONS } = useMemo(() => {
     const dateParam = searchParams.get('date');
@@ -28,6 +41,7 @@ export default function NewEventPage() {
     const y = base.getFullYear();
     const m = base.getMonth();
     const d = base.getDate();
+
     return {
       START_OPTIONS: [
         new Date(y, m, d, 14, 0),
@@ -40,7 +54,8 @@ export default function NewEventPage() {
         new Date(y, m, d, 17, 0),
       ],
     };
-  }, []);
+  }, [searchParams]);
+
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
@@ -49,11 +64,17 @@ export default function NewEventPage() {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(0);
   const [repeatIndex, setRepeatIndex] = useState(0);
-  const [alarmIndex, setAlarmIndex] = useState(0);
+
+  const [alarmOpen, setAlarmOpen] = useState(false);
+  const [alarmOptionKey, setAlarmOptionKey] = useState<AlarmOptionKey>('none');
+  const [customAlarmMinutesInput, setCustomAlarmMinutesInput] = useState('20');
+
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
+
   const [memo, setMemo] = useState('');
   const [memoOpen, setMemoOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -61,20 +82,35 @@ export default function NewEventPage() {
 
   const markDirty = () => setDirty(true);
   const canSave = title.trim().length > 0 && selectedCategoryId !== null && dirty;
+  const selectedCategoryName = categories.find((category) => category.categoryId === selectedCategoryId)?.categoryName ?? '';
+
+  const selectedAlarmPreset = ALARM_PRESETS.find((preset) => preset.key === alarmOptionKey) ?? ALARM_PRESETS[0];
+  const customAlarmMinutes = Number.parseInt(customAlarmMinutesInput, 10);
+  const alarmMinutesBefore = alarmOptionKey === 'custom'
+    ? (Number.isFinite(customAlarmMinutes) && customAlarmMinutes > 0 ? customAlarmMinutes : null)
+    : selectedAlarmPreset.minutes;
+  const selectedAlarmLabel = alarmOptionKey === 'custom'
+    ? (alarmMinutesBefore ? `${alarmMinutesBefore}\uBD84 \uC804` : '\uB9DE\uCDA4')
+    : selectedAlarmPreset.label;
 
   useEffect(() => {
     let ignore = false;
+    setError('');
 
-    Promise.all([
-      getScheduleCategories(),
-      scheduleId ? getSchedule(scheduleId) : Promise.resolve(null),
-    ])
-      .then(([categoryResponse, detail]) => {
+    getScheduleCategories()
+      .then((categoryResponse) => {
         if (ignore) return;
         setCategories(categoryResponse.categories);
         setSelectedCategoryId(categoryResponse.categories[0]?.categoryId ?? null);
+      })
+      .catch(() => {
+        if (!ignore) setError('\uCE74\uD14C\uACE0\uB9AC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+      });
 
-        if (detail) {
+    if (isEditMode && scheduleId !== null) {
+      getSchedule(scheduleId)
+        .then((detail) => {
+          if (ignore) return;
           setTitle(detail.title);
           setLocation(detail.place ?? '');
           setAllDay(detail.isAllDay);
@@ -82,16 +118,16 @@ export default function NewEventPage() {
           setMemoOpen(Boolean(detail.description));
           setSelectedCategoryId(detail.categoryId);
           setDirty(false);
-        }
-      })
-      .catch(() => {
-        if (!ignore) setError('일정 정보를 불러오지 못했습니다.');
-      });
+        })
+        .catch(() => {
+          if (!ignore) setError('\uC77C\uC815 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+        });
+    }
 
     return () => {
       ignore = true;
     };
-  }, [scheduleId]);
+  }, [isEditMode, scheduleId]);
 
   const addCategory = async () => {
     const trimmedCategory = newCategory.trim();
@@ -106,14 +142,14 @@ export default function NewEventPage() {
       setAddingCategory(false);
       markDirty();
     } catch {
-      setError('카테고리를 추가하지 못했습니다.');
+      setError('\uCE74\uD14C\uACE0\uB9AC\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
     }
   };
 
   const saveSchedule = async () => {
     if (!canSave || selectedCategoryId === null) return;
 
-    const alarmedAt = getAlarmedAt(START_OPTIONS[startIndex], ALARM_OPTIONS[alarmIndex]);
+    const alarmedAt = getAlarmedAt(START_OPTIONS[startIndex], alarmMinutesBefore);
     const payload = {
       title: title.trim(),
       description: memo.trim() || undefined,
@@ -127,7 +163,7 @@ export default function NewEventPage() {
     };
 
     try {
-      if (scheduleId) {
+      if (isEditMode && scheduleId !== null) {
         await updateSchedule(scheduleId, payload);
         navigate(`/calendar/event?id=${scheduleId}`);
       } else {
@@ -135,7 +171,7 @@ export default function NewEventPage() {
         navigate('/calendar');
       }
     } catch {
-      setError('일정을 저장하지 못했습니다.');
+      setError('\uC77C\uC815\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
     }
   };
 
@@ -146,7 +182,7 @@ export default function NewEventPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          title={scheduleId ? '일정 수정' : '새 일정'}
+          title={isEditMode ? '\uC77C\uC815 \uC218\uC815' : '\uC0C8 \uC77C\uC815'}
           left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
@@ -156,43 +192,52 @@ export default function NewEventPage() {
                 onClick={saveSchedule}
                 className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-30 disabled:active:scale-100"
               >
-                저장
+                {'\uC800\uC7A5'}
               </button>
             </div>
           }
         />
+
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
+
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <input
               value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
+              onChange={(event) => {
+                setTitle(event.target.value);
                 markDirty();
               }}
-              placeholder="제목"
+              placeholder={'\uC81C\uBAA9'}
               className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-400"
               style={{ fontFamily: 'NanumSquare, system-ui' }}
             />
           </div>
+
           <div
             className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-[14px] py-3 rounded-2xl flex items-center gap-3 cursor-text"
-            onClick={() => { if (!locationEditing) setLocationEditing(true); }}
+            onClick={() => {
+              if (!locationEditing) setLocationEditing(true);
+            }}
           >
             <MapPin className="w-3.5 h-3.5 shrink-0 text-gray-400" strokeWidth={2.4} />
             {locationEditing ? (
               <input
                 autoFocus
                 value={location}
-                onChange={(e) => { setLocation(e.target.value); markDirty(); }}
+                onChange={(event) => {
+                  setLocation(event.target.value);
+                  markDirty();
+                }}
                 onBlur={() => setLocationEditing(false)}
-                placeholder="위치 추가"
+                placeholder={'\uC704\uCE58 \uCD94\uAC00'}
                 className="grow text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-400"
               />
             ) : (
-              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>{location || '위치 추가'}</span>
+              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>{location || '\uC704\uCE58 \uCD94\uAC00'}</span>
             )}
           </div>
+
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <button
               type="button"
@@ -203,57 +248,196 @@ export default function NewEventPage() {
               className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] border-b transition-all active:scale-[0.99]"
               style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
             >
-              <div className="grow font-semibold basis-[0%]">종일</div>
+              <div className="grow font-semibold basis-[0%]">{'\uC885\uC77C'}</div>
               <ToggleSwitch active={allDay} />
             </button>
-            <RowButton label="시작" value={allDay ? '오늘' : formatFullDateTime(START_OPTIONS[startIndex])} onClick={() => { setStartIndex((index) => (index + 1) % START_OPTIONS.length); markDirty(); }} />
-            <RowButton label="종료" value={allDay ? '오늘' : formatFullDateTime(END_OPTIONS[endIndex])} onClick={() => { setEndIndex((index) => (index + 1) % END_OPTIONS.length); markDirty(); }} />
-            <RowButton label="반복" value={REPEAT_OPTIONS[repeatIndex]} last onClick={() => { setRepeatIndex((index) => (index + 1) % REPEAT_OPTIONS.length); markDirty(); }} />
-          </div>
-          <div>
-            <div className="font-bold mb-[6px] text-gray-600">카테고리</div>
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map((category) => {
-                const selected = selectedCategoryId === category.categoryId;
-                return (
-                  <button key={category.categoryId} type="button" onClick={() => { setSelectedCategoryId(category.categoryId); markDirty(); }} className={`items-center flex font-semibold whitespace-nowrap border-transparent border gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97] ${selected ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700'}`}>
-                    {category.categoryName}
-                  </button>
-                );
-              })}
-              {addingCategory ? (
-                <div className="items-center flex bg-white border border-gray-300 gap-2 px-3 rounded-[62.4375rem]">
-                  <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') addCategory(); }} autoFocus placeholder="새 분류" className="w-20 text-base bg-transparent outline-none placeholder:text-gray-300" />
-                  <button type="button" onClick={addCategory} disabled={!newCategory.trim()} className="font-bold text-xs text-purple-700 disabled:opacity-30">추가</button>
-                </div>
-              ) : (
-                <button type="button" onClick={() => setAddingCategory(true)} className="items-center flex font-semibold whitespace-nowrap bg-white border border-gray-300 text-gray-600 gap-1.5 tracking-tight pt-[9px] pr-[14px] pb-[9px] pl-[14px] rounded-[62.4375rem] transition-all active:scale-[0.97]">
-                  + 새 분류
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <RowButton
-              label="알림"
-              value={ALARM_OPTIONS[alarmIndex]}
-              icon={<Bell className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.4} />}
-              onClick={() => { setAlarmIndex((index) => (index + 1) % ALARM_OPTIONS.length); markDirty(); }}
+              label={'\uC2DC\uC791'}
+              value={allDay ? '\uC624\uB298' : formatFullDateTime(START_OPTIONS[startIndex])}
+              onClick={() => {
+                setStartIndex((index) => (index + 1) % START_OPTIONS.length);
+                markDirty();
+              }}
             />
-            <button type="button" onClick={() => { setMemoOpen(true); requestAnimationFrame(() => memoRef.current?.focus()); }} className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99]">
-              <div className="grow font-semibold basis-[0%]">메모</div>
-              <div className={`${memo ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>{memo ? '작성됨' : '추가'}</div>
+            <RowButton
+              label={'\uC885\uB8CC'}
+              value={allDay ? '\uC624\uB298' : formatFullDateTime(END_OPTIONS[endIndex])}
+              onClick={() => {
+                setEndIndex((index) => (index + 1) % END_OPTIONS.length);
+                markDirty();
+              }}
+            />
+            <RowButton
+              label={'\uBC18\uBCF5'}
+              value={REPEAT_OPTIONS[repeatIndex]}
+              last
+              onClick={() => {
+                setRepeatIndex((index) => (index + 1) % REPEAT_OPTIONS.length);
+                markDirty();
+              }}
+            />
+          </div>
+
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+            <button
+              type="button"
+              onClick={() => setCategoryOpen((open) => !open)}
+              className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${categoryOpen ? 'border-b' : ''}`}
+              style={categoryOpen ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+            >
+              <div className="grow font-semibold basis-[0%]">{'\uCE74\uD14C\uACE0\uB9AC'}</div>
+              <div className={`${selectedCategoryName ? 'text-gray-700' : 'text-gray-400'} text-sm`}>
+                {selectedCategoryName || '\uC120\uD0DD'}
+              </div>
+              <ChevronDown
+                className={`w-[13px] h-[13px] ml-1 text-gray-500 transition-transform ${categoryOpen ? 'rotate-180' : ''}`}
+                strokeWidth={2.4}
+              />
+            </button>
+            {categoryOpen ? (
+              <div className="px-2 pt-2 pb-1 flex flex-col gap-1.5">
+                {categories.map((category) => {
+                  const selected = selectedCategoryId === category.categoryId;
+
+                  return (
+                    <button
+                      key={category.categoryId}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategoryId(category.categoryId);
+                        setCategoryOpen(false);
+                        markDirty();
+                      }}
+                      className={`items-center flex w-full text-left text-sm font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
+                        selected
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                      }`}
+                    >
+                      {category.categoryName}
+                    </button>
+                  );
+                })}
+                {addingCategory ? (
+                  <div className="items-center flex bg-white border border-gray-300 gap-2 px-3 py-2 rounded-xl">
+                    <input
+                      value={newCategory}
+                      onChange={(event) => setNewCategory(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') addCategory();
+                      }}
+                      autoFocus
+                      placeholder={'\uC0C8 \uBD84\uB958'}
+                      className="grow min-w-0 text-sm bg-transparent outline-none placeholder:text-gray-300"
+                    />
+                    <button type="button" onClick={addCategory} disabled={!newCategory.trim()} className="font-bold text-xs text-purple-700 disabled:opacity-30">{'\uCD94\uAC00'}</button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setAddingCategory(true)}
+                    className="items-center flex justify-center w-full font-semibold bg-white border border-gray-300 text-gray-600 text-sm rounded-xl py-2.5 transition-all active:scale-[0.98]"
+                  >
+                    {'+ \uC0C8 \uBD84\uB958'}
+                  </button>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+            <button
+              type="button"
+              onClick={() => setAlarmOpen((open) => !open)}
+              className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${alarmOpen ? 'border-b' : ''}`}
+              style={alarmOpen ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+            >
+              <div className="grow font-semibold basis-[0%]">{'\uC54C\uB9BC'}</div>
+              <div className="text-gray-600">{selectedAlarmLabel}</div>
+              <Bell className="w-[11px] h-[11px] ml-1 text-gray-500" strokeWidth={2.4} />
+              <ChevronDown
+                className={`w-[12px] h-[12px] ml-1 text-gray-500 transition-transform ${alarmOpen ? 'rotate-180' : ''}`}
+                strokeWidth={2.4}
+              />
+            </button>
+            {alarmOpen ? (
+              <div className="px-2 pt-2 pb-1 flex flex-col gap-1.5">
+                {ALARM_PRESETS.map((preset) => {
+                  const selected = alarmOptionKey === preset.key;
+
+                  return (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      onClick={() => {
+                        setAlarmOptionKey(preset.key);
+                        markDirty();
+                        if (preset.key !== 'custom') {
+                          setAlarmOpen(false);
+                        }
+                      }}
+                      className={`items-center flex w-full text-left text-sm font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
+                        selected
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+                {alarmOptionKey === 'custom' ? (
+                  <div className="items-center flex bg-white border border-gray-300 gap-2 px-3 py-2 rounded-xl">
+                    <input
+                      type="number"
+                      min={1}
+                      max={1440}
+                      value={customAlarmMinutesInput}
+                      onChange={(event) => {
+                        setCustomAlarmMinutesInput(event.target.value);
+                        markDirty();
+                      }}
+                      className="w-20 text-sm bg-transparent outline-none"
+                    />
+                    <span className="text-xs text-gray-500">{'\uBD84 \uC804'}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAlarmOpen(false)}
+                      disabled={!alarmMinutesBefore}
+                      className="font-bold text-xs text-purple-700 disabled:opacity-30"
+                    >
+                      {'\uC801\uC6A9'}
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => {
+                setMemoOpen(true);
+                requestAnimationFrame(() => memoRef.current?.focus());
+              }}
+              className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99]"
+            >
+              <div className="grow font-semibold basis-[0%]">{'\uBA54\uBAA8'}</div>
+              <div className={`${memo ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>{memo ? '\uC791\uC131\uB428' : '\uCD94\uAC00'}</div>
               <ChevronRight className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.5} />
             </button>
           </div>
+
           {memoOpen ? (
             <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
-              <div className="font-semibold text-gray-600 mb-2">메모</div>
+              <div className="font-semibold text-gray-600 mb-2">{'\uBA54\uBAA8'}</div>
               <textarea
                 ref={memoRef}
                 value={memo}
-                onChange={(e) => { setMemo(e.target.value); markDirty(); }}
-                placeholder="메모를 입력해 주세요"
+                onChange={(event) => {
+                  setMemo(event.target.value);
+                  markDirty();
+                }}
+                placeholder={'\uBA54\uBAA8\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694'}
                 rows={3}
                 className="w-full text-base text-gray-900 leading-relaxed resize-none outline-none placeholder:text-gray-300"
               />
@@ -274,15 +458,8 @@ function toLocalIso(date: Date) {
   return `${year}-${month}-${day}T${hours}:${minutes}:00`;
 }
 
-function getAlarmedAt(startTime: Date, alarmOption: (typeof ALARM_OPTIONS)[number]) {
-  const minutesBefore = {
-    없음: 0,
-    '10분 전': 10,
-    '30분 전': 30,
-    '1시간 전': 60,
-  }[alarmOption];
-
-  if (!minutesBefore) return [];
+function getAlarmedAt(startTime: Date, minutesBefore: number | null) {
+  if (!minutesBefore || minutesBefore <= 0) return [];
 
   const alarmDate = new Date(startTime);
   alarmDate.setMinutes(startTime.getMinutes() - minutesBefore);

@@ -1,16 +1,43 @@
-import React, { useState } from 'react';
-import { Bell } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, Bell, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { getOnboardingStatus, type OnboardingResumeStep } from '@/api/onboarding';
 import { mockTodos, mockScheduleItems, mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
 
 const initialTodos = mockTodos;
+const DEFAULT_ONBOARDING_STEP: OnboardingResumeStep = 2;
 
 export default function HomeListPage() {
   const navigate = useNavigate();
   const [todos, setTodos] = useState(initialTodos);
+  const [resumeStep, setResumeStep] = useState<OnboardingResumeStep | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getOnboardingStatus()
+      .then((status) => {
+        if (ignore) return;
+        if (status.onboarded || status.skipped) {
+          setResumeStep(null);
+          return;
+        }
+
+        setResumeStep(status.resumeStep ?? DEFAULT_ONBOARDING_STEP);
+      })
+      .catch(() => {
+        if (!ignore) {
+          setResumeStep(null);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   const toggleTodo = (id: number) => {
     setTodos((current) =>
@@ -33,9 +60,14 @@ export default function HomeListPage() {
             <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-full shrink-0">
               <Bell className="h-[15px] w-[15px] text-[rgb(31,27,46)]" strokeWidth={2.25} />
             </div>
-            <div className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate('/settings')}
+              className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full shrink-0 transition-transform active:scale-95"
+              aria-label="마이페이지로 이동"
+            >
               <span className="font-bold text-purple-700 text-xs">J</span>
-            </div>
+            </button>
           </div>
         </div>
         <ScrollArea className="flex flex-col gap-2 pt-1">
@@ -59,6 +91,22 @@ export default function HomeListPage() {
               </div>
             </div>
           </div>
+          {resumeStep !== null ? (
+            <button
+              type="button"
+              onClick={() => navigate(`/onboarding/${resumeStep}`)}
+              className="items-center flex gap-3 bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-2xl w-full text-left"
+            >
+              <div className="items-center flex justify-center w-9 h-9 bg-red-200 shrink-0 rounded-xl">
+                <ClipboardList className="h-5 w-5 text-red-700" strokeWidth={2} />
+              </div>
+              <div className="grow">
+                <div className="font-semibold text-sm text-gray-800">{'온보딩 시작하기'}</div>
+                <div className="text-[11px] text-red-700 mt-0.5">{'증상 서술 · ASRS 체크 · 목표 설정'}</div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-red-400 shrink-0" strokeWidth={2.5} />
+            </button>
+          ) : null}
           <div className="px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
           </div>

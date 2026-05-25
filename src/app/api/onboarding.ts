@@ -10,6 +10,25 @@ export type OnboardingGoal = {
   description?: string;
 };
 
+export type OnboardingResumeStep = 2 | 3 | 4 | 5;
+
+export type OnboardingStatus = {
+  onboarded: boolean;
+  onboardedAt: string | null;
+  skipped: boolean;
+  resumeStep: OnboardingResumeStep | null;
+};
+
+export function getOnboardingStatus() {
+  return apiRequest<OnboardingStatus>('/v1/onboarding/status');
+}
+
+export function skipOnboarding() {
+  return apiRequest<void>('/v1/onboarding/skip', {
+    method: 'POST',
+  });
+}
+
 export function submitAsrs(answers: AsrsAnswer[]) {
   return apiRequest<{ totalScore: number; partAScore: number }>('/v1/onboarding/asrs', {
     method: 'POST',

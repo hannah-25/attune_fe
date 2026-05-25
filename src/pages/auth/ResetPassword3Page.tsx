@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
-import { confirmPasswordReset, validatePasswordResetToken } from '../../app/api/auth';
+import { changePassword, confirmPasswordReset, validatePasswordResetToken } from '../../app/api/auth';
 
 export default function ResetPassword3Page() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') ?? '';
+  const isLoggedInFlow = !token;
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTokenValid, setIsTokenValid] = useState(!token);
+  const [isTokenValid, setIsTokenValid] = useState(isLoggedInFlow);
 
   useEffect(() => {
     if (!token) return;
@@ -37,11 +40,6 @@ export default function ResetPassword3Page() {
   }, [token]);
 
   const handleConfirm = async () => {
-    if (!token) {
-      setError('비밀번호 재설정 토큰이 없습니다.');
-      return;
-    }
-
     if (!password || password !== confirm) {
       setError('새 비밀번호와 확인 값이 일치하는지 확인해주세요.');
       return;
@@ -50,8 +48,17 @@ export default function ResetPassword3Page() {
     setError('');
     setIsSubmitting(true);
     try {
-      await confirmPasswordReset({ token, newPassword: password });
-      navigate('/login');
+      if (isLoggedInFlow) {
+        if (!currentPassword) {
+          setError('현재 비밀번호를 입력해주세요.');
+          return;
+        }
+        await changePassword(currentPassword, password);
+        navigate('/settings');
+      } else {
+        await confirmPasswordReset({ token, newPassword: password });
+        navigate('/login');
+      }
     } catch {
       setError('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
     } finally {
@@ -69,6 +76,27 @@ export default function ResetPassword3Page() {
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-16 pr-5 pb-4 pl-5">
           <p className="text-gray-600 text-xs leading-relaxed">새로 사용할 비밀번호를 입력해주세요.</p>
           <div className="flex flex-col gap-2.5 mt-5">
+            {isLoggedInFlow && (
+              <div className="flex flex-col justify-center w-full h-[54px] bg-white border border-gray-300 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] px-3 rounded-xl focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100">
+                <label className="font-semibold text-gray-500 text-[11px] leading-tight">현재 비밀번호</label>
+                <div className="items-center flex w-full h-6">
+                  <input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    placeholder="현재 비밀번호 입력"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="grow h-full bg-transparent text-gray-900 text-base placeholder:text-gray-400 outline-none p-0 basis-[0%]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword((v) => !v)}
+                    className="font-medium text-gray-500 text-xs pl-3 shrink-0"
+                  >
+                    {showCurrentPassword ? '숨기기' : '보기'}
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="flex flex-col justify-center w-full h-[54px] bg-white border border-gray-300 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] px-3 rounded-xl focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100">
               <label className="font-semibold text-gray-500 text-[11px] leading-tight">새 비밀번호</label>
               <div className="items-center flex w-full h-6">

@@ -1,4 +1,4 @@
-import { apiRequest } from './client';
+import { apiRequest, clearAccessToken } from './client';
 
 export type LoginRequest = {
   email: string;
@@ -36,6 +36,7 @@ export async function logout() {
   await apiRequest<void>('/v1/auth/logout', {
     method: 'POST',
   });
+  clearAccessToken();
 }
 
 export function signup(payload: SignupRequest) {
@@ -73,5 +74,12 @@ export function confirmPasswordReset(payload: ResetPasswordConfirmRequest) {
     auth: false,
     method: 'POST',
     body: payload,
+  });
+}
+
+export function changePassword(currentPassword: string, newPassword: string) {
+  return apiRequest<void>('/v1/account/password', {
+    method: 'PATCH',
+    body: { currentPassword, newPassword },
   });
 }

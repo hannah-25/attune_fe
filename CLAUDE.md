@@ -112,6 +112,16 @@ guidelines/
 
 ---
 
+## API 클라이언트 (`src/app/api/client.ts`)
+
+- 모든 요청에 `X-Client-Type: web` 헤더 자동 추가.
+- `auth: true`(기본값)이면 `Authorization: Bearer <token>` 헤더 자동 추가. 토큰은 `localStorage`의 `access_token` 키에 저장.
+- `/api/` 경로는 자동으로 `/v1/`로 정규화됨. 신규 엔드포인트는 `/v1/`로 작성 권장.
+- 401 응답 시 `/v1/auth/reissue`로 토큰 재발급 후 자동 재시도.
+- 인증 불필요한 요청은 `auth: false` 명시.
+
+---
+
 ## 개발 주의사항
 
 - 모든 페이지에 `style={{ fontFamily: "NanumSquare, ..." }}` 인라인 스타일 적용.

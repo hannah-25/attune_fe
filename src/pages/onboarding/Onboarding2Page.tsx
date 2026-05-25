@@ -51,6 +51,12 @@ export default function Onboarding2Page() {
               onChange={handleSymptomTextChange}
               className="grow w-full min-h-[116px] overflow-hidden bg-transparent text-gray-900 text-base leading-relaxed placeholder:text-gray-400 outline-none resize-none mt-2 p-0"
             />
+            <div className="text-right mt-2">
+              <span className={`text-[11px] font-medium ${symptomText.length >= 50 ? 'text-purple-500' : 'text-gray-400'}`}>
+                {symptomText.length}
+              </span>
+              <span className="text-[11px] text-gray-300"> / 50</span>
+            </div>
           </div>
           <div className="bg-purple-50 border border-purple-100 p-3 rounded-xl mt-5">
             <button className="items-center flex gap-2 w-full" onClick={() => setGuideOpen((v) => !v)}>
