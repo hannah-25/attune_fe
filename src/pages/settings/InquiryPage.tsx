@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
-import { NavBackButton } from '../../app/components/NavButtons';
+import { NavCloseButton } from '../../app/components/NavButtons';
 import { getMyProfile } from '../../app/api/user';
 import { useEffect } from 'react';
 
-const INQUIRY_TYPES = ['버그 신고', '기능 제안', '사용 문의', '기타'] as const;
+const INQUIRY_TYPES = ['버그 신고', '기능 제안', '사용 문의', '결제권 문의', '기타'] as const;
 type InquiryType = typeof INQUIRY_TYPES[number];
 
 export default function InquiryPage() {
@@ -43,7 +43,7 @@ export default function InquiryPage() {
         className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
         style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
       >
-        <TopBar title="문의하기" left={<NavBackButton />} />
+        <TopBar title="문의하기" right={<NavCloseButton />} />
         <div className="flex flex-col items-center justify-center grow gap-3 px-5 pb-16">
           <div className="text-4xl">✉️</div>
           <div className="font-extrabold text-lg text-gray-900 mt-1">문의가 접수되었어요</div>
@@ -67,7 +67,7 @@ export default function InquiryPage() {
       className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
-      <TopBar title="문의하기" left={<NavBackButton />} />
+      <TopBar title="문의하기" right={<NavCloseButton />} />
       <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] px-5 pt-5 pb-8 flex flex-col gap-5">
 
         {/* 문의 유형 */}
