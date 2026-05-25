@@ -1,4 +1,5 @@
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
+const ACCESS_TOKEN_KEY = 'access_token';
 
 export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
@@ -21,6 +22,18 @@ export class ApiError extends Error {
 export const apiBaseUrl =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? DEFAULT_API_BASE_URL;
 
+export function getAccessToken(): string | null {
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function setAccessToken(token: string): void {
+  localStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export function clearAccessToken(): void {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+}
+
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
   const response = await request(path, { auth, body, headers, ...init });
@@ -30,6 +43,10 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     if (refreshed) {
       return apiRequest<T>(path, { ...options, retryOnUnauthorized: false });
     }
+    // 갱신 실패 → 인증 상태 초기화 후 로그인으로 이동
+    clearAccessToken();
+    window.location.replace('/login');
+    throw new ApiError(401, null, 'Session expired');
   }
 
   return parseResponse<T>(response);
@@ -43,7 +60,18 @@ async function request(path: string, options: ApiRequestOptions) {
     requestHeaders.set('Content-Type', 'application/json');
   }
 
-  return fetch(`${apiBaseUrl}${path}`, {
+  requestHeaders.set('X-Client-Type', 'web');
+
+  if (auth) {
+    const token = getAccessToken();
+    if (token) {
+      requestHeaders.set('Authorization', `Bearer ${token}`);
+    }
+  }
+
+  const normalizedPath = path.replace(/^\/api\//, '/v1/');
+
+  return fetch(`${apiBaseUrl}${normalizedPath}`, {
     ...init,
     body: body === undefined || body instanceof FormData ? (body as BodyInit | undefined) : JSON.stringify(body),
     credentials: 'include',
@@ -54,12 +82,20 @@ async function request(path: string, options: ApiRequestOptions) {
 async function reissueSession() {
   try {
     const response = await request('/v1/auth/reissue', {
-      auth: false,
+      auth: true, // 만료된 access token도 Authorization 헤더로 전송 (서버 스펙 필수)
       method: 'POST',
     });
 
     if (!response.ok) {
       return false;
+    }
+
+    const contentType = response.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      if (data?.accessToken) {
+        setAccessToken(data.accessToken);
+      }
     }
 
     return true;

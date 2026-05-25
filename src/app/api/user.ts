@@ -28,7 +28,7 @@ export function getMyProfile() {
 export function updateNickname(nickname: string) {
   return apiRequest<void>('/v1/users/me/nickname', {
     method: 'PUT',
-    body: { nickname },
+    body: { newNickName: nickname },
   });
 }
 

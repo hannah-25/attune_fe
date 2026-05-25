@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
+import { skipOnboarding } from '@/api/onboarding';
 
 export default function Onboarding1Page() {
   const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [isSkipping, setIsSkipping] = useState(false);
+
+  const handleSkip = async () => {
+    setError('');
+    setIsSkipping(true);
+    try {
+      await skipOnboarding();
+      navigate('/home');
+    } catch {
+      setError('¿Âº¸µù °Ç³Ê¶Ù±â¿¡ ½ÇÆĞÇß½À´Ï´Ù. Àá½Ã ÈÄ ´Ù½Ã ½ÃµµÇØÁÖ¼¼¿ä.');
+    } finally {
+      setIsSkipping(false);
+    }
+  };
 
   return (
     <div
@@ -15,9 +31,11 @@ export default function Onboarding1Page() {
           <div className="flex items-center justify-center text-center w-32 h-32">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
           </div>
-          <div className="font-semibold text-gray-900 text-base leading-tight mt-5">ë‚˜ë¥¼ ì´í•´í•˜ëŠ” ê¸°ë¡ì„ ì‹œì‘í•´ìš”.</div>
+          <div className="font-semibold text-gray-900 text-base leading-tight mt-5">³ª¸¦ ÀÌÇØÇÏ´Â ±â·ÏÀÌ ½ÃÀÛµÅ¿ä.</div>
           <div className="text-gray-600 text-sm leading-relaxed mt-2">
-            ì•½ 3ë¶„ ë™ì•ˆ ëª‡ ê°€ì§€ ì§ˆë¬¸ì— ë‹µí•˜ë©´<br />ë§ì¶¤ ê¸°ë¡ì´ ì¤€ë¹„ë©ë‹ˆë‹¤.
+            ´Ü 3ºĞ µ¿¾È ¸î °¡Áö Áú¹®¿¡ ´äÇÏ¸é
+            <br />
+            ¸ÂÃã ±â·ÏÀ» ÁØºñÇØµå·Á¿ä.
           </div>
           <div className="w-full mt-10">
             <button
@@ -25,15 +43,17 @@ export default function Onboarding1Page() {
               onClick={() => navigate('/onboarding/2')}
               className="items-center flex font-bold justify-center text-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black"
             >
-              <span className="block text-center">ì‹œì‘í•˜ê¸°</span>
+              <span className="block text-center">½ÃÀÛÇÏ±â</span>
             </button>
             <button
               type="button"
-              onClick={() => navigate('/home')}
-              className="font-bold text-purple-700 underline mt-4 text-xs select-none transition-all active:opacity-60"
+              onClick={handleSkip}
+              disabled={isSkipping}
+              className="font-bold text-purple-700 underline mt-4 text-xs select-none transition-all active:opacity-60 disabled:opacity-50"
             >
-              ë‚˜ì¤‘ì— í• ê²Œìš”
+              {isSkipping ? 'Ã³¸® Áß...' : '°Ç³Ê¶Ù°í µÑ·¯º¸±â'}
             </button>
+            {error ? <div className="text-red-500 text-xs mt-2">{error}</div> : null}
           </div>
         </div>
       </div>

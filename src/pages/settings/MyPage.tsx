@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import logoImage from '@src/assets/logo.png';
-import { Bell, CalendarDays, Camera, Check, ChevronRight, Globe2, HelpCircle, Link2, LogOut, Megaphone, Moon, Pencil, Settings, Shield, X } from 'lucide-react';
+import { Bell, CalendarDays, Camera, Check, ChevronRight, HelpCircle, Link2, LogOut, Megaphone, Moon, Pencil, Shield, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
+import { TopBar } from '../../app/components/TopBar';
+import { NavCloseButton } from '../../app/components/NavButtons';
 import { logout } from '../../app/api/auth';
 import { getMyProfile, updateNickname } from '../../app/api/user';
 
@@ -70,7 +71,7 @@ export default function MyPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <TopBar title="" right={<HeaderIconButton icon={<Settings className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />} />
+        <TopBar title="" right={<NavCloseButton />} />
         <ScrollArea>
           <div className="text-center pt-1 pr-0 pb-5 pl-0">
             <button
@@ -114,18 +115,17 @@ export default function MyPage() {
           </div>
           <Section title="계정">
             <MenuRow icon={<Link2 />} label="소셜 연동" value="Google · Apple" />
-            <MenuRow icon={<Shield />} label="비밀번호 변경" last />
+            <MenuRow icon={<Shield />} label="비밀번호 변경" last onClick={() => navigate('/reset-password/3')} />
           </Section>
           {profileError ? <div className="text-red-500 text-xs px-1 pb-2">{profileError}</div> : null}
           <Section title="설정">
-            <MenuRow icon={<Bell />} label="알림" />
-            <MenuRow icon={<CalendarDays />} label="캘린더 연동" value="1개 연결" />
-            <MenuRow icon={<Globe2 />} label="언어" value="한국어" />
-            <MenuRow icon={<Moon />} label="테마" value="자동" last />
+            <MenuRow icon={<Bell />} label="알림" badge="phase2 작업" />
+            <MenuRow icon={<CalendarDays />} label="캘린더 연동" value="1개 연결" badge="phase2 작업" />
+            <MenuRow icon={<Moon />} label="테마" value="자동" badge="phase2 작업" last />
           </Section>
           <Section title="지원">
-            <MenuRow icon={<Megaphone />} label="공지사항" />
-            <MenuRow icon={<HelpCircle />} label="문의하기" />
+            <MenuRow icon={<Megaphone />} label="공지사항" onClick={() => navigate('/community/notice')} />
+            <MenuRow icon={<HelpCircle />} label="문의하기" onClick={() => navigate('/settings/inquiry')} />
             <MenuRow icon={<LogOut />} label="로그아웃" last hideChevron onClick={handleLogout} />
           </Section>
           <button type="button" className="block mt-3 ml-1 bg-transparent border-0 p-0 text-xs font-medium text-gray-400 underline underline-offset-2">
@@ -151,11 +151,12 @@ function Section({ children, title }: { children: React.ReactNode; title: string
   );
 }
 
-function MenuRow({ hideChevron, icon, label, last, onClick, value }: { hideChevron?: boolean; icon: React.ReactElement; label: string; last?: boolean; onClick?: () => void; value?: string }) {
+function MenuRow({ badge, hideChevron, icon, label, last, onClick, value }: { badge?: string; hideChevron?: boolean; icon: React.ReactElement; label: string; last?: boolean; onClick?: () => void; value?: string }) {
   return (
     <button type="button" onClick={onClick} className={`items-center flex w-full text-left pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
       {React.cloneElement(icon, { className: 'w-4 h-4 text-gray-500 mr-2', strokeWidth: 2.35 })}
       <div className="grow font-semibold basis-[0%]">{label}</div>
+      {badge ? <span className="mr-2 text-[10px] font-bold text-purple-500 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full">{badge}</span> : null}
       {value ? <div className="mr-[6px] text-gray-600">{value}</div> : null}
       {!hideChevron ? <ChevronRight className="w-[11px] h-[11px] text-gray-400" strokeWidth={2.5} /> : null}
     </button>

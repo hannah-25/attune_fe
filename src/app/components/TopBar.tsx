@@ -20,9 +20,25 @@ type TopBarProps = {
   title?: React.ReactNode;
 };
 
-export function BackButton({ ariaLabel = '이전 화면' }: { ariaLabel?: string }) {
+type BackButtonProps = {
+  ariaLabel?: string;
+  onClick?: () => void;
+};
+
+export function BackButton({ ariaLabel = '이전 화면', onClick }: BackButtonProps) {
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+      return;
+    }
+
+    window.history.back();
+  };
+
   return (
     <button
+      type="button"
+      onClick={handleClick}
       className="items-center flex justify-center w-11 h-11 text-gray-700 rounded-xl hover:bg-white/60 transition-colors"
       aria-label={ariaLabel}
     >

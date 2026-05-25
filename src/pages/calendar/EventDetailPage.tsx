@@ -53,6 +53,7 @@ export default function EventDetailPage() {
   };
 
   const category = categories.find((item) => item.categoryId === eventDetail?.categoryId);
+  const showCounselingPrepare = isAdhdConsultationCategory(category?.categoryName);
 
   return (
     <div
@@ -85,16 +86,13 @@ export default function EventDetailPage() {
         ) : null}
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
           {error ? <div className="text-red-500 text-xs mb-3">{error}</div> : null}
-          <div className="items-center flex mb-[14px] gap-2">
+          <div className="items-center flex mb-[14px]">
             <button
               type="button"
               className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97]"
             >
               <span className="block">{category?.categoryName ?? '일정'}</span>
             </button>
-            <div className="text-gray-600 text-xs">
-              직접 등록
-            </div>
           </div>
           <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
             {eventDetail?.title ?? '일정'}
@@ -151,18 +149,25 @@ export default function EventDetailPage() {
             >
               <span className="block">수정</span>
             </button>
-            <button
-              type="button"
-              onClick={() => navigate('/counseling/prepare')}
-              className="items-center flex grow font-bold justify-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem] transition-all active:scale-[0.97]"
-            >
-              <span className="block">상담 준비</span>
-            </button>
+            {showCounselingPrepare ? (
+              <button
+                type="button"
+                onClick={() => navigate('/counseling/prepare')}
+                className="items-center flex grow font-bold justify-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem] transition-all active:scale-[0.97]"
+              >
+                <span className="block">상담 준비</span>
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function isAdhdConsultationCategory(categoryName?: string) {
+  if (!categoryName) return false;
+  return /^adhd\s*진료$/i.test(categoryName.trim());
 }
 
 function formatWhen(eventDetail: ScheduleDetail) {
