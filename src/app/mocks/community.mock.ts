@@ -1,6 +1,15 @@
 // TODO: Replace with API data
 
 export type Category = '전체' | '질병 정보' | '약물 치료' | '일상생활' | '미분류';
+export type NoticeHighlightTone = 'lavender' | 'peach';
+
+export type MockNotice = {
+  noticeId: number;
+  title: string;
+  createdAt: string;
+  highlightTone?: NoticeHighlightTone;
+  badgeLabel?: string;
+};
 
 export const mockPosts = [
   {
@@ -93,5 +102,41 @@ export const mockComments = [
     avatarClass: 'bg-[rgb(208,201,189)]',
     meta: '방금',
     body: '오후 카페인을 줄이면 힘 빠지는 느낌이 덜한 경우도 있었어요. 무리하지 말고 천천히 보세요.',
+  },
+];
+
+export const mockNotices: MockNotice[] = [
+  {
+    noticeId: 1,
+    title: '[중요] 개인정보 처리방침 개정 안내',
+    createdAt: '2026-05-20T09:00:00',
+    highlightTone: 'lavender',
+  },
+  {
+    noticeId: 2,
+    title: '[업데이트] v2.2 - AI 인사이트 기능 출시',
+    createdAt: '2026-05-18T10:00:00',
+    highlightTone: 'peach',
+    badgeLabel: 'NEW',
+  },
+  {
+    noticeId: 3,
+    title: 'v2.1 업데이트 - 캘린더 연동 추가',
+    createdAt: '2026-05-10T11:00:00',
+  },
+  {
+    noticeId: 4,
+    title: '서버 점검 안내 (5/15 02:00 ~ 04:00)',
+    createdAt: '2026-05-09T08:30:00',
+  },
+  {
+    noticeId: 5,
+    title: '상담 기록 PDF 내보내기 베타 오픈',
+    createdAt: '2026-05-02T14:00:00',
+  },
+  {
+    noticeId: 6,
+    title: '이용약관 일부 개정 안내',
+    createdAt: '2026-04-28T09:00:00',
   },
 ];

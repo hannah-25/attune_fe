@@ -183,6 +183,7 @@ export default function App() {
           <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
           <Route path="/settings/withdraw" element={<WithdrawPage />} />
           <Route path="/settings/inquiry" element={<InquiryPage />} />
+          <Route path="/inquiry" element={<InquiryPage />} />
         </Route>
       </Routes>
     </AppViewport>
