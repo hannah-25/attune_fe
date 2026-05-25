@@ -43,7 +43,9 @@ async function request(path: string, options: ApiRequestOptions) {
     requestHeaders.set('Content-Type', 'application/json');
   }
 
-  return fetch(`${apiBaseUrl}${path}`, {
+  const normalizedPath = path.replace(/^\/api\//, '/v1/');
+
+  return fetch(`${apiBaseUrl}${normalizedPath}`, {
     ...init,
     body: body === undefined || body instanceof FormData ? (body as BodyInit | undefined) : JSON.stringify(body),
     credentials: 'include',
