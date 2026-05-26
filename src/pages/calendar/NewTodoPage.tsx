@@ -15,14 +15,14 @@ export default function NewTodoPage() {
     return new Date();
   }, [dateParam]);
 
-  const [title, setTitle] = useState('');
+  const [todoText, setTodoText] = useState('');
   const [isAllDay, setIsAllDay] = useState(false);
   const [dateValue, setDateValue] = useState(toDateInputValue(baseDate));
   const [timeValue, setTimeValue] = useState(toTimeInputValue(baseDate));
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const canSave = title.trim().length > 0 && dateValue.length > 0 && (isAllDay || timeValue.length > 0) && !isSaving;
+  const canSave = todoText.trim().length > 0 && dateValue.length > 0 && (isAllDay || timeValue.length > 0) && !isSaving;
 
   const saveTodo = async () => {
     if (!canSave) return;
@@ -31,7 +31,7 @@ export default function NewTodoPage() {
     setIsSaving(true);
     try {
       await createTodo({
-        text: title.trim(),
+        text: todoText.trim(),
         dueAt: toLocalIsoFromInputs(dateValue, timeValue, isAllDay),
         isAllDay,
       });
@@ -69,9 +69,9 @@ export default function NewTodoPage() {
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="제목"
+              value={todoText}
+              onChange={(event) => setTodoText(event.target.value)}
+              placeholder="할일 내용을 입력해주세요"
               className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-400"
               style={{ fontFamily: 'NanumSquare, system-ui' }}
             />

@@ -54,6 +54,14 @@ export function verifyEmail(token: string) {
   });
 }
 
+export function resendVerificationEmail(email: string) {
+  return apiRequest<void>('/v1/account/verify-email/resend', {
+    auth: false,
+    method: 'POST',
+    body: { email },
+  });
+}
+
 export function requestPasswordReset(email: string) {
   return apiRequest<void>('/v1/account/password/reset', {
     auth: false,
