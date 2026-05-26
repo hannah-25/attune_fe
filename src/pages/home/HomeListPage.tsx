@@ -5,7 +5,7 @@ import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { getOnboardingStatus, type OnboardingResumeStep } from '@/api/onboarding';
-import { getTodosByDate, toggleTodoComplete } from '@/api/todo';
+import { getTodosByDate, updateTodo } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
 
@@ -108,17 +108,19 @@ export default function HomeListPage() {
     if (updatingTodoIds.includes(id)) return;
     const previousTodo = todos.find((todo) => todo.id === id);
     if (!previousTodo) return;
+    const nextDone = !previousTodo.done;
 
     setTodoError('');
     setUpdatingTodoIds((current) => [...current, id]);
     setTodos((current) =>
-      current.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo))
+      current.map((todo) => (todo.id === id ? { ...todo, done: nextDone } : todo))
     );
 
     try {
-      const response = await toggleTodoComplete(id);
+      const response = await updateTodo(id, { isCompleted: nextDone });
+      const resolvedDone = typeof response?.isCompleted === 'boolean' ? response.isCompleted : nextDone;
       setTodos((current) =>
-        current.map((todo) => (todo.id === id ? { ...todo, done: response.isCompleted } : todo))
+        current.map((todo) => (todo.id === id ? { ...todo, done: resolvedDone } : todo))
       );
     } catch {
       setTodos((current) =>

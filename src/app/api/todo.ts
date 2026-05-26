@@ -6,6 +6,10 @@ export type TodoPayload = {
   isAllDay: boolean;
 };
 
+export type UpdateTodoPayload = Partial<TodoPayload> & {
+  isCompleted?: boolean;
+};
+
 export type TodoItem = {
   todoId: number;
   text: string;
@@ -14,9 +18,12 @@ export type TodoItem = {
   isCompleted: boolean;
 };
 
-export type ToggleTodoCompleteResponse = {
+export type UpdateTodoResponse = {
   todoId: number;
-  isCompleted: boolean;
+  text?: string;
+  dueAt?: string;
+  isAllDay?: boolean;
+  isCompleted?: boolean;
 };
 
 export function createTodo(payload: TodoPayload) {
@@ -30,8 +37,9 @@ export function getTodosByDate(date: string) {
   return apiRequest<{ todos: TodoItem[] }>(`/api/todos?${new URLSearchParams({ date })}`);
 }
 
-export function toggleTodoComplete(todoId: number) {
-  return apiRequest<ToggleTodoCompleteResponse>(`/v1/todos/${todoId}/complete`, {
+export function updateTodo(todoId: number, payload: UpdateTodoPayload) {
+  return apiRequest<UpdateTodoResponse>(`/v1/todos/${todoId}`, {
     method: 'PATCH',
+    body: payload,
   });
 }
