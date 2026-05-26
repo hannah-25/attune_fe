@@ -1,5 +1,7 @@
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
+let reissueInFlight: Promise<boolean> | null = null;
+let loginRedirectTriggered = false;
 
 export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
@@ -39,13 +41,12 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const response = await request(path, { auth, body, headers, ...init });
 
   if (response.status === 401 && auth && retryOnUnauthorized) {
-    const refreshed = await reissueSession();
+    const refreshed = await reissueSessionSingleFlight();
     if (refreshed) {
       return apiRequest<T>(path, { ...options, retryOnUnauthorized: false });
     }
     // 갱신 실패 → 인증 상태 초기화 후 로그인으로 이동
-    clearAccessToken();
-    window.location.replace('/login');
+    redirectToLoginOnce();
     throw new ApiError(401, null, 'Session expired');
   }
 
@@ -102,6 +103,23 @@ async function reissueSession() {
   } catch {
     return false;
   }
+}
+
+function reissueSessionSingleFlight() {
+  if (!reissueInFlight) {
+    reissueInFlight = reissueSession().finally(() => {
+      reissueInFlight = null;
+    });
+  }
+
+  return reissueInFlight;
+}
+
+function redirectToLoginOnce() {
+  if (loginRedirectTriggered) return;
+  loginRedirectTriggered = true;
+  clearAccessToken();
+  window.location.replace('/login');
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {

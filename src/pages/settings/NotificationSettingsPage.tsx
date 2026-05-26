@@ -5,6 +5,8 @@ import { NavBackButton } from '../../app/components/NavButtons';
 import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
 
 type NotificationSettings = Pick<UserSettings, 'medicationNotification' | 'reportNotification' | 'marketingNotification'>;
+const QUIET_HOUR_EXCLUSION_OPTIONS = ['복약 알림', '일정 알림', '커뮤니티 알림'] as const;
+type QuietHourExclusionOption = typeof QUIET_HOUR_EXCLUSION_OPTIONS[number];
 
 const DEFAULT_SETTINGS: UserSettings = {
   medicationNotification: true,
@@ -24,6 +26,14 @@ export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [allNotificationsEnabled, setAllNotificationsEnabled] = useState(true);
   const [lastEnabledSettings, setLastEnabledSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [communityNotification, setCommunityNotification] = useState(false);
+  const [lastEnabledCommunityNotification, setLastEnabledCommunityNotification] = useState(false);
+  const [nightModeEnabled, setNightModeEnabled] = useState(true);
+  const [quietHourStart, setQuietHourStart] = useState('22:00');
+  const [quietHourEnd, setQuietHourEnd] = useState('07:00');
+  const [quietHourTimeOpen, setQuietHourTimeOpen] = useState(false);
+  const [quietHourExclusions, setQuietHourExclusions] = useState<QuietHourExclusionOption[]>(['복약 알림']);
+  const [quietHourExclusionOpen, setQuietHourExclusionOpen] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -65,8 +75,11 @@ export default function NotificationSettingsPage() {
 
   const toggleAllNotifications = async () => {
     if (allNotificationsEnabled) {
+      const previousCommunityNotification = communityNotification;
       setAllNotificationsEnabled(false);
       setLastEnabledSettings(pickNotificationSettings(settings));
+      setLastEnabledCommunityNotification(previousCommunityNotification);
+      setCommunityNotification(false);
       const nextSettings = await patchSettings({
         medicationNotification: false,
         reportNotification: false,
@@ -75,11 +88,13 @@ export default function NotificationSettingsPage() {
 
       if (!nextSettings) {
         setAllNotificationsEnabled(true);
+        setCommunityNotification(previousCommunityNotification);
       }
       return;
     }
 
     setAllNotificationsEnabled(true);
+    setCommunityNotification(lastEnabledCommunityNotification);
     const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
       ? lastEnabledSettings
       : DEFAULT_NOTIFICATION_SETTINGS;
@@ -87,6 +102,7 @@ export default function NotificationSettingsPage() {
 
     if (!nextSettings) {
       setAllNotificationsEnabled(false);
+      setCommunityNotification(false);
       return;
     }
 
@@ -115,6 +131,23 @@ export default function NotificationSettingsPage() {
     setLastEnabledSettings(pickNotificationSettings(nextSettings));
   };
 
+  const toggleCommunityNotification = () => {
+    if (!allNotificationsEnabled) return;
+    setCommunityNotification((current) => {
+      const next = !current;
+      setLastEnabledCommunityNotification(next);
+      return next;
+    });
+  };
+
+  const toggleQuietHourExclusion = (option: QuietHourExclusionOption) => {
+    setQuietHourExclusions((current) => (
+      current.includes(option)
+        ? current.filter((value) => value !== option)
+        : [...current, option]
+    ));
+  };
+
   const categories = [
     {
       color: 'bg-purple-300',
@@ -136,7 +169,13 @@ export default function NotificationSettingsPage() {
       desc: '하루 전 · 1시간 전',
       active: allNotificationsEnabled,
     },
-    { color: 'bg-purple-300', title: '커뮤니티', desc: '댓글·공감', active: false },
+    {
+      color: 'bg-purple-300',
+      title: '커뮤니티',
+      desc: '댓글·공감',
+      active: allNotificationsEnabled ? communityNotification : false,
+      onToggle: toggleCommunityNotification,
+    },
     {
       color: 'bg-[rgb(138,131,152)]',
       desc: '월 1-2회',
@@ -180,16 +219,88 @@ export default function NotificationSettingsPage() {
           <div>
             <div className="font-bold text-gray-600 text-xs pt-0 pr-1 pb-1.5 pl-1">방해 금지</div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-              <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-                <div className="grow font-semibold basis-[0%]">야간 모드</div>
-                <div className="mr-[6px] text-gray-600">22:00 - 07:00</div>
-                <Toggle active />
+              <div
+                className={`items-center flex pt-3 pr-[14px] pb-3 pl-[14px] ${quietHourTimeOpen ? '' : 'border-b'}`}
+                style={quietHourTimeOpen ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setQuietHourTimeOpen((open) => !open)}
+                  className="grow basis-[0%] text-left transition-all active:scale-[0.99]"
+                >
+                  <div className="items-center flex justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold">방해 금지 시간</div>
+                      <div className="mt-[2px] text-gray-600 text-xs">{`${quietHourStart} - ${quietHourEnd}`}</div>
+                    </div>
+                    <ChevronRight
+                      className={`w-[11px] h-[11px] text-gray-500 transition-transform ${quietHourTimeOpen ? 'rotate-90' : ''}`}
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                </button>
+                <Toggle active={nightModeEnabled} onClick={() => setNightModeEnabled((value) => !value)} />
               </div>
-              <div className="items-center flex pt-3 pr-[14px] pb-3 pl-[14px]">
-                <div className="grow font-semibold basis-[0%]">방해 금지 시간 제외</div>
-                <div className="mr-[6px] text-gray-600">중요 복약</div>
-                <ChevronRight className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.5} />
-              </div>
+              {quietHourTimeOpen ? (
+                <div className="border-b px-[14px] pb-3 pt-2" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                  <div className="flex items-center gap-2.5">
+                    <input
+                      type="time"
+                      value={quietHourStart}
+                      onChange={(event) => setQuietHourStart(event.target.value)}
+                      className="w-[98px] rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                    />
+                    <span className="text-xs text-gray-500">~</span>
+                    <input
+                      type="time"
+                      value={quietHourEnd}
+                      onChange={(event) => setQuietHourEnd(event.target.value)}
+                      className="w-[98px] rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                    />
+                  </div>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setQuietHourExclusionOpen((open) => !open)}
+                className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${quietHourExclusionOpen ? 'border-b' : ''}`}
+                style={quietHourExclusionOpen ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+              >
+                <div className="grow font-semibold basis-[0%]">예외 알림</div>
+                <div
+                  className="mr-[6px] text-gray-600 text-right text-xs leading-4 max-w-[130px]"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {formatQuietHourExclusionSummary(quietHourExclusions)}
+                </div>
+                <ChevronRight className={`w-[11px] h-[11px] text-gray-500 transition-transform ${quietHourExclusionOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} />
+              </button>
+              {quietHourExclusionOpen ? (
+                <div className="px-[14px] pb-3 pt-2">
+                  <div className="text-[11px] text-gray-500 mb-2">여러 항목을 선택할 수 있어요.</div>
+                  <div className="flex flex-col gap-1.5">
+                    {QUIET_HOUR_EXCLUSION_OPTIONS.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => toggleQuietHourExclusion(option)}
+                        className={`w-full text-left text-xs font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
+                          quietHourExclusions.includes(option)
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -216,4 +327,9 @@ function pickNotificationSettings(settings: UserSettings): NotificationSettings 
 
 function isAnyNotificationEnabled(settings: NotificationSettings): boolean {
   return settings.medicationNotification || settings.reportNotification || settings.marketingNotification;
+}
+
+function formatQuietHourExclusionSummary(selected: QuietHourExclusionOption[]): string {
+  if (selected.length === 0) return '없음';
+  return selected.join(', ');
 }

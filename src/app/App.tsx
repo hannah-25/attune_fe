@@ -168,7 +168,7 @@ export default function App() {
           {/* Community */}
           <Route path="/community/notice" element={<CommunityNoticePage />} />
           <Route path="/community" element={<CommunityFeedPage />} />
-          <Route path="/community/post" element={<CommunityPostPage />} />
+          <Route path="/community/post/:postId" element={<CommunityPostPage />} />
           <Route path="/community/write" element={<CommunityWritePage />} />
 
           {/* Empty States */}

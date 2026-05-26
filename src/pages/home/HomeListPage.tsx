@@ -245,7 +245,13 @@ export default function HomeListPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-xs text-gray-500 px-1 py-1">오늘 등록된 할일이 없어요.</div>
+              <button
+                type="button"
+                onClick={() => navigate(`/calendar/new-todo?date=${toDateKey(new Date())}`)}
+                className="text-xs text-left text-purple-700 px-1 py-1 underline underline-offset-2"
+              >
+                오늘 등록된 할일이 없어요. 할일 추가하기
+              </button>
             )}
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
