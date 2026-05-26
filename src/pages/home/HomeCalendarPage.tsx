@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, CalendarPlus } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 
@@ -22,6 +23,7 @@ const EVENTS = [
 ];
 
 export default function HomeCalendarPage() {
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(13);
 
   return (
@@ -33,7 +35,9 @@ export default function HomeCalendarPage() {
         <div className="items-center flex justify-between pt-[10px] pr-5 pb-1.5 pl-5">
           <div className="font-bold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>5월</div>
           <div className="flex gap-2">
-            <IconTile><Bell className="w-[18px] h-[18px] text-gray-700" strokeWidth={2.4} /></IconTile>
+            <IconTile onClick={() => navigate('/settings/notifications')} ariaLabel="알림 설정으로 이동">
+              <Bell className="w-[18px] h-[18px] text-gray-700" strokeWidth={2.4} />
+            </IconTile>
             <IconTile><CalendarPlus className="w-[18px] h-[18px] text-gray-700" strokeWidth={2.4} /></IconTile>
           </div>
         </div>
@@ -77,7 +81,28 @@ export default function HomeCalendarPage() {
   );
 }
 
-function IconTile({ children }: { children: React.ReactNode }) {
+function IconTile({
+  ariaLabel,
+  children,
+  onClick,
+}: {
+  ariaLabel?: string;
+  children: React.ReactNode;
+  onClick?: () => void;
+}) {
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className="items-center flex justify-center w-11 h-11 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem] transition-transform active:scale-95"
+      >
+        {children}
+      </button>
+    );
+  }
+
   return (
     <div className="items-center flex justify-center w-11 h-11 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-[0.9375rem]">
       {children}

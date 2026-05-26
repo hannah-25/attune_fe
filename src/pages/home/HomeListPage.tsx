@@ -5,15 +5,32 @@ import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { getOnboardingStatus, type OnboardingResumeStep } from '@/api/onboarding';
-import { mockTodos, mockScheduleItems, mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
+import { getTodosByDate, toggleTodoComplete } from '@/api/todo';
+import { getSchedules, type ScheduleSummary } from '@/api/schedule';
+import { mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
 
-const initialTodos = mockTodos;
+type HomeTodo = {
+  id: number;
+  text: string;
+  done: boolean;
+  dueAt: string;
+  isAllDay: boolean;
+};
+
+type HomeScheduleItem = Pick<ScheduleSummary, 'scheduleId' | 'title' | 'startTime' | 'endTime' | 'isAllDay'> & {
+  color?: string;
+};
+
+const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 const DEFAULT_ONBOARDING_STEP: OnboardingResumeStep = 2;
 
 export default function HomeListPage() {
   const navigate = useNavigate();
-  const [todos, setTodos] = useState(initialTodos);
+  const [todos, setTodos] = useState<HomeTodo[]>([]);
+  const [scheduleItems, setScheduleItems] = useState<HomeScheduleItem[]>([]);
   const [resumeStep, setResumeStep] = useState<OnboardingResumeStep | null>(null);
+  const [todoError, setTodoError] = useState('');
+  const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
 
   useEffect(() => {
     let ignore = false;
@@ -39,10 +56,78 @@ export default function HomeListPage() {
     };
   }, []);
 
-  const toggleTodo = (id: number) => {
+  useEffect(() => {
+    let ignore = false;
+    const today = new Date();
+    const startDate = toDateKey(today);
+    const endDate = toDateKey(addDays(today, 6));
+
+    getTodosByDate(startDate)
+      .then((response) => {
+        if (ignore) return;
+        const nextTodos = response.todos
+          .map((item) => ({
+            id: item.todoId,
+            text: item.text,
+            done: item.isCompleted,
+            dueAt: item.dueAt,
+            isAllDay: item.isAllDay,
+          }))
+          .sort((a, b) => toTimestamp(a.dueAt) - toTimestamp(b.dueAt));
+        setTodos(nextTodos);
+      })
+      .catch(() => {
+        if (!ignore) setTodos([]);
+      });
+
+    getSchedules({ startDate, endDate })
+      .then((response) => {
+        if (ignore) return;
+        const nextSchedules = response.schedules
+          .map((item) => ({
+            scheduleId: item.scheduleId,
+            title: item.title,
+            startTime: item.startTime,
+            endTime: item.endTime,
+            isAllDay: item.isAllDay,
+            color: (item as { color?: string }).color,
+          }))
+          .sort((a, b) => toTimestamp(a.startTime) - toTimestamp(b.startTime));
+        setScheduleItems(nextSchedules);
+      })
+      .catch(() => {
+        if (!ignore) setScheduleItems([]);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const toggleTodo = async (id: number) => {
+    if (updatingTodoIds.includes(id)) return;
+    const previousTodo = todos.find((todo) => todo.id === id);
+    if (!previousTodo) return;
+
+    setTodoError('');
+    setUpdatingTodoIds((current) => [...current, id]);
     setTodos((current) =>
       current.map((todo) => (todo.id === id ? { ...todo, done: !todo.done } : todo))
     );
+
+    try {
+      const response = await toggleTodoComplete(id);
+      setTodos((current) =>
+        current.map((todo) => (todo.id === id ? { ...todo, done: response.isCompleted } : todo))
+      );
+    } catch {
+      setTodos((current) =>
+        current.map((todo) => (todo.id === id ? { ...todo, done: previousTodo.done } : todo))
+      );
+      setTodoError('할일 상태를 변경하지 못했습니다.');
+    } finally {
+      setUpdatingTodoIds((current) => current.filter((todoId) => todoId !== id));
+    }
   };
 
   return (
@@ -57,9 +142,14 @@ export default function HomeListPage() {
           </div>
           <div className="grow basis-[0%]"></div>
           <div className="items-center flex gap-2 shrink-0">
-            <div className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-full shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate('/settings/notifications')}
+              className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-full shrink-0 transition-transform active:scale-95"
+              aria-label="알림 설정으로 이동"
+            >
               <Bell className="h-[15px] w-[15px] text-[rgb(31,27,46)]" strokeWidth={2.25} />
-            </div>
+            </button>
             <button
               type="button"
               onClick={() => navigate('/settings')}
@@ -110,6 +200,7 @@ export default function HomeListPage() {
           <div className="px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
           </div>
+          {todoError ? <div className="text-red-500 text-xs px-1">{todoError}</div> : null}
           <button
             type="button"
             onClick={() => navigate('/journal')}
@@ -126,45 +217,69 @@ export default function HomeListPage() {
             </div>
           </button>
           <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] p-3 rounded-2xl">
-            <div className="flex flex-col gap-2">
-              {todos.map((todo) => (
-                <button
-                  key={todo.id}
-                  type="button"
-                  onClick={() => toggleTodo(todo.id)}
-                  className="items-center flex gap-2 text-left w-full"
-                >
-                  <div
-                    className={`items-center flex justify-center w-4 h-4 shrink-0 rounded-full transition-colors ${
-                      todo.done ? 'bg-purple-300' : 'border border-gray-300'
-                    }`}
+            {todos.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {todos.map((todo) => (
+                  <button
+                    key={todo.id}
+                    type="button"
+                    onClick={() => toggleTodo(todo.id)}
+                    disabled={updatingTodoIds.includes(todo.id)}
+                    className="items-center flex gap-2 text-left w-full disabled:opacity-60"
                   >
-                    {todo.done && (
-                      <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 13l4 4L19 7"/>
-                      </svg>
-                    )}
-                  </div>
-                  <div className={`text-xs transition-colors ${todo.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-                    {todo.text}
-                  </div>
-                </button>
-              ))}
-            </div>
+                    <div
+                      className={`items-center flex justify-center w-4 h-4 shrink-0 rounded-full transition-colors ${
+                        todo.done ? 'bg-purple-300' : 'border border-gray-300'
+                      }`}
+                    >
+                      {todo.done && (
+                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M5 13l4 4L19 7"/>
+                        </svg>
+                      )}
+                    </div>
+                    <div className={`text-xs transition-colors ${todo.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
+                      {todo.text}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate(`/calendar/new-todo?date=${toDateKey(new Date())}`)}
+                className="text-xs text-left text-purple-700 px-1 py-1 underline underline-offset-2"
+              >
+                오늘 등록된 할일이 없어요. 할일 추가하기
+              </button>
+            )}
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">예정 일정</div>
             <button type="button" onClick={() => navigate('/calendar')} className="text-xs text-gray-400">전체보기</button>
           </div>
           <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-3 py-2 rounded-2xl flex flex-col">
-            {mockScheduleItems.map((item, index) => (
-              <div key={item.title} className={`items-center flex gap-3 py-2 ${index > 0 ? 'border-t border-gray-100' : ''}`}>
-                <div className={`font-medium text-[11px] ${item.labelColor} w-[34px] shrink-0`}>{item.label}</div>
-                <div className={`w-2 h-2 ${item.dotColor} shrink-0 rounded-full`} />
-                <div className="font-semibold text-xs text-gray-800 grow">{item.title}</div>
-                <div className="text-[10px] text-gray-400 shrink-0">{item.time}</div>
-              </div>
-            ))}
+            {scheduleItems.length > 0 ? (
+              scheduleItems.map((item, index) => {
+                const label = formatRelativeDateLabel(item.startTime);
+                const timeText = item.isAllDay ? '종일' : formatTime(item.startTime);
+                const isToday = label === '오늘';
+
+                return (
+                  <div key={item.scheduleId} className={`items-center flex gap-3 py-2 ${index > 0 ? 'border-t border-gray-100' : ''}`}>
+                    <div className={`font-medium text-[11px] w-[34px] shrink-0 ${isToday ? 'text-purple-500' : 'text-gray-400'}`}>{label}</div>
+                    <div
+                      className={`w-2 h-2 shrink-0 rounded-full ${item.color ? '' : isToday ? 'bg-purple-500' : 'bg-purple-300'}`}
+                      style={item.color ? { backgroundColor: item.color } : undefined}
+                    />
+                    <div className="font-semibold text-xs text-gray-800 grow">{item.title}</div>
+                    <div className="text-[10px] text-gray-400 shrink-0">{timeText}</div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-xs text-gray-500 px-1 py-1">예정된 일정이 없어요.</div>
+            )}
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">주간 인사이트</div>
@@ -194,4 +309,57 @@ export default function HomeListPage() {
       </div>
     </div>
   );
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function toDateKeyFromDateTime(value: string) {
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return toDateKey(date);
+}
+
+function formatRelativeDateLabel(value: string) {
+  const dateKey = toDateKeyFromDateTime(value);
+  const todayKey = toDateKey(new Date());
+  const tomorrowKey = toDateKey(addDays(new Date(), 1));
+
+  if (dateKey === todayKey) return '오늘';
+  if (dateKey === tomorrowKey) return '내일';
+
+  if (!dateKey) return '-';
+  const [yearText, monthText, dayText] = dateKey.split('-');
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return '-';
+  return WEEK_DAYS[new Date(year, month - 1, day).getDay()] ?? '-';
+}
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value.slice(11, 16);
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function toTimestamp(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return Number.POSITIVE_INFINITY;
+  return date.getTime();
 }
