@@ -26,16 +26,16 @@ export default function EmptyJournalPage() {
           <div className="font-extrabold text-center text-2xl leading-[28.6px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
             <span className="text-center">오늘은 어떤 하루였나요?</span>
           </div>
-          <div className="text-center text-gray-600 leading-[20.15px] max-w-[220px]">
-            <span className="text-center">짧은 감정 하나, 컨디션 한 줄도 좋아요.</span><br />
-            <span className="text-center">하루 1번이면 충분해요.</span>
+          <div className="max-w-[248px] space-y-1 text-center">
+            <p className="text-gray-600 leading-relaxed">짧은 감정 하나, 컨디션 한 줄도 좋아요.</p>
+            <p className="text-gray-500 leading-relaxed">하루 1번이면 충분해요.</p>
           </div>
           <button
             type="button"
             onClick={() => navigate('/journal/write')}
             className="items-center flex font-bold justify-center text-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 min-w-[200px] pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]"
           >
-            <span className="block text-center">첫 기록 시작</span>
+            <span className="block text-center">일지 작성하기</span>
           </button>
         </ScrollArea>
         <TabBar active="일지" />
