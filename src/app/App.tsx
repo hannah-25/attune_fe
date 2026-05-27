@@ -3,6 +3,7 @@ import { Navigate, Outlet, Routes, Route } from 'react-router';
 import { AppViewport } from './components/AppViewport';
 import { getAccessToken } from './api/client';
 import { getMyProfile } from './api/user';
+import { getJournalDates } from './api/journal';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -106,6 +107,31 @@ function RootRoute() {
   return <Navigate to={destination} replace />;
 }
 
+function JournalRoute() {
+  const [hasJournal, setHasJournal] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+    const today = toDateKey(new Date());
+
+    getJournalDates({ startDate: today, endDate: today })
+      .then((response) => {
+        if (ignore) return;
+        setHasJournal(response.dates.includes(today));
+      })
+      .catch(() => {
+        if (!ignore) setHasJournal(true);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  if (hasJournal === null) return null;
+  return hasJournal ? <JournalFullPage /> : <EmptyJournalPage />;
+}
+
 export default function App() {
   return (
     <AppViewport>
@@ -136,7 +162,8 @@ export default function App() {
           <Route path="/home/calendar" element={<HomeCalendarPage />} />
 
           {/* Journal */}
-          <Route path="/journal" element={<JournalFullPage />} />
+          <Route path="/journal" element={<JournalRoute />} />
+          <Route path="/journal/write" element={<JournalFullPage />} />
           <Route path="/journal/timeline" element={<JournalTimelinePage />} />
           <Route path="/journal/calendar" element={<JournalCalendarPage />} />
           <Route path="/journal/tags" element={<JournalTagsPage />} />
@@ -188,4 +215,10 @@ export default function App() {
       </Routes>
     </AppViewport>
   );
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }

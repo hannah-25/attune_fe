@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Bell, CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-import { createMedication } from '@/api/medication';
+import { createMedication, updateMedication } from '@/api/medication';
 
 const MEDICATION_OPTIONS = [
   { id: 1, name: '콘서타 18mg', ingredient: '메틸페니데이트 · 1정' },
@@ -12,17 +12,23 @@ const MEDICATION_OPTIONS = [
 ];
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
+const ALARM_LABELS = ['아침', '점심'];
 
 export default function MedicationAddPage() {
   const navigate = useNavigate();
   const [selectedMedication, setSelectedMedication] = useState(MEDICATION_OPTIONS[0]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [startedAt, setStartedAt] = useState(toDateKey(new Date()));
+  const [alarmTimes, setAlarmTimes] = useState(['08:00', '12:30']);
   const [activeDays, setActiveDays] = useState(() => new Set(['월', '화', '수', '목', '금']));
+  const [isMedicationActive, setIsMedicationActive] = useState(true);
+  const [alarmEnabled, setAlarmEnabled] = useState(true);
+  const [repeatEnabled, setRepeatEnabled] = useState(true);
   const [holidayPause, setHolidayPause] = useState(false);
-  const [reminderOn, setReminderOn] = useState(true);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const startedAtInputRef = useRef<HTMLInputElement>(null);
 
   const filteredMedications = MEDICATION_OPTIONS.filter((medication) =>
     medication.name.toLowerCase().includes(query.toLowerCase()) || medication.ingredient.toLowerCase().includes(query.toLowerCase())
@@ -38,23 +44,59 @@ export default function MedicationAddPage() {
   };
 
   const saveMedication = async () => {
+    const scheduleTimes = alarmTimes
+      .map((time) => toDoseTime(time))
+      .filter((time): time is string => Boolean(time));
+
+    if (scheduleTimes.length === 0) {
+      setError('알람 시간을 1개 이상 설정해 주세요.');
+      return;
+    }
+
     setError('');
     setIsSaving(true);
     try {
-      await createMedication({
+      const created = await createMedication({
         medicationId: selectedMedication.id,
-        startedAt: toDateKey(new Date()),
-        schedules: [
-          { doseTime: '08:00:00', label: '아침', dosage: selectedMedication.ingredient },
-          { doseTime: '12:30:00', label: '점심', dosage: selectedMedication.ingredient },
-        ],
+        startedAt,
+        schedules: scheduleTimes.map((doseTime, index) => ({
+          doseTime,
+          label: ALARM_LABELS[index] ?? `${index + 1}회`,
+          dosage: selectedMedication.ingredient,
+        })),
       });
+      if (typeof created?.userMedicationId === 'number') {
+        const updatedEndAt = isMedicationActive ? undefined : toDateKey(new Date());
+        await updateMedication(created.userMedicationId, {
+          alarmActive: alarmEnabled,
+          isActive: isMedicationActive,
+          endAt: updatedEndAt,
+        });
+      }
       navigate('/medication');
     } catch {
       setError('약을 등록하지 못했습니다.');
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const changeAlarmTime = (index: number, value: string) => {
+    setAlarmTimes((current) => current.map((time, idx) => (idx === index ? value : time)));
+  };
+
+  const openStartedAtPicker = () => {
+    const input = startedAtInputRef.current;
+    if (!input) return;
+
+    const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
+    if (typeof pickerInput.showPicker === 'function') {
+      pickerInput.showPicker();
+      return;
+    }
+
+    input.focus();
+    input.click();
   };
 
   return (
@@ -77,17 +119,97 @@ export default function MedicationAddPage() {
               <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
             </button>
             <StaticRow label="용량/단위" value={selectedMedication.ingredient} />
-            <StaticRow label="복용 시작일" value="2026.02.03" icon={<CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />} />
-            <StaticRow label="복용 상태" value="복용 중" icon={<Check className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.7} />} />
-            <StaticRow label="알림" value="하루 2회 · 08:00 / 12:30" icon={<Bell className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.4} />} last />
+            <div className="relative">
+              <StaticRow
+                label="복용 시작일"
+                value={formatDateDot(startedAt)}
+                icon={<CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
+                onClick={openStartedAtPicker}
+              />
+              <input
+                ref={startedAtInputRef}
+                type="date"
+                value={startedAt}
+                onChange={(event) => setStartedAt(event.target.value)}
+                className="sr-only"
+                aria-label="복용 시작일"
+              />
+            </div>
+            <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+              <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
+              <div className="grow basis-[0%]">
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsMedicationActive(true)}
+                    className={`items-center flex font-semibold text-xs gap-1 px-3 py-[7px] rounded-[62.4375rem] border transition-colors ${isMedicationActive ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-white border-gray-200 text-gray-600'}`}
+                  >
+                    {isMedicationActive ? <Check className="w-3 h-3" strokeWidth={2.8} /> : null}
+                    복용 중
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsMedicationActive(false)}
+                    className={`items-center flex font-semibold text-xs gap-1 px-3 py-[7px] rounded-[62.4375rem] border transition-colors ${!isMedicationActive ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-white border-gray-200 text-gray-600'}`}
+                  >
+                    {!isMedicationActive ? <Check className="w-3 h-3" strokeWidth={2.8} /> : null}
+                    복용 중단
+                  </button>
+                </div>
+                {!isMedicationActive ? (
+                  <div className="mt-1 text-xs text-gray-500">중단일: {formatDateDot(toDateKey(new Date()))}</div>
+                ) : null}
+              </div>
+            </div>
+            <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
+              <div className="font-semibold w-[84px] text-gray-600">알림</div>
+              <div className="grow basis-[0%]">
+                <div className="items-center flex justify-between gap-2">
+                  <div className="items-center flex gap-1.5">
+                    <Bell className={`w-[13px] h-[13px] ${alarmEnabled ? 'text-purple-500' : 'text-gray-400'}`} strokeWidth={2.4} />
+                    <span className={`text-xs font-semibold ${alarmEnabled ? 'text-purple-700' : 'text-gray-500'}`}>
+                      {alarmEnabled ? '알람 켜짐' : '알람 꺼짐'}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={alarmEnabled}
+                    aria-label="전체 알람 켜기"
+                    onClick={() => setAlarmEnabled((value) => !value)}
+                    className="shrink-0"
+                  >
+                    <ToggleSwitch active={alarmEnabled} />
+                  </button>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  {alarmTimes.map((time, index) => (
+                    <label key={`${ALARM_LABELS[index]}-${index}`} className={`flex grow items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px] ${alarmEnabled ? '' : 'opacity-50'}`}>
+                      <Bell className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.4} />
+                      <input
+                        type="time"
+                        value={time}
+                        onChange={(event) => changeAlarmTime(index, event.target.value)}
+                        className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                        aria-label={`${ALARM_LABELS[index]} 알람 시간`}
+                        disabled={!alarmEnabled}
+                      />
+                    </label>
+                  ))}
+                </div>
+                <div className="mt-1 text-xs text-gray-500">
+                  {alarmEnabled ? `하루 ${alarmTimes.length}회 · ${alarmTimes.join(' / ')}` : '알람이 꺼져 있어요'}
+                </div>
+              </div>
+            </div>
           </div>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            <button type="button" onClick={() => setReminderOn((v) => !v)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+            <button type="button" onClick={() => setRepeatEnabled((value) => !value)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="grow basis-[0%]">
                 <div className="font-semibold text-gray-700">요일 반복</div>
                 <div className="mt-1 text-gray-500 text-xs">선택한 요일마다 알려드려요</div>
               </div>
-              <ToggleSwitch active={reminderOn} />
+              <ToggleSwitch active={repeatEnabled} />
             </button>
             <div className="pt-3 pr-[10px] pb-3 pl-[10px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="flex gap-1">
@@ -96,7 +218,8 @@ export default function MedicationAddPage() {
                     key={day}
                     type="button"
                     onClick={() => toggleDay(day)}
-                    className={`items-center flex grow font-bold justify-center h-[38px] basis-[0%] rounded-xl ${activeDays.has(day) ? 'bg-purple-300 text-white' : 'bg-purple-50 text-gray-600'}`}
+                    disabled={!repeatEnabled}
+                    className={`items-center flex grow font-bold justify-center h-[38px] basis-[0%] rounded-xl ${activeDays.has(day) ? 'bg-purple-300 text-white' : 'bg-purple-50 text-gray-600'} ${repeatEnabled ? '' : 'opacity-40'}`}
                   >
                     {day}
                   </button>
@@ -157,9 +280,34 @@ export default function MedicationAddPage() {
   );
 }
 
-function StaticRow({ icon, label, last, value }: { icon?: React.ReactNode; label: string; last?: boolean; value: string }) {
+function StaticRow({
+  icon,
+  label,
+  last,
+  onClick,
+  value,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  last?: boolean;
+  onClick?: () => void;
+  value: string;
+}) {
+  const commonClassName = `items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`;
+  const style = last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' };
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={commonClassName} style={style}>
+        <div className="font-semibold w-[84px] text-gray-600 text-left">{label}</div>
+        <div className="grow font-semibold basis-[0%] text-left">{value}</div>
+        {icon ?? <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
+      </button>
+    );
+  }
+
   return (
-    <div className={`items-center flex pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
+    <div className={commonClassName} style={style}>
       <div className="font-semibold w-[84px] text-gray-600">{label}</div>
       <div className="grow font-semibold basis-[0%]">{value}</div>
       {icon ?? <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
@@ -179,4 +327,14 @@ function toDateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function formatDateDot(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return value.replaceAll('-', '.');
+}
+
+function toDoseTime(value: string) {
+  if (!/^\d{2}:\d{2}$/.test(value)) return null;
+  return `${value}:00`;
 }
