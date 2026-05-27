@@ -24,7 +24,7 @@ export default function EmptyJournalPage() {
             <img src={logoImage} alt="attune" className="block w-full h-full object-contain" />
           </div>
           <div className="font-extrabold text-center text-2xl leading-[28.6px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-            <span className="text-center">오늘은 어떤 하루였나요?</span>
+            <span className="text-center">지금 마음을 기록해볼까요?</span>
           </div>
           <div className="max-w-[248px] space-y-1 text-center">
             <p className="text-gray-600 leading-relaxed">짧은 감정 하나, 컨디션 한 줄도 좋아요.</p>
