@@ -30,6 +30,10 @@ function avatarColor(nickname: string) {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
+const REPORT_REASONS = ['스팸·광고', '욕설·혐오 표현', '개인정보 노출', '부적절한 내용', '기타'];
+
+type ReportTarget = { type: 'post'; id: number } | { type: 'comment'; id: number };
+
 export default function CommunityPostPage() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
@@ -51,6 +55,11 @@ export default function CommunityPostPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const [reportReason, setReportReason] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -89,6 +98,33 @@ export default function CommunityPostPage() {
     }
   };
 
+  const handleReport = async () => {
+    if (!reportTarget || !reportReason) return;
+    setIsReporting(true);
+    try {
+      // TODO: 신고 API 연동
+      await new Promise<void>((r) => setTimeout(r, 600));
+      setReportDone(true);
+    } catch {
+      // 추후 토스트 연결
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
+  const openReport = (type: 'post' | 'comment', id: number) => {
+    if (type === 'post') setReportTarget({ type: 'post', id });
+    else setReportTarget({ type: 'comment', id });
+    setReportReason('');
+    setReportDone(false);
+  };
+
+  const closeReport = () => {
+    setReportTarget(null);
+    setReportReason('');
+    setReportDone(false);
+  };
+
   const closeMenu = () => {
     setMenuOpen(false);
     setConfirmDelete(false);
@@ -117,29 +153,34 @@ export default function CommunityPostPage() {
           right={
             <HeaderIconButton
               icon={<MoreHorizontal className="h-4 w-4 text-gray-700" strokeWidth={2.5} />}
-              onClick={() => setMenuOpen(true)}
+              onClick={() => {
+                if (post.isOwner) setMenuOpen(true);
+                else openReport('post', post.postId);
+              }}
             />
           }
         />
 
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pb-28">
+        <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pb-28 bg-gray-50">
 
           {/* 게시글 본문 */}
-          <div className="px-4 pt-4 pb-4 bg-white">
-            {/* 작성자 헤더: 아바타 + 카테고리 + 닉네임 · 시간 */}
-            <div className="flex items-center gap-2 mb-3.5">
+          <div className="px-4 pt-4 pb-4">
+            {/* 작성자 헤더: 아바타 + 닉네임 · 시간 */}
+            <div className="flex items-center gap-2 mb-2.5">
               <div className={`w-7 h-7 shrink-0 rounded-full ${avatarColor(post.anonNickname)}`} />
-              <span className="inline-flex items-center font-semibold bg-purple-100 text-purple-700 text-[11px] tracking-tight px-2 py-0.5 rounded-full shrink-0">
-                {POST_CATEGORY_LABEL[post.postCategory]}
-              </span>
               <span className="font-bold text-gray-800 text-xs truncate">{post.anonNickname}</span>
               <span className="text-gray-300 text-[11px] shrink-0">·</span>
               <span className="text-gray-400 text-[11px] shrink-0">{formatRelativeTime(post.createdAt)}</span>
             </div>
 
-            {/* 제목 */}
-            <div className="font-extrabold text-[17px] leading-snug mb-2.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-              {post.title}
+            {/* 카테고리 + 제목 */}
+            <div className="flex items-baseline gap-2 mb-3.5">
+              <span className="font-semibold text-purple-600 text-[11px] whitespace-nowrap shrink-0">
+                {POST_CATEGORY_LABEL[post.postCategory]}
+              </span>
+              <div className="font-extrabold text-[17px] leading-snug" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                {post.title}
+              </div>
             </div>
 
             {/* 본문 */}
@@ -179,12 +220,21 @@ export default function CommunityPostPage() {
                 >
                   <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-purple-500' : ''}`} strokeWidth={2.5} />
                 </button>
+                {!post.isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => openReport('post', post.postId)}
+                    className="flex items-center transition-colors select-none active:scale-95 text-gray-300 active:text-red-400"
+                  >
+                    <Flag className="w-4 h-4" strokeWidth={2.5} />
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
           {/* 댓글 섹션 */}
-          <div className="mt-2 bg-white">
+          <div className="mt-2">
             <div className="px-4 py-3 border-b border-gray-100">
               <span className="font-bold text-gray-700 text-sm">댓글{comments.length > 0 ? ` ${comments.length}` : ''}</span>
             </div>
@@ -214,7 +264,11 @@ export default function CommunityPostPage() {
                       대댓글
                     </button>
                     {!comment.isOwner && (
-                      <button type="button" className="ml-auto text-[11px] font-semibold text-gray-300 active:text-red-400 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => openReport('comment', comment.commentId)}
+                        className="ml-auto text-[11px] font-semibold text-gray-300 active:text-red-400 transition-colors"
+                      >
                         신고
                       </button>
                     )}
@@ -259,49 +313,33 @@ export default function CommunityPostPage() {
         </div>
       </div>
 
-      {/* 바텀시트 */}
+      {/* 게시글 관리 바텀시트 (작성자 전용: 편집·삭제) */}
       {menuOpen && (
         <>
-          <div
-            className="absolute inset-0 bg-black/30 z-30"
-            onClick={closeMenu}
-          />
+          <div className="absolute inset-0 bg-black/30 z-30" onClick={closeMenu} />
           <div className="absolute left-0 right-0 bottom-0 z-40 bg-white rounded-t-2xl px-4 pt-5 pb-8 flex flex-col gap-2">
             {!confirmDelete ? (
               <>
                 <div className="w-8 h-1 rounded-full bg-gray-200 mx-auto mb-3" />
-                {post.isOwner ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        closeMenu();
-                        navigate('/community/write', { state: { postId: post.postId, post } });
-                      }}
-                      className="flex items-center gap-3 w-full px-2 py-3 rounded-xl text-gray-800 font-semibold active:bg-gray-50 transition-colors"
-                    >
-                      <Pencil className="w-4 h-4 text-gray-500" strokeWidth={2.2} />
-                      편집
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(true)}
-                      className="flex items-center gap-3 w-full px-2 py-3 rounded-xl text-red-500 font-semibold active:bg-red-50 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" strokeWidth={2.2} />
-                      삭제
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={closeMenu}
-                    className="flex items-center gap-3 w-full px-2 py-3 rounded-xl text-red-500 font-semibold active:bg-red-50 transition-colors"
-                  >
-                    <Flag className="w-4 h-4" strokeWidth={2.2} />
-                    신고
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMenu();
+                    navigate('/community/write', { state: { postId: post.postId, post } });
+                  }}
+                  className="flex items-center gap-3 w-full px-2 py-3 rounded-xl text-gray-800 font-semibold active:bg-gray-50 transition-colors"
+                >
+                  <Pencil className="w-4 h-4 text-gray-500" strokeWidth={2.2} />
+                  편집
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-3 w-full px-2 py-3 rounded-xl text-red-500 font-semibold active:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" strokeWidth={2.2} />
+                  삭제
+                </button>
               </>
             ) : (
               <>
@@ -322,6 +360,72 @@ export default function CommunityPostPage() {
                   className="w-full h-11 rounded-xl text-gray-600 font-semibold active:bg-gray-50 transition-colors"
                 >
                   취소
+                </button>
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* 신고 바텀시트 */}
+      {reportTarget && (
+        <>
+          <div className="absolute inset-0 bg-black/30 z-30" onClick={closeReport} />
+          <div className="absolute left-0 right-0 bottom-0 z-40 bg-white rounded-t-2xl px-4 pt-5 pb-8 flex flex-col gap-2">
+            <div className="w-8 h-1 rounded-full bg-gray-200 mx-auto mb-3" />
+            {!reportDone ? (
+              <>
+                <div className="font-bold text-gray-900 text-base mb-0.5">
+                  {reportTarget.type === 'post' ? '게시글 신고' : '댓글 신고'}
+                </div>
+                <div className="text-gray-400 text-xs mb-3">신고 사유를 선택해 주세요.</div>
+                <div className="flex flex-col gap-2 mb-2">
+                  {REPORT_REASONS.map((reason) => (
+                    <button
+                      key={reason}
+                      type="button"
+                      onClick={() => setReportReason(reason)}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${
+                        reportReason === reason
+                          ? 'bg-purple-50 text-purple-700 border border-[rgb(185,166,255)]'
+                          : 'bg-gray-50 text-gray-700 border border-transparent'
+                      }`}
+                    >
+                      {reason}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  disabled={!reportReason || isReporting}
+                  onClick={handleReport}
+                  className="w-full h-12 rounded-xl bg-red-500 text-white font-bold disabled:opacity-40 transition-all active:scale-[0.97]"
+                >
+                  {isReporting ? '신고 중...' : '신고하기'}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeReport}
+                  className="w-full h-11 rounded-xl text-gray-600 font-semibold active:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col items-center py-4 gap-2">
+                  <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-1">
+                    <Flag className="w-5 h-5 text-red-400" strokeWidth={2.2} />
+                  </div>
+                  <div className="font-bold text-gray-900 text-base">신고가 접수되었어요</div>
+                  <div className="text-gray-400 text-xs text-center">검토 후 조치될 예정이에요.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeReport}
+                  className="w-full h-12 rounded-xl bg-[rgb(31,27,46)] text-white font-bold transition-all active:scale-[0.97]"
+                >
+                  확인
                 </button>
               </>
             )}
