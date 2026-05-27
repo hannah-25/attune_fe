@@ -247,13 +247,11 @@ export default function HomeListPage() {
                 ))}
               </div>
             ) : (
-              <button
-                type="button"
+              <EmptyActionCard
+                description="오늘 등록된 할일이 없어요."
+                actionLabel="할일 추가하기"
                 onClick={() => navigate(`/calendar/new-todo?date=${toDateKey(new Date())}`)}
-                className="text-xs text-left text-purple-700 px-1 py-1 underline underline-offset-2"
-              >
-                오늘 등록된 할일이 없어요. 할일 추가하기
-              </button>
+              />
             )}
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
@@ -280,7 +278,11 @@ export default function HomeListPage() {
                 );
               })
             ) : (
-              <div className="text-xs text-gray-500 px-1 py-1">예정된 일정이 없어요.</div>
+              <EmptyActionCard
+                description="예정된 일정이 없어요."
+                actionLabel="일정 추가하기"
+                onClick={() => navigate('/empty/calendar')}
+              />
             )}
           </div>
           <div className="items-center flex justify-between px-1 mt-3">
@@ -364,4 +366,30 @@ function toTimestamp(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return Number.POSITIVE_INFINITY;
   return date.getTime();
+}
+
+function EmptyActionCard({
+  actionLabel,
+  description,
+  onClick,
+}: {
+  actionLabel: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left px-1 py-1 rounded-lg"
+    >
+      <div>
+        <div className="text-xs text-gray-500">{description}</div>
+        <div className="items-center flex font-semibold text-xs text-purple-700 gap-0.5 mt-0.5">
+          <span>{actionLabel}</span>
+          <ArrowRight className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={2.5} />
+        </div>
+      </div>
+    </button>
+  );
 }
