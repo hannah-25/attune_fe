@@ -386,9 +386,9 @@ export default function JournalFullPage() {
         const checked = journal?.checked;
         const activeTags = journal?.activeTags;
 
-        const checkedConditionIds = new Set(checked?.conditions.map((item) => item.tagId) ?? []);
-        const checkedSideEffectIds = new Set(checked?.sideEffects.map((item) => item.tagId) ?? []);
-        const checkedTroubleIds = new Set(checked?.troubles.map((item) => item.tagId) ?? []);
+        const checkedConditionIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
+        const checkedSideEffectIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
+        const checkedTroubleIds = new Set(checked?.troubles?.map((item) => item.tagId) ?? []);
 
         setSections([
           {
