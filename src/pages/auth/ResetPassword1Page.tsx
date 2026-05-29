@@ -22,7 +22,7 @@ export default function ResetPassword1Page() {
       await requestPasswordReset(email.trim());
       navigate(`/reset-password/2?email=${encodeURIComponent(email.trim())}`);
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

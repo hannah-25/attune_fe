@@ -62,7 +62,7 @@ export default function ResetPassword3Page() {
         navigate('/login');
       }
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

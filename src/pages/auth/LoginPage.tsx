@@ -27,7 +27,7 @@ export default function LoginPage() {
       setAccessToken(accessToken);
       navigate('/home');
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '로그인에 실패했습니다. 입력한 정보를 확인해주세요.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '로그인에 실패했습니다. 입력한 정보를 확인해주세요.');
     } finally {
       setIsSubmitting(false);
     }

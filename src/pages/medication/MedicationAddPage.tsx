@@ -76,7 +76,7 @@ export default function MedicationAddPage() {
       }
       navigate('/medication');
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '약을 등록하지 못했습니다.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '약을 등록하지 못했습니다.');
     } finally {
       setIsSaving(false);
     }

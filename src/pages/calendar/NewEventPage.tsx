@@ -105,7 +105,7 @@ export default function NewEventPage() {
         setSelectedCategoryId(categoryResponse.categories[0]?.categoryId ?? null);
       })
       .catch((err) => {
-        if (!ignore) setError(err instanceof ApiError && err.message ? err.message : '\uCE74\uD14C\uACE0\uB9AC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+        if (!ignore) setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '\uCE74\uD14C\uACE0\uB9AC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
       });
 
     if (isEditMode && scheduleId !== null) {
@@ -121,7 +121,7 @@ export default function NewEventPage() {
           setDirty(false);
         })
         .catch((err) => {
-          if (!ignore) setError(err instanceof ApiError && err.message ? err.message : '\uC77C\uC815 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+          if (!ignore) setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '\uC77C\uC815 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
         });
     }
 
@@ -143,7 +143,7 @@ export default function NewEventPage() {
       setAddingCategory(false);
       markDirty();
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '\uCE74\uD14C\uACE0\uB9AC\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '\uCE74\uD14C\uACE0\uB9AC\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
     }
   };
 
@@ -172,7 +172,7 @@ export default function NewEventPage() {
         navigate('/calendar');
       }
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '\uC77C\uC815\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '\uC77C\uC815\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
     }
   };
 

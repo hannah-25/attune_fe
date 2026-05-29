@@ -71,7 +71,7 @@ export default function CommunityWritePage() {
       }
     } catch (err) {
       console.error('[CommunityWritePage] 실패:', err);
-      setError(err instanceof ApiError && err.message ? err.message : (isEdit ? '수정에 실패했습니다. 다시 시도해주세요.' : '게시글 등록에 실패했습니다. 다시 시도해주세요.'));
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : (isEdit ? '수정에 실패했습니다. 다시 시도해주세요.' : '게시글 등록에 실패했습니다. 다시 시도해주세요.'));
     } finally {
       setIsSubmitting(false);
     }

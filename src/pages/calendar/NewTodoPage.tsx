@@ -38,7 +38,7 @@ export default function NewTodoPage() {
       });
       navigate('/calendar');
     } catch (err) {
-      setError(err instanceof ApiError && err.message ? err.message : '할일을 저장하지 못했습니다.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '할일을 저장하지 못했습니다.');
     } finally {
       setIsSaving(false);
     }

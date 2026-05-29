@@ -54,7 +54,7 @@ export default function CommunityFeedPage() {
       .then(setPosts)
       .catch((err) => {
         console.error('[CommunityFeedPage] getPosts 실패:', err);
-        setError(err instanceof ApiError && err.message ? err.message : '게시글을 불러오지 못했습니다.');
+        setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '게시글을 불러오지 못했습니다.');
       })
       .finally(() => setIsLoading(false));
   }, []);
