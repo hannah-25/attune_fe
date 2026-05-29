@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { changePassword, confirmPasswordReset, validatePasswordResetToken } from '../../app/api/auth';
+import { ApiError } from '../../app/api/client';
 
 export default function ResetPassword3Page() {
   const navigate = useNavigate();
@@ -60,8 +61,8 @@ export default function ResetPassword3Page() {
         await confirmPasswordReset({ token, newPassword: password });
         navigate('/login');
       }
-    } catch {
-      setError('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

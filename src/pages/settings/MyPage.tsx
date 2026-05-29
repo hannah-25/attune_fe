@@ -128,7 +128,7 @@ export default function MyPage() {
             <MenuRow icon={<HelpCircle />} label="문의하기" onClick={() => navigate('/settings/inquiry')} />
             <MenuRow icon={<LogOut />} label="로그아웃" last hideChevron onClick={handleLogout} />
           </Section>
-          <button type="button" className="block mt-3 ml-1 bg-transparent border-0 p-0 text-xs font-medium text-gray-400 underline underline-offset-2">
+          <button type="button" className="block mt-3 ml-1 bg-transparent border-0 p-0 text-xs font-medium text-gray-400 underline underline-offset-2" onClick={() => navigate('/settings/withdraw')}>
             회원 탈퇴
           </button>
         </ScrollArea>

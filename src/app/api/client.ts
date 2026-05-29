@@ -12,12 +12,14 @@ export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
 export class ApiError extends Error {
   status: number;
   payload: unknown;
+  backendMessage: string | null;
 
   constructor(status: number, payload: unknown, message?: string) {
     super(message ?? `API request failed with status ${status}`);
     this.name = 'ApiError';
     this.status = status;
     this.payload = payload;
+    this.backendMessage = message ?? null;
   }
 }
 
@@ -45,7 +47,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     if (refreshed) {
       return apiRequest<T>(path, { ...options, retryOnUnauthorized: false });
     }
-    // 갱신 실패 → 인증 상태 초기화 후 로그인으로 이동
+
     redirectToLoginOnce();
     throw new ApiError(401, null, 'Session expired');
   }
@@ -83,7 +85,7 @@ async function request(path: string, options: ApiRequestOptions) {
 async function reissueSession() {
   try {
     const response = await request('/v1/auth/reissue', {
-      auth: true, // 만료된 access token도 Authorization 헤더로 전송 (서버 스펙 필수)
+      auth: true,
       method: 'POST',
     });
 
@@ -91,18 +93,73 @@ async function reissueSession() {
       return false;
     }
 
-    const contentType = response.headers.get('content-type') ?? '';
-    if (contentType.includes('application/json')) {
-      const data = await response.json();
-      if (data?.accessToken) {
-        setAccessToken(data.accessToken);
-      }
+    const nextToken = await readReissuedAccessToken(response);
+    if (nextToken) {
+      setAccessToken(nextToken);
+      return true;
     }
 
-    return true;
+    // If reissue is "ok" but we still don't have a token, retry would keep using
+    // the stale token and fail again. Treat this as refresh failure.
+    return false;
   } catch {
     return false;
   }
+}
+
+async function readReissuedAccessToken(response: Response): Promise<string | null> {
+  const headerToken =
+    parseBearerToken(response.headers.get('authorization'))
+    ?? response.headers.get('x-access-token')
+    ?? response.headers.get('x-new-access-token');
+
+  if (headerToken) return headerToken;
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) return null;
+
+  try {
+    const payload = await response.json();
+    return findAccessToken(payload);
+  } catch {
+    return null;
+  }
+}
+
+function parseBearerToken(value: string | null): string | null {
+  if (!value) return null;
+  const match = value.match(/^Bearer\s+(.+)$/i);
+  if (!match?.[1]) return null;
+  const token = match[1].trim();
+  return token.length > 0 ? token : null;
+}
+
+function findAccessToken(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const record = payload as Record<string, unknown>;
+
+  const direct = record.accessToken;
+  if (typeof direct === 'string' && direct.trim()) {
+    return direct;
+  }
+
+  const data = record.data;
+  if (data && typeof data === 'object') {
+    const nested = (data as Record<string, unknown>).accessToken;
+    if (typeof nested === 'string' && nested.trim()) {
+      return nested;
+    }
+  }
+
+  const result = record.result;
+  if (result && typeof result === 'object') {
+    const nested = (result as Record<string, unknown>).accessToken;
+    if (typeof nested === 'string' && nested.trim()) {
+      return nested;
+    }
+  }
+
+  return null;
 }
 
 function reissueSessionSingleFlight() {
