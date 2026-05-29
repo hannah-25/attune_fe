@@ -24,7 +24,6 @@ import {
   getConditionTags,
   getJournal,
   getSideEffectTags,
-  getSleepMeal,
   getTroubleTags,
   scoreJournalGoal,
   ConditionType,
@@ -381,9 +380,8 @@ export default function JournalFullPage() {
       getSideEffectTags(),
       getTroubleTags(),
       getJournal(journalDate).catch(() => null),
-      getSleepMeal(journalDate).catch(() => undefined),
     ])
-      .then(([conditions, sideEffects, troubles, journal, sleepMealData]) => {
+      .then(([conditions, sideEffects, troubles, journal]) => {
         if (ignore) return;
         const checkedConditionIds = new Set(journal?.checked.conditions.map((item) => item.tagId) ?? []);
         const checkedSideEffectIds = new Set(journal?.checked.sideEffects.map((item) => item.tagId) ?? []);
@@ -412,14 +410,15 @@ export default function JournalFullPage() {
           setMemoSaved(true);
         }
 
-        if (sleepMealData) {
-          if (typeof sleepMealData.sleepHour === 'number') {
-            setSleep(hourToSleepOption(sleepMealData.sleepHour));
-          }
+        if (journal?.checked.sleep && typeof journal.checked.sleep.sleepHour === 'number') {
+          setSleep(hourToSleepOption(journal.checked.sleep.sleepHour));
+        }
+
+        if (journal?.checked.meal) {
           const nextMeals = new Set<MealKey>();
-          if (sleepMealData.ateBreakfast) nextMeals.add('아');
-          if (sleepMealData.ateLunch) nextMeals.add('점');
-          if (sleepMealData.ateDinner) nextMeals.add('저');
+          if (journal.checked.meal.ateBreakfast) nextMeals.add('아');
+          if (journal.checked.meal.ateLunch) nextMeals.add('점');
+          if (journal.checked.meal.ateDinner) nextMeals.add('저');
           setMeals(nextMeals);
         }
 

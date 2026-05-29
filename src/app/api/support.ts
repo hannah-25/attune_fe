@@ -11,7 +11,6 @@ export type CreateSupportInquiryRequest = {
 
 export function createSupportInquiry(payload: CreateSupportInquiryRequest) {
   return apiRequest<void>('/v1/support/inquiries', {
-    auth: false,
     method: 'POST',
     body: payload,
   });
