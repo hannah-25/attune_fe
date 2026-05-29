@@ -31,7 +31,7 @@ type MedicationCard = {
 };
 
 type NextDose = {
-  medicationId?: number;
+  userMedicationId: number;
   scheduleId: number;
   name: string;
   time: string;
@@ -89,7 +89,7 @@ export default function MedicationListPage() {
 
   const handleTakeNow = async () => {
     if (!nextDose || isLogging) return;
-    if (typeof nextDose.medicationId !== 'number') {
+    if (typeof nextDose.userMedicationId !== 'number') {
       setError('복용 기록에 필요한 약물 정보를 찾지 못했습니다.');
       return;
     }
@@ -98,7 +98,7 @@ export default function MedicationListPage() {
     setIsLogging(true);
 
     try {
-      await createQuickMedicationLog(nextDose.medicationId, {
+      await createQuickMedicationLog(nextDose.userMedicationId, {
         action: 'TAKEN',
         scheduleId: nextDose.scheduleId,
       });
@@ -131,7 +131,7 @@ export default function MedicationListPage() {
 
   const handlePostpone = async () => {
     if (!nextDose || isLogging) return;
-    if (typeof nextDose.medicationId !== 'number') {
+    if (typeof nextDose.userMedicationId !== 'number') {
       setError('복용 기록에 필요한 약물 정보를 찾지 못했습니다.');
       return;
     }
@@ -140,7 +140,7 @@ export default function MedicationListPage() {
     setIsLogging(true);
 
     try {
-      await createQuickMedicationLog(nextDose.medicationId, {
+      await createQuickMedicationLog(nextDose.userMedicationId, {
         action: 'POSTPONE',
         scheduleId: nextDose.scheduleId,
       });
@@ -380,7 +380,7 @@ function findNextDose(medications: MedicationCard[]): NextDose | null {
       if (!dueAt) return;
 
       const nextDose: NextDose = {
-        medicationId: medication.medicationId,
+        userMedicationId: medication.userMedicationId,
         scheduleId: schedule.scheduleId,
         name: medication.name,
         time: toTimeLabel(schedule.doseTime),
