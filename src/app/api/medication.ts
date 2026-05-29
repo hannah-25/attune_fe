@@ -89,7 +89,7 @@ export type QuickMedicationLogResponse = {
 };
 
 export function getMedications() {
-  return apiRequest<MedicationListResponse>('/v1/medications');
+  return apiRequest<MedicationListResponse>('/v1/user-medications');
 }
 
 export function getMedicationStandard(medicationId: number) {
@@ -97,14 +97,14 @@ export function getMedicationStandard(medicationId: number) {
 }
 
 export function createMedication(payload: CreateMedicationRequest) {
-  return apiRequest<CreateMedicationResponse>('/v1/medications', {
+  return apiRequest<CreateMedicationResponse>('/v1/user-medications', {
     method: 'POST',
     body: payload,
   });
 }
 
 export function updateMedication(userMedicationId: number, payload: UpdateMedicationRequest) {
-  return apiRequest<UpdateMedicationResponse>(`/v1/medications/${userMedicationId}`, {
+  return apiRequest<UpdateMedicationResponse>(`/v1/user-medications/${userMedicationId}`, {
     method: 'PATCH',
     body: payload,
   });
@@ -112,15 +112,15 @@ export function updateMedication(userMedicationId: number, payload: UpdateMedica
 
 export function getMedicationLogs(userMedicationId: number, params?: { startDate?: string; endDate?: string }) {
   const query = params ? `?${new URLSearchParams(removeEmpty(params))}` : '';
-  return apiRequest<MedicationProfileLogsResponse>(`/v1/medications/${userMedicationId}/logs${query}`);
+  return apiRequest<MedicationProfileLogsResponse>(`/v1/user-medications/${userMedicationId}/logs${query}`);
 }
 
 export function getAllMedicationLogs(params: { startDate: string; endDate: string }) {
-  return apiRequest<MedicationPeriodLogsResponse>(`/v1/medications/logs?${new URLSearchParams(params)}`);
+  return apiRequest<MedicationPeriodLogsResponse>(`/v1/user-medications/logs?${new URLSearchParams(params)}`);
 }
 
-export function createQuickMedicationLog(medicationId: number, payload: MedicationLogRequest) {
-  return apiRequest<QuickMedicationLogResponse>(`/v1/medications/${medicationId}/log/quick`, {
+export function createQuickMedicationLog(userMedicationId: number, payload: MedicationLogRequest) {
+  return apiRequest<QuickMedicationLogResponse>(`/v1/user-medications/${userMedicationId}/log/quick`, {
     method: 'POST',
     body: payload,
   });
