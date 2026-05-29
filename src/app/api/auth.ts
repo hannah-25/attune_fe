@@ -16,7 +16,7 @@ export type SignupRequest = {
   password: string;
   termsOfService: boolean;
   privacyPolicy: boolean;
-  marketingConsent: boolean;
+  marketingConsent?: boolean;
 };
 
 export type ResetPasswordConfirmRequest = {
@@ -48,7 +48,7 @@ export function signup(payload: SignupRequest) {
 }
 
 export function verifyEmail(token: string) {
-  return apiRequest<void>(`/api/account/verify-email?token=${encodeURIComponent(token)}`, {
+  return apiRequest<void>(`/v1/account/verify-email?token=${encodeURIComponent(token)}`, {
     auth: false,
     method: 'GET',
   });
@@ -71,7 +71,7 @@ export function requestPasswordReset(email: string) {
 }
 
 export function validatePasswordResetToken(token: string) {
-  return apiRequest<void>(`/api/account/password/reset/${encodeURIComponent(token)}`, {
+  return apiRequest<void>(`/v1/account/password/reset/${encodeURIComponent(token)}`, {
     auth: false,
     method: 'GET',
   });

@@ -103,6 +103,12 @@ export default function SignupPage() {
             <span className="block">{isSubmitting ? '가입 중...' : '회원가입'}</span>
           </button>
           {error ? <div className="text-red-500 text-xs mt-3 px-1">{error}</div> : null}
+          <div className="text-center text-gray-600 mt-4">
+            <span className="text-center">이미 계정이 있으신가요? </span>
+            <button type="button" onClick={() => navigate('/login')} className="font-bold text-center text-gray-900">
+              로그인
+            </button>
+          </div>
           <div className="mt-8">
             <div className="items-center flex gap-2">
               <div className="grow h-px bg-purple-50 basis-[0%]"></div>

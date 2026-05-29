@@ -26,6 +26,8 @@ export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [allNotificationsEnabled, setAllNotificationsEnabled] = useState(true);
   const [lastEnabledSettings, setLastEnabledSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [counselingNotification, setCounselingNotification] = useState(true);
+  const [lastEnabledCounselingNotification, setLastEnabledCounselingNotification] = useState(true);
   const [communityNotification, setCommunityNotification] = useState(false);
   const [lastEnabledCommunityNotification, setLastEnabledCommunityNotification] = useState(false);
   const [nightModeEnabled, setNightModeEnabled] = useState(true);
@@ -76,10 +78,13 @@ export default function NotificationSettingsPage() {
   const toggleAllNotifications = async () => {
     if (allNotificationsEnabled) {
       const previousCommunityNotification = communityNotification;
+      const previousCounselingNotification = counselingNotification;
       setAllNotificationsEnabled(false);
       setLastEnabledSettings(pickNotificationSettings(settings));
       setLastEnabledCommunityNotification(previousCommunityNotification);
+      setLastEnabledCounselingNotification(previousCounselingNotification);
       setCommunityNotification(false);
+      setCounselingNotification(false);
       const nextSettings = await patchSettings({
         medicationNotification: false,
         reportNotification: false,
@@ -89,12 +94,14 @@ export default function NotificationSettingsPage() {
       if (!nextSettings) {
         setAllNotificationsEnabled(true);
         setCommunityNotification(previousCommunityNotification);
+        setCounselingNotification(previousCounselingNotification);
       }
       return;
     }
 
     setAllNotificationsEnabled(true);
     setCommunityNotification(lastEnabledCommunityNotification);
+    setCounselingNotification(lastEnabledCounselingNotification);
     const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
       ? lastEnabledSettings
       : DEFAULT_NOTIFICATION_SETTINGS;
@@ -103,6 +110,7 @@ export default function NotificationSettingsPage() {
     if (!nextSettings) {
       setAllNotificationsEnabled(false);
       setCommunityNotification(false);
+      setCounselingNotification(false);
       return;
     }
 
@@ -129,6 +137,15 @@ export default function NotificationSettingsPage() {
     }
 
     setLastEnabledSettings(pickNotificationSettings(nextSettings));
+  };
+
+  const toggleCounselingNotification = () => {
+    if (!allNotificationsEnabled) return;
+    setCounselingNotification((current) => {
+      const next = !current;
+      setLastEnabledCounselingNotification(next);
+      return next;
+    });
   };
 
   const toggleCommunityNotification = () => {
@@ -167,7 +184,8 @@ export default function NotificationSettingsPage() {
       color: 'bg-purple-300',
       title: '상담 알림',
       desc: '하루 전 · 1시간 전',
-      active: allNotificationsEnabled,
+      active: allNotificationsEnabled ? counselingNotification : false,
+      onToggle: toggleCounselingNotification,
     },
     {
       color: 'bg-purple-300',
@@ -220,7 +238,7 @@ export default function NotificationSettingsPage() {
             <div className="font-bold text-gray-600 text-xs pt-0 pr-1 pb-1.5 pl-1">방해 금지</div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
               <div
-                className={`items-center flex pt-3 pr-[14px] pb-3 pl-[14px] ${quietHourTimeOpen ? '' : 'border-b'}`}
+                className={`items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${quietHourTimeOpen ? '' : 'border-b'}`}
                 style={quietHourTimeOpen ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}
               >
                 <button
@@ -228,17 +246,13 @@ export default function NotificationSettingsPage() {
                   onClick={() => setQuietHourTimeOpen((open) => !open)}
                   className="grow basis-[0%] text-left transition-all active:scale-[0.99]"
                 >
-                  <div className="items-center flex justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold">방해 금지 시간</div>
-                      <div className="mt-[2px] text-gray-600 text-xs">{`${quietHourStart} - ${quietHourEnd}`}</div>
-                    </div>
-                    <ChevronRight
-                      className={`w-[11px] h-[11px] text-gray-500 transition-transform ${quietHourTimeOpen ? 'rotate-90' : ''}`}
-                      strokeWidth={2.5}
-                    />
-                  </div>
+                  <div className="font-semibold">방해 금지 시간</div>
+                  <div className="mt-[2px] text-gray-600 text-xs">{`${quietHourStart} - ${quietHourEnd}`}</div>
                 </button>
+                <ChevronRight
+                  className={`w-[11px] h-[11px] text-gray-500 flex-shrink-0 transition-transform ${quietHourTimeOpen ? 'rotate-90' : ''}`}
+                  strokeWidth={2.5}
+                />
                 <Toggle active={nightModeEnabled} onClick={() => setNightModeEnabled((value) => !value)} />
               </div>
               {quietHourTimeOpen ? (
