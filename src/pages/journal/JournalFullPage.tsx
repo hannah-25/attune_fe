@@ -425,8 +425,8 @@ export default function JournalFullPage() {
           setMeals(nextMeals);
         }
 
-        if (activeTags?.goals.length) {
-          const checkedGoals = new Map(checked?.goals.map((goal) => [goal.goalId, goal.score]) ?? []);
+        if (activeTags?.goals?.length) {
+          const checkedGoals = new Map(checked?.goals?.map((goal) => [goal.goalId, goal.score]) ?? []);
           setGoals(activeTags.goals.map((goal) => ({
             goalId: goal.goalId,
             label: goal.content,
