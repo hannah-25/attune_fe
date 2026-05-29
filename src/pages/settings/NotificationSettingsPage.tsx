@@ -26,6 +26,8 @@ export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [allNotificationsEnabled, setAllNotificationsEnabled] = useState(true);
   const [lastEnabledSettings, setLastEnabledSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [counselingNotification, setCounselingNotification] = useState(true);
+  const [lastEnabledCounselingNotification, setLastEnabledCounselingNotification] = useState(true);
   const [communityNotification, setCommunityNotification] = useState(false);
   const [lastEnabledCommunityNotification, setLastEnabledCommunityNotification] = useState(false);
   const [nightModeEnabled, setNightModeEnabled] = useState(true);
@@ -56,6 +58,13 @@ export default function NotificationSettingsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!nightModeEnabled) {
+      setQuietHourTimeOpen(false);
+      setQuietHourExclusionOpen(false);
+    }
+  }, [nightModeEnabled]);
+
   const patchSettings = async (payload: Partial<UserSettings>) => {
     const previous = settings;
     const optimistic = { ...settings, ...payload };
@@ -76,10 +85,13 @@ export default function NotificationSettingsPage() {
   const toggleAllNotifications = async () => {
     if (allNotificationsEnabled) {
       const previousCommunityNotification = communityNotification;
+      const previousCounselingNotification = counselingNotification;
       setAllNotificationsEnabled(false);
       setLastEnabledSettings(pickNotificationSettings(settings));
       setLastEnabledCommunityNotification(previousCommunityNotification);
+      setLastEnabledCounselingNotification(previousCounselingNotification);
       setCommunityNotification(false);
+      setCounselingNotification(false);
       const nextSettings = await patchSettings({
         medicationNotification: false,
         reportNotification: false,
@@ -89,12 +101,14 @@ export default function NotificationSettingsPage() {
       if (!nextSettings) {
         setAllNotificationsEnabled(true);
         setCommunityNotification(previousCommunityNotification);
+        setCounselingNotification(previousCounselingNotification);
       }
       return;
     }
 
     setAllNotificationsEnabled(true);
     setCommunityNotification(lastEnabledCommunityNotification);
+    setCounselingNotification(lastEnabledCounselingNotification);
     const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
       ? lastEnabledSettings
       : DEFAULT_NOTIFICATION_SETTINGS;
@@ -103,6 +117,7 @@ export default function NotificationSettingsPage() {
     if (!nextSettings) {
       setAllNotificationsEnabled(false);
       setCommunityNotification(false);
+      setCounselingNotification(false);
       return;
     }
 
@@ -129,6 +144,15 @@ export default function NotificationSettingsPage() {
     }
 
     setLastEnabledSettings(pickNotificationSettings(nextSettings));
+  };
+
+  const toggleCounselingNotification = () => {
+    if (!allNotificationsEnabled) return;
+    setCounselingNotification((current) => {
+      const next = !current;
+      setLastEnabledCounselingNotification(next);
+      return next;
+    });
   };
 
   const toggleCommunityNotification = () => {
@@ -167,7 +191,8 @@ export default function NotificationSettingsPage() {
       color: 'bg-purple-300',
       title: '상담 알림',
       desc: '하루 전 · 1시간 전',
-      active: allNotificationsEnabled,
+      active: allNotificationsEnabled ? counselingNotification : false,
+      onToggle: toggleCounselingNotification,
     },
     {
       color: 'bg-purple-300',
@@ -220,42 +245,44 @@ export default function NotificationSettingsPage() {
             <div className="font-bold text-gray-600 text-xs pt-0 pr-1 pb-1.5 pl-1">방해 금지</div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
               <div
-                className={`items-center flex pt-3 pr-[14px] pb-3 pl-[14px] ${quietHourTimeOpen ? '' : 'border-b'}`}
+                className={`items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${quietHourTimeOpen ? '' : 'border-b'}`}
                 style={quietHourTimeOpen ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}
               >
+                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
                 <button
                   type="button"
                   onClick={() => setQuietHourTimeOpen((open) => !open)}
-                  className="grow basis-[0%] text-left transition-all active:scale-[0.99]"
+                  disabled={!nightModeEnabled}
+                  className="grow basis-[0%] text-left transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="items-center flex justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold">방해 금지 시간</div>
-                      <div className="mt-[2px] text-gray-600 text-xs">{`${quietHourStart} - ${quietHourEnd}`}</div>
-                    </div>
+                  <div className="font-semibold">방해 금지 시간</div>
+                  <div className="mt-[2px] text-gray-600 text-xs inline-flex items-center gap-1">
+                    <span>{`${quietHourStart}~${quietHourEnd}`}</span>
                     <ChevronRight
-                      className={`w-[11px] h-[11px] text-gray-500 transition-transform ${quietHourTimeOpen ? 'rotate-90' : ''}`}
+                      className={`w-[11px] h-[11px] text-gray-500 flex-shrink-0 transition-transform ${quietHourTimeOpen ? 'rotate-90' : ''}`}
                       strokeWidth={2.5}
                     />
                   </div>
                 </button>
                 <Toggle active={nightModeEnabled} onClick={() => setNightModeEnabled((value) => !value)} />
               </div>
-              {quietHourTimeOpen ? (
+              {quietHourTimeOpen && nightModeEnabled ? (
                 <div className="border-b px-[14px] pb-3 pt-2" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
                   <div className="flex items-center gap-2.5">
                     <input
                       type="time"
                       value={quietHourStart}
+                      disabled={!nightModeEnabled}
                       onChange={(event) => setQuietHourStart(event.target.value)}
-                      className="w-[98px] rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                      className="w-[98px] rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <span className="text-xs text-gray-500">~</span>
                     <input
                       type="time"
                       value={quietHourEnd}
+                      disabled={!nightModeEnabled}
                       onChange={(event) => setQuietHourEnd(event.target.value)}
-                      className="w-[98px] rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                      className="w-[98px] rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-xs font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -263,9 +290,11 @@ export default function NotificationSettingsPage() {
               <button
                 type="button"
                 onClick={() => setQuietHourExclusionOpen((open) => !open)}
-                className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${quietHourExclusionOpen ? 'border-b' : ''}`}
+                disabled={!nightModeEnabled}
+                className={`items-center flex gap-2.5 w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${quietHourExclusionOpen ? 'border-b' : ''}`}
                 style={quietHourExclusionOpen ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
               >
+                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
                 <div className="grow font-semibold basis-[0%]">예외 알림</div>
                 <div
                   className="mr-[6px] text-gray-600 text-right text-xs leading-4 max-w-[130px]"
@@ -288,12 +317,13 @@ export default function NotificationSettingsPage() {
                       <button
                         key={option}
                         type="button"
+                        disabled={!nightModeEnabled}
                         onClick={() => toggleQuietHourExclusion(option)}
                         className={`w-full text-left text-xs font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
                           quietHourExclusions.includes(option)
                             ? 'bg-purple-500 text-white'
                             : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-                        }`}
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {option}
                       </button>

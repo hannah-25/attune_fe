@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { changePassword, confirmPasswordReset, validatePasswordResetToken } from '../../app/api/auth';
 
 export default function ResetPassword3Page() {
   const navigate = useNavigate();
+  const { token: routeToken } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') ?? '';
+  const token = routeToken ?? searchParams.get('token') ?? '';
   const isLoggedInFlow = !token;
   const [currentPassword, setCurrentPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);

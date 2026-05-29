@@ -4,19 +4,14 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-import { getAllMedicationLogs, MedicationLogStatus } from '@/api/medication';
+import { getAllMedicationLogs, type MedicationPeriodLog } from '@/api/medication';
 
 type HistoryPeriod = '1주' | '1개월' | '3개월' | '직접';
 const PERIODS: HistoryPeriod[] = ['1주', '1개월', '3개월', '직접'];
-type MedicationLog = {
-  takenAt: string;
-  status: MedicationLogStatus;
-  scheduleId: number;
-};
 
 export default function MedicationHistoryPage() {
   const [activePeriod, setActivePeriod] = useState<HistoryPeriod>('1개월');
-  const [logs, setLogs] = useState<MedicationLog[]>([]);
+  const [logs, setLogs] = useState<MedicationPeriodLog[]>([]);
   const [error, setError] = useState('');
   const range = useMemo(() => getRange(activePeriod), [activePeriod]);
   const stats = useMemo(() => getStats(logs), [logs]);
@@ -118,35 +113,84 @@ function getRange(period: HistoryPeriod) {
   return { startDate: toDateKey(start), endDate: toDateKey(end) };
 }
 
-function extractLogs(response: unknown): MedicationLog[] {
-  if (Array.isArray(response)) return response as MedicationLog[];
-  if (response && typeof response === 'object' && 'logs' in response && Array.isArray((response as { logs: unknown }).logs)) {
-    return (response as { logs: MedicationLog[] }).logs;
+function extractLogs(response: unknown): MedicationPeriodLog[] {
+  if (Array.isArray(response)) {
+    return normalizeLogs(response);
   }
+
+  if (response && typeof response === 'object' && 'logs' in response && Array.isArray((response as { logs: unknown }).logs)) {
+    return normalizeLogs((response as { logs: unknown[] }).logs);
+  }
+
   return [];
 }
 
-function getStats(logs: MedicationLog[]) {
-  const taken = logs.filter((log) => log.status === 'TAKEN').length;
-  const missed = logs.filter((log) => log.status === 'MISSED' || log.status === 'SKIPPED').length;
+function normalizeLogs(source: unknown[]): MedicationPeriodLog[] {
+  return source
+    .map((item) => normalizeLog(item))
+    .filter((item): item is MedicationPeriodLog => item !== null);
+}
+
+function normalizeLog(raw: unknown): MedicationPeriodLog | null {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const item = raw as {
+    medicationId?: unknown;
+    name?: unknown;
+    intakeTime?: unknown;
+    taken?: unknown;
+    takenAt?: unknown;
+    status?: unknown;
+    medicationName?: unknown;
+  };
+
+  if (typeof item.intakeTime === 'string' && typeof item.taken === 'boolean') {
+    return {
+      medicationId: typeof item.medicationId === 'number' ? item.medicationId : 0,
+      name: typeof item.name === 'string' && item.name.trim() ? item.name : '복용 약',
+      intakeTime: item.intakeTime,
+      taken: item.taken,
+    };
+  }
+
+  if (typeof item.takenAt === 'string' && typeof item.status === 'string') {
+    return {
+      medicationId: typeof item.medicationId === 'number' ? item.medicationId : 0,
+      name:
+        typeof item.name === 'string' && item.name.trim()
+          ? item.name
+          : typeof item.medicationName === 'string' && item.medicationName.trim()
+            ? item.medicationName
+            : '복용 약',
+      intakeTime: item.takenAt,
+      taken: item.status === 'TAKEN',
+    };
+  }
+
+  return null;
+}
+
+function getStats(logs: MedicationPeriodLog[]) {
+  const taken = logs.filter((log) => log.taken).length;
+  const missed = logs.filter((log) => !log.taken).length;
   const total = logs.length;
   const rate = total > 0 ? Math.round((taken / total) * 100) : 0;
   return { rate: `${rate}%`, taken: String(taken), missed: String(missed), delayed: '0' };
 }
 
-function groupLogs(logs: MedicationLog[]) {
-  const groups = new Map<string, MedicationLog[]>();
+function groupLogs(logs: MedicationPeriodLog[]) {
+  const groups = new Map<string, MedicationPeriodLog[]>();
   logs.forEach((log) => {
-    const date = formatDate(log.takenAt);
+    const date = formatDate(log.intakeTime);
     groups.set(date, [...(groups.get(date) ?? []), log]);
   });
 
   return Array.from(groups.entries()).map(([date, items]) => ({
     date,
     items: items.map((item) => ({
-      text: `${formatTime(item.takenAt)} 스케줄 #${item.scheduleId}`,
-      status: item.status === 'TAKEN' ? '복용' : item.status === 'SKIPPED' ? '건너뜀' : '미복용',
-      muted: item.status !== 'TAKEN',
+      text: `${formatTime(item.intakeTime)} ${item.name}`,
+      status: item.taken ? '복용' : '미복용',
+      muted: !item.taken,
     })),
   }));
 }

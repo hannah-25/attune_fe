@@ -1,8 +1,9 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus } from 'lucide-react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
+import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TabBar } from '@/components/TabBar';
 import { getScheduleCategories, getSchedules, ScheduleCategory, ScheduleSummary } from '@/api/schedule';
+import { getTodosByDate, TodoItem, updateTodo } from '@/api/todo';
 
 type ViewMode = 'month' | 'week';
 
@@ -11,12 +12,15 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 export default function CalendarMainPage() {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('month');
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [dateMenuDate, setDateMenuDate] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [events, setEvents] = useState<ScheduleSummary[]>([]);
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
-  const addMenuRef = useRef<HTMLDivElement | null>(null);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [todoError, setTodoError] = useState('');
+  const [todosOpen, setTodosOpen] = useState(true);
+  const [eventsOpen, setEventsOpen] = useState(true);
   const selectedDateKey = toDateKey(selectedDate);
 
   const [rangeStartDate, rangeEndDate] = useMemo(() => {
@@ -94,19 +98,37 @@ export default function CalendarMainPage() {
   }, []);
 
   useEffect(() => {
-    if (!addMenuOpen) return undefined;
+    let ignore = false;
 
-    const handlePointerDown = (event: MouseEvent) => {
-      if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
-        setAddMenuOpen(false);
-      }
-    };
+    getTodosByDate(selectedDateKey)
+      .then((response) => {
+        if (ignore) return;
+        setTodos(response.todos);
+        setTodoError('');
+      })
+      .catch(() => {
+        if (!ignore) setTodoError('할일을 불러오지 못했습니다.');
+      });
 
-    document.addEventListener('mousedown', handlePointerDown);
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
+      ignore = true;
     };
-  }, [addMenuOpen]);
+  }, [selectedDateKey]);
+
+  const handleToggleTodo = async (todo: TodoItem) => {
+    const nextCompleted = !todo.isCompleted;
+    setTodos((current) =>
+      current.map((t) => (t.todoId === todo.todoId ? { ...t, isCompleted: nextCompleted } : t)),
+    );
+    try {
+      await updateTodo(todo.todoId, { isCompleted: nextCompleted });
+    } catch {
+      setTodos((current) =>
+        current.map((t) => (t.todoId === todo.todoId ? { ...t, isCompleted: !nextCompleted } : t)),
+      );
+    }
+  };
+
 
   return (
     <div
@@ -114,22 +136,35 @@ export default function CalendarMainPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="relative flex h-dvh flex-col min-h-0">
-        <div className="items-center flex justify-between pt-2 pr-4 pb-1 pl-4">
-          <div className="items-center flex gap-1 rounded-xl pr-1">
+        <div className="flex items-center justify-between pt-2 pr-3 pb-3 pl-4 shrink-0">
+          <div className="flex flex-col gap-2">
             <div className="font-extrabold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>{selectedDate.getMonth() + 1}월</div>
+            <div className="flex bg-gray-100 p-[3px] rounded-xl gap-[2px]">
+              <button
+                type="button"
+                onClick={() => setViewMode('month')}
+                className={`text-xs font-bold px-4 py-1.5 rounded-[0.625rem] transition-all ${viewMode === 'month' ? 'bg-white shadow-[rgba(60,40,90,0.08)_0px_1px_3px_0px] text-gray-800' : 'text-gray-500'}`}
+              >
+                월간
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('week')}
+                className={`text-xs font-bold px-4 py-1.5 rounded-[0.625rem] transition-all ${viewMode === 'week' ? 'bg-white shadow-[rgba(60,40,90,0.08)_0px_1px_3px_0px] text-gray-800' : 'text-gray-500'}`}
+              >
+                주간
+              </button>
+            </div>
           </div>
-          <div className="flex">
-            <button
-              type="button"
-              onClick={() => setViewMode(viewMode === 'month' ? 'week' : 'month')}
-              aria-pressed={viewMode === 'week'}
-              className="items-center flex font-semibold whitespace-nowrap border-black/0 border text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97] bg-purple-100 text-purple-800"
-            >
-              <span className="block">{viewMode === 'month' ? '주간 보기' : '월간 보기'}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setDateMenuDate(selectedDateKey)}
+            className="flex items-center justify-center w-9 h-9 bg-purple-100 rounded-[1.125rem]"
+          >
+            <Plus className="h-4 w-4 text-purple-600" strokeWidth={3} />
+          </button>
         </div>
-        <div className="pt-5 pr-3 pb-0 pl-3">
+        <div className="pr-3 pb-0 pl-3">
           <div className="grid-cols-7 grid mb-[6px] gap-1">
             {WEEKDAYS.map((day, index) => (
               <div key={day} className={`font-bold text-center text-xs ${index === 0 || index === 6 ? 'text-[rgb(185,166,255)]' : 'text-gray-600'}`}>
@@ -142,78 +177,136 @@ export default function CalendarMainPage() {
             events={events}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
-            onDoubleClickDate={(date) => navigate(`/calendar/new?date=${toDateKey(date)}`)}
+            onDoubleClickDate={(date) => { setSelectedDate(date); setDateMenuDate(toDateKey(date)); }}
           />
         </div>
         <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0"></div>
-        <div className="grow min-h-0 overflow-y-auto overscroll-contain px-4 pt-2 pb-[100px]">
-          <div className="font-bold mb-2">{listTitle} · {visibleEvents.length}개 일정</div>
-          {error ? <div className="text-red-500 text-xs mb-2">{error}</div> : null}
-          {groupedEvents.map((group) => (
-            <div key={group.dateKey} className="mb-3">
-              <div className="text-xs font-bold text-gray-500 px-1 mb-1.5">
-                {formatGroupDateLabel(group.dateKey)}
-              </div>
-              {group.items.map((event) => {
-                const category = categories.find((item) => item.categoryId === event.categoryId);
-                return (
-                  <button
-                    key={event.scheduleId}
-                    type="button"
-                    onClick={() => navigate(`/calendar/event?id=${event.scheduleId}`)}
-                    className="items-center flex w-full text-left mb-2 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
-                  >
-                    <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined}></div>
-                    <div className="grow basis-[0%]">
-                      <div className="font-bold">{event.title}</div>
-                      <div className="mt-[2px] text-gray-600 text-xs">{formatScheduleTime(event)}</div>
-                    </div>
-                    <div className="font-bold text-gray-600 text-xs">{category?.categoryName ?? '일정'}</div>
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        <div className="absolute right-4 z-20" style={{ bottom: 'calc(84px + env(safe-area-inset-bottom))' }}>
-          <div ref={addMenuRef} className="relative">
-            {addMenuOpen ? (
-              <div role="menu" className="absolute right-0 bottom-[58px] z-20 min-w-[120px] bg-white border border-gray-200 shadow-[rgba(0,0,0,0.12)_0px_8px_20px_0px] rounded-xl p-1">
-                <button
-                  role="menuitem"
-                  type="button"
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    navigate(`/calendar/new?date=${selectedDateKey}`);
-                  }}
-                  className="w-full text-left text-xs font-semibold text-gray-700 px-3 py-2 rounded-lg hover:bg-purple-50 transition-colors"
-                >
-                  일정 추가
-                </button>
-                <button
-                  role="menuitem"
-                  type="button"
-                  onClick={() => {
-                    setAddMenuOpen(false);
-                    navigate(`/calendar/new-todo?date=${selectedDateKey}`);
-                  }}
-                  className="w-full text-left text-xs font-semibold text-purple-700 px-3 py-2 rounded-lg hover:bg-purple-50 transition-colors"
-                >
-                  할일 추가
-                </button>
-              </div>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setAddMenuOpen((open) => !open)}
-              aria-expanded={addMenuOpen}
-              aria-haspopup="menu"
-              className="items-center flex justify-center w-12 h-12 bg-purple-500 text-white shadow-[rgba(122,86,255,0.32)_0px_8px_20px_0px] rounded-full transition-all active:scale-[0.97]"
-              aria-label="추가 메뉴 열기"
+        {dateMenuDate ? (
+          <div
+            className="fixed inset-0 z-30 flex flex-col justify-end bg-black/30"
+            style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+            onClick={() => setDateMenuDate(null)}
+          >
+            <div
+              className="bg-gray-50 rounded-t-[2rem] p-5 pb-8 flex flex-col gap-3"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Plus className="w-5 h-5" strokeWidth={2.8} />
-            </button>
+              <div className="text-xs font-bold text-gray-400 text-center mb-1">{formatGroupDateLabel(dateMenuDate)}</div>
+              <button
+                type="button"
+                onClick={() => { navigate(`/calendar/new?date=${dateMenuDate}`); setDateMenuDate(null); }}
+                className="flex items-center gap-4 w-full bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl p-5 text-left transition-all active:scale-[0.98]"
+              >
+                <div className="flex items-center justify-center w-12 h-12 bg-purple-500 rounded-xl flex-shrink-0">
+                  <CalendarDays className="w-6 h-6 text-white" strokeWidth={2} />
+                </div>
+                <div>
+                  <div className="font-extrabold text-base text-gray-900" style={{ fontFamily: 'NanumSquare, system-ui' }}>일정 추가</div>
+                  <div className="text-xs text-gray-500 mt-0.5">시간과 날짜가 있는 약속·이벤트</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => { navigate(`/calendar/new-todo?date=${dateMenuDate}`); setDateMenuDate(null); }}
+                className="flex items-center gap-4 w-full bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl p-5 text-left transition-all active:scale-[0.98]"
+              >
+                <div className="flex items-center justify-center w-12 h-12 bg-purple-500 rounded-xl flex-shrink-0">
+                  <CheckSquare className="w-6 h-6 text-white" strokeWidth={2} />
+                </div>
+                <div>
+                  <div className="font-extrabold text-base text-gray-900" style={{ fontFamily: 'NanumSquare, system-ui' }}>할일 추가</div>
+                  <div className="text-xs text-gray-500 mt-0.5">완료 체크가 필요한 할 일</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDateMenuDate(null)}
+                className="w-full font-bold text-gray-500 text-sm py-3 rounded-2xl bg-white border border-gray-100 transition-all active:scale-[0.98]"
+              >
+                취소
+              </button>
+            </div>
           </div>
+        ) : null}
+        <div className="grow min-h-0 overflow-y-auto overscroll-contain px-4 pt-2 pb-[100px]">
+          <button
+            type="button"
+            onClick={() => setTodosOpen((open) => !open)}
+            className="items-center flex w-full text-left pt-1 pb-2 gap-1"
+          >
+            <div className="font-bold text-gray-600 grow">
+              할일 · {todos.length}개
+            </div>
+            {todosOpen
+              ? <ChevronUp className="w-4 h-4 text-gray-400" strokeWidth={2.5} />
+              : <ChevronDown className="w-4 h-4 text-gray-400" strokeWidth={2.5} />}
+          </button>
+          {todosOpen ? (
+            <div className="mb-3">
+              {todoError ? <div className="text-red-500 text-xs mb-2">{todoError}</div> : null}
+              {todos.length === 0 ? (
+                <div className="text-gray-400 text-xs px-1 py-1">할일이 없어요</div>
+              ) : todos.map((todo) => (
+                <button
+                  key={todo.todoId}
+                  type="button"
+                  onClick={() => void handleToggleTodo(todo)}
+                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
+                >
+                  {todo.isCompleted
+                    ? <CheckCircle2 className="w-[18px] h-[18px] text-purple-400 flex-shrink-0" strokeWidth={2.2} />
+                    : <Circle className="w-[18px] h-[18px] text-gray-300 flex-shrink-0" strokeWidth={2.2} />}
+                  <div className={`font-bold grow basis-[0%] ${todo.isCompleted ? 'line-through text-gray-400' : ''}`}>
+                    {todo.text}
+                  </div>
+                  {!todo.isAllDay ? (
+                    <div className="font-bold text-gray-500 text-xs flex-shrink-0">{formatTime(todo.dueAt)}</div>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => setEventsOpen((open) => !open)}
+            className="items-center flex w-full text-left pt-1 pb-2 gap-1"
+          >
+            <div className="font-bold text-gray-600 grow">{listTitle} · {visibleEvents.length}개 일정</div>
+            {eventsOpen
+              ? <ChevronUp className="w-4 h-4 text-gray-400" strokeWidth={2.5} />
+              : <ChevronDown className="w-4 h-4 text-gray-400" strokeWidth={2.5} />}
+          </button>
+          {eventsOpen ? (
+            <>
+              {error ? <div className="text-red-500 text-xs mb-2">{error}</div> : null}
+              {groupedEvents.map((group) => (
+                <div key={group.dateKey} className="mb-3">
+                  <div className="text-xs font-bold text-gray-500 px-1 mb-1.5">
+                    {formatGroupDateLabel(group.dateKey)}
+                  </div>
+                  {group.items.map((event) => {
+                    const category = categories.find((item) => item.categoryId === event.categoryId);
+                    return (
+                      <button
+                        key={event.scheduleId}
+                        type="button"
+                        onClick={() => navigate(`/calendar/event?id=${event.scheduleId}`)}
+                        className="items-center flex w-full text-left mb-2 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
+                      >
+                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined}></div>
+                        <div className="grow basis-[0%]">
+                          <div className="font-bold">{event.title}</div>
+                          <div className="mt-[2px] text-gray-600 text-xs">{formatScheduleTime(event)}</div>
+                        </div>
+                        <div className="font-bold text-gray-600 text-xs">{category?.categoryName ?? '일정'}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </>
+          ) : null}
         </div>
         <TabBar active="캘린더" />
       </div>
@@ -245,7 +338,7 @@ function CalendarGrid({
         const hasEvent = day !== null && events.some((event) => event.startTime.startsWith(toDateKey(day)));
         return (
           <button type="button" key={`${day?.toISOString() ?? 'empty'}-${index}`} disabled={day === null} onClick={() => day && onSelectDate(day)} onDoubleClick={() => day && onDoubleClickDate(day)} className={`relative text-center aspect-[0.82_/_1] pt-1 pr-0 pb-1 pl-0 rounded-lg ${day === null ? 'opacity-[0.35]' : ''} ${isSelected ? 'bg-[rgb(31,27,46)]' : ''}`}>
-            <div className={`font-${isSelected ? 'extrabold' : 'semibold'} text-center ${isSelected ? 'text-white' : ''}`}>{day?.getDate() ?? ''}</div>
+            <div className={`font-${isSelected ? 'extrabold' : 'semibold'} text-center ${isSelected ? 'text-white' : (day?.getDay() === 0 || day?.getDay() === 6) ? 'text-[rgb(185,166,255)]' : ''}`}>{day?.getDate() ?? ''}</div>
             {hasEvent ? (
               <div className="flex justify-center text-center mt-[3px] gap-[2px]">
                 <div className={`text-center w-1 h-1 ${isSelected ? 'bg-white' : 'bg-purple-300'} rounded-xs`} />

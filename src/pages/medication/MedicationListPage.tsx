@@ -31,7 +31,7 @@ type MedicationCard = {
 };
 
 type NextDose = {
-  userMedicationId: number;
+  medicationId?: number;
   scheduleId: number;
   name: string;
   time: string;
@@ -89,15 +89,18 @@ export default function MedicationListPage() {
 
   const handleTakeNow = async () => {
     if (!nextDose || isLogging) return;
+    if (typeof nextDose.medicationId !== 'number') {
+      setError('복용 기록에 필요한 약물 정보를 찾지 못했습니다.');
+      return;
+    }
 
     setError('');
     setIsLogging(true);
 
     try {
-      await createQuickMedicationLog(nextDose.userMedicationId, {
+      await createQuickMedicationLog(nextDose.medicationId, {
+        action: 'TAKEN',
         scheduleId: nextDose.scheduleId,
-        takenAt: new Date().toISOString(),
-        status: 'TAKEN',
       });
       await loadMedications();
     } catch {
@@ -124,6 +127,37 @@ export default function MedicationListPage() {
     } finally {
       setTogglingId(null);
     }
+  };
+
+  const handlePostpone = async () => {
+    if (!nextDose || isLogging) return;
+    if (typeof nextDose.medicationId !== 'number') {
+      setError('복용 기록에 필요한 약물 정보를 찾지 못했습니다.');
+      return;
+    }
+
+    setError('');
+    setIsLogging(true);
+
+    try {
+      await createQuickMedicationLog(nextDose.medicationId, {
+        action: 'POSTPONE',
+        scheduleId: nextDose.scheduleId,
+      });
+      setSecondsLeft((current) => (current === null ? current : current + SNOOZE_SECONDS));
+    } catch {
+      setError('미루기 기록을 저장하지 못했습니다.');
+    } finally {
+      setIsLogging(false);
+    }
+  };
+
+  const openMedicationInfo = (medication: MedicationCard) => {
+    if (typeof medication.medicationId !== 'number') {
+      setError('약품 표준 정보를 확인할 수 없습니다.');
+      return;
+    }
+    navigate(`/medication/info?id=${medication.medicationId}`);
   };
 
   return (
@@ -159,8 +193,9 @@ export default function MedicationListPage() {
               {nextDose ? (
                 <button
                   type="button"
-                  onClick={() => setSecondsLeft((current) => (current === null ? current : current + SNOOZE_SECONDS))}
-                  className="items-center flex grow font-bold justify-center h-9 border-gray-900 border basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem]"
+                  onClick={handlePostpone}
+                  disabled={isLogging}
+                  className="items-center flex grow font-bold justify-center h-9 border-gray-900 border basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem] disabled:opacity-50"
                 >
                   <span className="block">10분 미루기</span>
                 </button>
@@ -177,7 +212,7 @@ export default function MedicationListPage() {
                 <div className={`items-center flex justify-center w-[38px] h-[38px] ${medication.bg} rounded-xl`}>
                   <Pill className="w-[18px] h-[18px] text-white" strokeWidth={2.4} />
                 </div>
-                <button type="button" onClick={() => navigate(`/medication/info?id=${medication.medicationId ?? medication.userMedicationId}`)} className="grow basis-[0%] text-left">
+                <button type="button" onClick={() => openMedicationInfo(medication)} className="grow basis-[0%] text-left">
                   <div className="font-bold text-sm">{medication.name}</div>
                   <div className="text-gray-600 text-xs">{medication.detail}</div>
                 </button>
@@ -345,7 +380,7 @@ function findNextDose(medications: MedicationCard[]): NextDose | null {
       if (!dueAt) return;
 
       const nextDose: NextDose = {
-        userMedicationId: medication.userMedicationId,
+        medicationId: medication.medicationId,
         scheduleId: schedule.scheduleId,
         name: medication.name,
         time: toTimeLabel(schedule.doseTime),

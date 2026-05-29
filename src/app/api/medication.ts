@@ -1,6 +1,7 @@
 import { apiRequest } from './client';
 
 export type MedicationLogStatus = 'TAKEN' | 'SKIPPED' | 'MISSED';
+export type QuickMedicationLogAction = 'TAKEN' | 'POSTPONE' | 'SKIPPED';
 
 export type MedicationStandard = {
   name: string;
@@ -50,40 +51,60 @@ export type UpdateMedicationRequest = {
 };
 
 export type MedicationLogRequest = {
+  action: QuickMedicationLogAction;
+  scheduleId: number;
+};
+
+export type MedicationProfileLog = {
+  userMedicationId?: number;
   scheduleId: number;
   takenAt: string;
   status: MedicationLogStatus;
 };
 
-export type MedicationLog = {
-  userMedicationId?: number;
-  medicationId?: number;
-  medicationName?: string;
-  scheduleId: number;
-  takenAt: string;
-  status: MedicationLogStatus;
+export type MedicationPeriodLog = {
+  medicationId: number;
+  name: string;
+  intakeTime: string;
+  taken: boolean;
 };
 
 export type MedicationListResponse = MedicationSummary[] | { medications: MedicationSummary[] };
-export type MedicationLogsResponse = MedicationLog[] | { logs: MedicationLog[] };
+export type MedicationProfileLogsResponse = MedicationProfileLog[] | { userMedicationId: number; logs: MedicationProfileLog[] };
+export type MedicationPeriodLogsResponse = MedicationPeriodLog[] | { logs: MedicationPeriodLog[] };
+export type CreateMedicationResponse = {
+  userMedicationId: number;
+  name: string;
+  isActive: boolean;
+};
+export type UpdateMedicationResponse = {
+  medicationId: number;
+  isActive: boolean;
+  updatedAt: string;
+};
+export type QuickMedicationLogResponse = {
+  logId: number;
+  action: QuickMedicationLogAction;
+  recordedAt: string;
+};
 
 export function getMedications() {
-  return apiRequest<MedicationListResponse>('/api/medications');
+  return apiRequest<MedicationListResponse>('/v1/medications');
 }
 
 export function getMedicationStandard(medicationId: number) {
-  return apiRequest<MedicationStandard>(`/api/medications/standards/${medicationId}`);
+  return apiRequest<MedicationStandard>(`/v1/medications/standards/${medicationId}`);
 }
 
 export function createMedication(payload: CreateMedicationRequest) {
-  return apiRequest<{ userMedicationId: number }>('/v1/medications', {
+  return apiRequest<CreateMedicationResponse>('/v1/medications', {
     method: 'POST',
     body: payload,
   });
 }
 
 export function updateMedication(userMedicationId: number, payload: UpdateMedicationRequest) {
-  return apiRequest<void>(`/api/medications/${userMedicationId}`, {
+  return apiRequest<UpdateMedicationResponse>(`/v1/medications/${userMedicationId}`, {
     method: 'PATCH',
     body: payload,
   });
@@ -91,15 +112,15 @@ export function updateMedication(userMedicationId: number, payload: UpdateMedica
 
 export function getMedicationLogs(userMedicationId: number, params?: { startDate?: string; endDate?: string }) {
   const query = params ? `?${new URLSearchParams(removeEmpty(params))}` : '';
-  return apiRequest<MedicationLogsResponse>(`/api/medications/${userMedicationId}/logs${query}`);
+  return apiRequest<MedicationProfileLogsResponse>(`/v1/medications/${userMedicationId}/logs${query}`);
 }
 
 export function getAllMedicationLogs(params: { startDate: string; endDate: string }) {
-  return apiRequest<MedicationLogsResponse>(`/api/medications/logs?${new URLSearchParams(params)}`);
+  return apiRequest<MedicationPeriodLogsResponse>(`/v1/medications/logs?${new URLSearchParams(params)}`);
 }
 
-export function createQuickMedicationLog(userMedicationId: number, payload: MedicationLogRequest) {
-  return apiRequest<void>(`/api/medications/${userMedicationId}/log/quick`, {
+export function createQuickMedicationLog(medicationId: number, payload: MedicationLogRequest) {
+  return apiRequest<QuickMedicationLogResponse>(`/v1/medications/${medicationId}/log/quick`, {
     method: 'POST',
     body: payload,
   });
