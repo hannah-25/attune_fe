@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { requestPasswordReset } from '../../app/api/auth';
+import { ApiError } from '../../app/api/client';
 
 export default function ResetPassword1Page() {
   const navigate = useNavigate();
@@ -20,8 +21,8 @@ export default function ResetPassword1Page() {
     try {
       await requestPasswordReset(email.trim());
       navigate(`/reset-password/2?email=${encodeURIComponent(email.trim())}`);
-    } catch {
-      setError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.message ? err.message : '재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }

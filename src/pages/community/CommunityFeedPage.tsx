@@ -3,6 +3,7 @@ import { Pencil, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { getPosts, POST_CATEGORY_LABEL, PostCategory, PostResponse } from '@/api/community';
+import { ApiError } from '@/api/client';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { TopBar } from '@/components/TopBar';
@@ -53,7 +54,7 @@ export default function CommunityFeedPage() {
       .then(setPosts)
       .catch((err) => {
         console.error('[CommunityFeedPage] getPosts 실패:', err);
-        setError(String(err));
+        setError(err instanceof ApiError && err.message ? err.message : '게시글을 불러오지 못했습니다.');
       })
       .finally(() => setIsLoading(false));
   }, []);

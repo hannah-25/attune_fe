@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { createMedication, updateMedication } from '@/api/medication';
+import { ApiError } from '@/api/client';
 
 const MEDICATION_OPTIONS = [
   { id: 1, name: '콘서타 18mg', ingredient: '메틸페니데이트 · 1정' },
@@ -74,8 +75,8 @@ export default function MedicationAddPage() {
         });
       }
       navigate('/medication');
-    } catch {
-      setError('약을 등록하지 못했습니다.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.message ? err.message : '약을 등록하지 못했습니다.');
     } finally {
       setIsSaving(false);
     }

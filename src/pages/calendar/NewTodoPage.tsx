@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { NavBackButton } from '@/components/NavButtons';
 import { TopBar } from '@/components/TopBar';
 import { createTodo } from '@/api/todo';
+import { ApiError } from '@/api/client';
 
 export default function NewTodoPage() {
   const navigate = useNavigate();
@@ -36,8 +37,8 @@ export default function NewTodoPage() {
         isAllDay,
       });
       navigate('/calendar');
-    } catch {
-      setError('할일을 저장하지 못했습니다.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.message ? err.message : '할일을 저장하지 못했습니다.');
     } finally {
       setIsSaving(false);
     }

@@ -12,6 +12,7 @@ import {
   ScheduleCategory,
   updateSchedule,
 } from '@/api/schedule';
+import { ApiError } from '@/api/client';
 
 const REPEAT_OPTIONS = ['\uC5C6\uC74C', '\uB9E4\uC8FC', '\uB9E4\uC6D4'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
@@ -103,8 +104,8 @@ export default function NewEventPage() {
         setCategories(categoryResponse.categories);
         setSelectedCategoryId(categoryResponse.categories[0]?.categoryId ?? null);
       })
-      .catch(() => {
-        if (!ignore) setError('\uCE74\uD14C\uACE0\uB9AC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+      .catch((err) => {
+        if (!ignore) setError(err instanceof ApiError && err.message ? err.message : '\uCE74\uD14C\uACE0\uB9AC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
       });
 
     if (isEditMode && scheduleId !== null) {
@@ -119,8 +120,8 @@ export default function NewEventPage() {
           setSelectedCategoryId(detail.categoryId);
           setDirty(false);
         })
-        .catch(() => {
-          if (!ignore) setError('\uC77C\uC815 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+        .catch((err) => {
+          if (!ignore) setError(err instanceof ApiError && err.message ? err.message : '\uC77C\uC815 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
         });
     }
 
@@ -141,8 +142,8 @@ export default function NewEventPage() {
       setNewCategory('');
       setAddingCategory(false);
       markDirty();
-    } catch {
-      setError('\uCE74\uD14C\uACE0\uB9AC\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.message ? err.message : '\uCE74\uD14C\uACE0\uB9AC\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
     }
   };
 
@@ -170,8 +171,8 @@ export default function NewEventPage() {
         await createSchedule(payload);
         navigate('/calendar');
       }
-    } catch {
-      setError('\uC77C\uC815\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.message ? err.message : '\uC77C\uC815\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
     }
   };
 
