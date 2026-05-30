@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { createPost, updatePost, PostCategory, PostResponse } from '@/api/community';
+import { ApiError } from '@/api/client';
 
 const CATEGORIES = ['질병 정보', '약물 치료', '일상생활', '미분류'];
 
@@ -70,7 +71,7 @@ export default function CommunityWritePage() {
       }
     } catch (err) {
       console.error('[CommunityWritePage] 실패:', err);
-      setError(isEdit ? '수정에 실패했습니다. 다시 시도해주세요.' : '게시글 등록에 실패했습니다. 다시 시도해주세요.');
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : (isEdit ? '수정에 실패했습니다. 다시 시도해주세요.' : '게시글 등록에 실패했습니다. 다시 시도해주세요.'));
     } finally {
       setIsSubmitting(false);
     }
