@@ -70,7 +70,7 @@ GET /api/v1/journals/{date}
 ### 기간별 일지 날짜 목록 조회
 
 ```
-GET /api/v1/journals?startDate={date}&endDate={date}
+GET /api/v1/journals?startDate={startDate}&endDate={endDate}
 ```
 
 기간 내 일지 데이터가 하나라도 존재하는 날짜 목록을 반환한다.
