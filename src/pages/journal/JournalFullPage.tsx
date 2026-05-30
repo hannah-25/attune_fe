@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronRight, Moon, Plus, Utensils, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
