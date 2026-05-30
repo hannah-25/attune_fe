@@ -13,19 +13,19 @@ import {
   updateSchedule,
 } from '@/api/schedule';
 
-const REPEAT_OPTIONS = ['\uC5C6\uC74C', '\uB9E4\uC8FC', '\uB9E4\uC6D4'] as const;
+const REPEAT_OPTIONS = ['없음', '매주', '매월'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
 
 type AlarmOptionKey = 'none' | '5m' | '10m' | '15m' | '30m' | '1h' | 'custom';
 
 const ALARM_PRESETS: Array<{ key: AlarmOptionKey; label: string; minutes: number | null }> = [
-  { key: 'none', label: '\uC5C6\uC74C', minutes: null },
-  { key: '5m', label: '5\uBD84 \uC804', minutes: 5 },
-  { key: '10m', label: '10\uBD84 \uC804', minutes: 10 },
-  { key: '15m', label: '15\uBD84 \uC804', minutes: 15 },
-  { key: '30m', label: '30\uBD84 \uC804', minutes: 30 },
-  { key: '1h', label: '1\uC2DC\uAC04 \uC804', minutes: 60 },
-  { key: 'custom', label: '\uB9DE\uCDA4', minutes: null },
+  { key: 'none', label: '없음', minutes: null },
+  { key: '5m', label: '5분 전', minutes: 5 },
+  { key: '10m', label: '10분 전', minutes: 10 },
+  { key: '15m', label: '15분 전', minutes: 15 },
+  { key: '30m', label: '30분 전', minutes: 30 },
+  { key: '1h', label: '1시간 전', minutes: 60 },
+  { key: 'custom', label: '맞춤', minutes: null },
 ];
 
 export default function NewEventPage() {
@@ -90,7 +90,7 @@ export default function NewEventPage() {
     ? (Number.isFinite(customAlarmMinutes) && customAlarmMinutes > 0 ? customAlarmMinutes : null)
     : selectedAlarmPreset.minutes;
   const selectedAlarmLabel = alarmOptionKey === 'custom'
-    ? (alarmMinutesBefore ? `${alarmMinutesBefore}\uBD84 \uC804` : '\uB9DE\uCDA4')
+    ? (alarmMinutesBefore ? `${alarmMinutesBefore}분 전` : '맞춤')
     : selectedAlarmPreset.label;
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function NewEventPage() {
         setSelectedCategoryId(categoryResponse.categories[0]?.categoryId ?? null);
       })
       .catch(() => {
-        if (!ignore) setError('\uCE74\uD14C\uACE0\uB9AC\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+        if (!ignore) setError('카테고리를 불러오지 못했습니다.');
       });
 
     if (isEditMode && scheduleId !== null) {
@@ -120,7 +120,7 @@ export default function NewEventPage() {
           setDirty(false);
         })
         .catch(() => {
-          if (!ignore) setError('\uC77C\uC815 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+          if (!ignore) setError('일정 정보를 불러오지 못했습니다.');
         });
     }
 
@@ -142,7 +142,7 @@ export default function NewEventPage() {
       setAddingCategory(false);
       markDirty();
     } catch {
-      setError('\uCE74\uD14C\uACE0\uB9AC\uB97C \uCD94\uAC00\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+      setError('카테고리를 추가하지 못했습니다.');
     }
   };
 
@@ -171,7 +171,7 @@ export default function NewEventPage() {
         navigate('/calendar');
       }
     } catch {
-      setError('\uC77C\uC815\uC744 \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4.');
+      setError('일정을 저장하지 못했습니다.');
     }
   };
 
@@ -182,7 +182,7 @@ export default function NewEventPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          title={isEditMode ? '\uC77C\uC815 \uC218\uC815' : '\uC0C8 \uC77C\uC815'}
+          title={isEditMode ? '일정 수정' : '새 일정'}
           left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
@@ -192,7 +192,7 @@ export default function NewEventPage() {
                 onClick={saveSchedule}
                 className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-30 disabled:active:scale-100"
               >
-                {'\uC800\uC7A5'}
+                {'저장'}
               </button>
             </div>
           }
@@ -208,7 +208,7 @@ export default function NewEventPage() {
                 setTitle(event.target.value);
                 markDirty();
               }}
-              placeholder={'\uC81C\uBAA9'}
+              placeholder={'제목'}
               className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-400"
               style={{ fontFamily: 'NanumSquare, system-ui' }}
             />
@@ -230,11 +230,11 @@ export default function NewEventPage() {
                   markDirty();
                 }}
                 onBlur={() => setLocationEditing(false)}
-                placeholder={'\uC704\uCE58 \uCD94\uAC00'}
+                placeholder={'위치 추가'}
                 className="grow text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-400"
               />
             ) : (
-              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>{location || '\uC704\uCE58 \uCD94\uAC00'}</span>
+              <span className={`text-sm ${location ? 'text-gray-800' : 'text-gray-400'}`}>{location || '위치 추가'}</span>
             )}
           </div>
 
@@ -248,27 +248,27 @@ export default function NewEventPage() {
               className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] border-b transition-all active:scale-[0.99]"
               style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
             >
-              <div className="grow font-semibold basis-[0%]">{'\uC885\uC77C'}</div>
+              <div className="grow font-semibold basis-[0%]">{'종일'}</div>
               <ToggleSwitch active={allDay} />
             </button>
             <RowButton
-              label={'\uC2DC\uC791'}
-              value={allDay ? '\uC624\uB298' : formatFullDateTime(START_OPTIONS[startIndex])}
+              label={'시작'}
+              value={allDay ? '오늘' : formatFullDateTime(START_OPTIONS[startIndex])}
               onClick={() => {
                 setStartIndex((index) => (index + 1) % START_OPTIONS.length);
                 markDirty();
               }}
             />
             <RowButton
-              label={'\uC885\uB8CC'}
-              value={allDay ? '\uC624\uB298' : formatFullDateTime(END_OPTIONS[endIndex])}
+              label={'종료'}
+              value={allDay ? '오늘' : formatFullDateTime(END_OPTIONS[endIndex])}
               onClick={() => {
                 setEndIndex((index) => (index + 1) % END_OPTIONS.length);
                 markDirty();
               }}
             />
             <RowButton
-              label={'\uBC18\uBCF5'}
+              label={'반복'}
               value={REPEAT_OPTIONS[repeatIndex]}
               last
               onClick={() => {
@@ -285,9 +285,9 @@ export default function NewEventPage() {
               className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${categoryOpen ? 'border-b' : ''}`}
               style={categoryOpen ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
             >
-              <div className="grow font-semibold basis-[0%]">{'\uCE74\uD14C\uACE0\uB9AC'}</div>
+              <div className="grow font-semibold basis-[0%]">{'카테고리'}</div>
               <div className={`${selectedCategoryName ? 'text-gray-700' : 'text-gray-400'} text-sm`}>
-                {selectedCategoryName || '\uC120\uD0DD'}
+                {selectedCategoryName || '선택'}
               </div>
               <ChevronDown
                 className={`w-[13px] h-[13px] ml-1 text-gray-500 transition-transform ${categoryOpen ? 'rotate-180' : ''}`}
@@ -327,10 +327,10 @@ export default function NewEventPage() {
                         if (event.key === 'Enter') addCategory();
                       }}
                       autoFocus
-                      placeholder={'\uC0C8 \uBD84\uB958'}
+                      placeholder={'새 분류'}
                       className="grow min-w-0 text-sm bg-transparent outline-none placeholder:text-gray-300"
                     />
-                    <button type="button" onClick={addCategory} disabled={!newCategory.trim()} className="font-bold text-xs text-purple-700 disabled:opacity-30">{'\uCD94\uAC00'}</button>
+                    <button type="button" onClick={addCategory} disabled={!newCategory.trim()} className="font-bold text-xs text-purple-700 disabled:opacity-30">{'추가'}</button>
                   </div>
                 ) : (
                   <button
@@ -338,7 +338,7 @@ export default function NewEventPage() {
                     onClick={() => setAddingCategory(true)}
                     className="items-center flex justify-center w-full font-semibold bg-white border border-gray-300 text-gray-600 text-sm rounded-xl py-2.5 transition-all active:scale-[0.98]"
                   >
-                    {'+ \uC0C8 \uBD84\uB958'}
+                    {'+ 새 분류'}
                   </button>
                 )}
               </div>
@@ -352,7 +352,7 @@ export default function NewEventPage() {
               className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${alarmOpen ? 'border-b' : ''}`}
               style={alarmOpen ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
             >
-              <div className="grow font-semibold basis-[0%]">{'\uC54C\uB9BC'}</div>
+              <div className="grow font-semibold basis-[0%]">{'알림'}</div>
               <div className="text-gray-600">{selectedAlarmLabel}</div>
               <Bell className="w-[11px] h-[11px] ml-1 text-gray-500" strokeWidth={2.4} />
               <ChevronDown
@@ -399,14 +399,14 @@ export default function NewEventPage() {
                       }}
                       className="w-20 text-sm bg-transparent outline-none"
                     />
-                    <span className="text-xs text-gray-500">{'\uBD84 \uC804'}</span>
+                    <span className="text-xs text-gray-500">{'분 전'}</span>
                     <button
                       type="button"
                       onClick={() => setAlarmOpen(false)}
                       disabled={!alarmMinutesBefore}
                       className="font-bold text-xs text-purple-700 disabled:opacity-30"
                     >
-                      {'\uC801\uC6A9'}
+                      {'적용'}
                     </button>
                   </div>
                 ) : null}
@@ -421,15 +421,15 @@ export default function NewEventPage() {
               }}
               className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99]"
             >
-              <div className="grow font-semibold basis-[0%]">{'\uBA54\uBAA8'}</div>
-              <div className={`${memo ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>{memo ? '\uC791\uC131\uB428' : '\uCD94\uAC00'}</div>
+              <div className="grow font-semibold basis-[0%]">{'메모'}</div>
+              <div className={`${memo ? 'text-gray-800 font-medium' : 'text-gray-600'}`}>{memo ? '작성됨' : '추가'}</div>
               <ChevronRight className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.5} />
             </button>
           </div>
 
           {memoOpen ? (
             <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
-              <div className="font-semibold text-gray-600 mb-2">{'\uBA54\uBAA8'}</div>
+              <div className="font-semibold text-gray-600 mb-2">{'메모'}</div>
               <textarea
                 ref={memoRef}
                 value={memo}
@@ -437,7 +437,7 @@ export default function NewEventPage() {
                   setMemo(event.target.value);
                   markDirty();
                 }}
-                placeholder={'\uBA54\uBAA8\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694'}
+                placeholder={'메모를 입력해주세요'}
                 rows={3}
                 className="w-full text-base text-gray-900 leading-relaxed resize-none outline-none placeholder:text-gray-300"
               />

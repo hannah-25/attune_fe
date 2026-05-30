@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronRight, Moon, Plus, Utensils, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
@@ -24,11 +24,11 @@ import {
   getConditionTags,
   getJournal,
   getSideEffectTags,
-  getSleepMeal,
   getTroubleTags,
   scoreJournalGoal,
-  ConditionType,
-  TroubleType,
+  uncheckCondition,
+  uncheckSideEffect,
+  uncheckTrouble,
 } from '@/api/journal';
 
 type Tone = 'purple' | 'orange' | 'blue';
@@ -72,23 +72,6 @@ const emptySections: Section[] = [
   { title: '부작용', tone: 'orange', tags: [] },
   { title: '업무 실수 · 불편', tone: 'blue', tags: [] },
 ];
-
-const TROUBLE_TYPES: { label: string; value: TroubleType }[] = [
-  { label: '주의산만', value: 'INATTENTION' },
-  { label: '과잉행동', value: 'HYPERACTIVITY' },
-  { label: '충동성', value: 'IMPULSIVITY' },
-  { label: '시간관리', value: 'TIME_MANAGEMENT' },
-  { label: '인지오류', value: 'COGNITIVE_ERROR' },
-];
-
-const CONDITION_TYPES: { label: string; value: ConditionType }[] = [
-  { label: '활력 (고각성)', value: 'UP' },
-  { label: '무기력 (저각성)', value: 'DOWN' },
-  { label: '과긴장 (불안)', value: 'TIGHT' },
-  { label: '멍함', value: 'FOGGY' },
-  { label: '평온', value: 'CALM' },
-];
-
 
 const SLEEP_OPTIONS = ['4h-', '5h', '6h', '7h', '8h', '9h+'] as const;
 type SleepOption = typeof SLEEP_OPTIONS[number];
@@ -150,20 +133,16 @@ function TagSection({
   editing: boolean;
   onToggleTag: (label: string) => void;
   onDeleteTag: (label: string) => void;
-  onAddTag: (label: string, metaType?: ConditionType | TroubleType) => void;
+  onAddTag: (label: string) => void;
   onToggleEditing: () => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState('');
-  const [conditionType, setConditionType] = useState<ConditionType>('CALM');
-  const [troubleType, setTroubleType] = useState<TroubleType>('COGNITIVE_ERROR');
   const styles = toneStyles[tone];
-  const isConditionSection = title === '감정 · 증상';
-  const isTroubleSection = title === '업무 실수 · 불편';
 
   const handleAdd = () => {
     if (!draft.trim()) return;
-    onAddTag(draft.trim(), isConditionSection ? conditionType : isTroubleSection ? troubleType : undefined);
+    onAddTag(draft.trim());
     setDraft('');
     setIsAdding(false);
   };
@@ -208,28 +187,6 @@ function TagSection({
               className="h-9 min-w-28 max-w-full bg-white border border-gray-200 text-gray-800 placeholder:text-gray-400 px-3 rounded-full outline-none text-base focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
               style={{ width: `${Math.max(7, draft.length + 2)}ch` }}
             />
-            {isConditionSection ? (
-              <select
-                value={conditionType}
-                onChange={(event) => setConditionType(event.target.value as ConditionType)}
-                className="h-9 max-w-full rounded-full border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
-              >
-                {CONDITION_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            ) : null}
-            {isTroubleSection ? (
-              <select
-                value={troubleType}
-                onChange={(event) => setTroubleType(event.target.value as TroubleType)}
-                className="h-9 max-w-full rounded-full border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
-              >
-                {TROUBLE_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            ) : null}
             <button
               type="submit"
               disabled={!draft.trim()}
@@ -381,9 +338,8 @@ export default function JournalFullPage() {
       getSideEffectTags(),
       getTroubleTags(),
       getJournal(journalDate).catch(() => null),
-      getSleepMeal(journalDate).catch(() => undefined),
     ])
-      .then(([conditions, sideEffects, troubles, journal, sleepMealData]) => {
+      .then(([conditions, sideEffects, troubles, journal]) => {
         if (ignore) return;
         const checkedConditionIds = new Set(journal?.checked.conditions.map((item) => item.tagId) ?? []);
         const checkedSideEffectIds = new Set(journal?.checked.sideEffects.map((item) => item.tagId) ?? []);
@@ -412,14 +368,15 @@ export default function JournalFullPage() {
           setMemoSaved(true);
         }
 
-        if (sleepMealData) {
-          if (typeof sleepMealData.sleepHour === 'number') {
-            setSleep(hourToSleepOption(sleepMealData.sleepHour));
-          }
+        if (journal?.checked.sleep && typeof journal.checked.sleep.sleepHour === 'number') {
+          setSleep(hourToSleepOption(journal.checked.sleep.sleepHour));
+        }
+
+        if (journal?.checked.meal) {
           const nextMeals = new Set<MealKey>();
-          if (sleepMealData.ateBreakfast) nextMeals.add('아');
-          if (sleepMealData.ateLunch) nextMeals.add('점');
-          if (sleepMealData.ateDinner) nextMeals.add('저');
+          if (journal.checked.meal.ateBreakfast) nextMeals.add('아');
+          if (journal.checked.meal.ateLunch) nextMeals.add('점');
+          if (journal.checked.meal.ateDinner) nextMeals.add('저');
           setMeals(nextMeals);
         }
 
@@ -451,6 +408,7 @@ export default function JournalFullPage() {
 
   const toggleTag = async (sectionTitle: string, label: string) => {
     const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
+    const nextSelected = !Boolean(tag?.selected);
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle
@@ -465,10 +423,28 @@ export default function JournalFullPage() {
     if (!tag?.tagId || !tag.source) return;
 
     try {
-      if (tag.source === 'condition') await checkCondition(tag.tagId);
-      if (tag.source === 'sideEffect') await checkSideEffect(tag.tagId);
-      if (tag.source === 'trouble') await checkTrouble(tag.tagId);
+      if (nextSelected) {
+        if (tag.source === 'condition') await checkCondition(tag.tagId);
+        if (tag.source === 'sideEffect') await checkSideEffect(tag.tagId);
+        if (tag.source === 'trouble') await checkTrouble(tag.tagId);
+      } else {
+        if (tag.source === 'condition') await uncheckCondition(tag.tagId, journalDate);
+        if (tag.source === 'sideEffect') await uncheckSideEffect(tag.tagId, journalDate);
+        if (tag.source === 'trouble') await uncheckTrouble(tag.tagId, journalDate);
+      }
     } catch {
+      setSections((currentSections) =>
+        currentSections.map((section) =>
+          section.title === sectionTitle
+            ? {
+                ...section,
+                tags: section.tags.map((currentTag) =>
+                  currentTag.label === label ? { ...currentTag, selected: !nextSelected } : currentTag,
+                ),
+              }
+            : section,
+        ),
+      );
       setError('태그 기록에 실패했습니다.');
     }
   };
@@ -497,26 +473,70 @@ export default function JournalFullPage() {
     }
   };
 
-  const addTag = async (sectionTitle: string, label: string, metaType?: ConditionType | TroubleType) => {
+  const addTag = async (sectionTitle: string, label: string) => {
+    let createdTag: Tag | null = null;
+
     try {
       if (sectionTitle === '감정 · 증상') {
-        await createConditionTag({ condition: label, conditionType: (metaType as ConditionType | undefined) ?? 'CALM', journalDate });
+        const response = await createConditionTag({
+          condition: label,
+          conditionType: 'USER_INPUT',
+          journalDate,
+        });
+        createdTag = {
+          label: response.condition,
+          selected: true,
+          tagId: response.tagId,
+          source: 'condition',
+        };
       }
-      if (sectionTitle === '부작용') await createSideEffectTag({ sideEffect: label, journalDate });
+      if (sectionTitle === '부작용') {
+        const response = await createSideEffectTag({ sideEffect: label, journalDate });
+        createdTag = {
+          label: response.sideEffect,
+          selected: true,
+          tagId: response.tagId,
+          source: 'sideEffect',
+        };
+      }
       if (sectionTitle === '업무 실수 · 불편') {
-        await createTroubleTag({ trouble: label, type: (metaType as TroubleType | undefined) ?? 'COGNITIVE_ERROR', journalDate });
+        const response = await createTroubleTag({
+          trouble: label,
+          type: 'USER_INPUT',
+          journalDate,
+        });
+        createdTag = {
+          label: response.trouble,
+          selected: true,
+          tagId: response.tagId,
+          source: 'trouble',
+        };
       }
     } catch {
       setError('태그 추가에 실패했습니다.');
       return;
     }
 
+    if (!createdTag) return;
+
     setSections((currentSections) =>
-      currentSections.map((section) =>
-        section.title === sectionTitle && !section.tags.some((tag) => tag.label === label)
-          ? { ...section, tags: [...section.tags, { label, selected: true }] }
-          : section,
-      ),
+      currentSections.map((section) => {
+        if (section.title !== sectionTitle) return section;
+
+        const existingIndex = section.tags.findIndex(
+          (tag) => tag.tagId === createdTag.tagId || tag.label === createdTag.label,
+        );
+        if (existingIndex >= 0) {
+          return {
+            ...section,
+            tags: section.tags.map((tag, index) =>
+              index === existingIndex ? { ...tag, ...createdTag, selected: true } : tag,
+            ),
+          };
+        }
+
+        return { ...section, tags: [...section.tags, createdTag] };
+      }),
     );
   };
 
@@ -578,7 +598,7 @@ export default function JournalFullPage() {
     setEditingSections((current) => ({ ...current, [sectionTitle]: !current[sectionTitle] }));
   };
 
-  const sleepLabel = sleep ?? '—';
+  const sleepLabel = sleep ?? '미입력';
   const sleepBarCount = sleep ? SLEEP_OPTIONS.indexOf(sleep) + 1 : 0;
 
   return (
@@ -683,7 +703,7 @@ export default function JournalFullPage() {
                 editing={Boolean(editingSections[section.title])}
                 onToggleTag={(label) => toggleTag(section.title, label)}
                 onDeleteTag={(label) => deleteTag(section.title, label)}
-                onAddTag={(label, metaType) => addTag(section.title, label, metaType)}
+                onAddTag={(label) => addTag(section.title, label)}
                 onToggleEditing={() => toggleSectionEditing(section.title)}
                 {...section}
               />
