@@ -521,24 +521,25 @@ export default function JournalFullPage() {
     }
 
     if (!createdTag) return;
+    const nextTag = createdTag;
 
     setSections((currentSections) =>
       currentSections.map((section) => {
         if (section.title !== sectionTitle) return section;
 
         const existingIndex = section.tags.findIndex(
-          (tag) => tag.tagId === createdTag.tagId || tag.label === createdTag.label,
+          (tag) => tag.tagId === nextTag.tagId || tag.label === nextTag.label,
         );
         if (existingIndex >= 0) {
           return {
             ...section,
             tags: section.tags.map((tag, index) =>
-              index === existingIndex ? { ...tag, ...createdTag, selected: true } : tag,
+              index === existingIndex ? { ...tag, ...nextTag, selected: true } : tag,
             ),
           };
         }
 
-        return { ...section, tags: [...section.tags, createdTag] };
+        return { ...section, tags: [...section.tags, nextTag] };
       }),
     );
   };
