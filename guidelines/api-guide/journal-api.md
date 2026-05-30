@@ -109,7 +109,7 @@ DELETE /api/v1/journals/{date}
 ### 기간별 일지 삭제
 
 ```
-DELETE /api/v1/journals?startDate={date}&endDate={date}
+DELETE /api/v1/journals?startDate={startDate}&endDate={endDate}
 ```
 
 **Response** `200 OK`
