@@ -1,8 +1,10 @@
 import { apiRequest } from './client';
 
-export type ConditionType = 'UP' | 'DOWN' | 'TIGHT' | 'FOGGY' | 'CALM';
+const JOURNALS_BASE_PATH = '/v1/journals';
+
+export type ConditionType = 'UP' | 'DOWN' | 'TIGHT' | 'FOGGY' | 'CALM' | 'USER_INPUT';
 export type SleepQuality = 'GOOD' | 'NORMAL' | 'BAD';
-export type TroubleType = 'INATTENTION' | 'HYPERACTIVITY' | 'IMPULSIVITY' | 'TIME_MANAGEMENT' | 'COGNITIVE_ERROR';
+export type TroubleType = 'INATTENTION' | 'HYPERACTIVITY' | 'IMPULSIVITY' | 'TIME_MANAGEMENT' | 'COGNITIVE_ERROR' | 'USER_INPUT';
 
 export type JournalDateRange = {
   startDate: string;
@@ -13,17 +15,20 @@ export type ConditionTag = {
   tagId: number;
   condition: string;
   conditionType: ConditionType;
+  visible?: boolean;
 };
 
 export type SideEffectTag = {
   tagId: number;
   sideEffect: string;
+  visible?: boolean;
 };
 
 export type TroubleTag = {
   tagId: number;
   trouble: string;
   type: TroubleType;
+  visible?: boolean;
 };
 
 export type JournalGoal = {
@@ -58,85 +63,97 @@ export type JournalDetail = {
 };
 
 export function getJournal(date: string) {
-  return apiRequest<JournalDetail>(`/v1/journals/${date}`);
+  return apiRequest<JournalDetail>(`${JOURNALS_BASE_PATH}/${date}`);
 }
 
 export function getJournalDates(params: JournalDateRange) {
-  return apiRequest<{ dates: string[] }>(`/v1/journals?${new URLSearchParams(params)}`);
+  return apiRequest<{ dates: string[] }>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`);
 }
 
 export function deleteJournal(date: string) {
-  return apiRequest<{ deletedDate: string; success: boolean }>(`/v1/journals/${date}`, { method: 'DELETE' });
+  return apiRequest<{ deletedDate: string; success: boolean }>(`${JOURNALS_BASE_PATH}/${date}`, { method: 'DELETE' });
 }
 
 export function deleteJournals(params: JournalDateRange) {
-  return apiRequest<{ deletedRange: JournalDateRange; count: number }>(`/v1/journals?${new URLSearchParams(params)}`, { method: 'DELETE' });
+  return apiRequest<{ deletedRange: JournalDateRange; count: number }>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`, { method: 'DELETE' });
 }
 
 export function getConditionTags() {
-  return apiRequest<ConditionTag[]>('/v1/journals/condition-tags');
+  return apiRequest<ConditionTag[]>(`${JOURNALS_BASE_PATH}/condition-tags`);
 }
 
 export function createConditionTag(payload: { condition: string; conditionType: ConditionType; journalDate: string }) {
-  return apiRequest<ConditionTag>('/v1/journals/condition-tags', { method: 'POST', body: payload });
+  return apiRequest<ConditionTag>(`${JOURNALS_BASE_PATH}/condition-tags`, { method: 'POST', body: payload });
 }
 
 export function deleteConditionTag(tagId: number, journalDate: string) {
-  return apiRequest<void>(`/v1/journals/condition-tags/${tagId}?journalDate=${encodeURIComponent(journalDate)}`, {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/condition-tags/${tagId}?journalDate=${encodeURIComponent(journalDate)}`, {
     method: 'DELETE',
   });
+}
+
+export function toggleConditionTagVisible(tagId: number) {
+  return apiRequest<ConditionTag>(`${JOURNALS_BASE_PATH}/condition-tags/${tagId}/visible`, { method: 'PATCH' });
 }
 
 export function checkCondition(tagId: number) {
-  return apiRequest<ConditionTag & { checkedAt: string }>('/v1/journals/conditions', { method: 'POST', body: { tagId } });
+  return apiRequest<ConditionTag & { checkedAt: string }>(`${JOURNALS_BASE_PATH}/conditions`, { method: 'POST', body: { tagId } });
 }
 
 export function uncheckCondition(tagId: number, date: string) {
-  return apiRequest<void>(`/v1/journals/conditions?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/conditions?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
 }
 
 export function getSideEffectTags() {
-  return apiRequest<SideEffectTag[]>('/v1/journals/side-effect-tags');
+  return apiRequest<SideEffectTag[]>(`${JOURNALS_BASE_PATH}/side-effect-tags`);
 }
 
 export function createSideEffectTag(payload: { sideEffect: string; journalDate: string }) {
-  return apiRequest<SideEffectTag>('/v1/journals/side-effect-tags', { method: 'POST', body: payload });
+  return apiRequest<SideEffectTag>(`${JOURNALS_BASE_PATH}/side-effect-tags`, { method: 'POST', body: payload });
 }
 
 export function deleteSideEffectTag(tagId: number, journalDate: string) {
-  return apiRequest<void>(`/v1/journals/side-effect-tags/${tagId}?journalDate=${encodeURIComponent(journalDate)}`, {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/side-effect-tags/${tagId}?journalDate=${encodeURIComponent(journalDate)}`, {
     method: 'DELETE',
   });
+}
+
+export function toggleSideEffectTagVisible(tagId: number) {
+  return apiRequest<SideEffectTag>(`${JOURNALS_BASE_PATH}/side-effect-tags/${tagId}/visible`, { method: 'PATCH' });
 }
 
 export function checkSideEffect(tagId: number) {
-  return apiRequest<SideEffectTag & { checkedAt: string }>('/v1/journals/side-effects', { method: 'POST', body: { tagId } });
+  return apiRequest<SideEffectTag & { checkedAt: string }>(`${JOURNALS_BASE_PATH}/side-effects`, { method: 'POST', body: { tagId } });
 }
 
 export function uncheckSideEffect(tagId: number, date: string) {
-  return apiRequest<void>(`/v1/journals/side-effects?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/side-effects?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
 }
 
 export function getTroubleTags() {
-  return apiRequest<TroubleTag[]>('/v1/journals/trouble-tags');
+  return apiRequest<TroubleTag[]>(`${JOURNALS_BASE_PATH}/trouble-tags`);
 }
 
 export function createTroubleTag(payload: { trouble: string; type: TroubleType; journalDate: string }) {
-  return apiRequest<TroubleTag>('/v1/journals/trouble-tags', { method: 'POST', body: payload });
+  return apiRequest<TroubleTag>(`${JOURNALS_BASE_PATH}/trouble-tags`, { method: 'POST', body: payload });
 }
 
 export function deleteTroubleTag(tagId: number, journalDate: string) {
-  return apiRequest<void>(`/v1/journals/trouble-tags/${tagId}?journalDate=${encodeURIComponent(journalDate)}`, {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/trouble-tags/${tagId}?journalDate=${encodeURIComponent(journalDate)}`, {
     method: 'DELETE',
   });
 }
 
+export function toggleTroubleTagVisible(tagId: number) {
+  return apiRequest<TroubleTag>(`${JOURNALS_BASE_PATH}/trouble-tags/${tagId}/visible`, { method: 'PATCH' });
+}
+
 export function checkTrouble(tagId: number) {
-  return apiRequest<TroubleTag & { checkedAt: string }>('/v1/journals/troubles', { method: 'POST', body: { tagId } });
+  return apiRequest<TroubleTag & { checkedAt: string }>(`${JOURNALS_BASE_PATH}/troubles`, { method: 'POST', body: { tagId } });
 }
 
 export function uncheckTrouble(tagId: number, date: string) {
-  return apiRequest<void>(`/v1/journals/troubles?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/troubles?tagId=${tagId}&date=${encodeURIComponent(date)}`, { method: 'DELETE' });
 }
 
 export type SleepMealRecord = {
@@ -153,42 +170,38 @@ export type MemoRecord = {
   memo: string;
 };
 
-export function getSleepMeal(date: string) {
-  return apiRequest<SleepMealRecord | undefined>(`/v1/journals/${date}/sleep-meal`);
-}
-
 export function getMemo(date: string) {
-  return apiRequest<MemoRecord | undefined>(`/v1/journals/${date}/memo`);
+  return apiRequest<MemoRecord | undefined>(`${JOURNALS_BASE_PATH}/${date}/memo`);
 }
 
 export function createSleepMeal(date: string, payload: SleepMealPayload) {
-  return apiRequest<SleepMealPayload>(`/v1/journals/${date}/sleep-meal`, { method: 'POST', body: payload });
+  return apiRequest<SleepMealRecord>(`${JOURNALS_BASE_PATH}/${date}/sleep-meal`, { method: 'POST', body: payload });
 }
 
 export function createJournalGoal(payload: { content: string; journalDate: string }) {
-  return apiRequest<JournalGoal>('/v1/journals/goals', {
+  return apiRequest<JournalGoal>(`${JOURNALS_BASE_PATH}/goals`, {
     method: 'POST',
     body: payload,
   });
 }
 
 export function updateJournalGoal(goalId: number, content: string) {
-  return apiRequest<JournalGoal>(`/v1/journals/goals/${goalId}`, {
+  return apiRequest<JournalGoal>(`${JOURNALS_BASE_PATH}/goals/${goalId}`, {
     method: 'PATCH',
     body: { content },
   });
 }
 
 export function deleteJournalGoal(goalId: number, journalDate: string) {
-  return apiRequest<void>(`/v1/journals/goals/${goalId}?journalDate=${encodeURIComponent(journalDate)}`, {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/goals/${goalId}?journalDate=${encodeURIComponent(journalDate)}`, {
     method: 'DELETE',
   });
 }
 
 export function scoreJournalGoal(date: string, payload: { goalId: number; score: number }) {
-  return apiRequest<{ goalId: number; score: number; journalDate: string }>(`/v1/journals/${date}/goals`, { method: 'POST', body: payload });
+  return apiRequest<{ goalId: number; score: number; journalDate: string }>(`${JOURNALS_BASE_PATH}/${date}/goals`, { method: 'POST', body: payload });
 }
 
 export function createMemo(date: string, memo: string) {
-  return apiRequest<{ memo: string }>(`/v1/journals/${date}/memo`, { method: 'POST', body: { memo } });
+  return apiRequest<MemoRecord>(`${JOURNALS_BASE_PATH}/${date}/memo`, { method: 'POST', body: { memo } });
 }

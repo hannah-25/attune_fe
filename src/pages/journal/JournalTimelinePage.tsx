@@ -11,7 +11,6 @@ import {
   checkSideEffect,
   checkTrouble,
   createMemo,
-  getMemo,
   getConditionTags,
   getJournal,
   getSideEffectTags,
@@ -128,21 +127,20 @@ export default function JournalTimelinePage() {
       getConditionTags(),
       getSideEffectTags(),
       getTroubleTags(),
-      getMemo(journalDate).catch(() => undefined),
       getJournal(journalDate).catch(() => null),
     ])
-      .then(([conditions, sideEffects, troubles, memoData, journal]) => {
+      .then(([conditions, sideEffects, troubles, journal]) => {
         if (ignore) return;
         setCategoryTags({
           '감정·증상': conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
           부작용: sideEffects.map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId })),
           '업무 실수': troubles.map((tag) => ({ label: tag.trouble, tagId: tag.tagId })),
         });
-        if (memoData?.memo) {
-          setMemo(memoData.memo);
-          setMemoSaved(true);
-        }
         if (journal) {
+          if (journal.checked.memo) {
+            setMemo(journal.checked.memo);
+            setMemoSaved(true);
+          }
           setEntries(buildTagEntries(
             journal.checked.conditions,
             journal.checked.sideEffects,
