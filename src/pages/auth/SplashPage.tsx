@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import logoImage from '../../assets/logo_with_brand.png';
+import { enterGuestMode } from '../../app/guest';
 
 export default function SplashPage() {
   const navigate = useNavigate();
@@ -32,6 +33,13 @@ export default function SplashPage() {
               className="flex items-center font-medium justify-center w-full h-[52px] border border-gray-300 bg-white/50 text-gray-800 text-base rounded-xl select-none transition-all active:scale-[0.97] active:bg-white/80"
             >
               이미 계정이 있어요
+            </button>
+            <button
+              type="button"
+              onClick={() => { enterGuestMode(); navigate('/home'); }}
+              className="flex items-center font-medium justify-center w-full h-[44px] text-gray-500 text-sm select-none transition-all active:text-gray-700"
+            >
+              로그인 없이 둘러보기
             </button>
           </div>
         </div>
