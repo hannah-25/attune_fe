@@ -1,3 +1,5 @@
+import { isGuestMode } from '../guest';
+
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
 let reissueInFlight: Promise<boolean> | null = null;
@@ -39,6 +41,11 @@ export function clearAccessToken(): void {
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  if (isGuestMode()) {
+    const { resolveGuestRequest } = await import('../mocks/resolver');
+    return resolveGuestRequest<T>(path, options);
+  }
+
   const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
   const response = await request(path, { auth, body, headers, ...init });
 

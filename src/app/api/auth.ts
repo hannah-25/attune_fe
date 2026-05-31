@@ -91,3 +91,11 @@ export function changePassword(currentPassword: string, newPassword: string) {
     body: { currentPassword, newPassword },
   });
 }
+
+export function restoreAccount(email: string, password: string) {
+  return apiRequest<LoginResponse>('/v1/auth/restore', {
+    auth: false,
+    method: 'POST',
+    body: { email, password },
+  });
+}
