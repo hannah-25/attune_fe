@@ -99,3 +99,11 @@ export function restoreAccount(email: string, password: string) {
     body: { email, password },
   });
 }
+
+export function socialLogin(provider: 'GOOGLE' | 'KAKAO' | 'APPLE', token: string) {
+  return apiRequest<LoginResponse>('/v1/auth/social/login', {
+    auth: false,
+    method: 'POST',
+    body: { provider, token },
+  });
+}
