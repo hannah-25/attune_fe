@@ -44,6 +44,92 @@ function genId(): number {
 
 const MEDICATION_LOGS_KEY = 'medication-logs';
 
+type GuestJournalDetail = typeof mockJournalDetail;
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function resolveJournalDate(path: string, body?: unknown) {
+  const query = new URLSearchParams(path.split('?')[1] ?? '');
+  const queryDate = query.get('date') ?? query.get('journalDate');
+  if (queryDate && /^\d{4}-\d{2}-\d{2}$/.test(queryDate)) return queryDate;
+
+  if (
+    body &&
+    typeof body === 'object' &&
+    'journalDate' in body &&
+    typeof (body as { journalDate?: unknown }).journalDate === 'string'
+  ) {
+    const payloadDate = (body as { journalDate: string }).journalDate;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(payloadDate)) return payloadDate;
+  }
+
+  return toDateKey(new Date());
+}
+
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function buildDefaultJournalDetail(date: string): GuestJournalDetail {
+  const detail = clone(mockJournalDetail);
+
+  detail.activeTags.conditions = guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags;
+  detail.activeTags.sideEffects = guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags;
+  detail.activeTags.troubles = guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags;
+
+  const memoRecord = guestRead<{ journalDate: string; memo: string }>(`journals/${date}/memo`);
+  if (memoRecord) detail.checked.memo = memoRecord.memo;
+
+  const sleepMealRecord = guestRead<{
+    sleepHour?: number | null;
+    sleepQuality?: 'GOOD' | 'NORMAL' | 'BAD' | null;
+    ateBreakfast?: boolean | null;
+    ateLunch?: boolean | null;
+    ateDinner?: boolean | null;
+  }>(`journals/${date}/sleep-meal`);
+  if (sleepMealRecord) {
+    const { sleepHour, sleepQuality, ateBreakfast, ateLunch, ateDinner } = sleepMealRecord;
+    detail.checked.sleep =
+      sleepHour != null && sleepQuality != null
+        ? { sleepHour, sleepQuality }
+        : null;
+    detail.checked.meal =
+      ateBreakfast != null && ateLunch != null && ateDinner != null
+        ? { ateBreakfast, ateLunch, ateDinner }
+        : null;
+  }
+
+  return detail;
+}
+
+function readJournalDetail(date: string): GuestJournalDetail {
+  return guestRead<GuestJournalDetail>(`journals/${date}`) ?? buildDefaultJournalDetail(date);
+}
+
+function updateJournalDetail(date: string, updater: (detail: GuestJournalDetail) => GuestJournalDetail): GuestJournalDetail {
+  let updated = readJournalDetail(date);
+
+  guestWrite<GuestJournalDetail>(`journals/${date}`, (prev) => {
+    const current = prev ?? buildDefaultJournalDetail(date);
+    updated = updater(current);
+    return updated;
+  });
+
+  return updated;
+}
+
+function upsertByTagId<T extends { tagId: number }>(items: T[], next: T): T[] {
+  return [...items.filter((item) => item.tagId !== next.tagId), next];
+}
+
+function upsertByGoalId<T extends { goalId: number }>(items: T[], next: T): T[] {
+  return [...items.filter((item) => item.goalId !== next.goalId), next];
+}
+
 export function resolveGuestRequest<T>(path: string, options: ApiRequestOptions): Promise<T> {
   const normalizedPath = path.replace(/^\/api\//, '/v1/');
   const m = method(options);
@@ -75,7 +161,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const journalDetailMatch = p.match(/^\/v1\/journals\/(\d{4}-\d{2}-\d{2})$/);
   if (journalDetailMatch) {
     const date = journalDetailMatch[1];
-    if (m === 'GET') return ok(guestRead(`journals/${date}`) ?? mockJournalDetail);
+    if (m === 'GET') return ok(readJournalDetail(date));
     if (m === 'DELETE') {
       guestDelete(`journals/${date}`);
       return ok({ deletedDate: date, success: true });
@@ -86,10 +172,22 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const memoMatch = p.match(/^\/v1\/journals\/(\d{4}-\d{2}-\d{2})\/memo$/);
   if (memoMatch) {
     const date = memoMatch[1];
-    if (m === 'GET') return guestRead(`journals/${date}/memo`) ?? undefined;
+    if (m === 'GET') {
+      const memoRecord = guestRead<{ journalDate: string; memo: string }>(`journals/${date}/memo`);
+      if (memoRecord) return memoRecord;
+      const detail = readJournalDetail(date);
+      return detail.checked.memo != null ? { journalDate: date, memo: detail.checked.memo } : undefined;
+    }
     if (m === 'POST') {
       const memo = (body as { memo: string }).memo;
       guestWrite(`journals/${date}/memo`, () => ({ journalDate: date, memo }));
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          memo,
+        },
+      }));
       return created({ journalDate: date, memo });
     }
   }
@@ -98,8 +196,32 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const sleepMealMatch = p.match(/^\/v1\/journals\/(\d{4}-\d{2}-\d{2})\/sleep-meal$/);
   if (sleepMealMatch && m === 'POST') {
     const date = sleepMealMatch[1];
-    guestWrite(`journals/${date}/sleep-meal`, () => ({ journalDate: date, ...body }));
-    return created({ journalDate: date, ...body });
+    const payload = body as {
+      sleepHour?: number | null;
+      sleepQuality?: 'GOOD' | 'NORMAL' | 'BAD' | null;
+      ateBreakfast?: boolean | null;
+      ateLunch?: boolean | null;
+      ateDinner?: boolean | null;
+    };
+
+    guestWrite(`journals/${date}/sleep-meal`, () => ({ journalDate: date, ...payload }));
+
+    updateJournalDetail(date, (detail) => ({
+      ...detail,
+      checked: {
+        ...detail.checked,
+        sleep:
+          payload.sleepHour != null && payload.sleepQuality != null
+            ? { sleepHour: payload.sleepHour, sleepQuality: payload.sleepQuality }
+            : null,
+        meal:
+          payload.ateBreakfast != null && payload.ateLunch != null && payload.ateDinner != null
+            ? { ateBreakfast: payload.ateBreakfast, ateLunch: payload.ateLunch, ateDinner: payload.ateDinner }
+            : null,
+      },
+    }));
+
+    return created({ journalDate: date, ...payload });
   }
 
   // ── Journal goal score ────────────────────────────────────────────────────
@@ -107,6 +229,20 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   if (goalScoreMatch && m === 'POST') {
     const date = goalScoreMatch[1];
     const { goalId, score } = body as { goalId: number; score: number };
+
+    updateJournalDetail(date, (detail) => {
+      const matchedGoal = detail.activeTags.goals.find((goal) => goal.goalId === goalId);
+      if (!matchedGoal) return detail;
+
+      return {
+        ...detail,
+        checked: {
+          ...detail.checked,
+          goals: upsertByGoalId(detail.checked.goals, { ...matchedGoal, score }),
+        },
+      };
+    });
+
     return created({ goalId, score, journalDate: date });
   }
 
@@ -143,9 +279,38 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const { tagId } = body as { tagId: number };
     const tags = guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags;
     const tag = tags.find((t) => t.tagId === tagId);
-    return created({ ...tag, checkedAt: new Date().toISOString() });
+    const checkedAt = new Date().toISOString();
+
+    if (tag) {
+      const date = resolveJournalDate(path, body);
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          conditions: upsertByTagId(detail.checked.conditions, { ...tag, checkedAt }),
+        },
+      }));
+    }
+
+    return created({ ...tag, checkedAt });
   }
-  if (p === '/v1/journals/conditions' && m === 'DELETE') return noContent();
+  if (p === '/v1/journals/conditions' && m === 'DELETE') {
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const tagId = Number(query.get('tagId'));
+    const date = resolveJournalDate(path);
+
+    if (Number.isFinite(tagId)) {
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          conditions: detail.checked.conditions.filter((item) => item.tagId !== tagId),
+        },
+      }));
+    }
+
+    return noContent();
+  }
 
   // ── Side effect tags ──────────────────────────────────────────────────────
   if (p === '/v1/journals/side-effect-tags' && m === 'GET') {
@@ -179,9 +344,38 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const { tagId } = body as { tagId: number };
     const tags = guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags;
     const tag = tags.find((t) => t.tagId === tagId);
-    return created({ ...tag, checkedAt: new Date().toISOString() });
+    const checkedAt = new Date().toISOString();
+
+    if (tag) {
+      const date = resolveJournalDate(path, body);
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          sideEffects: upsertByTagId(detail.checked.sideEffects, { ...tag, checkedAt }),
+        },
+      }));
+    }
+
+    return created({ ...tag, checkedAt });
   }
-  if (p === '/v1/journals/side-effects' && m === 'DELETE') return noContent();
+  if (p === '/v1/journals/side-effects' && m === 'DELETE') {
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const tagId = Number(query.get('tagId'));
+    const date = resolveJournalDate(path);
+
+    if (Number.isFinite(tagId)) {
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          sideEffects: detail.checked.sideEffects.filter((item) => item.tagId !== tagId),
+        },
+      }));
+    }
+
+    return noContent();
+  }
 
   // ── Trouble tags ──────────────────────────────────────────────────────────
   if (p === '/v1/journals/trouble-tags' && m === 'GET') {
@@ -215,20 +409,96 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const { tagId } = body as { tagId: number };
     const tags = guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags;
     const tag = tags.find((t) => t.tagId === tagId);
-    return created({ ...tag, checkedAt: new Date().toISOString() });
+    const checkedAt = new Date().toISOString();
+
+    if (tag) {
+      const date = resolveJournalDate(path, body);
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          troubles: upsertByTagId(detail.checked.troubles, { ...tag, checkedAt }),
+        },
+      }));
+    }
+
+    return created({ ...tag, checkedAt });
   }
-  if (p === '/v1/journals/troubles' && m === 'DELETE') return noContent();
+  if (p === '/v1/journals/troubles' && m === 'DELETE') {
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const tagId = Number(query.get('tagId'));
+    const date = resolveJournalDate(path);
+
+    if (Number.isFinite(tagId)) {
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          troubles: detail.checked.troubles.filter((item) => item.tagId !== tagId),
+        },
+      }));
+    }
+
+    return noContent();
+  }
 
   // ── Journal goals ─────────────────────────────────────────────────────────
   if (p === '/v1/journals/goals' && m === 'POST') {
-    const goal = { goalId: genId(), ...(body as object) };
+    const date = resolveJournalDate(path, body);
+    const payload = body as { content: string; journalDate?: string };
+    const goal = { goalId: genId(), content: payload.content };
+
+    updateJournalDetail(date, (detail) => ({
+      ...detail,
+      activeTags: {
+        ...detail.activeTags,
+        goals: upsertByGoalId(detail.activeTags.goals, goal),
+      },
+    }));
+
     return created(goal);
   }
   const journalGoalMatch = p.match(/^\/v1\/journals\/goals\/(\d+)$/);
   if (journalGoalMatch) {
     const goalId = Number(journalGoalMatch[1]);
-    if (m === 'PATCH') return ok({ goalId, ...(body as object) });
-    if (m === 'DELETE') return noContent();
+    if (m === 'PATCH') {
+      const date = resolveJournalDate(path, body);
+
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        activeTags: {
+          ...detail.activeTags,
+          goals: detail.activeTags.goals.map((goal) =>
+            goal.goalId === goalId ? { ...goal, ...(body as object) } : goal,
+          ),
+        },
+        checked: {
+          ...detail.checked,
+          goals: detail.checked.goals.map((goal) =>
+            goal.goalId === goalId ? { ...goal, ...(body as object) } : goal,
+          ),
+        },
+      }));
+
+      return ok({ goalId, ...(body as object) });
+    }
+    if (m === 'DELETE') {
+      const date = resolveJournalDate(path);
+
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        activeTags: {
+          ...detail.activeTags,
+          goals: detail.activeTags.goals.filter((goal) => goal.goalId !== goalId),
+        },
+        checked: {
+          ...detail.checked,
+          goals: detail.checked.goals.filter((goal) => goal.goalId !== goalId),
+        },
+      }));
+
+      return noContent();
+    }
   }
 
   // ── Medications ───────────────────────────────────────────────────────────
@@ -449,7 +719,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     if (m === 'GET') return ok(guestRead(`comments/${pid}`) ?? mockCommentsByPost[pid] ?? []);
     if (m === 'POST') {
       const comment = { commentId: genId(), anonNickname: '나', createdAt: new Date().toISOString(), isPostAuthor: false, isOwner: true, ...(body as object) };
-      guestWrite<typeof mockComments>(`comments/${pid}`, (prev) => [...(prev ?? mockComments), comment]);
+      guestWrite<(typeof mockCommentsByPost)[number]>(`comments/${pid}`, (prev) => [...(prev ?? mockCommentsByPost[pid] ?? []), comment]);
       return created(comment);
     }
   }
