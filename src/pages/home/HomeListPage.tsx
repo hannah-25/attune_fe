@@ -8,6 +8,7 @@ import { getOnboardingStatus, type OnboardingResumeStep } from '@/api/onboarding
 import { getTodosByDate, updateTodo } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
+import HomeMedicationSection from './HomeMedicationSection';
 
 type HomeTodo = {
   id: number;
@@ -203,6 +204,7 @@ export default function HomeListPage() {
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
           </div>
           {todoError ? <div className="text-red-500 text-xs px-1">{todoError}</div> : null}
+          <HomeMedicationSection />
           <button
             type="button"
             onClick={() => navigate('/journal')}

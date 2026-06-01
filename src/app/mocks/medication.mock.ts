@@ -11,43 +11,29 @@ export const mockMedications: MedicationSummary[] = [
     alarmActive: true,
     schedules: [
       { scheduleId: 1, doseTime: '08:00', label: '아침', dosage: '18mg' },
-      { scheduleId: 2, doseTime: '12:30', label: '점심', dosage: '18mg' },
     ],
   },
   {
     userMedicationId: 2,
     medicationId: 102,
-    name: '스트라테라 40mg',
-    ingredient: '아토목세틴',
+    name: '메디키넷 5mg',
+    ingredient: '메틸페니데이트',
     startedAt: '2026-04-01',
     isActive: true,
     alarmActive: true,
     schedules: [
-      { scheduleId: 3, doseTime: '19:00', label: '저녁', dosage: '40mg' },
+      { scheduleId: 2, doseTime: '13:00', label: '점심', dosage: '5mg' },
     ],
-  },
-  {
-    userMedicationId: 3,
-    medicationId: 103,
-    name: '아데랄 10mg',
-    ingredient: '암페타민',
-    startedAt: '2026-01-14',
-    endAt: '2026-02-28',
-    isActive: false,
-    alarmActive: false,
-    schedules: [],
   },
 ];
 
 export const mockMedicationLogs: MedicationProfileLog[] = [
   { scheduleId: 1, takenAt: '2026-05-31T08:03:00', status: 'TAKEN' },
-  { scheduleId: 2, takenAt: '2026-05-31T12:35:00', status: 'TAKEN' },
+  { scheduleId: 2, takenAt: '2026-05-31T13:05:00', status: 'TAKEN' },
   { scheduleId: 1, takenAt: '2026-05-30T08:10:00', status: 'TAKEN' },
-  { scheduleId: 2, takenAt: '2026-05-30T12:30:00', status: 'SKIPPED' },
-  { scheduleId: 3, takenAt: '2026-05-30T19:05:00', status: 'TAKEN' },
+  { scheduleId: 2, takenAt: '2026-05-30T13:00:00', status: 'SKIPPED' },
   { scheduleId: 1, takenAt: '2026-05-29T08:00:00', status: 'TAKEN' },
-  { scheduleId: 2, takenAt: '2026-05-29T12:30:00', status: 'TAKEN' },
-  { scheduleId: 3, takenAt: '2026-05-29T19:00:00', status: 'TAKEN' },
+  { scheduleId: 2, takenAt: '2026-05-29T13:02:00', status: 'TAKEN' },
 ];
 
 export const mockMedicationStandard: MedicationStandard = {

@@ -15,7 +15,7 @@ import {
   mockMedicationStandard,
 } from './medication.mock';
 import { mockScheduleCategories, mockScheduleSummaries, mockScheduleDetail } from './calendar.mock';
-import { mockPosts, mockPostDetail, mockComments, mockNotices } from './community.mock';
+import { mockPosts, mockCommentsByPost, mockNotices } from './community.mock';
 import { mockSession, mockPrescriptions, mockQnA, mockSummaryStats, mockSummaryText, mockQuestions } from './counseling.mock';
 import { mockWeeklyStats, mockWeeklyInsight, mockWeeklyChartData, mockMonthlyStats, mockMonthlyInsight, mockMonthlyChartData } from './report.mock';
 
@@ -41,6 +41,8 @@ let nextId = 1000;
 function genId(): number {
   return ++nextId;
 }
+
+const MEDICATION_LOGS_KEY = 'medication-logs';
 
 export function resolveGuestRequest<T>(path: string, options: ApiRequestOptions): Promise<T> {
   const normalizedPath = path.replace(/^\/api\//, '/v1/');
@@ -248,14 +250,56 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   }
   const medicationLogsMatch = p.match(/^\/v1\/user-medications\/(\d+)\/logs$/);
   if (medicationLogsMatch && m === 'GET') {
-    return ok({ userMedicationId: Number(medicationLogsMatch[1]), logs: mockMedicationLogs });
+    const userMedicationId = Number(medicationLogsMatch[1]);
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const startDate = query.get('startDate') ?? undefined;
+    const endDate = query.get('endDate') ?? undefined;
+
+    const logs = readMedicationLogs()
+      .filter((log) => resolveUserMedicationIdFromLog(log) === userMedicationId)
+      .filter((log) => isLogWithinRange(log.takenAt, startDate, endDate));
+
+    return ok({ userMedicationId, logs });
   }
   if (p === '/v1/user-medications/logs' && m === 'GET') {
-    return ok({ logs: mockMedicationLogs });
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const startDate = query.get('startDate') ?? undefined;
+    const endDate = query.get('endDate') ?? undefined;
+
+    const logs = readMedicationLogs().filter((log) =>
+      isLogWithinRange(log.takenAt, startDate, endDate),
+    );
+
+    return ok({ logs });
   }
   const quickLogMatch = p.match(/^\/v1\/user-medications\/(\d+)\/log\/quick$/);
   if (quickLogMatch && m === 'POST') {
-    return created({ logId: genId(), ...(body as object), recordedAt: new Date().toISOString() });
+    const userMedicationId = Number(quickLogMatch[1]);
+    const payload = body as { action?: string; scheduleId?: number };
+    const scheduleId = typeof payload.scheduleId === 'number' ? payload.scheduleId : null;
+    const status =
+      payload.action === 'SKIPPED'
+        ? 'SKIPPED'
+        : payload.action === 'TAKEN'
+          ? 'TAKEN'
+          : 'MISSED';
+    const recordedAt = new Date().toISOString();
+
+    if (scheduleId !== null) {
+      const nextLog = {
+        userMedicationId,
+        scheduleId,
+        takenAt: recordedAt,
+        status,
+      } as (typeof mockMedicationLogs)[number];
+
+      guestWrite<typeof mockMedicationLogs>(MEDICATION_LOGS_KEY, (prev) => [
+        ...(prev ?? mockMedicationLogs),
+        nextLog,
+      ]);
+    }
+
+    return created({ logId: genId(), ...(body as object), recordedAt });
   }
   const medicationStandardMatch = p.match(/^\/v1\/medications\/standards\/(\d+)$/);
   if (medicationStandardMatch && m === 'GET') {
@@ -382,7 +426,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const pid = Number(postMatch[1]);
     if (m === 'GET') {
       const posts = guestRead<typeof mockPosts>('posts') ?? mockPosts;
-      return ok(posts.find((p) => p.postId === pid) ?? mockPostDetail);
+      return ok(posts.find((post) => post.postId === pid) ?? mockPosts[0]);
     }
     if (m === 'PUT') {
       guestWrite<typeof mockPosts>('posts', (prev) =>
@@ -402,7 +446,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const postCommentsMatch = p.match(/^\/v1\/community\/posts\/(\d+)\/comments$/);
   if (postCommentsMatch) {
     const pid = Number(postCommentsMatch[1]);
-    if (m === 'GET') return ok(guestRead(`comments/${pid}`) ?? mockComments);
+    if (m === 'GET') return ok(guestRead(`comments/${pid}`) ?? mockCommentsByPost[pid] ?? []);
     if (m === 'POST') {
       const comment = { commentId: genId(), anonNickname: '나', createdAt: new Date().toISOString(), isPostAuthor: false, isOwner: true, ...(body as object) };
       guestWrite<typeof mockComments>(`comments/${pid}`, (prev) => [...(prev ?? mockComments), comment]);
@@ -438,4 +482,40 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   // fallback
   console.warn(`[guest resolver] unhandled: ${m} ${p}`);
   return noContent();
+}
+
+function readMedicationLogs() {
+  return guestRead<typeof mockMedicationLogs>(MEDICATION_LOGS_KEY) ?? mockMedicationLogs;
+}
+
+function resolveUserMedicationIdFromLog(log: (typeof mockMedicationLogs)[number]) {
+  if (typeof (log as { userMedicationId?: number }).userMedicationId === 'number') {
+    return (log as { userMedicationId: number }).userMedicationId;
+  }
+
+  const medications = guestRead<typeof mockMedications>('medications') ?? mockMedications;
+  const owner = medications.find((medication) =>
+    (medication.schedules ?? []).some((schedule) => schedule.scheduleId === log.scheduleId),
+  );
+
+  return owner?.userMedicationId;
+}
+
+function isLogWithinRange(takenAt: string, startDate?: string, endDate?: string) {
+  const dateKey = toDateKeyFromDateTime(takenAt);
+  if (!dateKey) return false;
+  if (startDate && dateKey < startDate) return false;
+  if (endDate && dateKey > endDate) return false;
+  return true;
+}
+
+function toDateKeyFromDateTime(value: string) {
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }
