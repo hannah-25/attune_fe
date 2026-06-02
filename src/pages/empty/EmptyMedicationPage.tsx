@@ -60,7 +60,7 @@ export default function EmptyMedicationPage() {
   );
 }
 
-function Feature({ icon, text, title }: { icon: React.ReactElement; text: string; title: string }) {
+function Feature({ icon, text, title }: { icon: React.ReactElement<{ className?: string; strokeWidth?: number }>; text: string; title: string }) {
   return (
     <div className="items-center flex gap-3 p-1">
       <div className="items-center flex justify-center w-6 h-6 bg-purple-100 rounded-xl">

@@ -534,8 +534,9 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const endDate = query.get('endDate') ?? undefined;
 
     const logs = readMedicationLogs()
-      .filter((log) => resolveUserMedicationIdFromLog(log) === userMedicationId)
-      .filter((log) => isLogWithinRange(log.takenAt, startDate, endDate));
+      .filter((log) => log.userMedicationId === userMedicationId)
+      .filter((log) => isLogWithinRange(log.takenAt, startDate, endDate))
+      .map(({ scheduleId, takenAt, status }) => ({ scheduleId, takenAt, status }));
 
     return ok({ userMedicationId, logs });
   }
@@ -543,10 +544,20 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const query = new URLSearchParams(path.split('?')[1] ?? '');
     const startDate = query.get('startDate') ?? undefined;
     const endDate = query.get('endDate') ?? undefined;
+    const medications = guestRead<typeof mockMedications>('medications') ?? mockMedications;
 
-    const logs = readMedicationLogs().filter((log) =>
-      isLogWithinRange(log.takenAt, startDate, endDate),
-    );
+    const logs = readMedicationLogs()
+      .filter((log) => isLogWithinRange(log.takenAt, startDate, endDate))
+      .flatMap((log) => {
+        const medication = medications.find((med) => med.userMedicationId === log.userMedicationId);
+        if (!medication) return [];
+        return [{
+          userMedicationId: log.userMedicationId,
+          name: medication.medicationName,
+          intakeTime: log.takenAt,
+          taken: log.status === 'TAKEN',
+        }];
+      });
 
     return ok({ logs });
   }
@@ -564,16 +575,9 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const recordedAt = new Date().toISOString();
 
     if (scheduleId !== null) {
-      const nextLog = {
-        userMedicationId,
-        scheduleId,
-        takenAt: recordedAt,
-        status,
-      } as (typeof mockMedicationLogs)[number];
-
       guestWrite<typeof mockMedicationLogs>(MEDICATION_LOGS_KEY, (prev) => [
         ...(prev ?? mockMedicationLogs),
-        nextLog,
+        { userMedicationId, scheduleId, takenAt: recordedAt, status },
       ]);
     }
 
@@ -764,19 +768,6 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
 
 function readMedicationLogs() {
   return guestRead<typeof mockMedicationLogs>(MEDICATION_LOGS_KEY) ?? mockMedicationLogs;
-}
-
-function resolveUserMedicationIdFromLog(log: (typeof mockMedicationLogs)[number]) {
-  if (typeof (log as unknown as { userMedicationId?: number }).userMedicationId === 'number') {
-    return (log as unknown as { userMedicationId: number }).userMedicationId;
-  }
-
-  const medications = guestRead<typeof mockMedications>('medications') ?? mockMedications;
-  const owner = medications.find((medication) =>
-    (medication.schedules ?? []).some((schedule) => schedule.scheduleId === log.scheduleId),
-  );
-
-  return owner?.userMedicationId;
 }
 
 function isLogWithinRange(takenAt: string, startDate?: string, endDate?: string) {

@@ -5,10 +5,7 @@ import {
   createQuickMedicationLog,
   getAllMedicationLogs,
   getMedications,
-  type MedicationLogStatus,
   type MedicationListResponse,
-  type MedicationProfileLog,
-  type MedicationProfileLogsResponse,
   type MedicationScheduleSummary,
   type MedicationSummary,
 } from '@/api/medication';
@@ -55,34 +52,15 @@ export default function HomeMedicationSection() {
         return;
       }
 
-      const scheduleToMedication = new Map<number, number>();
-      activeMedications.forEach((medication) => {
-        medication.schedules.forEach((schedule) => {
-          scheduleToMedication.set(schedule.scheduleId, medication.userMedicationId);
-        });
-      });
-
       const logsResponse = await getAllMedicationLogs({ startDate: todayKey, endDate: todayKey });
-      const allLogs = extractMedicationLogs(logsResponse as unknown as MedicationProfileLogsResponse);
-
-      const latestByDoseKey = new Map<string, { status: MedicationLogStatus; takenAt: number }>();
-      allLogs.forEach((log) => {
-        if (typeof log.scheduleId !== 'number') return;
-        const userMedicationId = scheduleToMedication.get(log.scheduleId);
-        if (typeof userMedicationId !== 'number') return;
-        const key = buildDoseKey(userMedicationId, log.scheduleId);
-        const timestamp = parseTimestamp(log.takenAt);
-        const previous = latestByDoseKey.get(key);
-        if (!previous || timestamp >= previous.takenAt) {
-          latestByDoseKey.set(key, { status: log.status, takenAt: timestamp });
-        }
-      });
 
       const takenScheduleKeys = new Set<string>();
-      latestByDoseKey.forEach((value, key) => {
-        if (value.status === 'TAKEN') {
-          takenScheduleKeys.add(key);
-        }
+      logsResponse.logs.forEach((log) => {
+        if (!log.taken) return;
+        const medication = activeMedications.find((m) => m.userMedicationId === log.userMedicationId);
+        if (!medication) return;
+        const matched = findClosestSchedule(medication.schedules, log.intakeTime);
+        if (matched) takenScheduleKeys.add(buildDoseKey(log.userMedicationId, matched.scheduleId));
       });
 
       setDoseItems(buildDoseItems(activeMedications, takenScheduleKeys));
@@ -257,8 +235,23 @@ function normalizeMedication(medication: MedicationSummary): ActiveMedication | 
   };
 }
 
-function extractMedicationLogs(response: MedicationProfileLogsResponse): MedicationProfileLog[] {
-  return response.logs;
+function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string) {
+  const intakeMinutes = toMinutes(intakeTime.slice(11, 16));
+  if (intakeMinutes === null) return null;
+  let closest: MedicationScheduleSummary | null = null;
+  let minDiff = Infinity;
+  for (const schedule of schedules) {
+    const m = toMinutes(schedule.doseTime);
+    if (m === null) continue;
+    const diff = Math.abs(intakeMinutes - m);
+    if (diff < minDiff) { minDiff = diff; closest = schedule; }
+  }
+  return minDiff <= 240 ? closest : null;
+}
+
+function toMinutes(hhmm: string): number | null {
+  const parsed = parseTime(hhmm);
+  return parsed ? parsed.hours * 60 + parsed.minutes : null;
 }
 
 function parseDateValue(value: string) {

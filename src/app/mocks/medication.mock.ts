@@ -1,4 +1,11 @@
-import type { MedicationSearchResult, MedicationSummary, MedicationProfileLog, MedicationStandard } from '../api/medication';
+import type { MedicationSearchResult, MedicationSummary, MedicationLogStatus, MedicationStandard } from '../api/medication';
+
+type MockMedicationLog = {
+  userMedicationId: number;
+  scheduleId: number;
+  takenAt: string;
+  status: MedicationLogStatus;
+};
 
 export const mockMedicationSearchData: MedicationSearchResult[] = [
   {
@@ -88,13 +95,13 @@ export const mockMedications: MedicationSummary[] = [
   },
 ];
 
-export const mockMedicationLogs: MedicationProfileLog[] = [
-  { scheduleId: 1, takenAt: '2026-05-31T08:03:00', status: 'TAKEN' },
-  { scheduleId: 2, takenAt: '2026-05-31T13:05:00', status: 'TAKEN' },
-  { scheduleId: 1, takenAt: '2026-05-30T08:10:00', status: 'TAKEN' },
-  { scheduleId: 2, takenAt: '2026-05-30T13:00:00', status: 'SKIPPED' },
-  { scheduleId: 1, takenAt: '2026-05-29T08:00:00', status: 'TAKEN' },
-  { scheduleId: 2, takenAt: '2026-05-29T13:02:00', status: 'TAKEN' },
+export const mockMedicationLogs: MockMedicationLog[] = [
+  { userMedicationId: 1, scheduleId: 1, takenAt: '2026-05-31T08:03:00', status: 'TAKEN' },
+  { userMedicationId: 2, scheduleId: 2, takenAt: '2026-05-31T13:05:00', status: 'TAKEN' },
+  { userMedicationId: 1, scheduleId: 1, takenAt: '2026-05-30T08:10:00', status: 'TAKEN' },
+  { userMedicationId: 2, scheduleId: 2, takenAt: '2026-05-30T13:00:00', status: 'SKIPPED' },
+  { userMedicationId: 1, scheduleId: 1, takenAt: '2026-05-29T08:00:00', status: 'TAKEN' },
+  { userMedicationId: 2, scheduleId: 2, takenAt: '2026-05-29T13:02:00', status: 'TAKEN' },
 ];
 
 export const mockMedicationStandard: MedicationStandard = {
