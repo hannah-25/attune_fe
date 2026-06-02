@@ -87,6 +87,7 @@ export default function MedicationAddPage() {
     if (selectedDosageId === null) {
       setError('용량을 선택해 주세요.');
       return;
+    }
     const scheduleTimes = alarmTimes
       .map((time) => toDoseTime(time))
       .filter((time): time is string => Boolean(time));
