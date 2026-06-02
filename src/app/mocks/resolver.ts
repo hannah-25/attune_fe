@@ -228,7 +228,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   // ── Journal goal score ────────────────────────────────────────────────────
   const goalScoreMatch = p.match(/^\/v1\/journals\/(\d{4}-\d{2}-\d{2})\/goals$/);
   if (goalScoreMatch && m === 'POST') {
-    const date = goalScoreMatch[1];
+    const { goalId, score } = (body ?? {}) as { goalId: number; score: number };
     const { goalId, score } = body as { goalId: number; score: number };
 
     updateJournalDetail(date, (detail) => {
