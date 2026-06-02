@@ -75,10 +75,10 @@ export default function LoginPage() {
   const handleSocialLogin = async (provider: SocialProvider) => {
     setError('');
     setSocialLoading(provider);
+    let token: string;
+    let provider_key: SocialProviderKey;
+    let socialEmail: string | null = null;
     try {
-      let token: string;
-      let provider_key: SocialProviderKey;
-      let socialEmail: string | null = null;
       if (provider === 'kakao') {
         const result = await signInWithKakao();
         token = result.token;
