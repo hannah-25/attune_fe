@@ -133,7 +133,7 @@ export default function CommunityPostPage() {
   if (!post) {
     return (
       <div
-        className="w-full h-dvh bg-gray-50 text-sm flex flex-col items-center justify-center text-gray-400"
+        className="w-full h-full bg-gray-50 text-sm flex flex-col items-center justify-center text-gray-400"
         style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
       >
         불러오는 중...
@@ -143,7 +143,7 @@ export default function CommunityPostPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">

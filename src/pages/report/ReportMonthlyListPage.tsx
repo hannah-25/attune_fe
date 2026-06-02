@@ -15,7 +15,7 @@ const MONTHS = [
 export default function ReportMonthlyListPage() {
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">

@@ -1,25 +1,29 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Bell, CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
-import { NavBackButton } from '@/components/NavButtons';
-import { createMedication, updateMedication } from '@/api/medication';
+import { NavCloseButton } from '@/components/NavButtons';
+import {
+  createMedication,
+  getDosageId,
+  searchMedications,
+  updateMedication,
+  type MedicationDosageOption,
+  type MedicationSearchResult,
+} from '@/api/medication';
 import { ApiError } from '@/api/client';
-
-const MEDICATION_OPTIONS = [
-  { id: 1, name: '콘서타 18mg', ingredient: '메틸페니데이트 · 1정' },
-  { id: 2, name: '스트라테라 40mg', ingredient: '아토목세틴 · 1캡슐' },
-  { id: 3, name: '메디키넷 10mg', ingredient: '메틸페니데이트 · 1정' },
-];
 
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
 const ALARM_LABELS = ['아침', '점심'];
 
 export default function MedicationAddPage() {
   const navigate = useNavigate();
-  const [selectedMedication, setSelectedMedication] = useState(MEDICATION_OPTIONS[0]);
+  const [selectedMedication, setSelectedMedication] = useState<MedicationSearchResult | null>(null);
+  const [selectedDosageId, setSelectedDosageId] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<MedicationSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [startedAt, setStartedAt] = useState(toDateKey(new Date()));
   const [alarmTimes, setAlarmTimes] = useState(['08:00', '12:30']);
   const [activeDays, setActiveDays] = useState(() => new Set(['월', '화', '수', '목', '금']));
@@ -30,10 +34,41 @@ export default function MedicationAddPage() {
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const startedAtInputRef = useRef<HTMLInputElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filteredMedications = MEDICATION_OPTIONS.filter((medication) =>
-    medication.name.toLowerCase().includes(query.toLowerCase()) || medication.ingredient.toLowerCase().includes(query.toLowerCase())
-  );
+  // 검색창 열릴 때 전체 목록 로드
+  useEffect(() => {
+    if (!searchOpen) return;
+    setQuery('');
+    setIsSearching(true);
+    searchMedications()
+      .then(setSearchResults)
+      .catch(() => setSearchResults([]))
+      .finally(() => setIsSearching(false));
+  }, [searchOpen]);
+
+  // 검색어 디바운스
+  useEffect(() => {
+    if (!searchOpen) return;
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setIsSearching(true);
+      searchMedications(query || undefined)
+        .then(setSearchResults)
+        .catch(() => setSearchResults([]))
+        .finally(() => setIsSearching(false));
+    }, 300);
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [query, searchOpen]);
+
+  const selectMedication = (medication: MedicationSearchResult) => {
+    setSelectedMedication(medication);
+    const options = medication.dosageOptions ?? [];
+    setSelectedDosageId(options.length === 1 ? getDosageId(options[0]) : null);
+    setSearchOpen(false);
+  };
 
   const toggleDay = (day: string) => {
     setActiveDays((current) => {
@@ -45,6 +80,15 @@ export default function MedicationAddPage() {
   };
 
   const saveMedication = async () => {
+    if (!selectedMedication) {
+      setError('약을 선택해 주세요.');
+      return;
+    }
+    if (selectedDosageId === null) {
+      setError('용량을 선택해 주세요.');
+      return;
+    }
+
     const scheduleTimes = alarmTimes
       .map((time) => toDoseTime(time))
       .filter((time): time is string => Boolean(time));
@@ -58,20 +102,18 @@ export default function MedicationAddPage() {
     setIsSaving(true);
     try {
       const created = await createMedication({
-        medicationId: selectedMedication.id,
+        medicationDosageId: selectedDosageId,
         startedAt,
         schedules: scheduleTimes.map((doseTime, index) => ({
           doseTime,
           label: ALARM_LABELS[index] ?? `${index + 1}회`,
-          dosage: selectedMedication.ingredient,
         })),
       });
       if (typeof created?.userMedicationId === 'number') {
-        const updatedEndAt = isMedicationActive ? undefined : toDateKey(new Date());
         await updateMedication(created.userMedicationId, {
           alarmActive: alarmEnabled,
           isActive: isMedicationActive,
-          endAt: updatedEndAt,
+          endAt: isMedicationActive ? undefined : toDateKey(new Date()),
         });
       }
       navigate('/medication');
@@ -89,37 +131,82 @@ export default function MedicationAddPage() {
   const openStartedAtPicker = () => {
     const input = startedAtInputRef.current;
     if (!input) return;
-
     const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
-    if (typeof pickerInput.showPicker === 'function') {
-      pickerInput.showPicker();
-      return;
-    }
-
+    if (typeof pickerInput.showPicker === 'function') { pickerInput.showPicker(); return; }
     input.focus();
     input.click();
   };
 
+  const selectedDosage = selectedMedication?.dosageOptions?.find((d) => getDosageId(d) === selectedDosageId);
+  const canSave = selectedMedication !== null && selectedDosageId !== null;
+
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="약 추가"
-          left={<NavBackButton />}
-          right={<div className="items-center flex justify-end min-w-11 h-11"><button type="button" onClick={saveMedication} disabled={isSaving} className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl disabled:opacity-60">{isSaving ? '저장 중' : '저장하기'}</button></div>}
+          left={<NavCloseButton />}
+          right={
+            <div className="items-center flex justify-end min-w-11 h-11">
+              <button
+                type="button"
+                onClick={saveMedication}
+                disabled={isSaving || !canSave}
+                className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl disabled:opacity-60"
+              >
+                {isSaving ? '저장 중' : '저장하기'}
+              </button>
+            </div>
+          }
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+
+            {/* 약 이름 */}
             <button type="button" onClick={() => setSearchOpen(true)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="font-semibold w-[84px] text-gray-600 text-left">약 이름</div>
-              <div className="grow font-semibold basis-[0%] text-left">{selectedMedication.name}</div>
+              <div className={`grow font-semibold basis-[0%] text-left ${selectedMedication ? '' : 'text-gray-400'}`}>
+                {selectedMedication ? selectedMedication.name : '약 이름 검색'}
+              </div>
               <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
             </button>
-            <StaticRow label="용량/단위" value={selectedMedication.ingredient} />
+
+            {/* 용량 선택 */}
+            {selectedMedication && (
+              <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                <div className="font-semibold w-[84px] text-gray-600 shrink-0">용량</div>
+                <div className="grow basis-[0%]">
+                  {(selectedMedication.dosageOptions ?? []).length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {(selectedMedication.dosageOptions ?? []).map((d) => {
+                        const id = getDosageId(d);
+                        return (
+                          <DosageChip
+                            key={id}
+                            dosage={d}
+                            selected={selectedDosageId === id}
+                            onSelect={() => setSelectedDosageId(id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-gray-400 text-sm font-semibold">용량 정보 없음</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 성분 */}
+            {selectedMedication && (
+              <StaticRow label="성분" value={selectedMedication.ingredient} />
+            )}
+
+            {/* 복용 시작일 */}
             <div className="relative">
               <StaticRow
                 label="복용 시작일"
@@ -136,6 +223,8 @@ export default function MedicationAddPage() {
                 aria-label="복용 시작일"
               />
             </div>
+
+            {/* 복용 상태 */}
             <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
               <div className="grow basis-[0%]">
@@ -162,6 +251,8 @@ export default function MedicationAddPage() {
                 ) : null}
               </div>
             </div>
+
+            {/* 알림 */}
             <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
               <div className="font-semibold w-[84px] text-gray-600">알림</div>
               <div className="grow basis-[0%]">
@@ -204,29 +295,31 @@ export default function MedicationAddPage() {
               </div>
             </div>
           </div>
+
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            <button type="button" onClick={() => setRepeatEnabled((value) => !value)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+            <button type="button" onClick={() => setRepeatEnabled((value) => !value)} className={`items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${repeatEnabled ? 'border-b' : ''}`} style={repeatEnabled ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
               <div className="grow basis-[0%]">
                 <div className="font-semibold text-gray-700">요일 반복</div>
                 <div className="mt-1 text-gray-500 text-xs">선택한 요일마다 알려드려요</div>
               </div>
               <ToggleSwitch active={repeatEnabled} />
             </button>
-            <div className="pt-3 pr-[10px] pb-3 pl-[10px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-              <div className="flex gap-1">
-                {WEEKDAYS.map((day) => (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => toggleDay(day)}
-                    disabled={!repeatEnabled}
-                    className={`items-center flex grow font-bold justify-center h-[38px] basis-[0%] rounded-xl ${activeDays.has(day) ? 'bg-purple-300 text-white' : 'bg-purple-50 text-gray-600'} ${repeatEnabled ? '' : 'opacity-40'}`}
-                  >
-                    {day}
-                  </button>
-                ))}
+            {repeatEnabled && (
+              <div className="pt-3 pr-[10px] pb-3 pl-[10px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                <div className="flex gap-1">
+                  {WEEKDAYS.map((day) => (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => toggleDay(day)}
+                      className={`items-center flex grow font-bold justify-center h-[38px] basis-[0%] rounded-xl ${activeDays.has(day) ? 'bg-purple-300 text-white' : 'bg-purple-50 text-gray-600'}`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <button type="button" onClick={() => setHolidayPause((v) => !v)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
               <div className="grow basis-[0%]">
                 <div className="font-semibold text-gray-700">휴일에 복용</div>
@@ -235,6 +328,7 @@ export default function MedicationAddPage() {
               <ToggleSwitch active={holidayPause} />
             </button>
           </div>
+
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
             <div className="text-gray-800 leading-normal">
               <b className="font-bold">표준 정보</b>를 함께 보여드려요. 효능, 부작용, 혈중 농도 추이까지 확인할 수 있어요.
@@ -242,6 +336,8 @@ export default function MedicationAddPage() {
           </div>
         </div>
       </div>
+
+      {/* 약 검색 시트 */}
       {searchOpen ? (
         <div className="absolute inset-0 bg-black/20 flex items-end">
           <div className="w-full bg-gray-50 rounded-t-3xl p-4 pb-6 shadow-[rgba(0,0,0,0.18)_0px_-8px_24px_0px]">
@@ -251,28 +347,38 @@ export default function MedicationAddPage() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="약 이름 검색"
+                placeholder="약 이름 또는 성분명 검색"
                 className="grow bg-white border border-gray-200 rounded-xl px-3 py-2 outline-none"
               />
               <button type="button" onClick={() => setSearchOpen(false)} className="w-9 h-9 flex items-center justify-center">
                 <X className="w-4 h-4 text-gray-600" strokeWidth={2.5} />
               </button>
             </div>
-            <div className="bg-white rounded-2xl overflow-hidden">
-              {filteredMedications.map((medication, index) => (
-                <button
-                  key={medication.name}
-                  type="button"
-                  className={`w-full text-left px-4 py-3 ${index < filteredMedications.length - 1 ? 'border-b border-gray-100' : ''}`}
-                  onClick={() => {
-                    setSelectedMedication(medication);
-                    setSearchOpen(false);
-                  }}
-                >
-                  <div className="font-bold">{medication.name}</div>
-                  <div className="text-xs text-gray-500 mt-1">{medication.ingredient}</div>
-                </button>
-              ))}
+            <div className="bg-white rounded-2xl overflow-hidden max-h-[50vh] overflow-y-auto">
+              {isSearching ? (
+                <div className="px-4 py-6 text-center text-gray-400 text-xs">검색 중...</div>
+              ) : searchResults.length === 0 ? (
+                <div className="px-4 py-6 text-center text-gray-400 text-xs">검색 결과가 없습니다.</div>
+              ) : (
+                searchResults.map((medication, index) => (
+                  <button
+                    key={medication.medicationId}
+                    type="button"
+                    className={`w-full text-left px-4 py-3 ${index < searchResults.length - 1 ? 'border-b border-gray-100' : ''}`}
+                    onClick={() => selectMedication(medication)}
+                  >
+                    <div className="font-bold">{medication.name}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{medication.ingredient}</div>
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                      {(medication.dosageOptions ?? []).map((d) => (
+                        <span key={getDosageId(d)} className="text-[10px] font-semibold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">
+                          {d.amount}mg
+                        </span>
+                      ))}
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -281,25 +387,32 @@ export default function MedicationAddPage() {
   );
 }
 
-function StaticRow({
-  icon,
-  label,
-  last,
-  onClick,
-  value,
-}: {
+function DosageChip({ dosage, selected, onSelect }: { dosage: MedicationDosageOption; selected: boolean; onSelect: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`items-center flex font-semibold text-xs gap-1 px-3 py-[7px] rounded-[62.4375rem] border transition-colors ${selected ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-white border-gray-200 text-gray-600'}`}
+    >
+      {selected ? <Check className="w-3 h-3" strokeWidth={2.8} /> : null}
+      {dosage.amount}mg
+    </button>
+  );
+}
+
+function StaticRow({ icon, label, last, onClick, value }: {
   icon?: React.ReactNode;
   label: string;
   last?: boolean;
   onClick?: () => void;
   value: string;
 }) {
-  const commonClassName = `items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`;
+  const cls = `items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`;
   const style = last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' };
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={commonClassName} style={style}>
+      <button type="button" onClick={onClick} className={cls} style={style}>
         <div className="font-semibold w-[84px] text-gray-600 text-left">{label}</div>
         <div className="grow font-semibold basis-[0%] text-left">{value}</div>
         {icon ?? <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
@@ -308,10 +421,10 @@ function StaticRow({
   }
 
   return (
-    <div className={commonClassName} style={style}>
+    <div className={cls} style={style}>
       <div className="font-semibold w-[84px] text-gray-600">{label}</div>
       <div className="grow font-semibold basis-[0%]">{value}</div>
-      {icon ?? <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
+      {icon}
     </div>
   );
 }
@@ -332,7 +445,7 @@ function toDateKey(date: Date) {
 
 function formatDateDot(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  return value.replaceAll('-', '.');
+  return value.replace(/-/g, '.');
 }
 
 function toDoseTime(value: string) {

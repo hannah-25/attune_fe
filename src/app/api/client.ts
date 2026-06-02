@@ -28,6 +28,15 @@ export class ApiError extends Error {
 export const apiBaseUrl =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? DEFAULT_API_BASE_URL;
 
+function normalizePath(path: string): string {
+  return path.replace(/^\/api\//, '/v1/');
+}
+
+function shouldBypassGuestMock(path: string): boolean {
+  // Even in guest mode, auth/account flows must hit real backend APIs.
+  return path.startsWith('/v1/auth/') || path.startsWith('/v1/account/');
+}
+
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
@@ -41,9 +50,11 @@ export function clearAccessToken(): void {
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  if (isGuestMode()) {
+  const normalizedPath = normalizePath(path);
+
+  if (isGuestMode() && !shouldBypassGuestMock(normalizedPath)) {
     const { resolveGuestRequest } = await import('../mocks/resolver');
-    return resolveGuestRequest<T>(path, options);
+    return resolveGuestRequest<T>(normalizedPath, options);
   }
 
   const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
@@ -79,7 +90,7 @@ async function request(path: string, options: ApiRequestOptions) {
     }
   }
 
-  const normalizedPath = path.replace(/^\/api\//, '/v1/');
+  const normalizedPath = normalizePath(path);
 
   return fetch(`${apiBaseUrl}${normalizedPath}`, {
     ...init,

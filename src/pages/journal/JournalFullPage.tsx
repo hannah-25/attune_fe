@@ -17,18 +17,19 @@ import {
   createSideEffectTag,
   createSleepMeal,
   createTroubleTag,
-  deleteConditionTag,
   deleteJournalGoal,
-  deleteSideEffectTag,
-  deleteTroubleTag,
   getConditionTags,
   getJournal,
   getSideEffectTags,
   getTroubleTags,
   scoreJournalGoal,
+  toggleConditionTagVisible,
+  toggleSideEffectTagVisible,
+  toggleTroubleTagVisible,
   uncheckCondition,
   uncheckSideEffect,
   uncheckTrouble,
+  type SleepQuality,
 } from '@/api/journal';
 
 type Tone = 'purple' | 'orange' | 'blue';
@@ -325,9 +326,8 @@ export default function JournalFullPage() {
   const [memoFocused, setMemoFocused] = useState(false);
   const [error, setError] = useState('');
 
-  // 수면
   const [sleep, setSleep] = useState<SleepOption | null>(null);
-  // 식사
+  const [sleepQuality, setSleepQuality] = useState<SleepQuality | null>(null);
   const [meals, setMeals] = useState<Set<MealKey>>(new Set());
 
   useEffect(() => {
@@ -339,7 +339,7 @@ export default function JournalFullPage() {
       getTroubleTags(),
       getJournal(journalDate).catch(() => null),
     ])
-      .then(([conditions, sideEffects, troubles, journal]) => {
+      .then(([conditionTags, sideEffectTags, troubleTags, journal]) => {
         if (ignore) return;
         const checked = journal?.checked;
         const activeTags = journal?.activeTags;
@@ -352,17 +352,17 @@ export default function JournalFullPage() {
           {
             title: '감정 · 증상',
             tone: 'purple',
-            tags: conditions.map((tag) => ({ label: tag.condition, selected: checkedConditionIds.has(tag.tagId), tagId: tag.tagId, source: 'condition' })),
+            tags: conditionTags.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.condition, selected: checkedConditionIds.has(tag.tagId), tagId: tag.tagId, source: 'condition' })),
           },
           {
             title: '부작용',
             tone: 'orange',
-            tags: sideEffects.map((tag) => ({ label: tag.sideEffect, selected: checkedSideEffectIds.has(tag.tagId), tagId: tag.tagId, source: 'sideEffect' })),
+            tags: sideEffectTags.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.sideEffect, selected: checkedSideEffectIds.has(tag.tagId), tagId: tag.tagId, source: 'sideEffect' })),
           },
           {
             title: '업무 실수 · 불편',
             tone: 'blue',
-            tags: troubles.map((tag) => ({ label: tag.trouble, selected: checkedTroubleIds.has(tag.tagId), tagId: tag.tagId, source: 'trouble' })),
+            tags: troubleTags.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.trouble, selected: checkedTroubleIds.has(tag.tagId), tagId: tag.tagId, source: 'trouble' })),
           },
         ]);
 
@@ -371,8 +371,9 @@ export default function JournalFullPage() {
           setMemoSaved(true);
         }
 
-        if (checked?.sleep && typeof checked.sleep.sleepHour === 'number') {
-          setSleep(hourToSleepOption(checked.sleep.sleepHour));
+        if (checked?.sleep) {
+          if (typeof checked.sleep.sleepHour === 'number') setSleep(hourToSleepOption(checked.sleep.sleepHour));
+          if (checked.sleep.sleepQuality) setSleepQuality(checked.sleep.sleepQuality);
         }
 
         if (checked?.meal) {
@@ -406,7 +407,7 @@ export default function JournalFullPage() {
     if (nextMeals.has(meal)) nextMeals.delete(meal);
     else nextMeals.add(meal);
     setMeals(nextMeals);
-    await saveSleepMeal(sleep, nextMeals);
+    await saveSleepMeal(sleep, sleepQuality, nextMeals);
   };
 
   const toggleTag = async (sectionTitle: string, label: string) => {
@@ -454,6 +455,8 @@ export default function JournalFullPage() {
 
   const deleteTag = async (sectionTitle: string, label: string) => {
     const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
+    if (!tag) return;
+
     setSections((currentSections) =>
       currentSections.map((section) =>
         section.title === sectionTitle
@@ -465,14 +468,21 @@ export default function JournalFullPage() {
       ),
     );
 
-    if (!tag?.tagId || !tag.source) return;
+    if (!tag.tagId || !tag.source) return;
 
     try {
-      if (tag.source === 'condition') await deleteConditionTag(tag.tagId, journalDate);
-      if (tag.source === 'sideEffect') await deleteSideEffectTag(tag.tagId, journalDate);
-      if (tag.source === 'trouble') await deleteTroubleTag(tag.tagId, journalDate);
+      if (tag.source === 'condition') await toggleConditionTagVisible(tag.tagId);
+      if (tag.source === 'sideEffect') await toggleSideEffectTagVisible(tag.tagId);
+      if (tag.source === 'trouble') await toggleTroubleTagVisible(tag.tagId);
     } catch {
-      setError('태그 삭제에 실패했습니다.');
+      setSections((currentSections) =>
+        currentSections.map((section) => {
+          if (section.title !== sectionTitle) return section;
+          if (section.tags.some((currentTag) => currentTag.label === tag.label)) return section;
+          return { ...section, tags: [...section.tags, tag] };
+        }),
+      );
+      setError('태그 비활성화에 실패했습니다.');
     }
   };
 
@@ -544,10 +554,10 @@ export default function JournalFullPage() {
     );
   };
 
-  const saveSleepMeal = async (nextSleep: SleepOption | null, nextMeals: Set<MealKey>) => {
+  const saveSleepMeal = async (nextSleep: SleepOption | null, nextQuality: SleepQuality | null, nextMeals: Set<MealKey>) => {
     const payload = {
       sleepHour: sleepOptionToHour(nextSleep),
-      sleepQuality: nextSleep ? 'NORMAL' as const : null,
+      sleepQuality: nextQuality,
       ateBreakfast: nextMeals.has('아'),
       ateLunch: nextMeals.has('점'),
       ateDinner: nextMeals.has('저'),
@@ -607,7 +617,7 @@ export default function JournalFullPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -648,8 +658,10 @@ export default function JournalFullPage() {
                       type="button"
                       onClick={() => {
                         const nextSleep = sleep === opt ? null : opt;
+                        const nextQuality = nextSleep === null ? null : sleepQuality;
                         setSleep(nextSleep);
-                        void saveSleepMeal(nextSleep, meals);
+                        if (nextSleep === null) setSleepQuality(null);
+                        void saveSleepMeal(nextSleep, nextQuality, meals);
                       }}
                       className={`grow h-1 rounded-xs transition-colors ${i < sleepBarCount ? 'bg-purple-400' : 'bg-gray-100'}`}
                       aria-label={opt}
@@ -663,14 +675,35 @@ export default function JournalFullPage() {
                       type="button"
                       onClick={() => {
                         const nextSleep = sleep === opt ? null : opt;
+                        const nextQuality = nextSleep === null ? null : sleepQuality;
                         setSleep(nextSleep);
-                        void saveSleepMeal(nextSleep, meals);
+                        if (nextSleep === null) setSleepQuality(null);
+                        void saveSleepMeal(nextSleep, nextQuality, meals);
                       }}
                       className={`text-[9px] font-medium transition-colors ${sleep === opt ? 'text-purple-600 font-bold' : 'text-gray-300'}`}
                     >
                       {opt}
                     </button>
                   ))}
+                </div>
+                <div className="flex gap-1.5 mt-2">
+                  {(['GOOD', 'NORMAL', 'BAD'] as const).map((q) => {
+                    const label = q === 'GOOD' ? '좋음' : q === 'NORMAL' ? '보통' : '나쁨';
+                    return (
+                      <button
+                        key={q}
+                        type="button"
+                        disabled={!sleep}
+                        onClick={() => {
+                          setSleepQuality(q);
+                          void saveSleepMeal(sleep, q, meals);
+                        }}
+                        className={`flex-1 text-[10px] font-semibold py-1 rounded-full border transition-colors ${sleepQuality === q ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'} ${!sleep ? 'opacity-40 cursor-default' : ''}`}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               {/* 식사 카드 */}

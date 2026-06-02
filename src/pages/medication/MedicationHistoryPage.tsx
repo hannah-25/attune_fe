@@ -35,7 +35,7 @@ export default function MedicationHistoryPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -135,7 +135,7 @@ function normalizeLog(raw: unknown): MedicationPeriodLog | null {
   if (!raw || typeof raw !== 'object') return null;
 
   const item = raw as {
-    medicationId?: unknown;
+    userMedicationId?: unknown;
     name?: unknown;
     intakeTime?: unknown;
     taken?: unknown;
@@ -146,7 +146,7 @@ function normalizeLog(raw: unknown): MedicationPeriodLog | null {
 
   if (typeof item.intakeTime === 'string' && typeof item.taken === 'boolean') {
     return {
-      medicationId: typeof item.medicationId === 'number' ? item.medicationId : 0,
+      userMedicationId: typeof item.userMedicationId === 'number' ? item.userMedicationId : 0,
       name: typeof item.name === 'string' && item.name.trim() ? item.name : '복용 약',
       intakeTime: item.intakeTime,
       taken: item.taken,
@@ -155,7 +155,7 @@ function normalizeLog(raw: unknown): MedicationPeriodLog | null {
 
   if (typeof item.takenAt === 'string' && typeof item.status === 'string') {
     return {
-      medicationId: typeof item.medicationId === 'number' ? item.medicationId : 0,
+      userMedicationId: typeof item.userMedicationId === 'number' ? item.userMedicationId : 0,
       name:
         typeof item.name === 'string' && item.name.trim()
           ? item.name

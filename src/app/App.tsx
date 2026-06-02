@@ -82,10 +82,12 @@ function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
   return (
-    <>
+    <div className="flex flex-col h-full">
       {isGuestMode() && <GuestBanner />}
-      <Outlet />
-    </>
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Outlet />
+      </div>
+    </div>
   );
 }
 

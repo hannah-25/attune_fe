@@ -3,42 +3,63 @@ import { apiRequest } from './client';
 export type MedicationLogStatus = 'TAKEN' | 'SKIPPED' | 'MISSED';
 export type QuickMedicationLogAction = 'TAKEN' | 'POSTPONE' | 'SKIPPED';
 
+export type MedicationDosageOption = {
+  dosageId?: number;
+  id?: number;
+  amount: number;
+};
+
+export function getDosageId(d: MedicationDosageOption): number {
+  return (d.dosageId ?? d.id) as number;
+}
+
+export type MedicationSearchResult = {
+  medicationId: number;
+  name: string;
+  ingredient: string;
+  dosageOptions?: MedicationDosageOption[];
+};
+
 export type MedicationStandard = {
   name: string;
   ingredient: string;
   indications: string;
   sideEffects: string;
+  description: string;
   bloodConcentrationGraph: string;
+  imageUrl?: string;
+  sourceUrl?: string;
+  dosageOptions?: MedicationDosageOption[];
 };
 
 export type MedicationSchedule = {
   doseTime: string;
   label: string;
-  dosage: string;
 };
 
 export type MedicationScheduleSummary = {
   scheduleId: number;
   doseTime: string;
   label?: string;
-  dosage?: string;
 };
 
 export type MedicationSummary = {
   userMedicationId: number;
   medicationId?: number;
-  name: string;
-  ingredient?: string;
+  medicationDosageId?: number;
+  medicationName: string;
+  dosageAmount?: number;
+  consultationId?: number | null;
+  isActive: boolean;
   startedAt?: string;
   endAt?: string | null;
-  isActive: boolean;
   alarmActive?: boolean;
   schedules?: MedicationScheduleSummary[];
 };
 
 export type CreateMedicationRequest = {
-  medicationId: number;
-  hospitalId?: number;
+  medicationDosageId: number;
+  consultationId?: number | null;
   startedAt: string;
   endAt?: string;
   schedules: MedicationSchedule[];
@@ -56,29 +77,28 @@ export type MedicationLogRequest = {
 };
 
 export type MedicationProfileLog = {
-  userMedicationId?: number;
   scheduleId: number;
   takenAt: string;
   status: MedicationLogStatus;
 };
 
 export type MedicationPeriodLog = {
-  medicationId: number;
+  userMedicationId: number;
   name: string;
   intakeTime: string;
   taken: boolean;
 };
 
-export type MedicationListResponse = MedicationSummary[] | { medications: MedicationSummary[] };
-export type MedicationProfileLogsResponse = MedicationProfileLog[] | { userMedicationId: number; logs: MedicationProfileLog[] };
-export type MedicationPeriodLogsResponse = MedicationPeriodLog[] | { logs: MedicationPeriodLog[] };
+export type MedicationListResponse = MedicationSummary[];
+export type MedicationProfileLogsResponse = { userMedicationId: number; logs: MedicationProfileLog[] };
+export type MedicationPeriodLogsResponse = { logs: MedicationPeriodLog[] };
 export type CreateMedicationResponse = {
   userMedicationId: number;
   name: string;
   isActive: boolean;
 };
 export type UpdateMedicationResponse = {
-  medicationId: number;
+  userMedicationId: number;
   isActive: boolean;
   updatedAt: string;
 };
@@ -87,6 +107,11 @@ export type QuickMedicationLogResponse = {
   action: QuickMedicationLogAction;
   recordedAt: string;
 };
+
+export function searchMedications(q?: string) {
+  const query = q ? `?q=${encodeURIComponent(q)}` : '';
+  return apiRequest<MedicationSearchResult[]>(`/v1/medications${query}`);
+}
 
 export function getMedications() {
   return apiRequest<MedicationListResponse>('/v1/user-medications');

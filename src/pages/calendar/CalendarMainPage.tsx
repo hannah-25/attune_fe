@@ -132,10 +132,10 @@ export default function CalendarMainPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
-      <div className="relative flex h-dvh flex-col min-h-0">
+      <div className="relative flex h-full flex-col min-h-0">
         <div className="flex items-center justify-between pt-2 pr-3 pb-3 pl-4 shrink-0">
           <div className="flex flex-col gap-2">
             <div className="font-extrabold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>{selectedDate.getMonth() + 1}월</div>

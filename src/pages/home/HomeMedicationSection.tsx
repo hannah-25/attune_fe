@@ -3,7 +3,7 @@ import { ArrowRight, Check } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
-  getMedicationLogs,
+  getAllMedicationLogs,
   getMedications,
   type MedicationLogStatus,
   type MedicationListResponse,
@@ -55,34 +55,27 @@ export default function HomeMedicationSection() {
         return;
       }
 
-      const logResults = await Promise.allSettled(
-        activeMedications.map(async (medication) => {
-          const response = await getMedicationLogs(medication.userMedicationId, {
-            startDate: todayKey,
-            endDate: todayKey,
-          });
+      const scheduleToMedication = new Map<number, number>();
+      activeMedications.forEach((medication) => {
+        medication.schedules.forEach((schedule) => {
+          scheduleToMedication.set(schedule.scheduleId, medication.userMedicationId);
+        });
+      });
 
-          return {
-            userMedicationId: medication.userMedicationId,
-            logs: extractMedicationLogs(response),
-          };
-        })
-      );
+      const logsResponse = await getAllMedicationLogs({ startDate: todayKey, endDate: todayKey });
+      const allLogs = extractMedicationLogs(logsResponse as unknown as MedicationProfileLogsResponse);
 
       const latestByDoseKey = new Map<string, { status: MedicationLogStatus; takenAt: number }>();
-      logResults.forEach((result) => {
-        if (result.status !== 'fulfilled') return;
-
-        result.value.logs.forEach((log) => {
-          if (typeof log.scheduleId !== 'number') return;
-          const key = buildDoseKey(result.value.userMedicationId, log.scheduleId);
-          const timestamp = parseTimestamp(log.takenAt);
-          const previous = latestByDoseKey.get(key);
-
-          if (!previous || timestamp >= previous.takenAt) {
-            latestByDoseKey.set(key, { status: log.status, takenAt: timestamp });
-          }
-        });
+      allLogs.forEach((log) => {
+        if (typeof log.scheduleId !== 'number') return;
+        const userMedicationId = scheduleToMedication.get(log.scheduleId);
+        if (typeof userMedicationId !== 'number') return;
+        const key = buildDoseKey(userMedicationId, log.scheduleId);
+        const timestamp = parseTimestamp(log.takenAt);
+        const previous = latestByDoseKey.get(key);
+        if (!previous || timestamp >= previous.takenAt) {
+          latestByDoseKey.set(key, { status: log.status, takenAt: timestamp });
+        }
       });
 
       const takenScheduleKeys = new Set<string>();
@@ -247,63 +240,25 @@ function pickActiveMedications(medications: ActiveMedication[]) {
 }
 
 function normalizeMedicationList(response: MedicationListResponse): ActiveMedication[] {
-  const source = Array.isArray(response) ? response : extractMedicationArray(response);
-
-  return source
+  return response
     .map((item) => normalizeMedication(item))
     .filter((item): item is ActiveMedication => item !== null);
 }
 
 function normalizeMedication(medication: MedicationSummary): ActiveMedication | null {
-  const raw = medication as MedicationSummary & {
-    id?: number;
-    medicationName?: string;
-    scheduleList?: MedicationScheduleSummary[];
-  };
-
-  const userMedicationId = typeof raw.userMedicationId === 'number' ? raw.userMedicationId : raw.id;
-  const name = raw.name ?? raw.medicationName;
-  if (typeof userMedicationId !== 'number' || !name) return null;
-
-  const schedules = Array.isArray(raw.schedules)
-    ? raw.schedules
-    : Array.isArray(raw.scheduleList)
-      ? raw.scheduleList
-      : [];
+  if (typeof medication.userMedicationId !== 'number' || !medication.medicationName) return null;
 
   return {
-    userMedicationId,
-    name,
-    isActive: typeof raw.isActive === 'boolean' ? raw.isActive : true,
-    endAt: raw.endAt,
-    schedules,
+    userMedicationId: medication.userMedicationId,
+    name: medication.medicationName,
+    isActive: medication.isActive,
+    endAt: medication.endAt,
+    schedules: medication.schedules ?? [],
   };
-}
-
-function extractMedicationArray(response: MedicationListResponse) {
-  const candidates = response as {
-    medications?: MedicationSummary[];
-    userMedications?: MedicationSummary[];
-    items?: MedicationSummary[];
-    data?: MedicationSummary[];
-  };
-
-  if (Array.isArray(candidates.medications)) return candidates.medications;
-  if (Array.isArray(candidates.userMedications)) return candidates.userMedications;
-  if (Array.isArray(candidates.items)) return candidates.items;
-  if (Array.isArray(candidates.data)) return candidates.data;
-  return [];
 }
 
 function extractMedicationLogs(response: MedicationProfileLogsResponse): MedicationProfileLog[] {
-  if (Array.isArray(response)) return response;
-
-  const candidate = response as {
-    logs?: MedicationProfileLog[];
-  };
-
-  if (Array.isArray(candidate.logs)) return candidate.logs;
-  return [];
+  return response.logs;
 }
 
 function parseDateValue(value: string) {

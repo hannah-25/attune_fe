@@ -4,6 +4,7 @@ interface Window {
     accounts: {
       id: {
         initialize: (config: GoogleIdConfig) => void;
+        renderButton: (parent: HTMLElement, options: GoogleButtonConfig) => void;
         prompt: (callback?: (notification: GooglePromptNotification) => void) => void;
         cancel: () => void;
         disableAutoSelect: () => void;
@@ -23,6 +24,17 @@ interface GoogleIdConfig {
 interface GoogleCredentialResponse {
   credential: string;
   select_by: string;
+}
+
+interface GoogleButtonConfig {
+  type?: 'standard' | 'icon';
+  theme?: 'outline' | 'filled_blue' | 'filled_black';
+  size?: 'large' | 'medium' | 'small';
+  text?: 'signin_with' | 'signup_with' | 'continue_with' | 'signin';
+  shape?: 'rectangular' | 'pill' | 'circle' | 'square';
+  logo_alignment?: 'left' | 'center';
+  width?: number;
+  locale?: string;
 }
 
 interface GooglePromptNotification {
@@ -45,6 +57,9 @@ interface Window {
 interface KakaoStatic {
   init: (appKey: string) => void;
   isInitialized: () => boolean;
+  API: {
+    request: (settings: KakaoApiRequestSettings) => void;
+  };
   Auth: {
     login: (settings: KakaoLoginSettings) => void;
     logout: (callback?: () => void) => void;
@@ -55,6 +70,7 @@ interface KakaoLoginSettings {
   success: (authObj: KakaoAuthObj) => void;
   fail: (err: KakaoError) => void;
   persistAccessToken?: boolean;
+  throughTalk?: boolean;
 }
 
 interface KakaoAuthObj {
@@ -67,6 +83,18 @@ interface KakaoAuthObj {
 interface KakaoError {
   error: string;
   error_description: string;
+}
+
+interface KakaoApiRequestSettings {
+  url: string;
+  success: (response: KakaoApiResponse) => void;
+  fail: (err: KakaoError) => void;
+}
+
+interface KakaoApiResponse {
+  kakao_account?: {
+    email?: string | null;
+  };
 }
 
 // Apple Sign In JS SDK

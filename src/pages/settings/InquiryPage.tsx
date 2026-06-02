@@ -56,7 +56,7 @@ export default function InquiryPage() {
   if (submitted) {
     return (
       <div
-        className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+        className="w-full h-full bg-gray-50 text-sm flex flex-col"
         style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
       >
         <TopBar title="문의하기" right={<NavCloseButton />} />
@@ -80,7 +80,7 @@ export default function InquiryPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <TopBar title="문의하기" right={<NavCloseButton />} />

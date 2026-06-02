@@ -132,9 +132,9 @@ export default function JournalTimelinePage() {
       .then(([conditions, sideEffects, troubles, journal]) => {
         if (ignore) return;
         setCategoryTags({
-          '감정·증상': conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
-          부작용: sideEffects.map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId })),
-          '업무 실수': troubles.map((tag) => ({ label: tag.trouble, tagId: tag.tagId })),
+          '감정·증상': conditions.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
+          부작용: sideEffects.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId })),
+          '업무 실수': troubles.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.trouble, tagId: tag.tagId })),
         });
         if (journal) {
           if (journal.checked.memo) {
@@ -240,7 +240,7 @@ export default function JournalTimelinePage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -256,7 +256,7 @@ export default function JournalTimelinePage() {
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 
             {entries.map(entry => {
-              if (entry.kind === 'medication' || entry.kind === 'meal') {
+              if (entry.kind !== 'tags') {
                 return (
                   <div key={entry.id} className="relative pt-0 pr-0 pb-3 pl-0">
                     <div className="absolute w-[14px] h-[14px] left-[-18px] top-2 bg-purple-300 border-[rgb(255,_250,_240)] border-[2.22222px] rounded-[0.4375rem]"></div>

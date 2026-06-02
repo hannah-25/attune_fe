@@ -15,20 +15,20 @@ export type ConditionTag = {
   tagId: number;
   condition: string;
   conditionType: ConditionType;
-  visible?: boolean;
+  visible: boolean;
 };
 
 export type SideEffectTag = {
   tagId: number;
   sideEffect: string;
-  visible?: boolean;
+  visible: boolean;
 };
 
 export type TroubleTag = {
   tagId: number;
   trouble: string;
   type: TroubleType;
-  visible?: boolean;
+  visible: boolean;
 };
 
 export type JournalGoal = {
@@ -71,11 +71,11 @@ export function getJournalDates(params: JournalDateRange) {
 }
 
 export function deleteJournal(date: string) {
-  return apiRequest<{ deletedDate: string; success: boolean }>(`${JOURNALS_BASE_PATH}/${date}`, { method: 'DELETE' });
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/${date}`, { method: 'DELETE' });
 }
 
 export function deleteJournals(params: JournalDateRange) {
-  return apiRequest<{ deletedRange: JournalDateRange; count: number }>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`, { method: 'DELETE' });
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`, { method: 'DELETE' });
 }
 
 export function getConditionTags() {

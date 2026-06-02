@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
-import { signup, socialLogin } from '../../app/api/auth';
-import { signInWithApple, signInWithGoogle, signInWithKakao } from '../../app/api/social';
+import { restoreSocialAccount, signup, socialLogin } from '../../app/api/auth';
+import { extractEmailFromIdentityToken, preloadSocialSdks, signInWithApple, signInWithKakao } from '../../app/api/social';
 import { ApiError, setAccessToken } from '../../app/api/client';
-import { enterGuestMode } from '../../app/guest';
+import { enterGuestMode, exitGuestMode } from '../../app/guest';
+import { clearGuestStore } from '../../app/mocks/guest-store';
+import { clearPendingRestoreEmail, isPendingRestoreEmail } from '../../app/withdrawal-restore';
+import { AccountRestorePrompt } from './AccountRestorePrompt';
+import { AppleMark, KakaoMark } from './socialMarks';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 type SocialProvider = 'google' | 'kakao' | 'apple';
-
-const GOOGLE_ICON_SRC = 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/40px-Google_%22G%22_logo.svg.png';
-const APPLE_ICON_SRC = 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/250px-Apple_logo_black.svg.png';
-const KAKAO_ICON_SRC = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/KakaoTalk_logo.svg/250px-KakaoTalk_logo.svg.png';
+type SocialProviderKey = 'GOOGLE' | 'KAKAO' | 'APPLE';
+type PendingSocialRestore = {
+  email: string | null;
+  provider: SocialProviderKey;
+  token: string;
+};
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -25,6 +32,13 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [socialLoading, setSocialLoading] = useState<SocialProvider | null>(null);
   const [isEmailOpen, setIsEmailOpen] = useState(false);
+  const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [pendingSocialRestore, setPendingSocialRestore] = useState<PendingSocialRestore | null>(null);
+
+  useEffect(() => {
+    preloadSocialSdks();
+  }, []);
 
   const handleSignup = async () => {
     if (!email.trim() || !password || !nickname.trim()) {
@@ -61,23 +75,93 @@ export default function SignupPage() {
     setSocialLoading(provider);
     try {
       let token: string;
-      let provider_key: 'GOOGLE' | 'KAKAO' | 'APPLE';
-      if (provider === 'google') {
-        token = await signInWithGoogle();
-        provider_key = 'GOOGLE';
-      } else if (provider === 'kakao') {
-        token = await signInWithKakao();
+      let provider_key: SocialProviderKey;
+      let socialEmail: string | null = null;
+      if (provider === 'kakao') {
+        const result = await signInWithKakao();
+        token = result.token;
+        socialEmail = result.email;
         provider_key = 'KAKAO';
       } else {
-        token = await signInWithApple();
+        const result = await signInWithApple();
+        token = result.token;
+        socialEmail = result.email;
         provider_key = 'APPLE';
       }
+
+      if (socialEmail && isPendingRestoreEmail(socialEmail)) {
+        setPendingSocialRestore({ provider: provider_key, token, email: socialEmail });
+        setShowRestorePrompt(true);
+        return;
+      }
+
       const { accessToken } = await socialLogin(provider_key, token);
+      exitGuestMode();
+      clearGuestStore();
+      clearPendingRestoreEmail();
       setAccessToken(accessToken);
       navigate('/home');
     } catch (err) {
-      const message = err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.';
-      if (!message.includes('취소')) {
+      if (isWithdrawalCandidateError(err)) {
+        setError('');
+        setPendingSocialRestore({ provider: provider_key, token, email: socialEmail });
+        setShowRestorePrompt(true);
+        return;
+      }
+
+      const providerLabel = provider === 'google' ? 'Google' : provider === 'kakao' ? 'Kakao' : 'Apple';
+
+      if (err instanceof ApiError) {
+        const payloadMessage =
+          err.backendMessage
+          ?? (typeof err.payload === 'string' ? err.payload : null)
+          ?? '알 수 없는 오류';
+        setError(`${providerLabel} 로그인 실패 (${err.status}): ${payloadMessage}`);
+      } else {
+        const message = err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.';
+        if (!message.includes('취소')) {
+          setError(message);
+        }
+      }
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
+  const handleGoogleCredential = async (token: string) => {
+    setError('');
+    setSocialLoading('google');
+
+    try {
+      const socialEmail = extractEmailFromIdentityToken(token);
+      if (socialEmail && isPendingRestoreEmail(socialEmail)) {
+        setPendingSocialRestore({ provider: 'GOOGLE', token, email: socialEmail });
+        setShowRestorePrompt(true);
+        return;
+      }
+
+      const { accessToken } = await socialLogin('GOOGLE', token);
+      exitGuestMode();
+      clearGuestStore();
+      clearPendingRestoreEmail();
+      setAccessToken(accessToken);
+      navigate('/home');
+    } catch (err) {
+      if (isWithdrawalCandidateError(err)) {
+        setError('');
+        setPendingSocialRestore({ provider: 'GOOGLE', token, email: extractEmailFromIdentityToken(token) });
+        setShowRestorePrompt(true);
+        return;
+      }
+
+      if (err instanceof ApiError) {
+        const payloadMessage =
+          err.backendMessage
+          ?? (typeof err.payload === 'string' ? err.payload : null)
+          ?? '알 수 없는 오류';
+        setError(`Google 로그인 실패 (${err.status}): ${payloadMessage}`);
+      } else {
+        const message = err instanceof Error ? err.message : 'Google 로그인에 실패했습니다.';
         setError(message);
       }
     } finally {
@@ -86,6 +170,31 @@ export default function SignupPage() {
   };
 
   const isSocialDisabled = isSubmitting || socialLoading !== null;
+
+  const handleRestore = async () => {
+    if (!pendingSocialRestore) {
+      setShowRestorePrompt(false);
+      return;
+    }
+
+    setError('');
+    setIsRestoring(true);
+
+    try {
+      const { accessToken } = await restoreSocialAccount(pendingSocialRestore.provider, pendingSocialRestore.token);
+      exitGuestMode();
+      clearGuestStore();
+      clearPendingRestoreEmail(pendingSocialRestore.email ?? undefined);
+      setAccessToken(accessToken);
+      navigate('/home');
+    } catch (err) {
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '계정 복구에 실패했습니다. 다시 시도해주세요.');
+      setShowRestorePrompt(false);
+      setPendingSocialRestore(null);
+    } finally {
+      setIsRestoring(false);
+    }
+  };
 
   return (
     <div
@@ -98,16 +207,14 @@ export default function SignupPage() {
 
           {/* 소셜 가입 버튼 */}
           <div className={`flex flex-col gap-3 overflow-hidden transition-all duration-300 ${isEmailOpen ? 'max-h-0 opacity-0' : 'max-h-[200px] opacity-100'}`}>
-            <SocialLoginButton
-              icon={<img src={GOOGLE_ICON_SRC} alt="" aria-hidden="true" className="w-5 h-5 object-contain" />}
-              label="Google로 계속하기"
-              className="bg-white border border-gray-200 text-gray-800 shadow-[rgba(60,40,90,0.06)_0px_2px_8px_0px]"
-              onClick={() => handleSocialLogin('google')}
+            <GoogleSignInButton
+              onSuccess={handleGoogleCredential}
+              onError={setError}
               loading={socialLoading === 'google'}
               disabled={isSocialDisabled}
             />
             <SocialLoginButton
-              icon={<img src={APPLE_ICON_SRC} alt="" aria-hidden="true" className="w-[18px] h-[18px] object-contain" style={{ filter: 'invert(1)' }} />}
+              icon={<AppleMark className="w-[18px] h-[18px] text-white" />}
               label="Apple로 계속하기"
               className="bg-[rgb(31,27,46)] text-white"
               onClick={() => handleSocialLogin('apple')}
@@ -115,7 +222,7 @@ export default function SignupPage() {
               disabled={isSocialDisabled}
             />
             <SocialLoginButton
-              icon={<img src={KAKAO_ICON_SRC} alt="" aria-hidden="true" className="w-5 h-5 object-contain rounded-sm" />}
+              icon={<KakaoMark className="w-5 h-5 text-gray-900" />}
               label="카카오로 계속하기"
               className="text-gray-900"
               style={{ backgroundColor: '#FEE500' }}
@@ -195,8 +302,43 @@ export default function SignupPage() {
           </button>
         </div>
       </div>
+      <AccountRestorePrompt
+        open={showRestorePrompt}
+        email={pendingSocialRestore?.email}
+        isSubmitting={isRestoring}
+        onConfirm={handleRestore}
+        onCancel={() => {
+          setPendingSocialRestore(null);
+          setShowRestorePrompt(false);
+        }}
+      />
     </div>
   );
+}
+
+function isWithdrawalCandidateError(error: unknown): boolean {
+  if (!(error instanceof ApiError)) return false;
+
+  const messageParts: string[] = [];
+
+  if (typeof error.backendMessage === 'string') {
+    messageParts.push(error.backendMessage);
+  }
+
+  if (typeof error.payload === 'string') {
+    messageParts.push(error.payload);
+  } else if (error.payload && typeof error.payload === 'object') {
+    const record = error.payload as Record<string, unknown>;
+    if (typeof record.message === 'string') {
+      messageParts.push(record.message);
+    }
+    if (typeof record.error === 'string') {
+      messageParts.push(record.error);
+    }
+  }
+
+  const message = messageParts.join(' ').toLowerCase();
+  return message.includes('탈퇴') || message.includes('withdraw') || message.includes('비활성') || message.includes('disabled');
 }
 
 function TextField({

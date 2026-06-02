@@ -9,14 +9,14 @@ import {
   createConditionTag,
   createSideEffectTag,
   createTroubleTag,
-  deleteConditionTag,
-  deleteSideEffectTag,
-  deleteTroubleTag,
   getConditionTags,
   getSideEffectTags,
   getTroubleTags,
   ConditionType,
   TroubleType,
+  toggleConditionTagVisible,
+  toggleSideEffectTagVisible,
+  toggleTroubleTagVisible,
 } from '@/api/journal';
 
 type Category = '감정·증상' | '부작용' | '업무';
@@ -37,6 +37,8 @@ export default function JournalTagsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [error, setError] = useState('');
   const journalDate = useMemo(() => toDateKey(new Date()), []);
+  const activeTags = tags.filter((tag) => tag.visible);
+  const inactiveTags = tags.filter((tag) => !tag.visible);
 
   useEffect(() => {
     void loadTags(activeCategory);
@@ -47,13 +49,13 @@ export default function JournalTagsPage() {
     try {
       if (category === '감정·증상') {
         const response = await getConditionTags();
-        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.condition, source: 'condition' })));
+        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.condition, source: 'condition', visible: tag.visible })));
       } else if (category === '부작용') {
         const response = await getSideEffectTags();
-        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.sideEffect, source: 'sideEffect' })));
+        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.sideEffect, source: 'sideEffect', visible: tag.visible })));
       } else {
         const response = await getTroubleTags();
-        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.trouble, source: 'trouble' })));
+        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.trouble, source: 'trouble', visible: tag.visible })));
       }
     } catch {
       setError('태그를 불러오지 못했습니다.');
@@ -96,26 +98,31 @@ export default function JournalTagsPage() {
     }
   };
 
-  const deleteTag = async (tag: Tag) => {
+  const toggleTagVisibility = async (tag: Tag) => {
     setError('');
+    setTags((currentTags) =>
+      currentTags.map((item) => (item.id === tag.id ? { ...item, visible: !item.visible } : item)),
+    );
     try {
       const tagId = Number(tag.id);
       if (tag.source === 'condition') {
-        await deleteConditionTag(tagId, journalDate);
+        await toggleConditionTagVisible(tagId);
       } else if (tag.source === 'sideEffect') {
-        await deleteSideEffectTag(tagId, journalDate);
+        await toggleSideEffectTagVisible(tagId);
       } else {
-        await deleteTroubleTag(tagId, journalDate);
+        await toggleTroubleTagVisible(tagId);
       }
-      setTags((currentTags) => currentTags.filter((item) => item.id !== tag.id));
     } catch {
-      setError('태그를 삭제하지 못했습니다.');
+      setTags((currentTags) =>
+        currentTags.map((item) => (item.id === tag.id ? { ...item, visible: tag.visible } : item)),
+      );
+      setError('태그 활성 상태를 바꾸지 못했습니다.');
     }
   };
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="relative flex flex-col flex-1 min-h-0">
@@ -156,7 +163,8 @@ export default function JournalTagsPage() {
             })}
           </div>
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <TagSection title={`활성 (${tags.length})`} tags={tags} active onToggle={deleteTag} />
+          <TagSection title={`활성 (${activeTags.length})`} tags={activeTags} active onToggle={toggleTagVisibility} />
+          <TagSection title={`비활성 (${inactiveTags.length})`} tags={inactiveTags} active={false} onToggle={toggleTagVisibility} />
         </ScrollArea>
         <button
           type="button"
@@ -177,6 +185,7 @@ type Tag = {
   id: string;
   label: string;
   source: 'condition' | 'sideEffect' | 'trouble';
+  visible: boolean;
 };
 
 function TagSection({

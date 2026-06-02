@@ -43,11 +43,11 @@ export const mockJournalDetail: JournalDetail = {
   },
   checked: {
     conditions: [
-      { tagId: 1, condition: '집중 어려움', conditionType: 'USER_INPUT', checkedAt: '2026-05-31T09:10:00' },
-      { tagId: 3, condition: '짜증', conditionType: 'USER_INPUT', checkedAt: '2026-05-31T14:30:00' },
+      { tagId: 1, condition: '집중 어려움', conditionType: 'USER_INPUT', visible: true, checkedAt: '2026-05-31T09:10:00' },
+      { tagId: 3, condition: '짜증', conditionType: 'USER_INPUT', visible: true, checkedAt: '2026-05-31T14:30:00' },
     ],
     sideEffects: [
-      { tagId: 10, sideEffect: '식욕 저하', checkedAt: '2026-05-31T08:30:00' },
+      { tagId: 10, sideEffect: '식욕 저하', visible: true, checkedAt: '2026-05-31T08:30:00' },
     ],
     troubles: [],
     sleep: { sleepHour: 7, sleepQuality: 'NORMAL' },

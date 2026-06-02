@@ -12,6 +12,7 @@ import {
 import {
   mockMedications,
   mockMedicationLogs,
+  mockMedicationSearchData,
   mockMedicationStandard,
 } from './medication.mock';
 import { mockScheduleCategories, mockScheduleSummaries, mockScheduleDetail } from './calendar.mock';
@@ -502,11 +503,18 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   }
 
   // ── Medications ───────────────────────────────────────────────────────────
+  if (p.startsWith('/v1/medications') && !p.includes('standards') && m === 'GET') {
+    const q = new URLSearchParams(path.split('?')[1] ?? '').get('q')?.toLowerCase() ?? '';
+    const results = mockMedicationSearchData.filter(
+      (med) => !q || med.name.toLowerCase().includes(q) || med.ingredient.toLowerCase().includes(q),
+    );
+    return ok(results);
+  }
   if (p === '/v1/user-medications' && m === 'GET') {
     return ok(guestRead('medications') ?? mockMedications);
   }
   if (p === '/v1/user-medications' && m === 'POST') {
-    const med = { userMedicationId: genId(), isActive: true, ...(body as object) };
+    const med = { userMedicationId: genId(), medicationName: '등록된 약', isActive: true, ...(body as object) } as (typeof mockMedications)[number];
     guestWrite<typeof mockMedications>('medications', (prev) => [...(prev ?? mockMedications), med]);
     return created(med);
   }
@@ -516,7 +524,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     guestWrite<typeof mockMedications>('medications', (prev) =>
       (prev ?? mockMedications).map((m) => (m.userMedicationId === id ? { ...m, ...(body as object) } : m)),
     );
-    return ok({ medicationId: id, isActive: true, updatedAt: new Date().toISOString() });
+    return ok({ userMedicationId: id, isActive: true, updatedAt: new Date().toISOString() });
   }
   const medicationLogsMatch = p.match(/^\/v1\/user-medications\/(\d+)\/logs$/);
   if (medicationLogsMatch && m === 'GET') {
@@ -759,8 +767,8 @@ function readMedicationLogs() {
 }
 
 function resolveUserMedicationIdFromLog(log: (typeof mockMedicationLogs)[number]) {
-  if (typeof (log as { userMedicationId?: number }).userMedicationId === 'number') {
-    return (log as { userMedicationId: number }).userMedicationId;
+  if (typeof (log as unknown as { userMedicationId?: number }).userMedicationId === 'number') {
+    return (log as unknown as { userMedicationId: number }).userMedicationId;
   }
 
   const medications = guestRead<typeof mockMedications>('medications') ?? mockMedications;
