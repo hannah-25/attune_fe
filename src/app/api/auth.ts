@@ -104,7 +104,7 @@ export function requestAccountWithdrawal(password?: string) {
   const trimmedPassword = password?.trim();
 
   return apiRequest<void>('/v1/account', {
-    method: 'DELETE',
+    method: 'POST',
     body: trimmedPassword ? { password: trimmedPassword } : undefined,
     retryOnUnauthorized: false,
   });
