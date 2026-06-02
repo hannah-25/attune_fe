@@ -229,7 +229,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const goalScoreMatch = p.match(/^\/v1\/journals\/(\d{4}-\d{2}-\d{2})\/goals$/);
   if (goalScoreMatch && m === 'POST') {
     const goalScoreDate = goalScoreMatch[1];
-    const { goalId, score } = body as { goalId: number; score: number };
+    const { goalId, score } = (body ?? {}) as { goalId: number; score: number };
 
     updateJournalDetail(goalScoreDate, (detail) => {
       const matchedGoal = detail.activeTags.goals.find((goal) => goal.goalId === goalId);
