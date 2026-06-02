@@ -228,8 +228,7 @@ export function signInWithGoogle(): Promise<string> {
 async function fetchKakaoAccountEmail(): Promise<string | null> {
   if (!window.Kakao?.API) return null;
 
-  const kakaoApi = window.Kakao?.API;
-  if (!kakaoApi) return null;
+  const kakaoApi = window.Kakao!.API;
 
   return new Promise((resolve) => {
     kakaoApi.request({
