@@ -11,12 +11,12 @@ export type NoticeDetail = NoticeSummary & {
 };
 
 export function getNotices(params: { page?: number; size?: number; q?: string } = {}) {
-  return apiRequest<unknown>(`/api/notices?${new URLSearchParams(toStringParams(params))}`, { auth: false })
+  return apiRequest<unknown>(`/v1/notices?${new URLSearchParams(toStringParams(params))}`, { auth: false })
     .then((payload) => normalizeNoticeListResponse(payload, params));
 }
 
 export function getNotice(noticeId: number) {
-  return apiRequest<NoticeDetail>(`/api/notices/${noticeId}`, { auth: false });
+  return apiRequest<NoticeDetail>(`/v1/notices/${noticeId}`, { auth: false });
 }
 
 function toStringParams(params: { page?: number; size?: number; q?: string }) {

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, Routes, Route } from 'react-router';
 import { AppViewport } from './components/AppViewport';
+import GuestBanner from './components/GuestBanner';
 import { getAccessToken } from './api/client';
+import { isGuestMode } from './guest';
 import { getMyProfile } from './api/user';
 
 // Auth
@@ -76,16 +78,28 @@ import InquiryPage from '../pages/settings/InquiryPage';
 import OverviewPage from './pages/OverviewPage';
 
 function ProtectedRoute() {
-  if (!getAccessToken()) {
+  if (!getAccessToken() && !isGuestMode()) {
     return <Navigate to="/login" replace />;
   }
-  return <Outlet />;
+  return (
+    <div className="flex flex-col h-full">
+      {isGuestMode() && <GuestBanner />}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Outlet />
+      </div>
+    </div>
+  );
 }
 
 function RootRoute() {
   const [destination, setDestination] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isGuestMode()) {
+      setDestination('/home');
+      return;
+    }
+
     let ignore = false;
 
     getMyProfile()

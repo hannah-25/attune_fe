@@ -91,3 +91,37 @@ export function changePassword(currentPassword: string, newPassword: string) {
     body: { currentPassword, newPassword },
   });
 }
+
+export function restoreAccount(email: string, password: string) {
+  return apiRequest<LoginResponse>('/v1/auth/restore', {
+    auth: false,
+    method: 'POST',
+    body: { email, password },
+  });
+}
+
+export function requestAccountWithdrawal(password?: string) {
+  const trimmedPassword = password?.trim();
+
+  return apiRequest<void>('/v1/account', {
+    method: 'POST',
+    body: trimmedPassword ? { password: trimmedPassword } : undefined,
+    retryOnUnauthorized: false,
+  });
+}
+
+export function socialLogin(provider: 'GOOGLE' | 'KAKAO' | 'APPLE', token: string) {
+  return apiRequest<LoginResponse>('/v1/auth/social/login', {
+    auth: false,
+    method: 'POST',
+    body: { provider, token },
+  });
+}
+
+export function restoreSocialAccount(provider: 'GOOGLE' | 'KAKAO' | 'APPLE', token: string) {
+  return apiRequest<LoginResponse>('/v1/auth/social/restore', {
+    auth: false,
+    method: 'POST',
+    body: { provider, token },
+  });
+}

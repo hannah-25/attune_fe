@@ -34,7 +34,11 @@ export function createTodo(payload: TodoPayload) {
 }
 
 export function getTodosByDate(date: string) {
-  return apiRequest<{ todos: TodoItem[] }>(`/api/todos?${new URLSearchParams({ date })}`);
+  return apiRequest<{ todos: TodoItem[] }>(`/v1/todos?${new URLSearchParams({ date })}`);
+}
+
+export function getTodo(todoId: number) {
+  return apiRequest<TodoItem>(`/v1/todos/${todoId}`);
 }
 
 export function updateTodo(todoId: number, payload: UpdateTodoPayload) {

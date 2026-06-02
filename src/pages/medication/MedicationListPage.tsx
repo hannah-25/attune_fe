@@ -162,7 +162,7 @@ export default function MedicationListPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -271,61 +271,29 @@ function formatCountdown(seconds: number) {
 }
 
 function normalizeMedicationList(response: MedicationListResponse): MedicationCard[] {
-  const source = Array.isArray(response)
-    ? response
-    : extractMedicationArray(response);
-
-  return source
+  return response
     .map((medication, index) => normalizeMedication(medication, index))
     .filter((medication): medication is MedicationCard => medication !== null);
 }
 
 function normalizeMedication(medication: MedicationSummary, index: number): MedicationCard | null {
-  const raw = medication as MedicationSummary & {
-    id?: number;
-    medicationName?: string;
-    scheduleList?: MedicationScheduleSummary[];
-    ingredientName?: string;
-  };
-  const userMedicationId = typeof raw.userMedicationId === 'number' ? raw.userMedicationId : raw.id;
-  const name = raw.name ?? raw.medicationName;
+  if (typeof medication.userMedicationId !== 'number' || !medication.medicationName) return null;
 
-  if (typeof userMedicationId !== 'number' || !name) return null;
-
-  const schedules = Array.isArray(raw.schedules)
-    ? raw.schedules
-    : Array.isArray(raw.scheduleList)
-      ? raw.scheduleList
-      : [];
-  const ingredient = raw.ingredient ?? raw.ingredientName;
+  const schedules = medication.schedules ?? [];
+  const dosageLabel = medication.dosageAmount != null ? `${medication.dosageAmount}mg` : undefined;
 
   return {
-    userMedicationId,
-    medicationId: raw.medicationId,
-    name,
-    detail: buildMedicationDetail(ingredient, raw.startedAt),
+    userMedicationId: medication.userMedicationId,
+    medicationId: medication.medicationId,
+    name: medication.medicationName,
+    detail: buildMedicationDetail(dosageLabel, medication.startedAt),
     schedule: buildScheduleLabel(schedules),
-    active: typeof raw.isActive === 'boolean' ? raw.isActive : true,
-    startedAt: raw.startedAt,
-    endAt: raw.endAt,
+    active: medication.isActive,
+    startedAt: medication.startedAt,
+    endAt: medication.endAt,
     schedules,
     bg: CARD_BACKGROUNDS[index % CARD_BACKGROUNDS.length],
   };
-}
-
-function extractMedicationArray(response: MedicationListResponse) {
-  const candidates = response as {
-    medications?: MedicationSummary[];
-    userMedications?: MedicationSummary[];
-    items?: MedicationSummary[];
-    data?: MedicationSummary[];
-  };
-
-  if (Array.isArray(candidates.medications)) return candidates.medications;
-  if (Array.isArray(candidates.userMedications)) return candidates.userMedications;
-  if (Array.isArray(candidates.items)) return candidates.items;
-  if (Array.isArray(candidates.data)) return candidates.data;
-  return [];
 }
 
 function buildMedicationDetail(ingredient?: string, startedAt?: string) {

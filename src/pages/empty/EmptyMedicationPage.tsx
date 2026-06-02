@@ -11,7 +11,7 @@ export default function EmptyMedicationPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -60,7 +60,7 @@ export default function EmptyMedicationPage() {
   );
 }
 
-function Feature({ icon, text, title }: { icon: React.ReactElement; text: string; title: string }) {
+function Feature({ icon, text, title }: { icon: React.ReactElement<{ className?: string; strokeWidth?: number }>; text: string; title: string }) {
   return (
     <div className="items-center flex gap-3 p-1">
       <div className="items-center flex justify-center w-6 h-6 bg-purple-100 rounded-xl">
