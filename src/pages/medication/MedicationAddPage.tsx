@@ -96,10 +96,7 @@ export default function MedicationAddPage() {
       return;
     }
 
-    if (scheduleTimes.length === 0) {
-      setError('알람 시간을 1개 이상 설정해 주세요.');
-      return;
-    }
+  
 
     setError('');
     setIsSaving(true);
