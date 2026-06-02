@@ -56,7 +56,7 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/storage\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'firebase-storage',
               expiration: {
