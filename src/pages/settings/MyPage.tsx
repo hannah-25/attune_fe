@@ -154,7 +154,7 @@ function Section({ children, title }: { children: React.ReactNode; title: string
 function MenuRow({ badge, hideChevron, icon, label, last, onClick, value }: { badge?: string; hideChevron?: boolean; icon: React.ReactElement; label: string; last?: boolean; onClick?: () => void; value?: string }) {
   return (
     <button type="button" onClick={onClick} className={`items-center flex w-full text-left pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
-      {React.cloneElement(icon, { className: 'w-4 h-4 text-gray-500 mr-2', strokeWidth: 2.35 })}
+      {React.cloneElement(icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, { className: 'w-4 h-4 text-gray-500 mr-2', strokeWidth: 2.35 })}
       <div className="grow font-semibold basis-[0%]">{label}</div>
       {badge ? <span className="mr-2 text-[10px] font-bold text-purple-500 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded-full">{badge}</span> : null}
       {value ? <div className="mr-[6px] text-gray-600">{value}</div> : null}

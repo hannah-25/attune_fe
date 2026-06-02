@@ -151,7 +151,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   if (p === '/v1/users/settings' && m === 'GET') {
     return ok({ medicationNotification: true, reportNotification: true, marketingNotification: false, takeMedicationOnHoliday: false, theme: 'SYSTEM' });
   }
-  if (p === '/v1/users/settings' && m === 'PATCH') return ok({ ...body });
+  if (p === '/v1/users/settings' && m === 'PATCH') return ok({ ...(body as object) });
 
   // ── Journal dates ─────────────────────────────────────────────────────────
   if (p === '/v1/journals' && m === 'GET') {
@@ -228,10 +228,10 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   // ── Journal goal score ────────────────────────────────────────────────────
   const goalScoreMatch = p.match(/^\/v1\/journals\/(\d{4}-\d{2}-\d{2})\/goals$/);
   if (goalScoreMatch && m === 'POST') {
-    const { goalId, score } = (body ?? {}) as { goalId: number; score: number };
+    const goalScoreDate = goalScoreMatch[1];
     const { goalId, score } = body as { goalId: number; score: number };
 
-    updateJournalDetail(date, (detail) => {
+    updateJournalDetail(goalScoreDate, (detail) => {
       const matchedGoal = detail.activeTags.goals.find((goal) => goal.goalId === goalId);
       if (!matchedGoal) return detail;
 
@@ -244,7 +244,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
       };
     });
 
-    return created({ goalId, score, journalDate: date });
+    return created({ goalId, score, journalDate: goalScoreDate });
   }
 
   // ── Condition tags ────────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok(guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags);
   }
   if (p === '/v1/journals/condition-tags' && m === 'POST') {
-    const tag = { tagId: genId(), ...(body as object), visible: true };
+    const tag = { tagId: genId(), ...(body as object), visible: true } as (typeof mockConditionTags)[number];
     guestWrite<typeof mockConditionTags>('condition-tags', (prev) => [...(prev ?? mockConditionTags), tag]);
     return created(tag);
   }
@@ -318,7 +318,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok(guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags);
   }
   if (p === '/v1/journals/side-effect-tags' && m === 'POST') {
-    const tag = { tagId: genId(), ...(body as object), visible: true };
+    const tag = { tagId: genId(), ...(body as object), visible: true } as (typeof mockSideEffectTags)[number];
     guestWrite<typeof mockSideEffectTags>('side-effect-tags', (prev) => [...(prev ?? mockSideEffectTags), tag]);
     return created(tag);
   }
@@ -383,7 +383,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok(guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags);
   }
   if (p === '/v1/journals/trouble-tags' && m === 'POST') {
-    const tag = { tagId: genId(), ...(body as object), visible: true };
+    const tag = { tagId: genId(), ...(body as object), visible: true } as (typeof mockTroubleTags)[number];
     guestWrite<typeof mockTroubleTags>('trouble-tags', (prev) => [...(prev ?? mockTroubleTags), tag]);
     return created(tag);
   }
@@ -593,7 +593,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok({ categories: guestRead('schedule-categories') ?? mockScheduleCategories });
   }
   if (p === '/v1/schedule-categories' && m === 'POST') {
-    const cat = { categoryId: genId(), ...(body as object) };
+    const cat = { categoryId: genId(), ...(body as object) } as (typeof mockScheduleCategories)[number];
     guestWrite<typeof mockScheduleCategories>('schedule-categories', (prev) => [...(prev ?? mockScheduleCategories), cat]);
     return created(cat);
   }
@@ -619,7 +619,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok({ schedules: guestRead('schedules') ?? mockScheduleSummaries });
   }
   if (p === '/v1/schedules' && m === 'POST') {
-    const schedule = { scheduleId: genId(), ...(body as object) };
+    const schedule = { scheduleId: genId(), ...(body as object) } as (typeof mockScheduleSummaries)[number];
     guestWrite<typeof mockScheduleSummaries>('schedules', (prev) => [...(prev ?? mockScheduleSummaries), schedule]);
     return created(schedule);
   }
@@ -651,7 +651,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok({ todos: guestRead('todos') ?? mockTodos });
   }
   if (p === '/v1/todos' && m === 'POST') {
-    const todo = { todoId: genId(), isCompleted: false, ...(body as object) };
+    const todo = { todoId: genId(), isCompleted: false, ...(body as object) } as (typeof mockTodos)[number];
     guestWrite<typeof mockTodos>('todos', (prev) => [...(prev ?? mockTodos), todo]);
     return created(todo);
   }
@@ -699,7 +699,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok(guestRead('posts') ?? mockPosts);
   }
   if (p === '/v1/community/posts' && m === 'POST') {
-    const post = { postId: genId(), anonNickname: '나', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), isOwner: true, ...(body as object) };
+    const post = { postId: genId(), anonNickname: '나', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), isOwner: true, ...(body as object) } as (typeof mockPosts)[number];
     guestWrite<typeof mockPosts>('posts', (prev) => [post, ...(prev ?? mockPosts)]);
     return created(post);
   }
@@ -730,7 +730,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const pid = Number(postCommentsMatch[1]);
     if (m === 'GET') return ok(guestRead(`comments/${pid}`) ?? mockCommentsByPost[pid] ?? []);
     if (m === 'POST') {
-      const comment = { commentId: genId(), anonNickname: '나', createdAt: new Date().toISOString(), isPostAuthor: false, isOwner: true, ...(body as object) };
+      const comment = { commentId: genId(), anonNickname: '나', createdAt: new Date().toISOString(), isPostAuthor: false, isOwner: true, ...(body as object) } as (typeof mockCommentsByPost)[number][number];
       guestWrite<(typeof mockCommentsByPost)[number]>(`comments/${pid}`, (prev) => [...(prev ?? mockCommentsByPost[pid] ?? []), comment]);
       return created(comment);
     }

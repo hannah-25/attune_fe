@@ -176,7 +176,13 @@ export function signInWithGoogle(): Promise<string> {
       return;
     }
 
-    window.google.accounts.id.initialize({
+    const googleId = window.google?.accounts?.id;
+    if (!googleId) {
+      safeReject('Google SDK를 불러오지 못했습니다.');
+      return;
+    }
+
+    googleId.initialize({
       client_id: clientId,
       callback: (response) => {
         if (response.credential) {
@@ -189,7 +195,7 @@ export function signInWithGoogle(): Promise<string> {
       cancel_on_tap_outside: false,
     });
 
-    window.google.accounts.id.prompt((notification) => {
+    googleId.prompt((notification) => {
       if (notification.isNotDisplayed()) {
         const reason = notification.getNotDisplayedReason();
         safeReject(`Google 로그인 창을 표시할 수 없습니다. (${reason})`);
@@ -222,8 +228,11 @@ export function signInWithGoogle(): Promise<string> {
 async function fetchKakaoAccountEmail(): Promise<string | null> {
   if (!window.Kakao?.API) return null;
 
+  const kakaoApi = window.Kakao?.API;
+  if (!kakaoApi) return null;
+
   return new Promise((resolve) => {
-    window.Kakao.API.request({
+    kakaoApi.request({
       url: '/v2/user/me',
       success: (response) => {
         resolve(normalizeEmail(response.kakao_account?.email ?? null));
@@ -250,7 +259,13 @@ export function signInWithKakao(): Promise<SocialIdentityResult> {
       return;
     }
 
-    window.Kakao.Auth.login({
+    const kakao = window.Kakao;
+    if (!kakao) {
+      safeReject('Kakao SDK를 불러오지 못했습니다.');
+      return;
+    }
+
+    kakao.Auth.login({
       throughTalk: false,
       success: async (authObj) => {
         const email = await fetchKakaoAccountEmail();
@@ -282,7 +297,13 @@ export function signInWithApple(): Promise<SocialIdentityResult> {
       return;
     }
 
-    window.AppleID.auth.init({
+    const appleAuth = window.AppleID?.auth;
+    if (!appleAuth) {
+      safeReject('Apple SDK를 불러오지 못했습니다.');
+      return;
+    }
+
+    appleAuth.init({
       clientId,
       scope: 'name email',
       redirectURI: window.location.origin,
@@ -290,7 +311,7 @@ export function signInWithApple(): Promise<SocialIdentityResult> {
     });
 
     try {
-      const response = await window.AppleID.auth.signIn();
+      const response = await appleAuth.signIn();
       const token = response.authorization.id_token;
       const email = normalizeEmail(response.user?.email ?? extractEmailFromIdentityToken(token));
       safeResolve({ token, email });
