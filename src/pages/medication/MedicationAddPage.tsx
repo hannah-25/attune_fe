@@ -97,7 +97,6 @@ export default function MedicationAddPage() {
       return;
     }
 
-
     setError('');
     setIsSaving(true);
     try {
