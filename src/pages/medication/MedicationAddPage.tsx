@@ -87,11 +87,14 @@ export default function MedicationAddPage() {
     if (selectedDosageId === null) {
       setError('용량을 선택해 주세요.');
       return;
-    }
-
     const scheduleTimes = alarmTimes
       .map((time) => toDoseTime(time))
       .filter((time): time is string => Boolean(time));
+
+    if (scheduleTimes.length === 0) {
+      setError('최소 하나의 복용 시간을 입력해 주세요.');
+      return;
+    }
 
     if (scheduleTimes.length === 0) {
       setError('알람 시간을 1개 이상 설정해 주세요.');
