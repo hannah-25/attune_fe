@@ -75,8 +75,8 @@ export default function LoginPage() {
   const handleSocialLogin = async (provider: SocialProvider) => {
     setError('');
     setSocialLoading(provider);
-    let token: string;
-    let provider_key: SocialProviderKey;
+    let token = '';
+    let provider_key: SocialProviderKey = provider === 'kakao' ? 'KAKAO' : 'APPLE';
     let socialEmail: string | null = null;
     try {
       if (provider === 'kakao') {
