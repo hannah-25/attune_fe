@@ -253,7 +253,7 @@ export default function NotificationSettingsPage() {
   };
 
   const medAlarmActive = allNotificationsEnabled ? settings.medicationNotification : false;
-  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays) : '하루 평균 2-3건';
+  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays, medRepeatEnabled) : '하루 평균 2-3건';
 
   const categories = [
     {
