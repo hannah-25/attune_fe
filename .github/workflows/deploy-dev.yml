@@ -38,11 +38,26 @@ jobs:
 
       - name: Deploy static assets to Amazon S3
         run: |
-          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }} --delete --exclude "index.html" --cache-control "public,max-age=31536000,immutable"
+          aws s3 sync ./dist s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }} --delete \
+            --exclude "index.html" \
+            --exclude "sw.js" \
+            --exclude "workbox-*.js" \
+            --exclude "manifest.webmanifest" \
+            --cache-control "public,max-age=31536000,immutable"
 
-      - name: Deploy index.html to Amazon S3
+      - name: Deploy no-cache files to Amazon S3
         run: |
-          aws s3 cp ./dist/index.html s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }}/index.html --cache-control "no-cache,no-store,must-revalidate" --content-type "text/html; charset=utf-8"
+          for file in index.html sw.js manifest.webmanifest; do
+            if [ -f "./dist/$file" ]; then
+              aws s3 cp ./dist/$file s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }}/$file \
+                --cache-control "no-cache,no-store,must-revalidate" \
+                --content-type "$(file --mime-type -b ./dist/$file)"
+            fi
+          done
+          for file in ./dist/workbox-*.js; do
+            [ -f "$file" ] && aws s3 cp $file s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }}/$(basename $file) \
+              --cache-control "no-cache,no-store,must-revalidate"
+          done
 
       - name: CloudFront Invalidate Cache
         run: |
