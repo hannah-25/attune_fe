@@ -10,61 +10,64 @@ type MockMedicationLog = {
 export const mockMedicationSearchData: MedicationSearchResult[] = [
   {
     medicationId: 1,
-    name: '콘서타',
+    name: '콘서타OROS서방정',
     ingredient: '메틸페니데이트',
-    dosageOptions: [
-      { dosageId: 1, amount: 18 },
-      { dosageId: 2, amount: 27 },
-      { dosageId: 3, amount: 36 },
-      { dosageId: 4, amount: 54 },
-    ],
+    dosageOptions: [],
   },
   {
     medicationId: 2,
-    name: '스트라테라',
-    ingredient: '아토목세틴',
-    dosageOptions: [
-      { dosageId: 5, amount: 10 },
-      { dosageId: 6, amount: 18 },
-      { dosageId: 7, amount: 25 },
-      { dosageId: 8, amount: 40 },
-      { dosageId: 9, amount: 60 },
-      { dosageId: 10, amount: 80 },
-      { dosageId: 11, amount: 100 },
-    ],
+    name: '메디키넷리타드캡슐',
+    ingredient: '메틸페니데이트',
+    dosageOptions: [],
   },
   {
     medicationId: 3,
-    name: '메디키넷',
+    name: '페니드정',
     ingredient: '메틸페니데이트',
-    dosageOptions: [
-      { dosageId: 12, amount: 5 },
-      { dosageId: 13, amount: 10 },
-      { dosageId: 14, amount: 20 },
-    ],
+    dosageOptions: [],
   },
   {
     medicationId: 4,
-    name: '페로스핀',
+    name: '메타데이트CD서방캡슐',
     ingredient: '메틸페니데이트',
-    dosageOptions: [
-      { dosageId: 15, amount: 18 },
-      { dosageId: 16, amount: 36 },
-      { dosageId: 17, amount: 54 },
-    ],
+    dosageOptions: [],
   },
   {
     medicationId: 5,
-    name: '인튜니브',
+    name: '비스펜틴조절방출캡슐',
+    ingredient: '메틸페니데이트',
+    dosageOptions: [],
+  },
+  {
+    medicationId: 6,
+    name: '스트라테라캡슐',
+    ingredient: '아토목세틴',
+    dosageOptions: [],
+  },
+  {
+    medicationId: 7,
+    name: '아토목신캡슐',
+    ingredient: '아토목세틴',
+    dosageOptions: [],
+  },
+  {
+    medicationId: 33,
+    name: 'Intuniv',
     ingredient: '구안파신',
-    dosageOptions: [
-      { dosageId: 18, amount: 1 },
-      { dosageId: 19, amount: 2 },
-      { dosageId: 20, amount: 3 },
-      { dosageId: 21, amount: 4 },
-    ],
+    dosageOptions: [],
   },
 ];
+
+export const mockDosageOptionsByMedicationId: Record<number, { id: number; amount: number }[]> = {
+  1: [{ id: 1, amount: 18 }, { id: 2, amount: 27 }, { id: 3, amount: 36 }, { id: 4, amount: 54 }],
+  2: [{ id: 5, amount: 5 }, { id: 6, amount: 10 }, { id: 7, amount: 20 }, { id: 8, amount: 30 }, { id: 9, amount: 40 }],
+  3: [{ id: 10, amount: 5 }],
+  4: [{ id: 11, amount: 10 }, { id: 12, amount: 20 }, { id: 13, amount: 30 }, { id: 14, amount: 40 }, { id: 15, amount: 50 }, { id: 16, amount: 60 }],
+  5: [{ id: 17, amount: 10 }, { id: 18, amount: 30 }, { id: 19, amount: 50 }, { id: 20, amount: 60 }],
+  6: [{ id: 21, amount: 10 }, { id: 22, amount: 18 }, { id: 23, amount: 25 }, { id: 24, amount: 40 }, { id: 25, amount: 60 }, { id: 26, amount: 80 }],
+  7: [{ id: 27, amount: 10 }, { id: 28, amount: 18 }, { id: 29, amount: 25 }, { id: 30, amount: 40 }, { id: 31, amount: 60 }, { id: 32, amount: 80 }],
+  33: [{ id: 33, amount: 1 }, { id: 34, amount: 2 }, { id: 35, amount: 3 }, { id: 36, amount: 4 }],
+};
 
 export const mockMedications: MedicationSummary[] = [
   {

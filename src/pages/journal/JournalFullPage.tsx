@@ -698,7 +698,7 @@ export default function JournalFullPage() {
                           setSleepQuality(q);
                           void saveSleepMeal(sleep, q, meals);
                         }}
-                        className={`flex-1 text-[10px] font-semibold py-1 rounded-full border transition-colors ${sleepQuality === q ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'} ${!sleep ? 'opacity-40 cursor-default' : ''}`}
+                        className={`flex-1 text-xs font-semibold py-2 rounded-full border transition-colors ${sleepQuality === q ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'} ${!sleep ? 'opacity-40 cursor-default' : ''}`}
                       >
                         {label}
                       </button>
@@ -712,14 +712,14 @@ export default function JournalFullPage() {
                   <Utensils className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
                   <div className="font-semibold text-xs text-gray-600">식사</div>
                 </div>
-                <div className="flex gap-1.5 mt-1">
+                <div className="flex gap-1.5 mt-1 justify-center">
                   {MEAL_OPTIONS.map((meal) => (
                     <button
                       key={meal}
                       type="button"
                       onClick={() => toggleMeal(meal)}
                       aria-pressed={meals.has(meal)}
-                      className={`items-center flex font-bold justify-center w-9 h-9 rounded-[0.875rem] transition-colors ${
+                      className={`items-center flex font-bold justify-center w-12 h-12 text-sm rounded-[0.875rem] transition-colors ${
                         meals.has(meal)
                           ? 'bg-purple-400 text-white'
                           : 'bg-gray-100 text-gray-400'

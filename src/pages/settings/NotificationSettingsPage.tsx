@@ -1,11 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '../../app/components/NavButtons';
 import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
 
 type NotificationSettings = Pick<UserSettings, 'medicationNotification' | 'reportNotification' | 'marketingNotification'>;
 const QUIET_HOUR_EXCLUSION_OPTIONS = ['복약 알림', '일정 알림', '커뮤니티 알림'] as const;
+const ALARM_OFFSETS = [5, 10, 15, 30] as const;
+const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'] as const;
+
+function loadMedAlarmPrefs() {
+  try {
+    const raw = localStorage.getItem('medicationAlarmPrefs');
+    if (!raw) return null;
+    return JSON.parse(raw) as { offsets: number[]; repeatEnabled: boolean; activeDays: string[] };
+  } catch { return null; }
+}
+function saveMedAlarmPrefs(prefs: { offsets: number[]; repeatEnabled: boolean; activeDays: string[] }) {
+  localStorage.setItem('medicationAlarmPrefs', JSON.stringify(prefs));
+}
+
+const COUNSELING_ALARM_OPTIONS = [
+  { label: '1일 전', minutes: 1440 },
+  { label: '3시간 전', minutes: 180 },
+  { label: '1시간 전', minutes: 60 },
+  { label: '30분 전', minutes: 30 },
+] as const;
+type CounselingAlarmMinutes = typeof COUNSELING_ALARM_OPTIONS[number]['minutes'];
+
+function loadCounselingAlarmPrefs() {
+  try {
+    const raw = localStorage.getItem('counselingAlarmPrefs');
+    if (!raw) return null;
+    return JSON.parse(raw) as { offsets: number[] };
+  } catch { return null; }
+}
+function saveCounselingAlarmPrefs(prefs: { offsets: number[] }) {
+  localStorage.setItem('counselingAlarmPrefs', JSON.stringify(prefs));
+}
 type QuietHourExclusionOption = typeof QUIET_HOUR_EXCLUSION_OPTIONS[number];
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -30,6 +62,14 @@ export default function NotificationSettingsPage() {
   const [lastEnabledCounselingNotification, setLastEnabledCounselingNotification] = useState(true);
   const [communityNotification, setCommunityNotification] = useState(false);
   const [lastEnabledCommunityNotification, setLastEnabledCommunityNotification] = useState(false);
+  const [medAlarmOffsets, setMedAlarmOffsets] = useState<number[]>(() => loadMedAlarmPrefs()?.offsets ?? [10]);
+  const [medRepeatEnabled, setMedRepeatEnabled] = useState(() => loadMedAlarmPrefs()?.repeatEnabled ?? true);
+  const [medActiveDays, setMedActiveDays] = useState<string[]>(() => loadMedAlarmPrefs()?.activeDays ?? ['월', '화', '수', '목', '금']);
+  const [medAlarmSheetOpen, setMedAlarmSheetOpen] = useState(false);
+  const [counselingAlarmOffsets, setCounselingAlarmOffsets] = useState<number[]>(
+    () => loadCounselingAlarmPrefs()?.offsets ?? [1440, 60]
+  );
+  const [counselingAlarmSheetOpen, setCounselingAlarmSheetOpen] = useState(false);
   const [nightModeEnabled, setNightModeEnabled] = useState(true);
   const [quietHourStart, setQuietHourStart] = useState('22:00');
   const [quietHourEnd, setQuietHourEnd] = useState('07:00');
@@ -146,6 +186,46 @@ export default function NotificationSettingsPage() {
     setLastEnabledSettings(pickNotificationSettings(nextSettings));
   };
 
+  const toggleMedAlarmOffset = (offset: number) => {
+    const next = medAlarmOffsets.includes(offset)
+      ? medAlarmOffsets.filter((o) => o !== offset)
+      : [...medAlarmOffsets, offset].sort((a, b) => a - b);
+    setMedAlarmOffsets(next);
+    saveMedAlarmPrefs({ offsets: next, repeatEnabled: medRepeatEnabled, activeDays: medActiveDays });
+  };
+
+  const toggleMedRepeat = () => {
+    const next = !medRepeatEnabled;
+    setMedRepeatEnabled(next);
+    saveMedAlarmPrefs({ offsets: medAlarmOffsets, repeatEnabled: next, activeDays: medActiveDays });
+  };
+
+  const toggleMedDay = (day: string) => {
+    const next = medActiveDays.includes(day)
+      ? medActiveDays.filter((d) => d !== day)
+      : [...medActiveDays, day];
+    setMedActiveDays(next);
+    saveMedAlarmPrefs({ offsets: medAlarmOffsets, repeatEnabled: medRepeatEnabled, activeDays: next });
+  };
+
+  const toggleCounselingAlarmOffset = (minutes: number) => {
+    const next = counselingAlarmOffsets.includes(minutes)
+      ? counselingAlarmOffsets.filter((o) => o !== minutes)
+      : [...counselingAlarmOffsets, minutes].sort((a, b) => b - a);
+    setCounselingAlarmOffsets(next);
+    saveCounselingAlarmPrefs({ offsets: next });
+  };
+
+  const counselingAlarmActive = allNotificationsEnabled ? counselingNotification : false;
+  const counselingAlarmSummary = counselingAlarmActive
+    ? (counselingAlarmOffsets.length === 0
+        ? '알림 없음'
+        : counselingAlarmOffsets
+            .map((m) => COUNSELING_ALARM_OPTIONS.find((o) => o.minutes === m)?.label ?? '')
+            .filter(Boolean)
+            .join(' · '))
+    : '하루 전 · 1시간 전';
+
   const toggleCounselingNotification = () => {
     if (!allNotificationsEnabled) return;
     setCounselingNotification((current) => {
@@ -172,27 +252,17 @@ export default function NotificationSettingsPage() {
     ));
   };
 
+  const medAlarmActive = allNotificationsEnabled ? settings.medicationNotification : false;
+  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays) : '하루 평균 2-3건';
+
   const categories = [
-    {
-      color: 'bg-purple-300',
-      desc: '하루 평균 2-3건',
-      onToggle: () => toggleCategory('medicationNotification'),
-      active: allNotificationsEnabled ? settings.medicationNotification : false,
-      title: '복약 알림',
-    },
     {
       color: 'bg-purple-500',
       desc: '월요일 아침',
+
       onToggle: () => toggleCategory('reportNotification'),
       active: allNotificationsEnabled ? settings.reportNotification : false,
       title: '주간 리포트',
-    },
-    {
-      color: 'bg-purple-300',
-      title: '상담 알림',
-      desc: '하루 전 · 1시간 전',
-      active: allNotificationsEnabled ? counselingNotification : false,
-      onToggle: toggleCounselingNotification,
     },
     {
       color: 'bg-purple-300',
@@ -229,6 +299,40 @@ export default function NotificationSettingsPage() {
           <div>
             <div className="font-bold text-gray-600 text-xs pt-0 pr-1 pb-1.5 pl-1">카테고리별</div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+              {/* 복약 알림 — 설정 바텀시트 */}
+              <div className="items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
+                <button
+                  type="button"
+                  disabled={!medAlarmActive}
+                  onClick={() => medAlarmActive && setMedAlarmSheetOpen(true)}
+                  className="grow basis-[0%] text-left disabled:cursor-default"
+                >
+                  <div className="font-semibold">복약 알림</div>
+                  <div className="mt-[2px] text-gray-600 text-xs flex items-center gap-0.5">
+                    <span>{medAlarmSummary}</span>
+                    {medAlarmActive && <ChevronRight className="w-[10px] h-[10px] text-gray-400" strokeWidth={2.5} />}
+                  </div>
+                </button>
+                <Toggle active={medAlarmActive} onClick={() => toggleCategory('medicationNotification')} disabled={!allNotificationsEnabled} />
+              </div>
+              {/* 상담 알림 — 설정 바텀시트 */}
+              <div className="items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                <div className="w-2 h-2 bg-purple-300 rounded-sm"></div>
+                <button
+                  type="button"
+                  disabled={!counselingAlarmActive}
+                  onClick={() => counselingAlarmActive && setCounselingAlarmSheetOpen(true)}
+                  className="grow basis-[0%] text-left disabled:cursor-default"
+                >
+                  <div className="font-semibold">상담 알림</div>
+                  <div className="mt-[2px] text-gray-600 text-xs flex items-center gap-0.5">
+                    <span>{counselingAlarmSummary}</span>
+                    {counselingAlarmActive && <ChevronRight className="w-[10px] h-[10px] text-gray-400" strokeWidth={2.5} />}
+                  </div>
+                </button>
+                <Toggle active={counselingAlarmActive} onClick={toggleCounselingNotification} disabled={!allNotificationsEnabled} />
+              </div>
               {categories.map((item, index) => (
                 <div key={item.title} className={`items-center flex gap-2.5 pt-3 pr-[14px] pb-3 pl-[14px] ${index < categories.length - 1 ? 'border-b' : ''}`} style={index < categories.length - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
                   <div className={`w-2 h-2 ${item.color} rounded-sm`}></div>
@@ -311,19 +415,18 @@ export default function NotificationSettingsPage() {
               </button>
               {quietHourExclusionOpen ? (
                 <div className="px-[14px] pb-3 pt-2">
-                  <div className="text-[11px] text-gray-500 mb-2">여러 항목을 선택할 수 있어요.</div>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex gap-2">
                     {QUIET_HOUR_EXCLUSION_OPTIONS.map((option) => (
                       <button
                         key={option}
                         type="button"
                         disabled={!nightModeEnabled}
                         onClick={() => toggleQuietHourExclusion(option)}
-                        className={`w-full text-left text-xs font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
+                        className={`flex-1 text-xs font-semibold py-2 rounded-full border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                           quietHourExclusions.includes(option)
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            ? 'bg-purple-100 border-purple-300 text-purple-800'
+                            : 'bg-gray-50 border-gray-200 text-gray-400'
+                        }`}
                       >
                         {option}
                       </button>
@@ -335,6 +438,102 @@ export default function NotificationSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* 복약 알림 설정 바텀시트 */}
+      {medAlarmSheetOpen && (
+        <div className="absolute inset-0 bg-black/30 flex items-end z-50" onClick={() => setMedAlarmSheetOpen(false)}>
+          <div className="w-full bg-white rounded-t-3xl shadow-[rgba(0,0,0,0.18)_0px_-8px_24px_0px]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <div className="font-bold text-base text-gray-800">복약 알림 설정</div>
+              <button type="button" onClick={() => setMedAlarmSheetOpen(false)} className="w-8 h-8 flex items-center justify-center">
+                <X className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
+              </button>
+            </div>
+
+            <div className="px-5 pb-8 flex flex-col gap-5">
+              {/* 몇 분 전 */}
+              <div>
+                <div className="font-semibold text-sm text-gray-700 mb-2">복용 몇 분 전에 알릴까요?</div>
+                <div className="flex gap-2">
+                  {ALARM_OFFSETS.map((offset) => (
+                    <button
+                      key={offset}
+                      type="button"
+                      onClick={() => toggleMedAlarmOffset(offset)}
+                      className={`flex-1 text-sm font-semibold py-2 rounded-full border transition-colors ${medAlarmOffsets.includes(offset) ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+                    >
+                      {offset}분 전
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 요일 반복 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-semibold text-sm text-gray-700">요일 반복</div>
+                  <Toggle active={medRepeatEnabled} onClick={toggleMedRepeat} />
+                </div>
+                {medRepeatEnabled && (
+                  <div className="flex gap-1">
+                    {WEEKDAYS.map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => toggleMedDay(day)}
+                        className={`flex-1 font-bold text-sm py-2 rounded-xl transition-colors ${medActiveDays.includes(day) ? 'bg-purple-300 text-white' : 'bg-purple-50 text-gray-500'}`}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 휴일에도 알림 */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-sm text-gray-700">휴일에도 알림</div>
+                  <div className="text-xs text-gray-500 mt-0.5">공휴일에도 복약 알림을 받아요</div>
+                </div>
+                <Toggle
+                  active={settings.takeMedicationOnHoliday}
+                  onClick={() => patchSettings({ takeMedicationOnHoliday: !settings.takeMedicationOnHoliday })}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 상담 알림 설정 바텀시트 */}
+      {counselingAlarmSheetOpen && (
+        <div className="absolute inset-0 bg-black/30 flex items-end z-50" onClick={() => setCounselingAlarmSheetOpen(false)}>
+          <div className="w-full bg-white rounded-t-3xl shadow-[rgba(0,0,0,0.18)_0px_-8px_24px_0px]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <div className="font-bold text-base text-gray-800">상담 알림 설정</div>
+              <button type="button" onClick={() => setCounselingAlarmSheetOpen(false)} className="w-8 h-8 flex items-center justify-center">
+                <X className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
+              </button>
+            </div>
+            <div className="px-5 pb-8">
+              <div className="font-semibold text-sm text-gray-700 mb-2">상담 몇 시간 전에 알릴까요?</div>
+              <div className="flex gap-2">
+                {COUNSELING_ALARM_OPTIONS.map((option) => (
+                  <button
+                    key={option.minutes}
+                    type="button"
+                    onClick={() => toggleCounselingAlarmOffset(option.minutes)}
+                    className={`flex-1 text-sm font-semibold py-2 rounded-full border transition-colors ${counselingAlarmOffsets.includes(option.minutes) ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -362,4 +561,13 @@ function isAnyNotificationEnabled(settings: NotificationSettings): boolean {
 function formatQuietHourExclusionSummary(selected: QuietHourExclusionOption[]): string {
   if (selected.length === 0) return '없음';
   return selected.join(', ');
+}
+
+function formatMedAlarmSummary(offsets: number[], activeDays: string[]): string {
+  const weekdays = ['월', '화', '수', '목', '금'];
+  const isWeekdays = activeDays.length === 5 && weekdays.every((d) => activeDays.includes(d));
+  const isEveryday = activeDays.length === 7;
+  const dayLabel = isEveryday ? '매일' : isWeekdays ? '평일' : activeDays.join('');
+  const offsetLabel = offsets.length === 0 ? '알림 없음' : offsets.map((o) => `${o}분`).join(', ') + ' 전';
+  return `${offsetLabel} · ${dayLabel}`;
 }

@@ -4,13 +4,14 @@ export type MedicationLogStatus = 'TAKEN' | 'SKIPPED' | 'MISSED';
 export type QuickMedicationLogAction = 'TAKEN' | 'POSTPONE' | 'SKIPPED';
 
 export type MedicationDosageOption = {
+  medicationDosageId?: number;
   dosageId?: number;
   id?: number;
   amount: number;
 };
 
 export function getDosageId(d: MedicationDosageOption): number {
-  return (d.dosageId ?? d.id) as number;
+  return (d.medicationDosageId ?? d.dosageId ?? d.id) as number;
 }
 
 export type MedicationSearchResult = {
