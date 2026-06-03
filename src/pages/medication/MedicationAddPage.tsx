@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bell, CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavCloseButton } from '@/components/NavButtons';
@@ -13,8 +13,8 @@ import {
 } from '@/api/medication';
 import { ApiError } from '@/api/client';
 
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
-const ALARM_LABELS = ['아침', '점심'];
+
+
 
 export default function MedicationAddPage() {
   const navigate = useNavigate();
@@ -25,12 +25,8 @@ export default function MedicationAddPage() {
   const [searchResults, setSearchResults] = useState<MedicationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [startedAt, setStartedAt] = useState(toDateKey(new Date()));
-  const [alarmTimes, setAlarmTimes] = useState(['08:00', '12:30']);
-  const [activeDays, setActiveDays] = useState(() => new Set(['월', '화', '수', '목', '금']));
+  const [doseTime, setDoseTime] = useState('08:00');
   const [isMedicationActive, setIsMedicationActive] = useState(true);
-  const [alarmEnabled, setAlarmEnabled] = useState(true);
-  const [repeatEnabled, setRepeatEnabled] = useState(true);
-  const [holidayPause, setHolidayPause] = useState(false);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const startedAtInputRef = useRef<HTMLInputElement>(null);
@@ -70,14 +66,6 @@ export default function MedicationAddPage() {
     setSearchOpen(false);
   };
 
-  const toggleDay = (day: string) => {
-    setActiveDays((current) => {
-      const next = new Set(current);
-      if (next.has(day)) next.delete(day);
-      else next.add(day);
-      return next;
-    });
-  };
 
   const saveMedication = async () => {
     if (!selectedMedication) {
@@ -88,14 +76,12 @@ export default function MedicationAddPage() {
       setError('용량을 선택해 주세요.');
       return;
     }
-    const scheduleTimes = alarmTimes
-      .map((time) => toDoseTime(time))
-      .filter((time): time is string => Boolean(time));
-
-    if (scheduleTimes.length === 0) {
-      setError('알람 시간을 1개 이상 설정해 주세요.');
+    const parsedDoseTime = toDoseTime(doseTime);
+    if (!parsedDoseTime) {
+      setError('복용 시간을 설정해 주세요.');
       return;
     }
+    const schedules = [{ doseTime: parsedDoseTime, label: '복용' }];
 
     setError('');
     setIsSaving(true);
@@ -103,14 +89,10 @@ export default function MedicationAddPage() {
       const created = await createMedication({
         medicationDosageId: selectedDosageId,
         startedAt,
-        schedules: scheduleTimes.map((doseTime, index) => ({
-          doseTime,
-          label: ALARM_LABELS[index] ?? `${index + 1}회`,
-        })),
+        schedules,
       });
       if (typeof created?.userMedicationId === 'number') {
         await updateMedication(created.userMedicationId, {
-          alarmActive: alarmEnabled,
           isActive: isMedicationActive,
           endAt: isMedicationActive ? undefined : toDateKey(new Date()),
         });
@@ -123,10 +105,6 @@ export default function MedicationAddPage() {
     }
   };
 
-  const changeAlarmTime = (index: number, value: string) => {
-    setAlarmTimes((current) => current.map((time, idx) => (idx === index ? value : time)));
-  };
-
   const openStartedAtPicker = () => {
     const input = startedAtInputRef.current;
     if (!input) return;
@@ -136,7 +114,6 @@ export default function MedicationAddPage() {
     input.click();
   };
 
-  const selectedDosage = selectedMedication?.dosageOptions?.find((d) => getDosageId(d) === selectedDosageId);
   const canSave = selectedMedication !== null && selectedDosageId !== null;
 
   return (
@@ -197,6 +174,7 @@ export default function MedicationAddPage() {
                     <div className="text-gray-400 text-sm font-semibold">용량 정보 없음</div>
                   )}
                 </div>
+
               </div>
             )}
 
@@ -224,108 +202,39 @@ export default function MedicationAddPage() {
             </div>
 
             {/* 복용 상태 */}
-            <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+            <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
-              <div className="grow basis-[0%]">
-                <div className="flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setIsMedicationActive(true)}
-                    className={`items-center flex font-semibold text-xs gap-1 px-3 py-[7px] rounded-[62.4375rem] border transition-colors ${isMedicationActive ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-white border-gray-200 text-gray-600'}`}
-                  >
-                    {isMedicationActive ? <Check className="w-3 h-3" strokeWidth={2.8} /> : null}
-                    복용 중
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsMedicationActive(false)}
-                    className={`items-center flex font-semibold text-xs gap-1 px-3 py-[7px] rounded-[62.4375rem] border transition-colors ${!isMedicationActive ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-white border-gray-200 text-gray-600'}`}
-                  >
-                    {!isMedicationActive ? <Check className="w-3 h-3" strokeWidth={2.8} /> : null}
-                    복용 중단
-                  </button>
-                </div>
-                {!isMedicationActive ? (
-                  <div className="mt-1 text-xs text-gray-500">중단일: {formatDateDot(toDateKey(new Date()))}</div>
-                ) : null}
+              <div className="grow basis-[0%] flex items-center justify-between">
+                <span className={`text-sm font-semibold ${isMedicationActive ? 'text-purple-700' : 'text-gray-500'}`}>
+                  {isMedicationActive ? '복용 중' : '복용 중단'}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isMedicationActive}
+                  onClick={() => setIsMedicationActive((v) => !v)}
+                >
+                  <ToggleSwitch active={isMedicationActive} />
+                </button>
               </div>
             </div>
 
-            {/* 알림 */}
+            {/* 복용 시간 */}
             <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-              <div className="font-semibold w-[84px] text-gray-600">알림</div>
+              <div className="font-semibold w-[84px] text-gray-600">복용 시간</div>
               <div className="grow basis-[0%]">
-                <div className="items-center flex justify-between gap-2">
-                  <div className="items-center flex gap-1.5">
-                    <Bell className={`w-[13px] h-[13px] ${alarmEnabled ? 'text-purple-500' : 'text-gray-400'}`} strokeWidth={2.4} />
-                    <span className={`text-xs font-semibold ${alarmEnabled ? 'text-purple-700' : 'text-gray-500'}`}>
-                      {alarmEnabled ? '알람 켜짐' : '알람 꺼짐'}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={alarmEnabled}
-                    aria-label="전체 알람 켜기"
-                    onClick={() => setAlarmEnabled((value) => !value)}
-                    className="shrink-0"
-                  >
-                    <ToggleSwitch active={alarmEnabled} />
-                  </button>
-                </div>
-                <div className="flex gap-2 mt-2">
-                  {alarmTimes.map((time, index) => (
-                    <label key={`${ALARM_LABELS[index]}-${index}`} className={`flex grow items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px] ${alarmEnabled ? '' : 'opacity-50'}`}>
-                      <Bell className="w-[11px] h-[11px] text-gray-500" strokeWidth={2.4} />
-                      <input
-                        type="time"
-                        value={time}
-                        onChange={(event) => changeAlarmTime(index, event.target.value)}
-                        className="w-full bg-transparent text-sm text-gray-700 outline-none"
-                        aria-label={`${ALARM_LABELS[index]} 알람 시간`}
-                        disabled={!alarmEnabled}
-                      />
-                    </label>
-                  ))}
-                </div>
-                <div className="mt-1 text-xs text-gray-500">
-                  {alarmEnabled ? `하루 ${alarmTimes.length}회 · ${alarmTimes.join(' / ')}` : '알람이 꺼져 있어요'}
-                </div>
+                <label className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
+                  <input
+                    type="time"
+                    value={doseTime}
+                    onChange={(e) => setDoseTime(e.target.value)}
+                    className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                    aria-label="복용 시간"
+                  />
+                </label>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            <button type="button" onClick={() => setRepeatEnabled((value) => !value)} className={`items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${repeatEnabled ? 'border-b' : ''}`} style={repeatEnabled ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
-              <div className="grow basis-[0%]">
-                <div className="font-semibold text-gray-700">요일 반복</div>
-                <div className="mt-1 text-gray-500 text-xs">선택한 요일마다 알려드려요</div>
-              </div>
-              <ToggleSwitch active={repeatEnabled} />
-            </button>
-            {repeatEnabled && (
-              <div className="pt-3 pr-[10px] pb-3 pl-[10px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-                <div className="flex gap-1">
-                  {WEEKDAYS.map((day) => (
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={() => toggleDay(day)}
-                      className={`items-center flex grow font-bold justify-center h-[38px] basis-[0%] rounded-xl ${activeDays.has(day) ? 'bg-purple-300 text-white' : 'bg-purple-50 text-gray-600'}`}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            <button type="button" onClick={() => setHolidayPause((v) => !v)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-              <div className="grow basis-[0%]">
-                <div className="font-semibold text-gray-700">휴일에 복용</div>
-                <div className="mt-1 text-gray-500 text-xs">공휴일에는 알림을 쉬어요</div>
-              </div>
-              <ToggleSwitch active={holidayPause} />
-            </button>
           </div>
 
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
