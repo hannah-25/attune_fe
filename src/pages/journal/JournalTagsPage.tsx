@@ -78,7 +78,7 @@ export default function JournalTagsPage() {
 
   const submitAddTag = async () => {
     const trimmedLabel = newTagName.trim();
-    if (!trimmedLabel) return;
+    if (!trimmedLabel || isSaving) return;
     setIsSaving(true);
     setError('');
     try {
