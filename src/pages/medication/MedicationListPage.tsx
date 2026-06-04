@@ -443,8 +443,9 @@ function findNextDose(medications: MedicationCard[], takenScheduleKeys: Set<stri
 }
 
 function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string): MedicationScheduleSummary | null {
-  const intakeMinutes = toMinutes(intakeTime.slice(11, 16));
-  if (intakeMinutes === null) return null;
+  const date = new Date(intakeTime);
+  if (Number.isNaN(date.getTime())) return null;
+  const intakeMinutes = date.getHours() * 60 + date.getMinutes();
 
   let closest: MedicationScheduleSummary | null = null;
   let minDiff = Infinity;
