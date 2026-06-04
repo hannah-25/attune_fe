@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Clock, Pill, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, History, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -16,7 +16,6 @@ import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 
-const SNOOZE_SECONDS = 10 * 60;
 const CARD_BACKGROUNDS = ['bg-purple-300', 'bg-purple-500', 'bg-purple-400', 'bg-purple-600'];
 
 type MedicationCard = {
@@ -70,8 +69,9 @@ export default function MedicationListPage() {
       ]);
       const allMedications = normalizeMedicationList(response);
       const { active, past } = splitMedicationGroups(allMedications);
+      const loggedScheduleKeys = buildLoggedScheduleKeys(active, logsResponse.logs);
       const takenScheduleKeys = buildTakenScheduleKeys(active, logsResponse.logs);
-      const next = findNextDose(active, takenScheduleKeys);
+      const next = findNextDose(active, loggedScheduleKeys);
 
       setActiveMedications(active);
       setPastMedications(past);
@@ -134,7 +134,7 @@ export default function MedicationListPage() {
     try {
       await updateMedication(medication.userMedicationId, {
         isActive: nextIsActive,
-        endAt: nextIsActive ? undefined : toDateKey(new Date()),
+        endAt: nextIsActive ? null : toDateKey(new Date()),
       });
       await loadMedications();
     } catch {
@@ -144,7 +144,7 @@ export default function MedicationListPage() {
     }
   };
 
-  const handlePostpone = async () => {
+  const handleSkipDose = async () => {
     if (!nextDose || isLogging) return;
     if (typeof nextDose.userMedicationId !== 'number') {
       setError('복용 기록에 필요한 약물 정보를 찾지 못했습니다.');
@@ -156,12 +156,12 @@ export default function MedicationListPage() {
 
     try {
       await createQuickMedicationLog(nextDose.userMedicationId, {
-        action: 'POSTPONE',
+        action: 'SKIPPED',
         scheduleId: nextDose.scheduleId,
       });
-      setSecondsLeft((current) => (current === null ? current : current + SNOOZE_SECONDS));
+      await loadMedications();
     } catch {
-      setError('미루기 기록을 저장하지 못했습니다.');
+      setError('스킵 기록을 저장하지 못했습니다.');
     } finally {
       setIsLogging(false);
     }
@@ -180,24 +180,31 @@ export default function MedicationListPage() {
       className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
-      <div className="flex flex-col flex-1 min-h-0">
+      <div className="relative flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 중인 약"
           left={<NavBackButton />}
-          right={<HeaderIconButton icon={<Plus className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate('/medication/add')} />}
+          right={<HeaderIconButton icon={<History className="h-4 w-4 text-gray-700" strokeWidth={2.5} />} onClick={() => navigate('/medication/history')} />}
         />
         <ScrollArea className="flex flex-col gap-3 pt-1">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
-            <div className="font-bold text-gray-600 text-xs">{nextDose ? '다음 복용까지' : '복용 일정'}</div>
-            <div className="items-baseline flex mt-1 gap-1.5">
-              <div className="font-extrabold text-4xl transition-all" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                {nextDose && secondsLeft !== null ? formatCountdown(secondsLeft) : '-'}
-              </div>
-              {nextDose ? <div className="font-bold text-gray-500">· {nextDose.name} · {nextDose.time}</div> : null}
+            <div className="font-bold text-gray-500 text-xs mb-1">{nextDose ? '다음 복용' : '복용 일정'}</div>
+            <div className="font-extrabold text-xl leading-tight" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+              {nextDose ? nextDose.name : '-'}
             </div>
-            <div className="mt-1 text-xs font-semibold text-gray-500">
-              오늘 완료 {todayDoseSummary.taken}/{todayDoseSummary.total}
+            <div className="items-center flex mt-1.5 gap-2">
+              {nextDose ? (
+                <span className="text-xs font-semibold text-gray-500">{nextDose.time}</span>
+              ) : null}
+              {nextDose && secondsLeft !== null ? (
+                <span className="text-xs font-bold text-purple-700 bg-purple-200 px-2 py-0.5 rounded-full">
+                  {formatCountdown(secondsLeft)} 후
+                </span>
+              ) : null}
+              <span className="ml-auto text-xs font-semibold text-gray-500">
+                오늘 {todayDoseSummary.taken}/{todayDoseSummary.total}
+              </span>
             </div>
             <div className="flex mt-3 gap-1.5">
               <button
@@ -211,11 +218,11 @@ export default function MedicationListPage() {
               {nextDose ? (
                 <button
                   type="button"
-                  onClick={handlePostpone}
+                  onClick={handleSkipDose}
                   disabled={isLogging}
                   className="items-center flex grow font-bold justify-center h-9 border-gray-900 border basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem] disabled:opacity-50"
                 >
-                  <span className="block">10분 미루기</span>
+                  <span className="block">건너뛰기</span>
                 </button>
               ) : null}
             </div>
@@ -276,6 +283,14 @@ export default function MedicationListPage() {
             </div>
           ))}
         </ScrollArea>
+        <button
+          type="button"
+          onClick={() => navigate('/medication/add')}
+          className="items-center flex font-bold absolute h-12 right-4 bottom-[88px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.2)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] z-[25] rounded-3xl transition-all active:scale-[0.97]"
+        >
+          <Plus className="w-[14px] h-[14px]" strokeWidth={2.5} />
+          <span className="block">약 추가</span>
+        </button>
         <TabBar active="약" />
       </div>
     </div>
@@ -283,9 +298,10 @@ export default function MedicationListPage() {
 }
 
 function formatCountdown(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}:${String(remainder).padStart(2, '0')}`;
+  const totalMinutes = seconds > 0 ? Math.ceil(seconds / 60) : 0;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}:${String(minutes).padStart(2, '0')}`;
 }
 
 function normalizeMedicationList(response: MedicationListResponse): MedicationCard[] {
@@ -355,22 +371,28 @@ function isEndedMedication(endAt: string | null | undefined, today: Date) {
   return parsed < today;
 }
 
+function buildLoggedScheduleKeys(medications: MedicationCard[], logs: MedicationPeriodLog[]) {
+  return buildScheduleKeysFromLogs(medications, logs);
+}
+
 function buildTakenScheduleKeys(medications: MedicationCard[], logs: MedicationPeriodLog[]) {
-  const takenScheduleKeys = new Set<string>();
+  return buildScheduleKeysFromLogs(medications, logs.filter((log) => log.taken));
+}
+
+function buildScheduleKeysFromLogs(medications: MedicationCard[], logs: MedicationPeriodLog[]) {
+  const scheduleKeys = new Set<string>();
 
   logs.forEach((log) => {
-    if (!log.taken) return;
-
     const medication = medications.find((item) => item.userMedicationId === log.userMedicationId);
     if (!medication) return;
 
     const matchedSchedule = findClosestSchedule(medication.schedules, log.intakeTime);
     if (matchedSchedule) {
-      takenScheduleKeys.add(buildDoseKey(log.userMedicationId, matchedSchedule.scheduleId));
+      scheduleKeys.add(buildDoseKey(log.userMedicationId, matchedSchedule.scheduleId));
     }
   });
 
-  return takenScheduleKeys;
+  return scheduleKeys;
 }
 
 function buildTodayDoseSummary(medications: MedicationCard[], takenScheduleKeys: Set<string>): TodayDoseSummary {
@@ -420,7 +442,7 @@ function findNextDose(medications: MedicationCard[], takenScheduleKeys: Set<stri
   return candidate;
 }
 
-function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string) {
+function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string): MedicationScheduleSummary | null {
   const intakeMinutes = toMinutes(intakeTime.slice(11, 16));
   if (intakeMinutes === null) return null;
 

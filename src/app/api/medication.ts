@@ -67,7 +67,7 @@ export type CreateMedicationRequest = {
 };
 
 export type UpdateMedicationRequest = {
-  endAt?: string;
+  endAt?: string | null;
   isActive?: boolean;
   alarmActive?: boolean;
 };
