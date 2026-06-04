@@ -357,6 +357,13 @@ function formatDateDot(value: string) {
 }
 
 function toDoseTime(value: string) {
-  if (!/^\d{2}:\d{2}$/.test(value)) return null;
+  const match = value.match(/^(\d{2}):(\d{2})$/);
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
   return `${value}:00`;
 }

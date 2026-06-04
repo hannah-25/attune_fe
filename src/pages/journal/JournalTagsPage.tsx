@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
@@ -23,19 +23,25 @@ type Category = '감정·증상' | '부작용' | '업무';
 const CATEGORIES: Category[] = ['감정·증상', '부작용', '업무'];
 const CONDITION_TYPES: ConditionType[] = ['UP', 'DOWN', 'TIGHT', 'FOGGY', 'CALM'];
 const TROUBLE_TYPES: TroubleType[] = ['INATTENTION', 'HYPERACTIVITY', 'IMPULSIVITY', 'TIME_MANAGEMENT', 'COGNITIVE_ERROR'];
-const CONDITION_TYPE_HELP = [
-  'UP: 활력 (고각성)',
-  'DOWN: 무기력 (저각성)',
-  'TIGHT: 과긴장 (불안)',
-  'FOGGY: 멍함',
-  'CALM: 평온',
-].join('\n');
+const CONDITION_TYPE_LABELS: Record<ConditionType, string> = {
+  UP: '활력', DOWN: '무기력', TIGHT: '과긴장', FOGGY: '멍함', CALM: '평온', USER_INPUT: '직접 입력',
+};
+const TROUBLE_TYPE_LABELS: Record<TroubleType, string> = {
+  INATTENTION: '부주의', HYPERACTIVITY: '과잉행동', IMPULSIVITY: '충동성',
+  TIME_MANAGEMENT: '시간 관리', COGNITIVE_ERROR: '인지 오류', USER_INPUT: '직접 입력',
+};
 
 export default function JournalTagsPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [error, setError] = useState('');
+  const [addSheetOpen, setAddSheetOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newConditionType, setNewConditionType] = useState<ConditionType>('CALM');
+  const [newTroubleType, setNewTroubleType] = useState<TroubleType>('COGNITIVE_ERROR');
+  const [isSaving, setIsSaving] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const journalDate = useMemo(() => toDateKey(new Date()), []);
   const activeTags = tags.filter((tag) => tag.visible);
   const inactiveTags = tags.filter((tag) => !tag.visible);
@@ -62,39 +68,33 @@ export default function JournalTagsPage() {
     }
   };
 
-  const addTag = async () => {
-    const label = window.prompt('새 태그 이름을 입력해주세요.');
-    const trimmedLabel = label?.trim();
-    if (!trimmedLabel) return;
+  const openAddSheet = () => {
+    setNewTagName('');
+    setNewConditionType('CALM');
+    setNewTroubleType('COGNITIVE_ERROR');
+    setAddSheetOpen(true);
+    setTimeout(() => nameInputRef.current?.focus(), 50);
+  };
 
+  const submitAddTag = async () => {
+    const trimmedLabel = newTagName.trim();
+    if (!trimmedLabel || isSaving) return;
+    setIsSaving(true);
     setError('');
     try {
       if (activeCategory === '감정·증상') {
-        const selectedType = window.prompt(
-          `감정/증상 유형을 입력해주세요.\n${CONDITION_TYPE_HELP}`,
-          'CALM',
-        ) as ConditionType | null;
-        await createConditionTag({
-          condition: trimmedLabel,
-          conditionType: selectedType && CONDITION_TYPES.includes(selectedType) ? selectedType : 'CALM',
-          journalDate,
-        });
+        await createConditionTag({ condition: trimmedLabel, conditionType: newConditionType, journalDate });
       } else if (activeCategory === '부작용') {
         await createSideEffectTag({ sideEffect: trimmedLabel, journalDate });
       } else {
-        const selectedType = window.prompt(
-          `업무 실수 유형을 입력해주세요.\n${TROUBLE_TYPES.join(', ')}`,
-          'COGNITIVE_ERROR',
-        ) as TroubleType | null;
-        await createTroubleTag({
-          trouble: trimmedLabel,
-          type: selectedType && TROUBLE_TYPES.includes(selectedType) ? selectedType : 'COGNITIVE_ERROR',
-          journalDate,
-        });
+        await createTroubleTag({ trouble: trimmedLabel, type: newTroubleType, journalDate });
       }
       await loadTags(activeCategory);
+      setAddSheetOpen(false);
     } catch {
       setError('태그를 추가하지 못했습니다.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -130,13 +130,13 @@ export default function JournalTagsPage() {
           title="태그 관리"
           left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
-            <div className="items-center flex justify-center w-11 h-11">
+            <div className="items-center flex justify-end min-w-11 h-11">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]"
+                className="items-center flex font-bold justify-center h-9 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl whitespace-nowrap"
               >
-                <span className="font-bold text-purple-500">완료</span>
+                완료
               </button>
             </div>
           }
@@ -168,13 +168,79 @@ export default function JournalTagsPage() {
         </ScrollArea>
         <button
           type="button"
-          onClick={addTag}
+          onClick={openAddSheet}
           className="items-center flex font-bold absolute h-[44px] right-4 bottom-[92px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.18)_0px_8px_22px_0px] text-white text-sm gap-1.5 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.5625rem] transition-all active:scale-[0.97]"
         >
           <Plus className="h-[14px] w-[14px]" strokeWidth={2.5} />
           <span className="block">새 태그</span>
         </button>
         <TabBar active="일지" />
+
+        {/* 태그 추가 바텀시트 */}
+        {addSheetOpen && (
+          <div className="absolute inset-0 bg-black/30 flex items-end z-50" onClick={() => setAddSheetOpen(false)}>
+            <div className="w-full bg-white rounded-t-3xl shadow-[rgba(0,0,0,0.18)_0px_-8px_24px_0px]" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                <div className="font-bold text-base text-gray-800">새 태그</div>
+                <button type="button" onClick={() => setAddSheetOpen(false)} className="w-8 h-8 flex items-center justify-center">
+                  <X className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
+                </button>
+              </div>
+              <div className="px-5 pb-8 flex flex-col gap-4">
+                <input
+                  ref={nameInputRef}
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') void submitAddTag(); }}
+                  placeholder="태그 이름"
+                  className="w-full h-11 bg-gray-50 border border-gray-200 rounded-xl px-4 text-base outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+                />
+                {activeCategory === '감정·증상' && (
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 mb-2">유형</div>
+                    <div className="flex flex-wrap gap-2">
+                      {CONDITION_TYPES.map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setNewConditionType(type)}
+                          className={`px-4 py-2 text-sm font-semibold rounded-full border transition-colors ${newConditionType === type ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                        >
+                          {CONDITION_TYPE_LABELS[type]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {activeCategory === '업무' && (
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 mb-2">유형</div>
+                    <div className="flex flex-wrap gap-2">
+                      {TROUBLE_TYPES.map((type) => (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setNewTroubleType(type)}
+                          className={`px-4 py-2 text-sm font-semibold rounded-full border transition-colors ${newTroubleType === type ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                        >
+                          {TROUBLE_TYPE_LABELS[type]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={submitAddTag}
+                  disabled={!newTagName.trim() || isSaving}
+                  className="w-full h-12 bg-[rgb(31,27,46)] text-white font-bold rounded-2xl disabled:opacity-40"
+                >
+                  {isSaving ? '추가 중...' : '추가하기'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

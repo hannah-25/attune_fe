@@ -521,10 +521,19 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const medicationMatch = p.match(/^\/v1\/user-medications\/(\d+)$/);
   if (medicationMatch && m === 'PATCH') {
     const id = Number(medicationMatch[1]);
+    let updatedMedication: (typeof mockMedications)[number] | null = null;
     guestWrite<typeof mockMedications>('medications', (prev) =>
-      (prev ?? mockMedications).map((m) => (m.userMedicationId === id ? { ...m, ...(body as object) } : m)),
+      (prev ?? mockMedications).map((m) => {
+        if (m.userMedicationId !== id) return m;
+        updatedMedication = { ...m, ...(body as object) };
+        return updatedMedication;
+      }),
     );
-    return ok({ userMedicationId: id, isActive: true, updatedAt: new Date().toISOString() });
+    return ok({
+      userMedicationId: id,
+      isActive: updatedMedication?.isActive ?? Boolean((body as { isActive?: boolean }).isActive),
+      updatedAt: new Date().toISOString(),
+    });
   }
   const medicationLogsMatch = p.match(/^\/v1\/user-medications\/(\d+)\/logs$/);
   if (medicationLogsMatch && m === 'GET') {

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, Clock } from 'lucide-react';
+import { Check, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getAllMedicationLogs, type MedicationPeriodLog } from '@/api/medication';
 
@@ -11,9 +11,14 @@ const PERIODS: HistoryPeriod[] = ['1주', '1개월', '3개월', '직접'];
 
 export default function MedicationHistoryPage() {
   const [activePeriod, setActivePeriod] = useState<HistoryPeriod>('1개월');
+  const [customStart, setCustomStart] = useState(toDateKey((() => { const d = new Date(); d.setDate(d.getDate() - 29); return d; })()));
+  const [customEnd, setCustomEnd] = useState(toDateKey(new Date()));
   const [logs, setLogs] = useState<MedicationPeriodLog[]>([]);
   const [error, setError] = useState('');
-  const range = useMemo(() => getRange(activePeriod), [activePeriod]);
+  const range = useMemo(
+    () => activePeriod === '직접' ? { startDate: customStart, endDate: customEnd } : getRange(activePeriod),
+    [activePeriod, customStart, customEnd],
+  );
   const stats = useMemo(() => getStats(logs), [logs]);
   const groups = useMemo(() => groupLogs(logs), [logs]);
 
@@ -42,7 +47,6 @@ export default function MedicationHistoryPage() {
         <TopBar
           title="복용 이력"
           left={<NavBackButton />}
-          right={<HeaderIconButton icon={<CalendarDays className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <div className="flex gap-1.5 pt-0 pr-4 pb-3 pl-4">
           {PERIODS.map((period) => {
@@ -52,13 +56,33 @@ export default function MedicationHistoryPage() {
                 key={period}
                 type="button"
                 onClick={() => setActivePeriod(period)}
-                className={`items-center flex grow font-bold justify-center h-[30px] basis-[0%] rounded-[0.9375rem] transition-colors ${selected ? 'bg-[rgb(31,27,46)] text-white' : 'bg-white text-gray-700'}`}
+                className={`items-center flex grow font-bold justify-center h-[30px] basis-[0%] rounded-[0.9375rem] border transition-colors ${selected ? 'bg-purple-100 border-[rgb(185,166,255)] text-purple-800' : 'bg-white border-transparent text-gray-600'}`}
               >
                 {period}
               </button>
             );
           })}
         </div>
+        {activePeriod === '직접' && (
+          <div className="flex items-center gap-2 px-4 pb-3">
+            <input
+              type="date"
+              value={customStart}
+              max={customEnd}
+              onChange={(e) => setCustomStart(e.target.value)}
+              className="grow h-9 bg-white border border-gray-200 rounded-xl px-3 text-sm text-gray-700 outline-none focus:border-purple-400"
+            />
+            <span className="text-gray-400 text-xs shrink-0">~</span>
+            <input
+              type="date"
+              value={customEnd}
+              min={customStart}
+              max={toDateKey(new Date())}
+              onChange={(e) => setCustomEnd(e.target.value)}
+              className="grow h-9 bg-white border border-gray-200 rounded-xl px-3 text-sm text-gray-700 outline-none focus:border-purple-400"
+            />
+          </div>
+        )}
         <ScrollArea>
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
           <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
@@ -66,7 +90,6 @@ export default function MedicationHistoryPage() {
               <Stat value={stats.rate} label="복용률" />
               <Stat value={stats.taken} label="복용" />
               <Stat value={stats.missed} label="미복용" />
-              <Stat value={stats.delayed} label="미루기" />
             </div>
           </div>
           {groups.map((group) => (
@@ -175,7 +198,7 @@ function getStats(logs: MedicationPeriodLog[]) {
   const missed = logs.filter((log) => !log.taken).length;
   const total = logs.length;
   const rate = total > 0 ? Math.round((taken / total) * 100) : 0;
-  return { rate: `${rate}%`, taken: String(taken), missed: String(missed), delayed: '0' };
+  return { rate: `${rate}%`, taken: String(taken), missed: String(missed) };
 }
 
 function groupLogs(logs: MedicationPeriodLog[]) {
