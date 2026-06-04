@@ -3,8 +3,10 @@ import { ChevronDown, ChevronUp, Clock, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
+  getAllMedicationLogs,
   getMedications,
   type MedicationListResponse,
+  type MedicationPeriodLog,
   type MedicationScheduleSummary,
   type MedicationSummary,
   updateMedication,
@@ -38,6 +40,11 @@ type NextDose = {
   dueAt: Date;
 };
 
+type TodayDoseSummary = {
+  taken: number;
+  total: number;
+};
+
 export default function MedicationListPage() {
   const navigate = useNavigate();
   const [pastOpen, setPastOpen] = useState(true);
@@ -45,6 +52,7 @@ export default function MedicationListPage() {
   const [activeMedications, setActiveMedications] = useState<MedicationCard[]>([]);
   const [pastMedications, setPastMedications] = useState<MedicationCard[]>([]);
   const [nextDose, setNextDose] = useState<NextDose | null>(null);
+  const [todayDoseSummary, setTodayDoseSummary] = useState<TodayDoseSummary>({ taken: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [isLogging, setIsLogging] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
@@ -55,20 +63,27 @@ export default function MedicationListPage() {
     setError('');
 
     try {
-      const response = await getMedications();
+      const todayKey = toDateKey(new Date());
+      const [response, logsResponse] = await Promise.all([
+        getMedications(),
+        getAllMedicationLogs({ startDate: todayKey, endDate: todayKey }),
+      ]);
       const allMedications = normalizeMedicationList(response);
       const { active, past } = splitMedicationGroups(allMedications);
-      const next = findNextDose(active);
+      const takenScheduleKeys = buildTakenScheduleKeys(active, logsResponse.logs);
+      const next = findNextDose(active, takenScheduleKeys);
 
       setActiveMedications(active);
       setPastMedications(past);
       setNextDose(next);
+      setTodayDoseSummary(buildTodayDoseSummary(active, takenScheduleKeys));
       setSecondsLeft(next ? getSecondsUntil(next.dueAt) : null);
     } catch {
       setError('복용 목록을 불러오지 못했습니다.');
       setActiveMedications([]);
       setPastMedications([]);
       setNextDose(null);
+      setTodayDoseSummary({ taken: 0, total: 0 });
       setSecondsLeft(null);
     } finally {
       setIsLoading(false);
@@ -180,6 +195,9 @@ export default function MedicationListPage() {
                 {nextDose && secondsLeft !== null ? formatCountdown(secondsLeft) : '-'}
               </div>
               {nextDose ? <div className="font-bold text-gray-500">· {nextDose.name} · {nextDose.time}</div> : null}
+            </div>
+            <div className="mt-1 text-xs font-semibold text-gray-500">
+              오늘 완료 {todayDoseSummary.taken}/{todayDoseSummary.total}
             </div>
             <div className="flex mt-3 gap-1.5">
               <button
@@ -337,7 +355,43 @@ function isEndedMedication(endAt: string | null | undefined, today: Date) {
   return parsed < today;
 }
 
-function findNextDose(medications: MedicationCard[]): NextDose | null {
+function buildTakenScheduleKeys(medications: MedicationCard[], logs: MedicationPeriodLog[]) {
+  const takenScheduleKeys = new Set<string>();
+
+  logs.forEach((log) => {
+    if (!log.taken) return;
+
+    const medication = medications.find((item) => item.userMedicationId === log.userMedicationId);
+    if (!medication) return;
+
+    const matchedSchedule = findClosestSchedule(medication.schedules, log.intakeTime);
+    if (matchedSchedule) {
+      takenScheduleKeys.add(buildDoseKey(log.userMedicationId, matchedSchedule.scheduleId));
+    }
+  });
+
+  return takenScheduleKeys;
+}
+
+function buildTodayDoseSummary(medications: MedicationCard[], takenScheduleKeys: Set<string>): TodayDoseSummary {
+  let total = 0;
+  let taken = 0;
+
+  medications.forEach((medication) => {
+    medication.schedules.forEach((schedule) => {
+      if (typeof schedule.scheduleId !== 'number') return;
+
+      total += 1;
+      if (takenScheduleKeys.has(buildDoseKey(medication.userMedicationId, schedule.scheduleId))) {
+        taken += 1;
+      }
+    });
+  });
+
+  return { taken, total };
+}
+
+function findNextDose(medications: MedicationCard[], takenScheduleKeys: Set<string>): NextDose | null {
   const now = new Date();
   let candidate: NextDose | null = null;
 
@@ -346,6 +400,8 @@ function findNextDose(medications: MedicationCard[]): NextDose | null {
       if (typeof schedule.scheduleId !== 'number') return;
       const dueAt = getNextOccurrence(schedule.doseTime, now);
       if (!dueAt) return;
+      const isTakenToday = takenScheduleKeys.has(buildDoseKey(medication.userMedicationId, schedule.scheduleId));
+      if (isTakenToday && isSameDate(dueAt, now)) return;
 
       const nextDose: NextDose = {
         userMedicationId: medication.userMedicationId,
@@ -362,6 +418,31 @@ function findNextDose(medications: MedicationCard[]): NextDose | null {
   });
 
   return candidate;
+}
+
+function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string) {
+  const intakeMinutes = toMinutes(intakeTime.slice(11, 16));
+  if (intakeMinutes === null) return null;
+
+  let closest: MedicationScheduleSummary | null = null;
+  let minDiff = Infinity;
+
+  schedules.forEach((schedule) => {
+    const scheduleMinutes = toMinutes(schedule.doseTime);
+    if (scheduleMinutes === null) return;
+
+    const diff = Math.abs(intakeMinutes - scheduleMinutes);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = schedule;
+    }
+  });
+
+  return minDiff <= 240 ? closest : null;
+}
+
+function buildDoseKey(userMedicationId: number, scheduleId: number) {
+  return `${userMedicationId}-${scheduleId}`;
 }
 
 function getNextOccurrence(doseTime: string, baseDate: Date) {
@@ -391,6 +472,11 @@ function parseTime(value?: string) {
   return { hours, minutes };
 }
 
+function toMinutes(value: string) {
+  const parsed = parseTime(value);
+  return parsed ? parsed.hours * 60 + parsed.minutes : null;
+}
+
 function toTimeLabel(value: string) {
   const parsed = parseTime(value);
   if (!parsed) return '';
@@ -411,6 +497,10 @@ function toDateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function isSameDate(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
 function formatDateLabel(value: string) {

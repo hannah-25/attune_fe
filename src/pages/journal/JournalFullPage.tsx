@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronRight, Moon, Plus, Utensils, X } from 'lucide-react';
+import { Check, ChevronRight, Moon, Plus, Settings2, Utensils, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
@@ -23,9 +23,6 @@ import {
   getSideEffectTags,
   getTroubleTags,
   scoreJournalGoal,
-  toggleConditionTagVisible,
-  toggleSideEffectTagVisible,
-  toggleTroubleTagVisible,
   uncheckCondition,
   uncheckSideEffect,
   uncheckTrouble,
@@ -78,46 +75,32 @@ const SLEEP_OPTIONS = ['4h-', '5h', '6h', '7h', '8h', '9h+'] as const;
 type SleepOption = typeof SLEEP_OPTIONS[number];
 
 const MEAL_OPTIONS = ['아', '점', '저'] as const;
+const MEAL_LABELS: Record<string, string> = { '아': '아침', '점': '점심', '저': '저녁' };
 type MealKey = typeof MEAL_OPTIONS[number];
 
 function EditableTagChip({
   label,
   selected,
   tone,
-  editing,
   onToggle,
-  onDelete,
 }: Tag & {
   tone: Tone;
-  editing: boolean;
   onToggle: () => void;
-  onDelete: () => void;
 }) {
   const styles = toneStyles[tone];
 
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className={`items-center flex font-semibold whitespace-nowrap border gap-1.5 pt-[10px] pb-[10px] pl-[14px] rounded-full ${
+    <button
+      type="button"
+      aria-pressed={Boolean(selected)}
+      onClick={onToggle}
+      className={`items-center flex font-semibold whitespace-nowrap border gap-1.5 pt-[10px] pb-[10px] px-[14px] rounded-full ${
         selected ? styles.selected : styles.unselected
-      } ${editing ? 'pr-2.5' : 'pr-[14px]'}`}
+      }`}
     >
-      <button type="button" aria-pressed={Boolean(selected)} onClick={onToggle} className="items-center flex gap-1.5">
-        {selected ? <Check className="w-[10px] h-[10px] shrink-0" strokeWidth={3} /> : null}
-        <span className="block">{label}</span>
-      </button>
-      {editing ? (
-        <button
-          type="button"
-          aria-label={`${label} 삭제`}
-          onClick={onDelete}
-          className="items-center flex justify-center -mr-1 w-5 h-5 rounded-full"
-        >
-          <X className="w-3.5 h-3.5 shrink-0 opacity-70" strokeWidth={2.4} />
-        </button>
-      ) : null}
-    </div>
+      {selected ? <Check className="w-[10px] h-[10px] shrink-0" strokeWidth={3} /> : null}
+      <span className="block">{label}</span>
+    </button>
   );
 }
 
@@ -125,17 +108,13 @@ function TagSection({
   title,
   tone,
   tags,
-  editing,
   onToggleTag,
-  onDeleteTag,
   onAddTag,
-  onToggleEditing,
+  onManageTags,
 }: Section & {
-  editing: boolean;
   onToggleTag: (label: string) => void;
-  onDeleteTag: (label: string) => void;
   onAddTag: (label: string) => void;
-  onToggleEditing: () => void;
+  onManageTags: () => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [draft, setDraft] = useState('');
@@ -153,13 +132,8 @@ function TagSection({
       <div className="items-center flex mb-2.5 gap-1.5">
         <div className={`w-[10px] h-[10px] rounded-[0.3125rem] ${styles.dot}`}></div>
         <div className="font-bold">{title}</div>
-        <div className="grow basis-[0%]"></div>
-        <button
-          type="button"
-          onClick={onToggleEditing}
-          className="font-bold text-purple-600 text-xs pt-1 pr-2.5 pb-1 pl-2.5 rounded-full"
-        >
-          {editing ? '완료' : '편집'}
+        <button type="button" onClick={onManageTags} aria-label="태그 관리" className="ml-auto p-1 text-purple-400">
+          <Settings2 className="w-4 h-4" strokeWidth={2} />
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -167,9 +141,7 @@ function TagSection({
           <EditableTagChip
             key={tag.label}
             tone={tone}
-            editing={editing}
             onToggle={() => onToggleTag(tag.label)}
-            onDelete={() => onDeleteTag(tag.label)}
             {...tag}
           />
         ))}
@@ -316,7 +288,6 @@ export default function JournalFullPage() {
   const navigate = useNavigate();
   const journalDate = useMemo(() => toDateKey(new Date()), []);
   const [sections, setSections] = useState(emptySections);
-  const [editingSections, setEditingSections] = useState<Record<string, boolean>>({});
   const [goals, setGoals] = useState<GoalState[]>([]);
   const [editingGoals, setEditingGoals] = useState(false);
   const [isAddingGoal, setIsAddingGoal] = useState(false);
@@ -326,9 +297,9 @@ export default function JournalFullPage() {
   const [memoFocused, setMemoFocused] = useState(false);
   const [error, setError] = useState('');
 
-  const [sleep, setSleep] = useState<SleepOption | null>(null);
+  const [sleep, setSleep] = useState<SleepOption | null>('7h');
   const [sleepQuality, setSleepQuality] = useState<SleepQuality | null>(null);
-  const [meals, setMeals] = useState<Set<MealKey>>(new Set());
+  const [meals, setMeals] = useState<Set<MealKey>>(new Set(['아', '점', '저'] as MealKey[]));
 
   useEffect(() => {
     let ignore = false;
@@ -453,38 +424,6 @@ export default function JournalFullPage() {
     }
   };
 
-  const deleteTag = async (sectionTitle: string, label: string) => {
-    const tag = sections.find((section) => section.title === sectionTitle)?.tags.find((item) => item.label === label);
-    if (!tag) return;
-
-    setSections((currentSections) =>
-      currentSections.map((section) =>
-        section.title === sectionTitle
-          ? {
-              ...section,
-              tags: section.tags.filter((tag) => tag.label !== label),
-            }
-          : section,
-      ),
-    );
-
-    if (!tag.tagId || !tag.source) return;
-
-    try {
-      if (tag.source === 'condition') await toggleConditionTagVisible(tag.tagId);
-      if (tag.source === 'sideEffect') await toggleSideEffectTagVisible(tag.tagId);
-      if (tag.source === 'trouble') await toggleTroubleTagVisible(tag.tagId);
-    } catch {
-      setSections((currentSections) =>
-        currentSections.map((section) => {
-          if (section.title !== sectionTitle) return section;
-          if (section.tags.some((currentTag) => currentTag.label === tag.label)) return section;
-          return { ...section, tags: [...section.tags, tag] };
-        }),
-      );
-      setError('태그 비활성화에 실패했습니다.');
-    }
-  };
 
   const addTag = async (sectionTitle: string, label: string) => {
     let createdTag: Tag | null = null;
@@ -608,12 +547,8 @@ export default function JournalFullPage() {
     navigate(-1);
   };
 
-  const toggleSectionEditing = (sectionTitle: string) => {
-    setEditingSections((current) => ({ ...current, [sectionTitle]: !current[sectionTitle] }));
-  };
 
-  const sleepLabel = sleep ?? '미입력';
-  const sleepBarCount = sleep ? SLEEP_OPTIONS.indexOf(sleep) + 1 : 0;
+
 
   return (
     <div
@@ -641,94 +576,86 @@ export default function JournalFullPage() {
         <ScrollArea className="flex flex-col gap-10 pt-2">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <section>
-            <div className="grid grid-cols-2 gap-3">
-              {/* 수면 카드 */}
-              <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
-                <div className="flex items-center gap-1 mb-2">
-                  <Moon className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
-                  <div className="font-semibold text-xs text-gray-600">수면</div>
-                </div>
-                <div className="font-bold text-lg text-gray-800" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                  {sleepLabel}
-                </div>
-                <div className="flex mt-[6px] gap-[2px]">
-                  {SLEEP_OPTIONS.map((opt, i) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => {
-                        const nextSleep = sleep === opt ? null : opt;
-                        const nextQuality = nextSleep === null ? null : sleepQuality;
-                        setSleep(nextSleep);
-                        if (nextSleep === null) setSleepQuality(null);
-                        void saveSleepMeal(nextSleep, nextQuality, meals);
-                      }}
-                      className={`grow h-1 rounded-xs transition-colors ${i < sleepBarCount ? 'bg-purple-400' : 'bg-gray-100'}`}
-                      aria-label={opt}
-                    />
-                  ))}
-                </div>
-                <div className="flex justify-between mt-1">
-                  {SLEEP_OPTIONS.map((opt) => (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => {
-                        const nextSleep = sleep === opt ? null : opt;
-                        const nextQuality = nextSleep === null ? null : sleepQuality;
-                        setSleep(nextSleep);
-                        if (nextSleep === null) setSleepQuality(null);
-                        void saveSleepMeal(nextSleep, nextQuality, meals);
-                      }}
-                      className={`text-[9px] font-medium transition-colors ${sleep === opt ? 'text-purple-600 font-bold' : 'text-gray-300'}`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-1.5 mt-2">
-                  {(['GOOD', 'NORMAL', 'BAD'] as const).map((q) => {
-                    const label = q === 'GOOD' ? '좋음' : q === 'NORMAL' ? '보통' : '나쁨';
-                    return (
-                      <button
-                        key={q}
-                        type="button"
-                        disabled={!sleep}
-                        onClick={() => {
-                          setSleepQuality(q);
-                          void saveSleepMeal(sleep, q, meals);
-                        }}
-                        className={`flex-1 text-xs font-semibold py-2 rounded-full border transition-colors ${sleepQuality === q ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'} ${!sleep ? 'opacity-40 cursor-default' : ''}`}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
+              {/* 수면 */}
+              <div className="flex items-center gap-1 mb-2">
+                <Moon className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
+                <div className="font-semibold text-xs text-gray-600">수면</div>
               </div>
-              {/* 식사 카드 */}
-              <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
-                <div className="flex items-center gap-1 mb-2">
-                  <Utensils className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
-                  <div className="font-semibold text-xs text-gray-600">식사</div>
-                </div>
-                <div className="flex gap-1.5 mt-1 justify-center">
-                  {MEAL_OPTIONS.map((meal) => (
+              <div className="flex gap-[2px]">
+                {SLEEP_OPTIONS.map((opt, i) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      const nextSleep = sleep === opt ? null : opt;
+                      const nextQuality = nextSleep === null ? null : sleepQuality;
+                      setSleep(nextSleep);
+                      if (nextSleep === null) setSleepQuality(null);
+                      void saveSleepMeal(nextSleep, nextQuality, meals);
+                    }}
+                    className={`grow h-2 rounded-sm transition-colors ${sleep && SLEEP_OPTIONS.indexOf(sleep) >= i ? 'bg-purple-400' : 'bg-gray-100'}`}
+                    aria-label={opt}
+                  />
+                ))}
+              </div>
+              <div className="flex justify-between mt-1">
+                {SLEEP_OPTIONS.map((opt) => (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => {
+                      const nextSleep = sleep === opt ? null : opt;
+                      const nextQuality = nextSleep === null ? null : sleepQuality;
+                      setSleep(nextSleep);
+                      if (nextSleep === null) setSleepQuality(null);
+                      void saveSleepMeal(nextSleep, nextQuality, meals);
+                    }}
+                    className={`text-[11px] font-medium transition-colors ${sleep === opt ? 'text-purple-600 font-bold' : 'text-gray-400'}`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1.5 mt-2">
+                {(['GOOD', 'NORMAL', 'BAD'] as const).map((q) => {
+                  const label = q === 'GOOD' ? '좋음' : q === 'NORMAL' ? '보통' : '나쁨';
+                  return (
                     <button
-                      key={meal}
+                      key={q}
                       type="button"
-                      onClick={() => toggleMeal(meal)}
-                      aria-pressed={meals.has(meal)}
-                      className={`items-center flex font-bold justify-center w-12 h-12 text-sm rounded-[0.875rem] transition-colors ${
-                        meals.has(meal)
-                          ? 'bg-purple-400 text-white'
-                          : 'bg-gray-100 text-gray-400'
-                      }`}
+                      disabled={!sleep}
+                      onClick={() => {
+                        setSleepQuality(q);
+                        void saveSleepMeal(sleep, q, meals);
+                      }}
+                      className={`flex-1 text-xs font-semibold py-2 rounded-full border transition-colors ${sleepQuality === q ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'} ${!sleep ? 'opacity-40 cursor-default' : ''}`}
                     >
-                      {meal}
+                      {label}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
+              <div className="border-t border-gray-100 mt-3 mb-3" />
+              {/* 식사 */}
+              <div className="flex items-center gap-1 mb-2">
+                <Utensils className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
+                <div className="font-semibold text-xs text-gray-600">식사</div>
+              </div>
+              <div className="flex gap-1.5">
+                {MEAL_OPTIONS.map((meal) => (
+                  <button
+                    key={meal}
+                    type="button"
+                    onClick={() => toggleMeal(meal)}
+                    aria-pressed={meals.has(meal)}
+                    className={`flex-1 text-xs font-semibold py-2 rounded-full border transition-colors ${
+                      meals.has(meal) ? 'bg-purple-100 border-purple-300 text-purple-800' : 'bg-gray-50 border-gray-200 text-gray-400'
+                    }`}
+                  >
+                    {MEAL_LABELS[meal]}
+                  </button>
+                ))}
               </div>
             </div>
           </section>
@@ -737,11 +664,9 @@ export default function JournalFullPage() {
             {sections.map((section) => (
               <TagSection
                 key={section.title}
-                editing={Boolean(editingSections[section.title])}
                 onToggleTag={(label) => toggleTag(section.title, label)}
-                onDeleteTag={(label) => deleteTag(section.title, label)}
                 onAddTag={(label) => addTag(section.title, label)}
-                onToggleEditing={() => toggleSectionEditing(section.title)}
+                onManageTags={() => navigate('/journal/tags')}
                 {...section}
               />
             ))}

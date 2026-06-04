@@ -66,7 +66,6 @@ export default function MedicationHistoryPage() {
               <Stat value={stats.rate} label="복용률" />
               <Stat value={stats.taken} label="복용" />
               <Stat value={stats.missed} label="미복용" />
-              <Stat value={stats.delayed} label="미루기" />
             </div>
           </div>
           {groups.map((group) => (
@@ -175,7 +174,7 @@ function getStats(logs: MedicationPeriodLog[]) {
   const missed = logs.filter((log) => !log.taken).length;
   const total = logs.length;
   const rate = total > 0 ? Math.round((taken / total) * 100) : 0;
-  return { rate: `${rate}%`, taken: String(taken), missed: String(missed), delayed: '0' };
+  return { rate: `${rate}%`, taken: String(taken), missed: String(missed) };
 }
 
 function groupLogs(logs: MedicationPeriodLog[]) {

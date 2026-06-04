@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
+import { CalendarDays, Check, ChevronRight, Plus, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavCloseButton } from '@/components/NavButtons';
@@ -25,7 +25,7 @@ export default function MedicationAddPage() {
   const [searchResults, setSearchResults] = useState<MedicationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [startedAt, setStartedAt] = useState(toDateKey(new Date()));
-  const [doseTime, setDoseTime] = useState('08:00');
+  const [doseTimes, setDoseTimes] = useState<string[]>(['08:00']);
   const [isMedicationActive, setIsMedicationActive] = useState(true);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -76,12 +76,20 @@ export default function MedicationAddPage() {
       setError('용량을 선택해 주세요.');
       return;
     }
-    const parsedDoseTime = toDoseTime(doseTime);
-    if (!parsedDoseTime) {
+    const schedules = doseTimes.map((value, index) => {
+      const parsedDoseTime = toDoseTime(value);
+      return parsedDoseTime ? { doseTime: parsedDoseTime, label: `복용 ${index + 1}` } : null;
+    });
+    if (schedules.some((schedule) => schedule === null)) {
       setError('복용 시간을 설정해 주세요.');
       return;
     }
-    const schedules = [{ doseTime: parsedDoseTime, label: '복용' }];
+    const normalizedSchedules = schedules.filter((schedule): schedule is { doseTime: string; label: string } => schedule !== null);
+    const uniqueDoseTimes = new Set(normalizedSchedules.map((schedule) => schedule.doseTime));
+    if (uniqueDoseTimes.size !== normalizedSchedules.length) {
+      setError('복용 시간이 중복되었습니다.');
+      return;
+    }
 
     setError('');
     setIsSaving(true);
@@ -89,7 +97,7 @@ export default function MedicationAddPage() {
       const created = await createMedication({
         medicationDosageId: selectedDosageId,
         startedAt,
-        schedules,
+        schedules: normalizedSchedules,
       });
       if (typeof created?.userMedicationId === 'number') {
         await updateMedication(created.userMedicationId, {
@@ -112,6 +120,18 @@ export default function MedicationAddPage() {
     if (typeof pickerInput.showPicker === 'function') { pickerInput.showPicker(); return; }
     input.focus();
     input.click();
+  };
+
+  const addDoseTime = () => {
+    setDoseTimes((current) => [...current, getNextDoseTime(current)]);
+  };
+
+  const updateDoseTime = (index: number, value: string) => {
+    setDoseTimes((current) => current.map((time, currentIndex) => (currentIndex === index ? value : time)));
+  };
+
+  const removeDoseTime = (index: number) => {
+    setDoseTimes((current) => (current.length <= 1 ? current : current.filter((_, currentIndex) => currentIndex !== index)));
   };
 
   const canSave = selectedMedication !== null && selectedDosageId !== null;
@@ -220,18 +240,40 @@ export default function MedicationAddPage() {
             </div>
 
             {/* 복용 시간 */}
-            <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-              <div className="font-semibold w-[84px] text-gray-600">복용 시간</div>
-              <div className="grow basis-[0%]">
-                <label className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
-                  <input
-                    type="time"
-                    value={doseTime}
-                    onChange={(e) => setDoseTime(e.target.value)}
-                    className="w-full bg-transparent text-sm text-gray-700 outline-none"
-                    aria-label="복용 시간"
-                  />
-                </label>
+            <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
+              <div className="font-semibold w-[84px] text-gray-600 pt-[7px]">복용 시간</div>
+              <div className="grow basis-[0%] flex flex-col gap-2">
+                {doseTimes.map((time, index) => (
+                  <div key={`${index}-${time}`} className="flex items-center gap-1.5">
+                    <label className="flex grow items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
+                      <input
+                        type="time"
+                        value={time}
+                        onChange={(e) => updateDoseTime(index, e.target.value)}
+                        className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                        aria-label={`복용 시간 ${index + 1}`}
+                      />
+                    </label>
+                    {doseTimes.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => removeDoseTime(index)}
+                        aria-label={`복용 시간 ${index + 1} 삭제`}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white"
+                      >
+                        <X className="h-3.5 w-3.5 text-gray-500" strokeWidth={2.5} />
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addDoseTime}
+                  className="flex h-9 items-center justify-center gap-1 rounded-xl border border-purple-200 bg-purple-50 text-xs font-bold text-purple-700"
+                >
+                  <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
+                  시간 추가
+                </button>
               </div>
             </div>
 
@@ -356,7 +398,36 @@ function formatDateDot(value: string) {
   return value.replace(/-/g, '.');
 }
 
+function getNextDoseTime(times: string[]) {
+  const lastTime = times[times.length - 1];
+  const parsed = parseDoseClock(lastTime);
+  if (!parsed) return '08:00';
+
+  const nextMinutes = (parsed.hours * 60 + parsed.minutes + 4 * 60) % (24 * 60);
+  return formatDoseClock(nextMinutes);
+}
+
 function toDoseTime(value: string) {
-  if (!/^\d{2}:\d{2}$/.test(value)) return null;
+  if (!parseDoseClock(value)) return null;
   return `${value}:00`;
+}
+
+function parseDoseClock(value?: string) {
+  if (!value) return null;
+
+  const match = value.match(/^(\d{2}):(\d{2})$/);
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+  return { hours, minutes };
+}
+
+function formatDoseClock(minutes: number) {
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
 }
