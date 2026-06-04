@@ -299,7 +299,7 @@ export default function JournalFullPage() {
 
   const [sleep, setSleep] = useState<SleepOption | null>('7h');
   const [sleepQuality, setSleepQuality] = useState<SleepQuality | null>(null);
-  const [meals, setMeals] = useState<Set<MealKey>>(new Set(['아', '점', '저'] as MealKey[]));
+  const [meals, setMeals] = useState<Set<MealKey>>(new Set(MEAL_OPTIONS));
 
   useEffect(() => {
     let ignore = false;
