@@ -220,8 +220,8 @@ export default function CalendarMainPage() {
     }, 0);
   };
 
-  const startTodoMousePress = (todoId: number) => {
-    if (touchPressActiveRef.current) return;
+  const startTodoMousePress = (event: React.MouseEvent, todoId: number) => {
+    if (touchPressActiveRef.current || event.button !== 0) return;
     startTodoLongPress(todoId);
   };
 
