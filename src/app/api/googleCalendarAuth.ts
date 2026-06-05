@@ -1,44 +1,34 @@
 const GOOGLE_SDK_SRC = 'https://accounts.google.com/gsi/client';
 const GOOGLE_CALENDAR_SCOPE = 'openid email https://www.googleapis.com/auth/calendar.readonly';
 
+let sdkLoadingPromise: Promise<void> | null = null;
+
 function loadGoogleSdk(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (window.google?.accounts?.oauth2) {
-      resolve();
-      return;
-    }
+  if (window.google?.accounts?.oauth2) {
+    return Promise.resolve();
+  }
 
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${GOOGLE_SDK_SRC}"]`);
-    if (existing) {
-      const onLoad = () => {
-        cleanup();
-        resolve();
-      };
-      const onError = () => {
-        cleanup();
-        existing.remove();
-        reject(new Error('Google SDK를 불러오지 못했어요.'));
-      };
-      const cleanup = () => {
-        existing.removeEventListener('load', onLoad);
-        existing.removeEventListener('error', onError);
-      };
+  if (sdkLoadingPromise) {
+    return sdkLoadingPromise;
+  }
 
-      existing.addEventListener('load', onLoad);
-      existing.addEventListener('error', onError);
-      return;
-    }
-
+  sdkLoadingPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = GOOGLE_SDK_SRC;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => {
+    script.onload = () => {
+      sdkLoadingPromise = null;
+      resolve();
+    };
+    script.onerror = (error) => {
+      sdkLoadingPromise = null;
       script.remove();
-      reject(new Error('Google SDK를 불러오지 못했어요.'));
+      reject(new Error('Google SDK를 불러오지 못했어요.', { cause: error }));
     };
     document.head.appendChild(script);
   });
+
+  return sdkLoadingPromise;
 }
 
 export async function requestGoogleCalendarAuthorizationCode(): Promise<string> {
