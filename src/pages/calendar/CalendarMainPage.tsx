@@ -373,6 +373,7 @@ export default function CalendarMainPage() {
                   onMouseUp={handleTodoPressEnd}
                   onMouseLeave={handleTodoPressEnd}
                   onTouchStart={() => startTodoTouchPress(todo.todoId)}
+                  onTouchMove={handleTodoPressEnd}
                   onTouchEnd={endTodoTouchPress}
                   onTouchCancel={endTodoTouchPress}
                   onContextMenu={(event) => {

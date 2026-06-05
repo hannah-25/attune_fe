@@ -582,7 +582,7 @@ function toTimeInputValue(date: Date) {
 }
 
 function toDateInputValueFromDateTime(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return toDateInputValue(new Date());
@@ -590,9 +590,6 @@ function toDateInputValueFromDateTime(value: string) {
 }
 
 function toTimeInputValueFromDateTime(value: string) {
-  const match = value.match(/T(\d{2}:\d{2})/);
-  if (match) return match[1];
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '00:00';
   return toTimeInputValue(date);
