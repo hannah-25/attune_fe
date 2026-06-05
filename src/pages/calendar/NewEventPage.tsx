@@ -556,69 +556,6 @@ function RowButton({ icon, label, last = false, onClick, value }: { icon?: React
   );
 }
 
-<<<<<<< Updated upstream
-function parseDateParam(value: string | null, hour: number, minute: number) {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-
-  const [year, month, day] = value.split('-').map(Number);
-  const date = new Date(year, month - 1, day, hour, minute, 0, 0);
-  if (Number.isNaN(date.getTime())) return null;
-  return date;
-}
-
-function addHours(date: Date, hours: number) {
-  const next = new Date(date);
-  next.setHours(date.getHours() + hours);
-  return next;
-}
-
-function toDateInputValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function toTimeInputValue(date: Date) {
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
-function toDateInputValueFromDateTime(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return toDateInputValue(new Date());
-  return toDateInputValue(date);
-}
-
-function toTimeInputValueFromDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '00:00';
-  return toTimeInputValue(date);
-}
-
-function parseDateTimeInputs(dateValue: string, timeValue: string) {
-  if (!dateValue || !timeValue) return null;
-
-  const date = new Date(`${dateValue}T${timeValue}:00`);
-  if (Number.isNaN(date.getTime())) return null;
-  return date;
-}
-
-function toLocalIsoFromInputs(dateValue: string, timeValue: string, allDay: boolean, edge: 'start' | 'end') {
-  const timePart = allDay ? (edge === 'start' ? '00:00' : '23:59') : (timeValue || '00:00');
-  return `${dateValue}T${timePart}:00`;
-}
-
-function parseLocalDateTime(value: string): Date | null {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-=======
->>>>>>> Stashed changes
 function ToggleSwitch({ active }: { active: boolean }) {
   return (
     <span className={`relative block w-[38px] h-[22px] rounded-[0.6875rem] transition-colors ${active ? 'bg-purple-300' : 'bg-purple-50'}`}>
