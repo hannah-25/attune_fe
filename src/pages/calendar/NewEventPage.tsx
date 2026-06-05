@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Bell, ChevronDown, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { formatFullDateTime } from '@/lib/date';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import {
@@ -37,37 +36,22 @@ export default function NewEventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const scheduleIdParam = searchParams.get('id');
+  const dateParam = searchParams.get('date');
   const scheduleId = scheduleIdParam ? Number(scheduleIdParam) : null;
   const isEditMode = scheduleId !== null && Number.isFinite(scheduleId) && scheduleId > 0;
 
-  const { START_OPTIONS, END_OPTIONS } = useMemo(() => {
-    const dateParam = searchParams.get('date');
-    const base = dateParam ? new Date(`${dateParam}T00:00:00`) : new Date();
-    const y = base.getFullYear();
-    const m = base.getMonth();
-    const d = base.getDate();
-
-    return {
-      START_OPTIONS: [
-        new Date(y, m, d, 14, 0),
-        new Date(y, m, d, 15, 0),
-        new Date(y, m, d, 16, 0),
-      ],
-      END_OPTIONS: [
-        new Date(y, m, d, 15, 0),
-        new Date(y, m, d, 16, 0),
-        new Date(y, m, d, 17, 0),
-      ],
-    };
-  }, [searchParams]);
+  const initialStartDate = useMemo(() => parseDateParam(dateParam, 14, 0) ?? new Date(), [dateParam]);
+  const initialEndDate = useMemo(() => addHours(initialStartDate, 1), [initialStartDate]);
 
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [locationEditing, setLocationEditing] = useState(false);
   const [allDay, setAllDay] = useState(false);
-  const [startIndex, setStartIndex] = useState(0);
-  const [endIndex, setEndIndex] = useState(0);
+  const [startDateValue, setStartDateValue] = useState(() => toDateInputValue(initialStartDate));
+  const [startTimeValue, setStartTimeValue] = useState(() => toTimeInputValue(initialStartDate));
+  const [endDateValue, setEndDateValue] = useState(() => toDateInputValue(initialEndDate));
+  const [endTimeValue, setEndTimeValue] = useState(() => toTimeInputValue(initialEndDate));
   const [repeatIndex, setRepeatIndex] = useState(0);
 
   const [alarmOpen, setAlarmOpen] = useState(false);
@@ -83,10 +67,15 @@ export default function NewEventPage() {
   const [memo, setMemo] = useState('');
   const [memoOpen, setMemoOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
   const markDirty = () => setDirty(true);
-  const canSave = title.trim().length > 0 && selectedCategoryId !== null && dirty;
+  const startTimeForPayload = toLocalIsoFromInputs(startDateValue, startTimeValue, allDay, 'start');
+  const endTimeForPayload = toLocalIsoFromInputs(endDateValue, endTimeValue, allDay, 'end');
+  const hasDateTimeValues = startDateValue.length > 0 && endDateValue.length > 0 && (allDay || (startTimeValue.length > 0 && endTimeValue.length > 0));
+  const hasValidRange = hasDateTimeValues && startTimeForPayload <= endTimeForPayload;
+  const canSave = title.trim().length > 0 && selectedCategoryId !== null && dirty && hasValidRange && !isSaving;
   const selectedCategoryName = categories.find((category) => category.categoryId === selectedCategoryId)?.categoryName ?? '';
 
   const selectedAlarmPreset = ALARM_PRESETS.find((preset) => preset.key === alarmOptionKey) ?? ALARM_PRESETS[0];
@@ -97,6 +86,34 @@ export default function NewEventPage() {
   const selectedAlarmLabel = alarmOptionKey === 'custom'
     ? (alarmMinutesBefore ? `${alarmMinutesBefore}분 전` : '맞춤')
     : selectedAlarmPreset.label;
+
+  const syncEndAfterStart = (nextStartDateValue: string, nextStartTimeValue: string) => {
+    if (!nextStartDateValue) return;
+
+    if (allDay) {
+      setEndDateValue(nextStartDateValue);
+      return;
+    }
+
+    const nextStart = parseDateTimeInputs(nextStartDateValue, nextStartTimeValue);
+    if (!nextStart) return;
+
+    const nextEnd = addHours(nextStart, 1);
+    setEndDateValue(toDateInputValue(nextEnd));
+    setEndTimeValue(toTimeInputValue(nextEnd));
+  };
+
+  const handleStartDateChange = (value: string) => {
+    setStartDateValue(value);
+    syncEndAfterStart(value, startTimeValue);
+    markDirty();
+  };
+
+  const handleStartTimeChange = (value: string) => {
+    setStartTimeValue(value);
+    syncEndAfterStart(startDateValue, value);
+    markDirty();
+  };
 
   useEffect(() => {
     let ignore = false;
@@ -119,6 +136,10 @@ export default function NewEventPage() {
           setTitle(detail.title);
           setLocation(detail.place ?? '');
           setAllDay(detail.isAllDay);
+          setStartDateValue(toDateInputValueFromDateTime(detail.startTime));
+          setStartTimeValue(toTimeInputValueFromDateTime(detail.startTime));
+          setEndDateValue(toDateInputValueFromDateTime(detail.endTime));
+          setEndTimeValue(toTimeInputValueFromDateTime(detail.endTime));
           setMemo(detail.description ?? '');
           setMemoOpen(Boolean(detail.description));
           setSelectedCategoryId(detail.categoryId);
@@ -154,19 +175,21 @@ export default function NewEventPage() {
   const saveSchedule = async () => {
     if (!canSave || selectedCategoryId === null) return;
 
-    const alarmedAt = getAlarmedAt(START_OPTIONS[startIndex], alarmMinutesBefore);
+    const alarmedAt = getAlarmedAt(parseLocalDateTime(startTimeForPayload), alarmMinutesBefore);
     const payload = {
       title: title.trim(),
       description: memo.trim() || undefined,
       categoryId: selectedCategoryId,
       place: location.trim() || undefined,
       isAllDay: allDay,
-      startTime: toLocalIso(START_OPTIONS[startIndex]),
-      endTime: toLocalIso(END_OPTIONS[endIndex]),
+      startTime: startTimeForPayload,
+      endTime: endTimeForPayload,
       alarmEnabled: alarmedAt.length > 0,
       alarmedAt,
     };
 
+    setIsSaving(true);
+    setError('');
     try {
       if (isEditMode && scheduleId !== null) {
         await updateSchedule(scheduleId, payload);
@@ -177,6 +200,8 @@ export default function NewEventPage() {
       }
     } catch (err) {
       setError(errorMessage(err, '일정을 저장하지 못했습니다.'));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -197,7 +222,7 @@ export default function NewEventPage() {
                 onClick={saveSchedule}
                 className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-30 disabled:active:scale-100"
               >
-                저장
+                {isSaving ? '저장 중...' : '저장'}
               </button>
             </div>
           }
@@ -256,19 +281,25 @@ export default function NewEventPage() {
               <div className="grow font-semibold basis-[0%]">종일</div>
               <ToggleSwitch active={allDay} />
             </button>
-            <RowButton
+            <DateTimeInputRow
               label="시작"
-              value={allDay ? '오늘' : formatFullDateTime(START_OPTIONS[startIndex])}
-              onClick={() => {
-                setStartIndex((index) => (index + 1) % START_OPTIONS.length);
+              dateValue={startDateValue}
+              timeValue={startTimeValue}
+              allDay={allDay}
+              onDateChange={handleStartDateChange}
+              onTimeChange={handleStartTimeChange}
+            />
+            <DateTimeInputRow
+              label="종료"
+              dateValue={endDateValue}
+              timeValue={endTimeValue}
+              allDay={allDay}
+              onDateChange={(value) => {
+                setEndDateValue(value);
                 markDirty();
               }}
-            />
-            <RowButton
-              label="종료"
-              value={allDay ? '오늘' : formatFullDateTime(END_OPTIONS[endIndex])}
-              onClick={() => {
-                setEndIndex((index) => (index + 1) % END_OPTIONS.length);
+              onTimeChange={(value) => {
+                setEndTimeValue(value);
                 markDirty();
               }}
             />
@@ -471,6 +502,47 @@ function getAlarmedAt(startTime: Date, minutesBefore: number | null) {
   return [toLocalIso(alarmDate)];
 }
 
+function DateTimeInputRow({
+  allDay,
+  dateValue,
+  label,
+  onDateChange,
+  onTimeChange,
+  timeValue,
+}: {
+  allDay: boolean;
+  dateValue: string;
+  label: string;
+  onDateChange: (value: string) => void;
+  onTimeChange: (value: string) => void;
+  timeValue: string;
+}) {
+  return (
+    <div
+      className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] border-b gap-3"
+      style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
+    >
+      <div className="grow font-semibold basis-[0%]">{label}</div>
+      <div className="flex items-center justify-end gap-2 min-w-0 flex-wrap">
+        <input
+          type="date"
+          value={dateValue}
+          onChange={(event) => onDateChange(event.target.value)}
+          className="bg-transparent text-sm text-gray-700 outline-none"
+        />
+        {!allDay ? (
+          <input
+            type="time"
+            value={timeValue}
+            onChange={(event) => onTimeChange(event.target.value)}
+            className="bg-transparent text-sm text-gray-700 outline-none"
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function RowButton({ icon, label, last = false, onClick, value }: { icon?: React.ReactNode; label: string; last?: boolean; onClick: () => void; value: string }) {
   return (
     <button type="button" onClick={onClick} className={`items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] transition-all active:scale-[0.99] ${last ? '' : 'border-b'}`} style={last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' }}>
@@ -479,6 +551,69 @@ function RowButton({ icon, label, last = false, onClick, value }: { icon?: React
       {icon ?? null}
     </button>
   );
+}
+
+function parseDateParam(value: string | null, hour: number, minute: number) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  date.setHours(hour, minute, 0, 0);
+  return date;
+}
+
+function addHours(date: Date, hours: number) {
+  const next = new Date(date);
+  next.setHours(date.getHours() + hours);
+  return next;
+}
+
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function toTimeInputValue(date: Date) {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function toDateInputValueFromDateTime(value: string) {
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return toDateInputValue(new Date());
+  return toDateInputValue(date);
+}
+
+function toTimeInputValueFromDateTime(value: string) {
+  const match = value.match(/T(\d{2}:\d{2})/);
+  if (match) return match[1];
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '00:00';
+  return toTimeInputValue(date);
+}
+
+function parseDateTimeInputs(dateValue: string, timeValue: string) {
+  if (!dateValue || !timeValue) return null;
+
+  const date = new Date(`${dateValue}T${timeValue}:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+function toLocalIsoFromInputs(dateValue: string, timeValue: string, allDay: boolean, edge: 'start' | 'end') {
+  const timePart = allDay ? (edge === 'start' ? '00:00' : '23:59') : (timeValue || '00:00');
+  return `${dateValue}T${timePart}:00`;
+}
+
+function parseLocalDateTime(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
 function ToggleSwitch({ active }: { active: boolean }) {

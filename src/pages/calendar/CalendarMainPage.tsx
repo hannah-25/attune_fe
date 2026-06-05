@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TabBar } from '@/components/TabBar';
@@ -8,9 +8,13 @@ import { getTodosByDate, TodoItem, updateTodo } from '@/api/todo';
 type ViewMode = 'month' | 'week';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const TODO_LONG_PRESS_MS = 450;
 
 export default function CalendarMainPage() {
   const navigate = useNavigate();
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const touchPressActiveRef = useRef(false);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [dateMenuDate, setDateMenuDate] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -61,6 +65,14 @@ export default function CalendarMainPage() {
     }
     return `${formatDateLabel(rangeStartDate)} ~ ${formatDateLabel(rangeEndDate)}`;
   }, [rangeEndDate, rangeStartDate, selectedDate, viewMode]);
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current !== null) {
+        window.clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -129,6 +141,50 @@ export default function CalendarMainPage() {
     }
   };
 
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current === null) return;
+    window.clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  };
+
+  const startTodoLongPress = (todoId: number) => {
+    clearLongPressTimer();
+    longPressTriggeredRef.current = false;
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      navigate(`/calendar/new-todo?id=${todoId}`);
+    }, TODO_LONG_PRESS_MS);
+  };
+
+  const handleTodoPressEnd = () => {
+    clearLongPressTimer();
+  };
+
+  const startTodoTouchPress = (todoId: number) => {
+    touchPressActiveRef.current = true;
+    startTodoLongPress(todoId);
+  };
+
+  const endTodoTouchPress = () => {
+    handleTodoPressEnd();
+    window.setTimeout(() => {
+      touchPressActiveRef.current = false;
+    }, 0);
+  };
+
+  const startTodoMousePress = (todoId: number) => {
+    if (touchPressActiveRef.current) return;
+    startTodoLongPress(todoId);
+  };
+
+  const handleTodoClick = (todo: TodoItem) => {
+    if (longPressTriggeredRef.current) {
+      longPressTriggeredRef.current = false;
+      return;
+    }
+
+    void handleToggleTodo(todo);
+  };
 
   return (
     <div
@@ -180,7 +236,7 @@ export default function CalendarMainPage() {
             onDoubleClickDate={(date) => { setSelectedDate(date); setDateMenuDate(toDateKey(date)); }}
           />
         </div>
-        <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0"></div>
+        <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0" />
         {dateMenuDate ? (
           <div
             className="fixed inset-0 z-30 flex flex-col justify-end bg-black/30"
@@ -247,11 +303,28 @@ export default function CalendarMainPage() {
               {todos.length === 0 ? (
                 <div className="text-gray-400 text-xs px-1 py-1">할일이 없어요</div>
               ) : todos.map((todo) => (
-                <button
+                <div
                   key={todo.todoId}
-                  type="button"
-                  onClick={() => void handleToggleTodo(todo)}
-                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
+                  role="button"
+                  tabIndex={0}
+                  onMouseDown={() => startTodoMousePress(todo.todoId)}
+                  onMouseUp={handleTodoPressEnd}
+                  onMouseLeave={handleTodoPressEnd}
+                  onTouchStart={() => startTodoTouchPress(todo.todoId)}
+                  onTouchEnd={endTodoTouchPress}
+                  onTouchCancel={endTodoTouchPress}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    navigate(`/calendar/new-todo?id=${todo.todoId}`);
+                  }}
+                  onClick={() => handleTodoClick(todo)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      void handleToggleTodo(todo);
+                    }
+                  }}
+                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem] select-none"
                 >
                   {todo.isCompleted
                     ? <CheckCircle2 className="w-[18px] h-[18px] text-purple-400 flex-shrink-0" strokeWidth={2.2} />
@@ -262,7 +335,7 @@ export default function CalendarMainPage() {
                   {!todo.isAllDay ? (
                     <div className="font-bold text-gray-500 text-xs flex-shrink-0">{formatTime(todo.dueAt)}</div>
                   ) : null}
-                </button>
+                </div>
               ))}
             </div>
           ) : null}
@@ -294,7 +367,7 @@ export default function CalendarMainPage() {
                         onClick={() => navigate(`/calendar/event?id=${event.scheduleId}`)}
                         className="items-center flex w-full text-left mb-2 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
                       >
-                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined}></div>
+                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined} />
                         <div className="grow basis-[0%]">
                           <div className="font-bold">{event.title}</div>
                           <div className="mt-[2px] text-gray-600 text-xs">{formatScheduleTime(event)}</div>

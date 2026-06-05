@@ -1,14 +1,17 @@
-﻿import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { NavBackButton } from '@/components/NavButtons';
 import { TopBar } from '@/components/TopBar';
-import { createTodo } from '@/api/todo';
+import { createTodo, getTodo, updateTodo } from '@/api/todo';
 import { ApiError } from '@/api/client';
 
 export default function NewTodoPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const todoIdParam = searchParams.get('id');
   const dateParam = searchParams.get('date');
+  const todoId = todoIdParam ? Number(todoIdParam) : null;
+  const isEditMode = todoId !== null && Number.isFinite(todoId) && todoId > 0;
   const baseDate = useMemo(() => {
     if (dateParam) {
       return new Date(`${dateParam}T09:00:00`);
@@ -22,8 +25,35 @@ export default function NewTodoPage() {
   const [timeValue, setTimeValue] = useState(toTimeInputValue(baseDate));
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
-  const canSave = todoText.trim().length > 0 && dateValue.length > 0 && (isAllDay || timeValue.length > 0) && !isSaving;
+  const canSave = todoText.trim().length > 0 && dateValue.length > 0 && (isAllDay || timeValue.length > 0) && !isSaving && (!isEditMode || dirty);
+
+  useEffect(() => {
+    if (!isEditMode || todoId === null) return;
+
+    let ignore = false;
+    setError('');
+
+    getTodo(todoId)
+      .then((todo) => {
+        if (ignore) return;
+        setTodoText(todo.text);
+        setIsAllDay(todo.isAllDay);
+        setDateValue(toDateInputValueFromDateTime(todo.dueAt));
+        setTimeValue(toTimeInputValueFromDateTime(todo.dueAt));
+        setDirty(false);
+      })
+      .catch((err) => {
+        if (!ignore) {
+          setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '할일을 불러오지 못했습니다.');
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [isEditMode, todoId]);
 
   const saveTodo = async () => {
     if (!canSave) return;
@@ -31,11 +61,17 @@ export default function NewTodoPage() {
     setError('');
     setIsSaving(true);
     try {
-      await createTodo({
+      const payload = {
         text: todoText.trim(),
         dueAt: toLocalIsoFromInputs(dateValue, timeValue, isAllDay),
         isAllDay,
-      });
+      };
+
+      if (isEditMode && todoId !== null) {
+        await updateTodo(todoId, payload);
+      } else {
+        await createTodo(payload);
+      }
       navigate('/calendar');
     } catch (err) {
       setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '할일을 저장하지 못했습니다.');
@@ -51,7 +87,7 @@ export default function NewTodoPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          title="할일 추가"
+          title={isEditMode ? '할일 수정' : '할일 추가'}
           left={<NavBackButton onClick={() => navigate(-1)} />}
           right={(
             <div className="h-11 flex items-center">
@@ -71,7 +107,10 @@ export default function NewTodoPage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
             <input
               value={todoText}
-              onChange={(event) => setTodoText(event.target.value)}
+              onChange={(event) => {
+                setTodoText(event.target.value);
+                setDirty(true);
+              }}
               placeholder="할일 내용을 입력해주세요"
               className="w-full font-bold text-lg bg-transparent outline-none placeholder:text-gray-400"
               style={{ fontFamily: 'NanumSquare, system-ui' }}
@@ -81,7 +120,10 @@ export default function NewTodoPage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             <button
               type="button"
-              onClick={() => setIsAllDay((value) => !value)}
+              onClick={() => {
+                setIsAllDay((value) => !value);
+                setDirty(true);
+              }}
               className="items-center flex w-full text-left pt-3 pr-[14px] pb-3 pl-[14px] border-b transition-all active:scale-[0.99]"
               style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
             >
@@ -97,7 +139,10 @@ export default function NewTodoPage() {
               <input
                 type="date"
                 value={dateValue}
-                onChange={(event) => setDateValue(event.target.value)}
+                onChange={(event) => {
+                  setDateValue(event.target.value);
+                  setDirty(true);
+                }}
                 className="bg-transparent text-sm text-gray-700 outline-none"
               />
             </div>
@@ -108,7 +153,10 @@ export default function NewTodoPage() {
                 <input
                   type="time"
                   value={timeValue}
-                  onChange={(event) => setTimeValue(event.target.value)}
+                  onChange={(event) => {
+                    setTimeValue(event.target.value);
+                    setDirty(true);
+                  }}
                   className="bg-transparent text-sm text-gray-700 outline-none"
                 />
               </div>
@@ -131,6 +179,23 @@ function toTimeInputValue(date: Date) {
   const hour = String(date.getHours()).padStart(2, '0');
   const minute = String(date.getMinutes()).padStart(2, '0');
   return `${hour}:${minute}`;
+}
+
+function toDateInputValueFromDateTime(value: string) {
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return toDateInputValue(new Date());
+  return toDateInputValue(date);
+}
+
+function toTimeInputValueFromDateTime(value: string) {
+  const match = value.match(/T(\d{2}:\d{2})/);
+  if (match) return match[1];
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '09:00';
+  return toTimeInputValue(date);
 }
 
 function toLocalIsoFromInputs(dateValue: string, timeValue: string, isAllDay: boolean) {
