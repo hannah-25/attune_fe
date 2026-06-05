@@ -16,6 +16,7 @@ function loadGoogleSdk(): Promise<void> {
       };
       const onError = () => {
         cleanup();
+        existing.remove();
         reject(new Error('Google SDK를 불러오지 못했어요.'));
       };
       const cleanup = () => {
@@ -32,7 +33,10 @@ function loadGoogleSdk(): Promise<void> {
     script.src = GOOGLE_SDK_SRC;
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Google SDK를 불러오지 못했어요.'));
+    script.onerror = () => {
+      script.remove();
+      reject(new Error('Google SDK를 불러오지 못했어요.'));
+    };
     document.head.appendChild(script);
   });
 }

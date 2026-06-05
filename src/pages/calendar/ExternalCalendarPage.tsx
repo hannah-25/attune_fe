@@ -66,9 +66,13 @@ export default function ExternalCalendarPage() {
         authorizationCode,
         redirectUri: 'postmessage',
       });
-      await syncCalendarConnection(connection.connectionId);
       await refreshConnections();
-      setMessage('Google Calendar를 연결하고 일정을 가져왔어요.');
+      try {
+        await syncCalendarConnection(connection.connectionId);
+        setMessage('Google Calendar를 연결하고 일정을 가져왔어요.');
+      } catch {
+        setMessage('Google Calendar를 연결했어요. 일정 동기화에 실패했어요.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google Calendar 연결에 실패했어요.');
     } finally {

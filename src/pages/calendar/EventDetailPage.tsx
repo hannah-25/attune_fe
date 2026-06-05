@@ -96,6 +96,8 @@ export default function EventDetailPage() {
                 ref={memoRef}
                 value={memo}
                 readOnly
+                onFocus={() => setMemoFocused(true)}
+                onBlur={() => setMemoFocused(false)}
                 placeholder="메모 없음"
                 rows={2}
                 className="w-full resize-none bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
