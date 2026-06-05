@@ -378,7 +378,7 @@ export default function CalendarMainPage() {
                   key={todo.todoId}
                   role="button"
                   tabIndex={0}
-                  onMouseDown={() => startTodoMousePress(todo.todoId)}
+                  onMouseDown={(event) => startTodoMousePress(event, todo.todoId)}
                   onMouseUp={handleTodoPressEnd}
                   onMouseLeave={handleTodoPressEnd}
                   onTouchStart={() => startTodoTouchPress(todo.todoId)}
