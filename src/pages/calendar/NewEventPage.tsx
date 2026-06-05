@@ -556,9 +556,9 @@ function RowButton({ icon, label, last = false, onClick, value }: { icon?: React
 function parseDateParam(value: string | null, hour: number, minute: number) {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
 
-  const date = new Date(`${value}T00:00:00`);
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day, hour, minute, 0, 0);
   if (Number.isNaN(date.getTime())) return null;
-  date.setHours(hour, minute, 0, 0);
   return date;
 }
 
