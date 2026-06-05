@@ -285,7 +285,7 @@ export default function HomeListPage() {
               <EmptyActionCard
                 description="예정된 일정이 없어요."
                 actionLabel="일정 추가하기"
-                onClick={() => navigate(`/empty/calendar?date=${toDateKey(new Date())}`)}
+                onClick={() => navigate('/empty/calendar?date=' + toDateInputValue(new Date()))}
               />
             )}
           </div>
