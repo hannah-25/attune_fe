@@ -314,7 +314,7 @@ export default function MedicationListPage() {
 
         {actionSheetTarget ? (
           <div
-            className="absolute inset-0 bg-black/30 flex items-end z-50"
+            className="fixed inset-0 bg-black/30 flex items-end z-50"
             onClick={() => setActionSheetTarget(null)}
           >
             <div
