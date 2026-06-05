@@ -139,7 +139,9 @@ export default function CalendarMainPage() {
       .then(({ connections }) => {
         if (!ignore) setHasConnection(connections.some((c) => c.active));
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error('Failed to fetch calendar connections:', err);
+      });
 
     return () => {
       ignore = true;
