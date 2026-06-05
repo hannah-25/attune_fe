@@ -150,6 +150,7 @@ export default function CalendarMainPage() {
     if (syncing) return;
 
     setSyncing(true);
+    setError('');
     try {
       const { connections } = await getCalendarConnections();
       const active = connections.filter((c) => c.active);
