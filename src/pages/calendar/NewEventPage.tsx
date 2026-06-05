@@ -608,9 +608,9 @@ function toLocalIsoFromInputs(dateValue: string, timeValue: string, allDay: bool
   return `${dateValue}T${timePart}:00`;
 }
 
-function parseLocalDateTime(value: string) {
+function parseLocalDateTime(value: string): Date | null {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? new Date() : date;
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function ToggleSwitch({ active }: { active: boolean }) {
