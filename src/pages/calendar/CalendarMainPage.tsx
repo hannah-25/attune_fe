@@ -95,7 +95,7 @@ export default function CalendarMainPage() {
     return () => {
       ignore = true;
     };
-  }, [rangeEndDate, rangeStartDate]);
+  }, [rangeEndDate, rangeStartDate, refreshTrigger]);
 
   useEffect(() => {
     let ignore = false;
@@ -154,9 +154,7 @@ export default function CalendarMainPage() {
       const { connections } = await getCalendarConnections();
       const active = connections.filter((c) => c.active);
       await Promise.allSettled(active.map((c) => syncCalendarConnection(c.connectionId)));
-      const calendarResponse = await getCalendarEvents({ startDate: rangeStartDate, endDate: rangeEndDate });
-      setEvents(calendarResponse.events);
-      setError('');
+      setRefreshTrigger((prev) => prev + 1);
     } catch {
       setError('동기화에 실패했어요.');
     } finally {
