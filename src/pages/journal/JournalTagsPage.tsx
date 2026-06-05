@@ -63,7 +63,8 @@ export default function JournalTagsPage() {
         const response = await getTroubleTags();
         setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.trouble, source: 'trouble', visible: tag.visible })));
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to load tags:', err);
       setError('태그를 불러오지 못했습니다.');
     }
   };
@@ -91,7 +92,8 @@ export default function JournalTagsPage() {
       }
       await loadTags(activeCategory);
       setAddSheetOpen(false);
-    } catch {
+    } catch (err) {
+      console.error('Failed to add tag:', err);
       setError('태그를 추가하지 못했습니다.');
     } finally {
       setIsSaving(false);
@@ -112,7 +114,8 @@ export default function JournalTagsPage() {
       } else {
         await toggleTroubleTagVisible(tagId);
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to toggle tag visibility:', err);
       setTags((currentTags) =>
         currentTags.map((item) => (item.id === tag.id ? { ...item, visible: tag.visible } : item)),
       );

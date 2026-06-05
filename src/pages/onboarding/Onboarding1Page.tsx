@@ -14,7 +14,8 @@ export default function Onboarding1Page() {
     try {
       await skipOnboarding();
       navigate('/home');
-    } catch {
+    } catch (err) {
+      console.error('Failed to skip onboarding:', err);
       setError('온보딩 건너뛰기에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSkipping(false);

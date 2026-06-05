@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CalendarDays, Check, ChevronRight, Search, X } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavCloseButton } from '@/components/NavButtons';
 import {
@@ -13,23 +13,40 @@ import {
 } from '@/api/medication';
 import { ApiError } from '@/api/client';
 
+type EditMedicationState = {
+  editMode: true;
+  userMedicationId: number;
+  name: string;
+  detail: string;
+  schedule: string;
+  startedAt?: string;
+  endAt?: string | null;
+  active: boolean;
+};
+
 
 
 
 export default function MedicationAddPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editState = (location.state as EditMedicationState | null)?.editMode ? (location.state as EditMedicationState) : null;
+  const isEditMode = editState !== null;
+
   const [selectedMedication, setSelectedMedication] = useState<MedicationSearchResult | null>(null);
   const [selectedDosageId, setSelectedDosageId] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<MedicationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [startedAt, setStartedAt] = useState(toDateKey(new Date()));
+  const [startedAt, setStartedAt] = useState(editState?.startedAt ?? toDateKey(new Date()));
+  const [endAt, setEndAt] = useState(editState?.endAt ?? '');
   const [doseTime, setDoseTime] = useState('08:00');
-  const [isMedicationActive, setIsMedicationActive] = useState(true);
+  const [isMedicationActive, setIsMedicationActive] = useState(editState?.active ?? true);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const startedAtInputRef = useRef<HTMLInputElement>(null);
+  const endAtInputRef = useRef<HTMLInputElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 검색창 열릴 때 전체 목록 로드
@@ -39,7 +56,7 @@ export default function MedicationAddPage() {
     setIsSearching(true);
     searchMedications()
       .then(setSearchResults)
-      .catch(() => setSearchResults([]))
+      .catch((err) => { console.error('Failed to load medications:', err); setSearchResults([]); })
       .finally(() => setIsSearching(false));
   }, [searchOpen]);
 
@@ -51,7 +68,7 @@ export default function MedicationAddPage() {
       setIsSearching(true);
       searchMedications(query || undefined)
         .then(setSearchResults)
-        .catch(() => setSearchResults([]))
+        .catch((err) => { console.error('Failed to search medications:', err); setSearchResults([]); })
         .finally(() => setIsSearching(false));
     }, 300);
     return () => {
@@ -68,6 +85,22 @@ export default function MedicationAddPage() {
 
 
   const saveMedication = async () => {
+    if (isEditMode) {
+      setError('');
+      setIsSaving(true);
+      try {
+        await updateMedication(editState.userMedicationId, {
+          endAt: endAt || null,
+        });
+        navigate('/medication');
+      } catch (err) {
+        setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '약을 수정하지 못했습니다.');
+      } finally {
+        setIsSaving(false);
+      }
+      return;
+    }
+
     if (!selectedMedication) {
       setError('약을 선택해 주세요.');
       return;
@@ -89,12 +122,13 @@ export default function MedicationAddPage() {
       const created = await createMedication({
         medicationDosageId: selectedDosageId,
         startedAt,
+        endAt: endAt || undefined,
         schedules,
       });
       if (typeof created?.userMedicationId === 'number') {
         await updateMedication(created.userMedicationId, {
           isActive: isMedicationActive,
-          endAt: isMedicationActive ? undefined : toDateKey(new Date()),
+          endAt: isMedicationActive ? undefined : (endAt || toDateKey(new Date())),
         });
       }
       navigate('/medication');
@@ -114,7 +148,17 @@ export default function MedicationAddPage() {
     input.click();
   };
 
-  const canSave = selectedMedication !== null && selectedDosageId !== null;
+  const openEndAtPicker = () => {
+    const input = endAtInputRef.current;
+    if (!input) return;
+    const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
+    if (typeof pickerInput.showPicker === 'function') { pickerInput.showPicker(); return; }
+    input.focus();
+    input.click();
+  };
+
+  const hasValidRange = !endAt || !startedAt || startedAt <= endAt;
+  const canSave = (isEditMode || (selectedMedication !== null && selectedDosageId !== null)) && !isSaving && hasValidRange;
 
   return (
     <div
@@ -123,7 +167,7 @@ export default function MedicationAddPage() {
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
-          title="약 추가"
+          title={isEditMode ? '약 수정' : '약 추가'}
           left={<NavCloseButton />}
           right={
             <div className="items-center flex justify-end min-w-11 h-11">
@@ -142,106 +186,178 @@ export default function MedicationAddPage() {
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
 
-            {/* 약 이름 */}
-            <button type="button" onClick={() => setSearchOpen(true)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-              <div className="font-semibold w-[84px] text-gray-600 text-left">약 이름</div>
-              <div className={`grow font-semibold basis-[0%] text-left ${selectedMedication ? '' : 'text-gray-400'}`}>
-                {selectedMedication ? selectedMedication.name : '약 이름 검색'}
-              </div>
-              <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
-            </button>
+            {isEditMode ? (
+              <>
+                {/* 수정 모드: 약 이름/용량 읽기 전용 */}
+                <StaticRow label="약 이름" value={editState.name} />
+                <StaticRow label="복용 정보" value={editState.detail} />
 
-            {/* 용량 선택 */}
-            {selectedMedication && (
-              <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-                <div className="font-semibold w-[84px] text-gray-600 shrink-0">용량</div>
-                <div className="grow basis-[0%]">
-                  {(selectedMedication.dosageOptions ?? []).length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                      {(selectedMedication.dosageOptions ?? []).map((d) => {
-                        const id = getDosageId(d);
-                        return (
-                          <DosageChip
-                            key={id}
-                            dosage={d}
-                            selected={selectedDosageId === id}
-                            onSelect={() => setSelectedDosageId(id)}
-                          />
-                        );
-                      })}
+                {/* 복용 시작일 읽기 전용 */}
+                <StaticRow
+                  label="복용 시작일"
+                  value={editState.startedAt ? formatDateDot(editState.startedAt) : '-'}
+                />
+
+                {/* 종료일 편집 가능 */}
+                <div className="relative">
+                  <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                    <div className="font-semibold w-[84px] text-gray-600 shrink-0">종료일</div>
+                    <div className="grow basis-[0%] flex items-center justify-between">
+                      <button type="button" onClick={openEndAtPicker} className="font-semibold text-left grow">
+                        <span className={endAt ? '' : 'text-gray-400'}>{endAt ? formatDateDot(endAt) : '없음'}</span>
+                      </button>
+                      {endAt ? (
+                        <button type="button" onClick={() => setEndAt('')} aria-label="종료일 삭제">
+                          <X className="w-[13px] h-[13px] text-gray-400" strokeWidth={2.5} />
+                        </button>
+                      ) : (
+                        <button type="button" onClick={openEndAtPicker}>
+                          <CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <div className="text-gray-400 text-sm font-semibold">용량 정보 없음</div>
-                  )}
+                  </div>
+                  <input
+                    ref={endAtInputRef}
+                    type="date"
+                    value={endAt}
+                    onChange={(event) => setEndAt(event.target.value)}
+                    className="sr-only"
+                    aria-label="종료일"
+                  />
                 </div>
 
-              </div>
-            )}
-
-            {/* 성분 */}
-            {selectedMedication && (
-              <StaticRow label="성분" value={selectedMedication.ingredient} />
-            )}
-
-            {/* 복용 시작일 */}
-            <div className="relative">
-              <StaticRow
-                label="복용 시작일"
-                value={formatDateDot(startedAt)}
-                icon={<CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
-                onClick={openStartedAtPicker}
-              />
-              <input
-                ref={startedAtInputRef}
-                type="date"
-                value={startedAt}
-                onChange={(event) => setStartedAt(event.target.value)}
-                className="sr-only"
-                aria-label="복용 시작일"
-              />
-            </div>
-
-            {/* 복용 상태 */}
-            <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-              <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
-              <div className="grow basis-[0%] flex items-center justify-between">
-                <span className={`text-sm font-semibold ${isMedicationActive ? 'text-purple-700' : 'text-gray-500'}`}>
-                  {isMedicationActive ? '복용 중' : '복용 중단'}
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isMedicationActive}
-                  onClick={() => setIsMedicationActive((v) => !v)}
-                >
-                  <ToggleSwitch active={isMedicationActive} />
+                {/* 복용 시간 읽기 전용 */}
+                <StaticRow label="복용 시간" value={editState.schedule} last />
+              </>
+            ) : (
+              <>
+                {/* 추가 모드: 기존 폼 */}
+                <button type="button" onClick={() => setSearchOpen(true)} className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                  <div className="font-semibold w-[84px] text-gray-600 text-left">약 이름</div>
+                  <div className={`grow font-semibold basis-[0%] text-left ${selectedMedication ? '' : 'text-gray-400'}`}>
+                    {selectedMedication ? selectedMedication.name : '약 이름 검색'}
+                  </div>
+                  <ChevronRight className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
                 </button>
-              </div>
-            </div>
 
-            {/* 복용 시간 */}
-            <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-              <div className="font-semibold w-[84px] text-gray-600">복용 시간</div>
-              <div className="grow basis-[0%]">
-                <label className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
-                  <input
-                    type="time"
-                    value={doseTime}
-                    onChange={(e) => setDoseTime(e.target.value)}
-                    className="w-full bg-transparent text-sm text-gray-700 outline-none"
-                    aria-label="복용 시간"
+                {selectedMedication && (
+                  <div className="items-start flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                    <div className="font-semibold w-[84px] text-gray-600 shrink-0">용량</div>
+                    <div className="grow basis-[0%]">
+                      {(selectedMedication.dosageOptions ?? []).length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {(selectedMedication.dosageOptions ?? []).map((d) => {
+                            const id = getDosageId(d);
+                            return (
+                              <DosageChip
+                                key={id}
+                                dosage={d}
+                                selected={selectedDosageId === id}
+                                onSelect={() => setSelectedDosageId(id)}
+                              />
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-gray-400 text-sm font-semibold">용량 정보 없음</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedMedication && (
+                  <StaticRow label="성분" value={selectedMedication.ingredient} />
+                )}
+
+                <div className="relative">
+                  <StaticRow
+                    label="복용 시작일"
+                    value={formatDateDot(startedAt)}
+                    icon={<CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />}
+                    onClick={openStartedAtPicker}
                   />
-                </label>
+                  <input
+                    ref={startedAtInputRef}
+                    type="date"
+                    value={startedAt}
+                    onChange={(event) => setStartedAt(event.target.value)}
+                    className="sr-only"
+                    aria-label="복용 시작일"
+                  />
+                </div>
+
+                <div className="relative">
+                  <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                    <div className="font-semibold w-[84px] text-gray-600 shrink-0">종료일</div>
+                    <div className="grow basis-[0%] flex items-center justify-between">
+                      <button type="button" onClick={openEndAtPicker} className="font-semibold text-left grow">
+                        <span className={endAt ? '' : 'text-gray-400'}>{endAt ? formatDateDot(endAt) : '없음'}</span>
+                      </button>
+                      {endAt ? (
+                        <button type="button" onClick={() => setEndAt('')} aria-label="종료일 삭제">
+                          <X className="w-[13px] h-[13px] text-gray-400" strokeWidth={2.5} />
+                        </button>
+                      ) : (
+                        <button type="button" onClick={openEndAtPicker}>
+                          <CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <input
+                    ref={endAtInputRef}
+                    type="date"
+                    value={endAt}
+                    onChange={(event) => setEndAt(event.target.value)}
+                    className="sr-only"
+                    aria-label="종료일"
+                  />
+                </div>
+
+                <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+                  <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
+                  <div className="grow basis-[0%] flex items-center justify-between">
+                    <span className={`text-sm font-semibold ${isMedicationActive ? 'text-purple-700' : 'text-gray-500'}`}>
+                      {isMedicationActive ? '복용 중' : '복용 중단'}
+                    </span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isMedicationActive}
+                      onClick={() => setIsMedicationActive((v) => !v)}
+                    >
+                      <ToggleSwitch active={isMedicationActive} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
+                  <div className="font-semibold w-[84px] text-gray-600">복용 시간</div>
+                  <div className="grow basis-[0%]">
+                    <label className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
+                      <input
+                        type="time"
+                        value={doseTime}
+                        onChange={(e) => setDoseTime(e.target.value)}
+                        className="w-full bg-transparent text-sm text-gray-700 outline-none"
+                        aria-label="복용 시간"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+
+          </div>
+
+          {!isEditMode && (
+            <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div className="text-gray-800 leading-normal">
+                <b className="font-bold">표준 정보</b>를 함께 보여드려요. 효능, 부작용, 혈중 농도 추이까지 확인할 수 있어요.
               </div>
             </div>
-
-          </div>
-
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="text-gray-800 leading-normal">
-              <b className="font-bold">표준 정보</b>를 함께 보여드려요. 효능, 부작용, 혈중 농도 추이까지 확인할 수 있어요.
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

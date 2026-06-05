@@ -1,26 +1,35 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TabBar } from '@/components/TabBar';
-import { getScheduleCategories, getSchedules, ScheduleCategory, ScheduleSummary } from '@/api/schedule';
+import { getScheduleCategories, ScheduleCategory } from '@/api/schedule';
 import { getTodosByDate, TodoItem, updateTodo } from '@/api/todo';
+import { CalendarEvent, getCalendarEvents } from '@/api/calendarEvents';
+import { getCalendarConnections, syncCalendarConnection } from '@/api/calendarConnection';
 
 type ViewMode = 'month' | 'week';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const TODO_LONG_PRESS_MS = 450;
 
 export default function CalendarMainPage() {
   const navigate = useNavigate();
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const touchPressActiveRef = useRef(false);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [dateMenuDate, setDateMenuDate] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [events, setEvents] = useState<ScheduleSummary[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [todoError, setTodoError] = useState('');
   const [todosOpen, setTodosOpen] = useState(true);
   const [eventsOpen, setEventsOpen] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [hasConnection, setHasConnection] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const selectedDateKey = toDateKey(selectedDate);
 
   const [rangeStartDate, rangeEndDate] = useMemo(() => {
@@ -40,7 +49,7 @@ export default function CalendarMainPage() {
   );
 
   const groupedEvents = useMemo(() => {
-    const groups = new Map<string, ScheduleSummary[]>();
+    const groups = new Map<string, CalendarEvent[]>();
 
     visibleEvents.forEach((event) => {
       const dateKey = toDateKeyFromDateTime(event.startTime);
@@ -63,22 +72,31 @@ export default function CalendarMainPage() {
   }, [rangeEndDate, rangeStartDate, selectedDate, viewMode]);
 
   useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current !== null) {
+        window.clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     let ignore = false;
 
-    getSchedules({ startDate: rangeStartDate, endDate: rangeEndDate })
-      .then((scheduleResponse) => {
+    getCalendarEvents({ startDate: rangeStartDate, endDate: rangeEndDate })
+      .then((calendarResponse) => {
         if (ignore) return;
-        setEvents(scheduleResponse.schedules);
+        setEvents(calendarResponse.events);
         setError('');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load calendar events:', err);
         if (!ignore) setError('일정을 불러오지 못했습니다.');
       });
 
     return () => {
       ignore = true;
     };
-  }, [rangeEndDate, rangeStartDate]);
+  }, [rangeEndDate, rangeStartDate, refreshTrigger]);
 
   useEffect(() => {
     let ignore = false;
@@ -88,7 +106,8 @@ export default function CalendarMainPage() {
         if (ignore) return;
         setCategories(categoryResponse.categories);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load schedule categories:', err);
         if (!ignore) setCategories([]);
       });
 
@@ -106,7 +125,8 @@ export default function CalendarMainPage() {
         setTodos(response.todos);
         setTodoError('');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load todos:', err);
         if (!ignore) setTodoError('할일을 불러오지 못했습니다.');
       });
 
@@ -115,6 +135,45 @@ export default function CalendarMainPage() {
     };
   }, [selectedDateKey]);
 
+  useEffect(() => {
+    let ignore = false;
+
+    getCalendarConnections()
+      .then(({ connections }) => {
+        if (!ignore) setHasConnection(connections.some((c) => c.active));
+      })
+      .catch((err) => {
+        console.error('Failed to fetch calendar connections:', err);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const handleSync = async () => {
+    if (syncing) return;
+
+    setSyncing(true);
+    setError('');
+    try {
+      const { connections } = await getCalendarConnections();
+      const active = connections.filter((c) => c.active);
+      const results = await Promise.allSettled(active.map((c) => syncCalendarConnection(c.connectionId)));
+      const rejectedResults = results.filter((r) => r.status === 'rejected');
+      if (rejectedResults.length > 0) {
+        setError('일부 캘린더 동기화에 실패했어요.');
+        console.error('Failed calendar syncs:', rejectedResults);
+      }
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (err) {
+      console.error('Failed to sync calendar:', err);
+      setError('동기화에 실패했어요.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const handleToggleTodo = async (todo: TodoItem) => {
     const nextCompleted = !todo.isCompleted;
     setTodos((current) =>
@@ -122,13 +181,68 @@ export default function CalendarMainPage() {
     );
     try {
       await updateTodo(todo.todoId, { isCompleted: nextCompleted });
-    } catch {
+    } catch (err) {
+      console.error('Failed to update todo:', err);
       setTodos((current) =>
         current.map((t) => (t.todoId === todo.todoId ? { ...t, isCompleted: !nextCompleted } : t)),
       );
     }
   };
 
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current === null) return;
+    window.clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  };
+
+  const startTodoLongPress = (todoId: number) => {
+    clearLongPressTimer();
+    longPressTriggeredRef.current = false;
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      navigate(`/calendar/new-todo?id=${todoId}`);
+    }, TODO_LONG_PRESS_MS);
+  };
+
+  const handleTodoPressEnd = () => {
+    clearLongPressTimer();
+  };
+
+  const startTodoTouchPress = (todoId: number) => {
+    touchPressActiveRef.current = true;
+    startTodoLongPress(todoId);
+  };
+
+  const endTodoTouchPress = () => {
+    handleTodoPressEnd();
+    window.setTimeout(() => {
+      touchPressActiveRef.current = false;
+    }, 0);
+  };
+
+  const startTodoMousePress = (event: React.MouseEvent, todoId: number) => {
+    if (touchPressActiveRef.current || event.button !== 0) return;
+    startTodoLongPress(todoId);
+  };
+
+  const handleTodoClick = (todo: TodoItem) => {
+    if (longPressTriggeredRef.current) {
+      longPressTriggeredRef.current = false;
+      return;
+    }
+
+    void handleToggleTodo(todo);
+  };
+
+  const handleEventClick = (event: CalendarEvent) => {
+    if (event.source === 'EXTERNAL') {
+      navigate('/calendar/event', { state: { externalEvent: event } });
+      return;
+    }
+    if (event.scheduleId) {
+      navigate(`/calendar/event?id=${event.scheduleId}`);
+    }
+  };
 
   return (
     <div
@@ -156,13 +270,26 @@ export default function CalendarMainPage() {
               </button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setDateMenuDate(selectedDateKey)}
-            className="flex items-center justify-center w-9 h-9 bg-purple-100 rounded-[1.125rem]"
-          >
-            <Plus className="h-4 w-4 text-purple-600" strokeWidth={3} />
-          </button>
+          <div className="flex items-center gap-2">
+            {hasConnection ? (
+              <button
+                type="button"
+                onClick={handleSync}
+                disabled={syncing}
+                className="flex items-center justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_4px_0px] rounded-[1.125rem] disabled:opacity-45"
+                aria-label="캘린더 동기화"
+              >
+                <RefreshCw className={`h-4 w-4 text-gray-600 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setDateMenuDate(selectedDateKey)}
+              className="flex items-center justify-center w-9 h-9 bg-purple-100 rounded-[1.125rem]"
+            >
+              <Plus className="h-4 w-4 text-purple-600" strokeWidth={3} />
+            </button>
+          </div>
         </div>
         <div className="pr-3 pb-0 pl-3">
           <div className="grid-cols-7 grid mb-[6px] gap-1">
@@ -180,7 +307,7 @@ export default function CalendarMainPage() {
             onDoubleClickDate={(date) => { setSelectedDate(date); setDateMenuDate(toDateKey(date)); }}
           />
         </div>
-        <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0"></div>
+        <div className="h-px mt-1 ml-[16px] mr-[16px] bg-purple-50 shrink-0" />
         {dateMenuDate ? (
           <div
             className="fixed inset-0 z-30 flex flex-col justify-end bg-black/30"
@@ -247,11 +374,29 @@ export default function CalendarMainPage() {
               {todos.length === 0 ? (
                 <div className="text-gray-400 text-xs px-1 py-1">할일이 없어요</div>
               ) : todos.map((todo) => (
-                <button
+                <div
                   key={todo.todoId}
-                  type="button"
-                  onClick={() => void handleToggleTodo(todo)}
-                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
+                  role="button"
+                  tabIndex={0}
+                  onMouseDown={(event) => startTodoMousePress(event, todo.todoId)}
+                  onMouseUp={handleTodoPressEnd}
+                  onMouseLeave={handleTodoPressEnd}
+                  onTouchStart={() => startTodoTouchPress(todo.todoId)}
+                  onTouchMove={handleTodoPressEnd}
+                  onTouchEnd={endTodoTouchPress}
+                  onTouchCancel={endTodoTouchPress}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    navigate(`/calendar/new-todo?id=${todo.todoId}`);
+                  }}
+                  onClick={() => handleTodoClick(todo)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      void handleToggleTodo(todo);
+                    }
+                  }}
+                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem] select-none"
                 >
                   {todo.isCompleted
                     ? <CheckCircle2 className="w-[18px] h-[18px] text-purple-400 flex-shrink-0" strokeWidth={2.2} />
@@ -262,7 +407,7 @@ export default function CalendarMainPage() {
                   {!todo.isAllDay ? (
                     <div className="font-bold text-gray-500 text-xs flex-shrink-0">{formatTime(todo.dueAt)}</div>
                   ) : null}
-                </button>
+                </div>
               ))}
             </div>
           ) : null}
@@ -286,20 +431,26 @@ export default function CalendarMainPage() {
                     {formatGroupDateLabel(group.dateKey)}
                   </div>
                   {group.items.map((event) => {
-                    const category = categories.find((item) => item.categoryId === event.categoryId);
+                    const category = event.categoryId
+                      ? categories.find((item) => item.categoryId === event.categoryId)
+                      : null;
+                    const color = event.color ?? category?.color;
+                    const label = event.source === 'EXTERNAL' ? 'Google' : (category?.categoryName ?? '일정');
                     return (
                       <button
-                        key={event.scheduleId}
+                        key={event.id}
                         type="button"
-                        onClick={() => navigate(`/calendar/event?id=${event.scheduleId}`)}
-                        className="items-center flex w-full text-left mb-2 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
+                        onClick={() => handleEventClick(event)}
+                        className={`items-center flex w-full text-left mb-2 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem] ${
+                          event.source === 'EXTERNAL' ? 'bg-white border border-gray-100' : 'bg-purple-100'
+                        }`}
                       >
-                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined}></div>
+                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={color ? { backgroundColor: color } : undefined} />
                         <div className="grow basis-[0%]">
                           <div className="font-bold">{event.title}</div>
                           <div className="mt-[2px] text-gray-600 text-xs">{formatScheduleTime(event)}</div>
                         </div>
-                        <div className="font-bold text-gray-600 text-xs">{category?.categoryName ?? '일정'}</div>
+                        <div className="font-bold text-gray-600 text-xs">{label}</div>
                       </button>
                     );
                   })}
@@ -322,7 +473,7 @@ function CalendarGrid({
   selectedDate,
 }: {
   compact: boolean;
-  events: ScheduleSummary[];
+  events: CalendarEvent[];
   onDoubleClickDate: (date: Date) => void;
   onSelectDate: (date: Date) => void;
   selectedDate: Date;
@@ -380,14 +531,10 @@ function toDateKey(date: Date) {
 }
 
 function toDateKeyFromDateTime(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
-    return value.slice(0, 10);
-  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value.slice(0, 10);
-  }
+  if (Number.isNaN(parsed.getTime())) return value.slice(0, 10);
   return toDateKey(parsed);
 }
 
@@ -411,7 +558,7 @@ function formatGroupDateLabel(dateKey: string) {
   return `${month}월 ${day}일 (${weekday})`;
 }
 
-function formatScheduleTime(event: ScheduleSummary) {
+function formatScheduleTime(event: CalendarEvent) {
   if (event.isAllDay) return '종일';
   return `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`;
 }

@@ -29,7 +29,8 @@ export default function CounselingListPage() {
       .then((response) => {
         if (!ignore) setConsultations(extractConsultations(response));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load consultations:', err);
         if (!ignore) setError('상담 일정을 불러오지 못했습니다.');
       });
 

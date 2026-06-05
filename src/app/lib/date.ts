@@ -62,3 +62,69 @@ export function getWeekEnd(date: Date): Date {
   end.setDate(start.getDate() + 6);
   return end;
 }
+
+export function toDateInputValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function toTimeInputValue(date: Date): string {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+export function toDateInputValueFromDateTime(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return toDateInputValue(new Date());
+  return toDateInputValue(date);
+}
+
+export function toTimeInputValueFromDateTime(value: string, defaultTime = '00:00'): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return defaultTime;
+  return toTimeInputValue(date);
+}
+
+export function toLocalIso(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+}
+
+export function parseDateParam(value: string | null, hour: number, minute: number): Date | null {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day, hour, minute, 0, 0);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+export function addHours(date: Date, hours: number): Date {
+  const next = new Date(date);
+  next.setHours(date.getHours() + hours);
+  return next;
+}
+
+export function parseDateTimeInputs(dateValue: string, timeValue: string): Date | null {
+  if (!dateValue || !timeValue) return null;
+  const date = new Date(`${dateValue}T${timeValue}:00`);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+export function parseLocalDateTime(value: string): Date {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+export function toLocalIsoFromInputs(dateValue: string, timeValue: string, allDay: boolean, edge: 'start' | 'end' = 'start'): string {
+  const timePart = allDay ? (edge === 'end' ? '23:59' : '00:00') : (timeValue || '00:00');
+  return `${dateValue}T${timePart}:00`;
+}

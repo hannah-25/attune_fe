@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { getOnboardingStatus, type OnboardingResumeStep } from '@/api/onboarding';
+import { getOnboardingStatus } from '@/api/onboarding';
 import { getTodosByDate, updateTodo } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
@@ -23,13 +23,11 @@ type HomeScheduleItem = Pick<ScheduleSummary, 'scheduleId' | 'title' | 'startTim
 };
 
 const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
-const DEFAULT_ONBOARDING_STEP: OnboardingResumeStep = 2;
-
 export default function HomeListPage() {
   const navigate = useNavigate();
   const [todos, setTodos] = useState<HomeTodo[]>([]);
   const [scheduleItems, setScheduleItems] = useState<HomeScheduleItem[]>([]);
-  const [resumeStep, setResumeStep] = useState<OnboardingResumeStep | null>(null);
+  const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
   const [todoError, setTodoError] = useState('');
   const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
 
@@ -40,15 +38,16 @@ export default function HomeListPage() {
       .then((status) => {
         if (ignore) return;
         if (status.onboarded || status.skipped) {
-          setResumeStep(null);
+          setShowOnboardingPrompt(false);
           return;
         }
 
-        setResumeStep(status.resumeStep ?? DEFAULT_ONBOARDING_STEP);
+        setShowOnboardingPrompt(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load onboarding status:', err);
         if (!ignore) {
-          setResumeStep(null);
+          setShowOnboardingPrompt(false);
         }
       });
 
@@ -77,7 +76,8 @@ export default function HomeListPage() {
           .sort((a, b) => toTimestamp(a.dueAt) - toTimestamp(b.dueAt));
         setTodos(nextTodos);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load todos:', err);
         if (!ignore) setTodos([]);
       });
 
@@ -96,7 +96,8 @@ export default function HomeListPage() {
           .sort((a, b) => toTimestamp(a.startTime) - toTimestamp(b.startTime));
         setScheduleItems(nextSchedules);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load schedules:', err);
         if (!ignore) setScheduleItems([]);
       });
 
@@ -123,7 +124,8 @@ export default function HomeListPage() {
       setTodos((current) =>
         current.map((todo) => (todo.id === id ? { ...todo, done: resolvedDone } : todo))
       );
-    } catch {
+    } catch (err) {
+      console.error('Failed to toggle todo:', err);
       setTodos((current) =>
         current.map((todo) => (todo.id === id ? { ...todo, done: previousTodo.done } : todo))
       );
@@ -184,10 +186,10 @@ export default function HomeListPage() {
               </div>
             </div>
           </div>
-          {resumeStep !== null ? (
+          {showOnboardingPrompt ? (
             <button
               type="button"
-              onClick={() => navigate(`/onboarding/${resumeStep}`)}
+              onClick={() => navigate('/onboarding/1')}
               className="items-center flex gap-3 bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-2xl w-full text-left"
             >
               <div className="items-center flex justify-center w-9 h-9 bg-red-200 shrink-0 rounded-xl">
@@ -283,7 +285,7 @@ export default function HomeListPage() {
               <EmptyActionCard
                 description="예정된 일정이 없어요."
                 actionLabel="일정 추가하기"
-                onClick={() => navigate('/empty/calendar')}
+                onClick={() => navigate('/empty/calendar?date=' + toDateInputValue(new Date()))}
               />
             )}
           </div>

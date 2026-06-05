@@ -127,7 +127,7 @@ export default function JournalTimelinePage() {
       getConditionTags(),
       getSideEffectTags(),
       getTroubleTags(),
-      getJournal(journalDate).catch(() => null),
+      getJournal(journalDate).catch((err) => { console.error('Failed to load journal:', err); return null; }),
     ])
       .then(([conditions, sideEffects, troubles, journal]) => {
         if (ignore) return;
@@ -148,7 +148,8 @@ export default function JournalTimelinePage() {
           ));
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load journal tags:', err);
         if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
       });
 
@@ -167,7 +168,7 @@ export default function JournalTimelinePage() {
       category === '부작용' ? uncheckSideEffect(tagId, journalDate) :
       uncheckTrouble(tagId, journalDate);
 
-    apiCall.catch(() => setError('태그 삭제에 실패했습니다.'));
+    apiCall.catch((err) => { console.error('Failed to remove tag:', err); setError('태그 삭제에 실패했습니다.'); });
 
     setEntries(prev =>
       prev
@@ -208,7 +209,8 @@ export default function JournalTimelinePage() {
         if (activeCategory === '부작용') return checkSideEffect(tag.tagId);
         return checkTrouble(tag.tagId);
       }));
-    } catch {
+    } catch (err) {
+      console.error('Failed to record tags:', err);
       setError('태그 기록에 실패했습니다.');
     }
 
@@ -230,7 +232,8 @@ export default function JournalTimelinePage() {
     try {
       await createMemo(journalDate, memo);
       setMemoSaved(true);
-    } catch {
+    } catch (err) {
+      console.error('Failed to save memo:', err);
       setError('메모 저장에 실패했습니다.');
     }
   };

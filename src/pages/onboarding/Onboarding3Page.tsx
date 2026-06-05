@@ -26,7 +26,8 @@ export default function Onboarding3Page() {
         score: Math.max(0, (answers[question.id] ?? 1) - 1),
       })));
       navigate('/onboarding/4');
-    } catch {
+    } catch (err) {
+      console.error('Failed to submit ASRS:', err);
       setError('자가 체크 결과를 저장하지 못했습니다.');
     } finally {
       setIsSubmitting(false);

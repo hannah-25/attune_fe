@@ -45,7 +45,8 @@ export default function WithdrawPage() {
         if (ignore) return;
         setEmail(profile.email);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load profile:', err);
         if (!ignore) setError('계정 정보를 불러오지 못했습니다.');
       })
       .finally(() => {

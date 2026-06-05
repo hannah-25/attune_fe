@@ -308,7 +308,7 @@ export default function JournalFullPage() {
       getConditionTags(),
       getSideEffectTags(),
       getTroubleTags(),
-      getJournal(journalDate).catch(() => null),
+      getJournal(journalDate).catch((err) => { console.error('Failed to load journal:', err); return null; }),
     ])
       .then(([conditionTags, sideEffectTags, troubleTags, journal]) => {
         if (ignore) return;
@@ -364,7 +364,8 @@ export default function JournalFullPage() {
           })));
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load journal tags:', err);
         if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
       });
 
@@ -407,7 +408,8 @@ export default function JournalFullPage() {
         if (tag.source === 'sideEffect') await uncheckSideEffect(tag.tagId, journalDate);
         if (tag.source === 'trouble') await uncheckTrouble(tag.tagId, journalDate);
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to toggle tag:', err);
       setSections((currentSections) =>
         currentSections.map((section) =>
           section.title === sectionTitle
@@ -464,7 +466,8 @@ export default function JournalFullPage() {
           source: 'trouble',
         };
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to add tag:', err);
       setError('태그 추가에 실패했습니다.');
       return;
     }
@@ -504,7 +507,8 @@ export default function JournalFullPage() {
 
     try {
       await createSleepMeal(journalDate, payload);
-    } catch {
+    } catch (err) {
+      console.error('Failed to save sleep/meal:', err);
       setError('수면/식사 저장에 실패했습니다.');
     }
   };
@@ -514,7 +518,8 @@ export default function JournalFullPage() {
     try {
       await createMemo(journalDate, memo);
       setMemoSaved(true);
-    } catch {
+    } catch (err) {
+      console.error('Failed to save memo:', err);
       setError('메모 저장에 실패했습니다.');
     }
   };
@@ -527,7 +532,8 @@ export default function JournalFullPage() {
     try {
       const newGoal = await createJournalGoal({ content: trimmed, journalDate });
       setGoals((prev) => [...prev, { goalId: newGoal.goalId, label: newGoal.content, value: 0 }]);
-    } catch {
+    } catch (err) {
+      console.error('Failed to add goal:', err);
       setError('목표 추가에 실패했습니다.');
     }
   };
@@ -537,7 +543,8 @@ export default function JournalFullPage() {
     if (goal.goalId == null) return;
     try {
       await deleteJournalGoal(goal.goalId, journalDate);
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete goal:', err);
       setError('목표 삭제에 실패했습니다.');
     }
   };
@@ -697,7 +704,8 @@ export default function JournalFullPage() {
                         try {
                           const updated = await updateJournalGoal(goal.goalId, newContent);
                           setGoals((prev) => prev.map((g) => g.goalId === goal.goalId ? { ...g, label: updated.content } : g));
-                        } catch {
+                        } catch (err) {
+                          console.error('Failed to update goal:', err);
                           setError('목표 수정에 실패했습니다.');
                         }
                       }}

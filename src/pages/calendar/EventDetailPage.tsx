@@ -1,19 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { deleteSchedule, getSchedule, getScheduleCategories, ScheduleCategory, ScheduleDetail } from '@/api/schedule';
+import type { CalendarEvent } from '@/api/calendarEvents';
 
 export default function EventDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const externalEvent = (location.state as { externalEvent?: CalendarEvent } | null)?.externalEvent ?? null;
   const [searchParams] = useSearchParams();
   const scheduleId = Number(searchParams.get('id'));
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [eventDetail, setEventDetail] = useState<ScheduleDetail | null>(null);
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
-  const [memo, setMemo] = useState('');
+  const [memo, setMemo] = useState(() => externalEvent?.description ?? '');
   const [memoFocused, setMemoFocused] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
@@ -32,7 +35,8 @@ export default function EventDetailPage() {
         setCategories(categoryResponse.categories);
         setMemo(detail.description ?? '');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load event details:', err);
         if (!ignore) setError('일정을 불러오지 못했습니다.');
       });
 
@@ -47,10 +51,63 @@ export default function EventDetailPage() {
     try {
       await deleteSchedule(scheduleId);
       navigate('/calendar');
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete schedule:', err);
       setError('일정을 삭제하지 못했습니다.');
     }
   };
+
+  if (externalEvent) {
+    return (
+      <div
+        className="w-full h-full bg-purple-100 text-sm flex flex-col"
+        style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+      >
+        <div className="flex flex-col flex-1 min-h-0">
+          <TopBar left={<NavBackButton onClick={() => navigate(-1)} />} />
+          <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
+            <div className="items-center flex mb-[14px]">
+              <button
+                type="button"
+                className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97]"
+              >
+                <span className="block">Google Calendar</span>
+              </button>
+            </div>
+            <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
+              {externalEvent.title}
+            </div>
+            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+              <DetailRow label="언제" value={formatExternalWhen(externalEvent)} onClick={() => undefined} />
+              <DetailRow label="어디서" value={externalEvent.location || '위치 없음'} last onClick={() => undefined} />
+            </div>
+            <div className="text-xs text-gray-400 px-1 mt-2">
+              Google Calendar 일정의 제목, 시간, 장소는 에이튠에서 수정할 수 없어요.
+            </div>
+            <div className="font-bold text-gray-600 pt-4 pr-1 pb-1.5 pl-1">메모</div>
+            <button
+              type="button"
+              onClick={() => memoRef.current?.focus()}
+              className={`block w-full text-left bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem] transition-colors ${
+                memoFocused ? 'border-purple-300' : 'border-transparent'
+              }`}
+            >
+              <textarea
+                ref={memoRef}
+                value={memo}
+                readOnly
+                onFocus={() => setMemoFocused(true)}
+                onBlur={() => setMemoFocused(false)}
+                placeholder="메모 없음"
+                rows={2}
+                className="w-full resize-none bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const category = categories.find((item) => item.categoryId === eventDetail?.categoryId);
   const showCounselingPrepare = isAdhdConsultationCategory(category?.categoryName);
@@ -163,6 +220,11 @@ export default function EventDetailPage() {
       </div>
     </div>
   );
+}
+
+function formatExternalWhen(event: CalendarEvent) {
+  if (event.isAllDay) return `${formatDate(event.startTime)} 종일`;
+  return `${formatDate(event.startTime)} · ${formatTime(event.startTime)} - ${formatTime(event.endTime)}`;
 }
 
 function isAdhdConsultationCategory(categoryName?: string) {

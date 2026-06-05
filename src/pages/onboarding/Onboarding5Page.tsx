@@ -15,7 +15,8 @@ export default function Onboarding5Page() {
     try {
       await completeOnboarding();
       navigate('/home');
-    } catch {
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
       setError('온보딩 완료 처리에 실패했습니다.');
     } finally {
       setIsSubmitting(false);

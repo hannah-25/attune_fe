@@ -42,7 +42,8 @@ export default function Onboarding4Page() {
     try {
       await submitOnboardingGoals(goals.map((title) => ({ title })));
       navigate('/onboarding/5');
-    } catch {
+    } catch (err) {
+      console.error('Failed to submit onboarding goals:', err);
       setError('목표를 저장하지 못했습니다.');
     } finally {
       setIsSubmitting(false);

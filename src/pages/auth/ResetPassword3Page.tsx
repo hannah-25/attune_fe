@@ -29,7 +29,8 @@ export default function ResetPassword3Page() {
       .then(() => {
         if (!ignore) setIsTokenValid(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to validate password reset token:', err);
         if (!ignore) {
           setIsTokenValid(false);
           setError('비밀번호 재설정 링크가 만료되었거나 올바르지 않습니다.');

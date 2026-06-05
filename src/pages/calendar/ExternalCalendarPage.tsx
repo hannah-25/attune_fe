@@ -1,57 +1,124 @@
-import React, { useState } from 'react';
-import { Check, ChevronDown, RefreshCw } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Check, Link2, RefreshCw, Unplug } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-
-type CalendarOption = {
-  colorClass: string;
-  id: string;
-  label: string;
-};
-
-const CALENDAR_OPTIONS: CalendarOption[] = [
-  { id: 'work', label: '업무 일정', colorClass: 'bg-purple-300' },
-  { id: 'personal', label: '개인 일정', colorClass: 'bg-purple-300' },
-  { id: 'family', label: '가족 캘린더', colorClass: 'bg-purple-300' },
-];
+import {
+  CalendarConnection,
+  connectGoogleCalendar,
+  disconnectCalendarConnection,
+  getCalendarConnections,
+  syncCalendarConnection,
+} from '@/api/calendarConnection';
+import { requestGoogleCalendarAuthorizationCode } from '@/api/googleCalendarAuth';
 
 export default function ExternalCalendarPage() {
   const navigate = useNavigate();
-  const [accountOpen, setAccountOpen] = useState(false);
-  const [lastSynced, setLastSynced] = useState('4분 전 동기화');
+  const [connections, setConnections] = useState<CalendarConnection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [visibleCalendars, setVisibleCalendars] = useState<Record<string, boolean>>({
-    work: true,
-    personal: true,
-    family: false,
-  });
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
 
-  const toggleCalendar = (id: string) => {
-    setVisibleCalendars((prev) => ({ ...prev, [id]: !prev[id] }));
+  const googleConnection = useMemo(
+    () => connections.find((connection) => connection.provider === 'GOOGLE' && connection.active) ?? null,
+    [connections],
+  );
+
+  const refreshConnections = async () => {
+    const response = await getCalendarConnections();
+    setConnections(response.connections);
   };
 
-  const visibleCount = CALENDAR_OPTIONS.filter((option) => visibleCalendars[option.id]).length;
-  const allVisible = visibleCount === CALENDAR_OPTIONS.length;
+  useEffect(() => {
+    let ignore = false;
 
-  const toggleAllCalendars = () => {
-    const nextVisible = !allVisible;
-    setVisibleCalendars(
-      CALENDAR_OPTIONS.reduce<Record<string, boolean>>((next, option) => {
-        next[option.id] = nextVisible;
-        return next;
-      }, {}),
-    );
+    getCalendarConnections()
+      .then((response) => {
+        if (ignore) return;
+        setConnections(response.connections);
+        setError('');
+      })
+      .catch((err) => {
+        console.error('Failed to load calendar connections:', err);
+        if (!ignore) setError('캘린더 연결 상태를 불러오지 못했어요.');
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const handleConnectGoogle = async () => {
+    if (connecting || syncing) return;
+
+    setConnecting(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const authorizationCode = await requestGoogleCalendarAuthorizationCode();
+      const connection = await connectGoogleCalendar({
+        authorizationCode,
+        redirectUri: 'postmessage',
+      });
+      await refreshConnections();
+      try {
+        await syncCalendarConnection(connection.connectionId);
+        setMessage('Google Calendar를 연결하고 일정을 가져왔어요.');
+      } catch (syncErr) {
+        console.error('Initial sync failed after connection:', syncErr);
+        setMessage('Google Calendar를 연결했어요. 일정 동기화에 실패했어요.');
+      }
+    } catch (err) {
+      console.error('Failed to connect Google Calendar:', err);
+      setError(err instanceof Error ? err.message : 'Google Calendar 연결에 실패했어요.');
+    } finally {
+      setConnecting(false);
+    }
   };
 
-  const syncCalendar = () => {
-    if (syncing) return;
+  const handleSync = async () => {
+    if (!googleConnection || syncing) return;
 
     setSyncing(true);
-    window.setTimeout(() => {
-      setLastSynced('방금 동기화');
+    setError('');
+    setMessage('');
+
+    try {
+      const result = await syncCalendarConnection(googleConnection.connectionId);
+      await refreshConnections();
+      setMessage(`${result.syncedCount}개의 Google Calendar 일정을 확인했어요.`);
+    } catch (err) {
+      console.error('Failed to sync Google Calendar:', err);
+      setError('Google Calendar 일정을 동기화하지 못했어요.');
+    } finally {
       setSyncing(false);
-    }, 700);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    if (!googleConnection || disconnecting) return;
+
+    setDisconnecting(true);
+    setError('');
+    setMessage('');
+
+    try {
+      await disconnectCalendarConnection(googleConnection.connectionId);
+      await refreshConnections();
+      setMessage('Google Calendar 연결을 해제했어요.');
+    } catch (err) {
+      console.error('Failed to disconnect Google Calendar:', err);
+      setError('Google Calendar 연결을 해제하지 못했어요.');
+    } finally {
+      setDisconnecting(false);
+    }
   };
 
   return (
@@ -64,108 +131,107 @@ export default function ExternalCalendarPage() {
           title="캘린더 연동"
           left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
-            <button
-              type="button"
-              onClick={syncCalendar}
-              className="items-center flex justify-center w-11 h-11"
-              aria-label="캘린더 동기화"
-            >
-              <span className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
-                <RefreshCw className={`h-4 w-4 text-gray-700 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
-              </span>
-            </button>
+            googleConnection ? (
+              <button
+                type="button"
+                onClick={handleSync}
+                disabled={syncing || loading}
+                className="items-center flex justify-center w-11 h-11 disabled:opacity-45"
+                aria-label="동기화"
+              >
+                <span className="items-center flex justify-center w-9 h-9 bg-white/85 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] rounded-[1.125rem]">
+                  <RefreshCw className={`h-4 w-4 text-gray-700 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
+                </span>
+              </button>
+            ) : null
           }
         />
+
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
           <div className="bg-purple-100 border border-purple-50 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.375rem]">
             <div className="font-extrabold text-lg leading-[23.4px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-              {visibleCount}개 캘린더를
+              Google Calendar 일정을
               <br />
-              함께 보고 있어요
+              함께 볼 수 있어요
             </div>
             <div className="mt-[6px] text-gray-600 leading-normal">
-              {syncing ? 'Google 캘린더와 동기화 중이에요' : `Google 캘린더 · ${lastSynced}`}
+              외부 일정은 읽기 전용으로 표시돼요.
             </div>
           </div>
+
+          {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
+          {message ? <div className="text-purple-700 text-xs font-bold px-1">{message}</div> : null}
 
           <div className="font-bold text-gray-600 text-xs pt-1 pr-1 pb-0 pl-1">
             연결된 계정
           </div>
+
           <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            <button
-              type="button"
-              onClick={() => setAccountOpen((open) => !open)}
-              className="items-center flex w-full text-left gap-2.5 pt-[13px] pr-[14px] pb-[13px] pl-[14px] rounded-[0.875rem] transition-all active:scale-[0.99]"
-              aria-expanded={accountOpen}
-            >
-              <div className="items-center flex font-extrabold justify-center w-8 h-8 bg-purple-100 text-[rgb(185,166,255)] text-sm rounded-2xl">
-                <span className="block">G</span>
-              </div>
-              <div className="grow basis-[0%]">
-                <div className="font-bold text-gray-900">
-                  Google 캘린더
-                </div>
-                <div className="text-xs text-gray-600">
-                  main@gmail.com · {lastSynced}
-                </div>
-              </div>
-              <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {accountOpen ? (
-              <div className="mx-[14px] mb-3 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
-                <div className="items-center flex justify-between gap-2">
-                  <span>가져온 일정</span>
-                  <span className="font-bold text-gray-900">{visibleCount}개 표시 중</span>
-                </div>
-                <div className="items-center flex justify-between gap-2 mt-1.5">
-                  <span>동기화 상태</span>
-                  <span className="items-center inline-flex gap-1 font-bold text-purple-700">
+            {googleConnection ? (
+              <div className="pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
+                <div className="items-center flex gap-2.5">
+                  <div className="items-center flex font-extrabold justify-center w-8 h-8 bg-purple-100 text-[rgb(185,166,255)] text-sm rounded-2xl">
+                    G
+                  </div>
+                  <div className="grow basis-[0%]">
+                    <div className="font-bold text-gray-900">Google Calendar</div>
+                    <div className="text-xs text-gray-600">
+                      {googleConnection.accountEmail ?? 'Google 계정'} · {formatLastSynced(googleConnection.lastSyncedAt)}
+                    </div>
+                  </div>
+                  <span className="items-center inline-flex gap-1 font-bold text-purple-700 text-xs">
                     <Check className="h-3.5 w-3.5" strokeWidth={2.4} />
-                    정상
+                    연결됨
                   </span>
                 </div>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={handleSync}
+                    disabled={syncing}
+                    className="items-center flex grow justify-center gap-1.5 h-10 bg-purple-100 text-purple-800 font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-45"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.4} />
+                    동기화
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDisconnect}
+                    disabled={disconnecting}
+                    className="items-center flex grow justify-center gap-1.5 h-10 bg-gray-100 text-gray-700 font-bold rounded-xl transition-all active:scale-[0.98] disabled:opacity-45"
+                  >
+                    <Unplug className="h-4 w-4" strokeWidth={2.4} />
+                    해제
+                  </button>
+                </div>
               </div>
-            ) : null}
+            ) : (
+              <button
+                type="button"
+                onClick={handleConnectGoogle}
+                disabled={loading || connecting}
+                className="items-center flex w-full text-left gap-2.5 pt-[13px] pr-[14px] pb-[13px] pl-[14px] rounded-[0.875rem] transition-all active:scale-[0.99] disabled:opacity-45"
+              >
+                <div className="items-center flex font-extrabold justify-center w-8 h-8 bg-purple-100 text-[rgb(185,166,255)] text-sm rounded-2xl">
+                  G
+                </div>
+                <div className="grow basis-[0%]">
+                  <div className="font-bold text-gray-900">Google Calendar</div>
+                  <div className="text-xs text-gray-600">
+                    {connecting ? 'Google 권한을 확인하는 중이에요' : '일정을 읽기 전용으로 가져와요'}
+                  </div>
+                </div>
+                {connecting ? (
+                  <RefreshCw className="h-4 w-4 text-gray-500 animate-spin" strokeWidth={2.4} />
+                ) : (
+                  <Link2 className="h-4 w-4 text-gray-500" strokeWidth={2.4} />
+                )}
+              </button>
+            )}
           </div>
 
-          <div className="items-center flex justify-between pt-1 pr-1 pb-0 pl-1">
-            <div className="font-bold text-gray-600 text-xs">
-              표시 옵션
-            </div>
-            <button
-              type="button"
-              onClick={toggleAllCalendars}
-              className="font-bold text-xs text-purple-700 transition-all active:scale-[0.97]"
-            >
-              {allVisible ? '모두 숨기기' : '모두 표시'}
-            </button>
-          </div>
-          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-            {CALENDAR_OPTIONS.map((option, index) => {
-              const active = visibleCalendars[option.id];
-
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => toggleCalendar(option.id)}
-                  className={`items-center flex w-full text-left gap-2.5 pt-[11px] pr-[14px] pb-[11px] pl-[14px] transition-all active:scale-[0.99] disabled:opacity-45 ${
-                    index < CALENDAR_OPTIONS.length - 1 ? 'border-b' : ''
-                  }`}
-                  style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
-                >
-                  <div className={`w-3 h-3 rounded-md ${active ? option.colorClass : 'bg-purple-50'}`} />
-                  <div className="grow basis-[0%]">{option.label}</div>
-                  <ToggleSwitch active={active} />
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="bg-purple-100 border border-purple-50 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
-            <div className="text-gray-800 leading-normal">
-              숨긴 캘린더의 일정은 메인 캘린더에서만 보이지 않아요.
-            </div>
+          <div className="bg-white border border-gray-100 p-3 rounded-2xl text-gray-600 leading-normal">
+            Google Calendar 일정은 에이튠에서 보기만 할 수 있어요. 수정이나 삭제는 Google Calendar에서 해주세요.
           </div>
         </div>
       </div>
@@ -173,14 +239,11 @@ export default function ExternalCalendarPage() {
   );
 }
 
-function ToggleSwitch({ active }: { active: boolean }) {
-  return (
-    <span className={`relative block w-[38px] h-[22px] rounded-[0.6875rem] transition-colors ${
-      active ? 'bg-purple-300' : 'bg-purple-50'
-    }`}>
-      <span className={`absolute w-[18px] h-[18px] top-[2px] bg-white shadow-[rgba(0,0,0,0.15)_0px_1px_4px_0px] rounded-[0.5625rem] transition-all ${
-        active ? 'left-[18px]' : 'left-[2px]'
-      }`} />
-    </span>
-  );
+function formatLastSynced(value: string | null) {
+  if (!value) return '아직 동기화 전';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

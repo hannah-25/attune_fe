@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Clock, History, Pill, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, History, MoreVertical, Pencil, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -56,6 +56,23 @@ export default function MedicationListPage() {
   const [isLogging, setIsLogging] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [actionSheetTarget, setActionSheetTarget] = useState<MedicationCard | null>(null);
+
+  const handleEditMedication = (medication: MedicationCard) => {
+    setActionSheetTarget(null);
+    navigate('/medication/add', {
+      state: {
+        editMode: true,
+        userMedicationId: medication.userMedicationId,
+        name: medication.name,
+        detail: medication.detail,
+        schedule: medication.schedule,
+        startedAt: medication.startedAt,
+        endAt: medication.endAt,
+        active: medication.active,
+      },
+    });
+  };
 
   const loadMedications = useCallback(async () => {
     setIsLoading(true);
@@ -78,7 +95,8 @@ export default function MedicationListPage() {
       setNextDose(next);
       setTodayDoseSummary(buildTodayDoseSummary(active, takenScheduleKeys));
       setSecondsLeft(next ? getSecondsUntil(next.dueAt) : null);
-    } catch {
+    } catch (err) {
+      console.error('Failed to load medications:', err);
       setError('복용 목록을 불러오지 못했습니다.');
       setActiveMedications([]);
       setPastMedications([]);
@@ -118,7 +136,8 @@ export default function MedicationListPage() {
         scheduleId: nextDose.scheduleId,
       });
       await loadMedications();
-    } catch {
+    } catch (err) {
+      console.error('Failed to save medication log:', err);
       setError('복용 기록을 저장하지 못했습니다.');
     } finally {
       setIsLogging(false);
@@ -137,7 +156,8 @@ export default function MedicationListPage() {
         endAt: nextIsActive ? null : toDateKey(new Date()),
       });
       await loadMedications();
-    } catch {
+    } catch (err) {
+      console.error('Failed to change medication status:', err);
       setError('약 상태를 변경하지 못했습니다.');
     } finally {
       setTogglingId(null);
@@ -160,7 +180,8 @@ export default function MedicationListPage() {
         scheduleId: nextDose.scheduleId,
       });
       await loadMedications();
-    } catch {
+    } catch (err) {
+      console.error('Failed to save skip log:', err);
       setError('스킵 기록을 저장하지 못했습니다.');
     } finally {
       setIsLogging(false);
@@ -232,9 +253,12 @@ export default function MedicationListPage() {
             <div className="text-gray-400 text-xs px-1">불러오는 중...</div>
           ) : null}
           {activeMedications.map((medication) => (
-            <div key={medication.userMedicationId} className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+            <div
+              key={medication.userMedicationId}
+              className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]"
+            >
               <div className="items-center flex gap-2.5">
-                <div className={`items-center flex justify-center w-[38px] h-[38px] ${medication.bg} rounded-xl`}>
+                <div className={`items-center flex justify-center w-[38px] h-[38px] ${medication.bg} rounded-xl shrink-0`}>
                   <Pill className="w-[18px] h-[18px] text-white" strokeWidth={2.4} />
                 </div>
                 <button type="button" onClick={() => openMedicationInfo(medication)} className="grow basis-[0%] text-left">
@@ -243,12 +267,11 @@ export default function MedicationListPage() {
                 </button>
                 <button
                   type="button"
-                  aria-label={`${medication.name} 복용 중단`}
-                  onClick={() => void handleChangeMedicationStatus(medication, false)}
-                  disabled={togglingId === medication.userMedicationId}
-                  className={`items-center flex font-semibold whitespace-nowrap border border-red-200 bg-red-50 text-red-700 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] ${togglingId === medication.userMedicationId ? 'opacity-60' : ''}`}
+                  aria-label={`${medication.name} 더보기`}
+                  onClick={() => setActionSheetTarget(medication)}
+                  className="flex items-center justify-center w-8 h-8 shrink-0 rounded-full text-gray-500 bg-gray-100 active:bg-gray-200"
                 >
-                  중단
+                  <MoreVertical className="w-4 h-4" strokeWidth={2.5} />
                 </button>
               </div>
               <div className="items-center flex mt-3 bg-gray-100 text-gray-800 gap-1.5 pt-2 pr-[10px] pb-2 pl-[10px] rounded-xl">
@@ -292,6 +315,49 @@ export default function MedicationListPage() {
           <span className="block">약 추가</span>
         </button>
         <TabBar active="약" />
+
+        {actionSheetTarget ? (
+          <div
+            className="fixed inset-0 bg-black/30 flex items-end z-50"
+            onClick={() => setActionSheetTarget(null)}
+          >
+            <div
+              className="w-full bg-white rounded-t-3xl pt-5 pb-10 px-4 shadow-[rgba(0,0,0,0.18)_0px_-8px_24px_0px]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="font-bold text-base text-center mb-1">{actionSheetTarget.name}</div>
+              <div className="text-xs text-gray-500 text-center mb-5">{actionSheetTarget.detail}</div>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleEditMedication(actionSheetTarget)}
+                  className="items-center flex justify-center gap-2 w-full font-bold h-12 bg-[rgb(31,27,46)] text-white rounded-2xl"
+                >
+                  <Pencil className="w-4 h-4" strokeWidth={2.4} />
+                  수정하기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActionSheetTarget(null);
+                    void handleChangeMedicationStatus(actionSheetTarget, false);
+                  }}
+                  disabled={togglingId === actionSheetTarget.userMedicationId}
+                  className="items-center flex justify-center w-full font-bold h-12 border border-red-200 bg-red-50 text-red-700 rounded-2xl disabled:opacity-60"
+                >
+                  복용 중단
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActionSheetTarget(null)}
+                  className="items-center flex justify-center w-full font-semibold h-12 text-gray-500"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

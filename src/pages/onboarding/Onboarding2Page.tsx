@@ -17,7 +17,8 @@ export default function Onboarding2Page() {
     try {
       await submitOnboardingSymptoms({ description: symptomText, emotionalEvent: '' });
       navigate('/onboarding/3');
-    } catch {
+    } catch (err) {
+      console.error('Failed to submit onboarding symptoms:', err);
       setError('증상 서술을 저장하지 못했습니다.');
     } finally {
       setIsSubmitting(false);

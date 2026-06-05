@@ -9,6 +9,9 @@ interface Window {
         cancel: () => void;
         disableAutoSelect: () => void;
       };
+      oauth2?: {
+        initCodeClient: (config: GoogleCodeClientConfig) => GoogleCodeClient;
+      };
     };
   };
 }
@@ -47,6 +50,30 @@ interface GooglePromptNotification {
   isDismissedMoment: () => boolean;
   getDismissedReason: () => string;
   getMomentType: () => string;
+}
+
+interface GoogleCodeClientConfig {
+  client_id: string;
+  scope: string;
+  callback: (response: GoogleCodeResponse) => void;
+  ux_mode?: 'popup' | 'redirect';
+  redirect_uri?: string;
+  state?: string;
+  include_granted_scopes?: boolean;
+  prompt?: string;
+}
+
+interface GoogleCodeClient {
+  requestCode: () => void;
+}
+
+interface GoogleCodeResponse {
+  code?: string;
+  scope?: string;
+  state?: string;
+  error?: string;
+  error_description?: string;
+  error_uri?: string;
 }
 
 // Kakao SDK

@@ -66,8 +66,8 @@ export default function CommunityPostPage() {
   useEffect(() => {
     if (!postId) return;
     const id = Number(postId);
-    getPost(id).then(setPost).catch(() => {});
-    getComments(id).then(setComments).catch(() => {});
+    getPost(id).then(setPost).catch((err) => { console.error('Failed to load post:', err); });
+    getComments(id).then(setComments).catch((err) => { console.error('Failed to load comments:', err); });
   }, [postId]);
 
   const handleSubmit = async () => {
@@ -78,7 +78,8 @@ export default function CommunityPostPage() {
       setCommentText('');
       const updated = await getComments(Number(postId));
       setComments(updated);
-    } catch {
+    } catch (err) {
+      console.error('Failed to submit comment:', err);
       // 추후 토스트 연결
     } finally {
       setIsSubmitting(false);
@@ -91,7 +92,8 @@ export default function CommunityPostPage() {
     try {
       await deletePost(Number(postId));
       navigate('/community', { replace: true });
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete post:', err);
       setIsDeleting(false);
       setMenuOpen(false);
       setConfirmDelete(false);
@@ -105,7 +107,8 @@ export default function CommunityPostPage() {
       // TODO: 신고 API 연동
       await new Promise<void>((r) => setTimeout(r, 600));
       setReportDone(true);
-    } catch {
+    } catch (err) {
+      console.error('Failed to report:', err);
       // 추후 토스트 연결
     } finally {
       setIsReporting(false);
