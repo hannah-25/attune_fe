@@ -8,6 +8,7 @@ import { TopBar } from '../../app/components/TopBar';
 import { NavCloseButton } from '../../app/components/NavButtons';
 import { logout } from '../../app/api/auth';
 import { getMyProfile, updateNickname } from '../../app/api/user';
+import { getCalendarConnections } from '../../app/api/calendarConnection';
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function MyPage() {
   const [email, setEmail] = useState('main@gmail.com');
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [profileError, setProfileError] = useState('');
+  const [calendarConnectionCount, setCalendarConnectionCount] = useState<number | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -32,6 +34,21 @@ export default function MyPage() {
       .catch(() => {
         if (!ignore) setProfileError('프로필 정보를 불러오지 못했습니다.');
       });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getCalendarConnections()
+      .then(({ connections }) => {
+        if (ignore) return;
+        setCalendarConnectionCount(connections.filter((c) => c.active).length);
+      })
+      .catch(() => {});
 
     return () => {
       ignore = true;
@@ -120,7 +137,7 @@ export default function MyPage() {
           {profileError ? <div className="text-red-500 text-xs px-1 pb-2">{profileError}</div> : null}
           <Section title="설정">
             <MenuRow icon={<Bell />} label="알림" badge="phase2 작업" />
-            <MenuRow icon={<CalendarDays />} label="캘린더 연동" value="1개 연결" badge="phase2 작업" />
+            <MenuRow icon={<CalendarDays />} label="캘린더 연동" value={calendarConnectionCount ? `${calendarConnectionCount}개 연결` : undefined} onClick={() => navigate('/calendar/external')} />
             <MenuRow icon={<Moon />} label="테마" value="자동" badge="phase2 작업" last />
           </Section>
           <Section title="지원">

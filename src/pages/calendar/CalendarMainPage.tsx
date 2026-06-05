@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus } from 'lucide-react';
+import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TabBar } from '@/components/TabBar';
-import { getScheduleCategories, getSchedules, ScheduleCategory, ScheduleSummary } from '@/api/schedule';
+import { getScheduleCategories, ScheduleCategory } from '@/api/schedule';
 import { getTodosByDate, TodoItem, updateTodo } from '@/api/todo';
+import { CalendarEvent, getCalendarEvents } from '@/api/calendarEvents';
+import { getCalendarConnections, syncCalendarConnection } from '@/api/calendarConnection';
 
 type ViewMode = 'month' | 'week';
 
@@ -18,13 +20,15 @@ export default function CalendarMainPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [dateMenuDate, setDateMenuDate] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [events, setEvents] = useState<ScheduleSummary[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
   const [todos, setTodos] = useState<TodoItem[]>([]);
   const [todoError, setTodoError] = useState('');
   const [todosOpen, setTodosOpen] = useState(true);
   const [eventsOpen, setEventsOpen] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [hasConnection, setHasConnection] = useState(false);
   const selectedDateKey = toDateKey(selectedDate);
 
   const [rangeStartDate, rangeEndDate] = useMemo(() => {
@@ -44,7 +48,7 @@ export default function CalendarMainPage() {
   );
 
   const groupedEvents = useMemo(() => {
-    const groups = new Map<string, ScheduleSummary[]>();
+    const groups = new Map<string, CalendarEvent[]>();
 
     visibleEvents.forEach((event) => {
       const dateKey = toDateKeyFromDateTime(event.startTime);
@@ -77,10 +81,10 @@ export default function CalendarMainPage() {
   useEffect(() => {
     let ignore = false;
 
-    getSchedules({ startDate: rangeStartDate, endDate: rangeEndDate })
-      .then((scheduleResponse) => {
+    getCalendarEvents({ startDate: rangeStartDate, endDate: rangeEndDate })
+      .then((calendarResponse) => {
         if (ignore) return;
-        setEvents(scheduleResponse.schedules);
+        setEvents(calendarResponse.events);
         setError('');
       })
       .catch(() => {
@@ -126,6 +130,38 @@ export default function CalendarMainPage() {
       ignore = true;
     };
   }, [selectedDateKey]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getCalendarConnections()
+      .then(({ connections }) => {
+        if (!ignore) setHasConnection(connections.some((c) => c.active));
+      })
+      .catch(() => {});
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const handleSync = async () => {
+    if (syncing) return;
+
+    setSyncing(true);
+    try {
+      const { connections } = await getCalendarConnections();
+      const active = connections.filter((c) => c.active);
+      await Promise.allSettled(active.map((c) => syncCalendarConnection(c.connectionId)));
+      const calendarResponse = await getCalendarEvents({ startDate: rangeStartDate, endDate: rangeEndDate });
+      setEvents(calendarResponse.events);
+      setError('');
+    } catch {
+      setError('동기화에 실패했어요.');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleToggleTodo = async (todo: TodoItem) => {
     const nextCompleted = !todo.isCompleted;
@@ -186,6 +222,16 @@ export default function CalendarMainPage() {
     void handleToggleTodo(todo);
   };
 
+  const handleEventClick = (event: CalendarEvent) => {
+    if (event.source === 'EXTERNAL') {
+      navigate('/calendar/event', { state: { externalEvent: event } });
+      return;
+    }
+    if (event.scheduleId) {
+      navigate(`/calendar/event?id=${event.scheduleId}`);
+    }
+  };
+
   return (
     <div
       className="w-full h-full bg-gray-50 text-sm flex flex-col"
@@ -212,13 +258,26 @@ export default function CalendarMainPage() {
               </button>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setDateMenuDate(selectedDateKey)}
-            className="flex items-center justify-center w-9 h-9 bg-purple-100 rounded-[1.125rem]"
-          >
-            <Plus className="h-4 w-4 text-purple-600" strokeWidth={3} />
-          </button>
+          <div className="flex items-center gap-2">
+            {hasConnection ? (
+              <button
+                type="button"
+                onClick={handleSync}
+                disabled={syncing}
+                className="flex items-center justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_4px_0px] rounded-[1.125rem] disabled:opacity-45"
+                aria-label="캘린더 동기화"
+              >
+                <RefreshCw className={`h-4 w-4 text-gray-600 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setDateMenuDate(selectedDateKey)}
+              className="flex items-center justify-center w-9 h-9 bg-purple-100 rounded-[1.125rem]"
+            >
+              <Plus className="h-4 w-4 text-purple-600" strokeWidth={3} />
+            </button>
+          </div>
         </div>
         <div className="pr-3 pb-0 pl-3">
           <div className="grid-cols-7 grid mb-[6px] gap-1">
@@ -359,20 +418,26 @@ export default function CalendarMainPage() {
                     {formatGroupDateLabel(group.dateKey)}
                   </div>
                   {group.items.map((event) => {
-                    const category = categories.find((item) => item.categoryId === event.categoryId);
+                    const category = event.categoryId
+                      ? categories.find((item) => item.categoryId === event.categoryId)
+                      : null;
+                    const color = event.color ?? category?.color;
+                    const label = event.source === 'EXTERNAL' ? 'Google' : (category?.categoryName ?? '일정');
                     return (
                       <button
-                        key={event.scheduleId}
+                        key={event.id}
                         type="button"
-                        onClick={() => navigate(`/calendar/event?id=${event.scheduleId}`)}
-                        className="items-center flex w-full text-left mb-2 bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem]"
+                        onClick={() => handleEventClick(event)}
+                        className={`items-center flex w-full text-left mb-2 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem] ${
+                          event.source === 'EXTERNAL' ? 'bg-white border border-gray-100' : 'bg-purple-100'
+                        }`}
                       >
-                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={category?.color ? { backgroundColor: category.color } : undefined} />
+                        <div className="self-stretch w-1 bg-purple-300 rounded-xs" style={color ? { backgroundColor: color } : undefined} />
                         <div className="grow basis-[0%]">
                           <div className="font-bold">{event.title}</div>
                           <div className="mt-[2px] text-gray-600 text-xs">{formatScheduleTime(event)}</div>
                         </div>
-                        <div className="font-bold text-gray-600 text-xs">{category?.categoryName ?? '일정'}</div>
+                        <div className="font-bold text-gray-600 text-xs">{label}</div>
                       </button>
                     );
                   })}
@@ -395,7 +460,7 @@ function CalendarGrid({
   selectedDate,
 }: {
   compact: boolean;
-  events: ScheduleSummary[];
+  events: CalendarEvent[];
   onDoubleClickDate: (date: Date) => void;
   onSelectDate: (date: Date) => void;
   selectedDate: Date;
@@ -484,7 +549,7 @@ function formatGroupDateLabel(dateKey: string) {
   return `${month}월 ${day}일 (${weekday})`;
 }
 
-function formatScheduleTime(event: ScheduleSummary) {
+function formatScheduleTime(event: CalendarEvent) {
   if (event.isAllDay) return '종일';
   return `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`;
 }

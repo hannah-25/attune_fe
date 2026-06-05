@@ -150,9 +150,9 @@ export default function HomeMedicationSection() {
             return (
               <div key={item.key} className={`py-2 ${index > 0 ? 'border-t border-gray-100' : ''}`}>
                 <div className="items-center flex gap-2">
-                  <div className="font-semibold text-xs text-gray-700 w-11 shrink-0">{item.time}</div>
+                  <div className={`font-semibold text-xs w-11 shrink-0 transition-colors ${item.taken ? 'text-gray-400' : 'text-gray-700'}`}>{item.time}</div>
                   <div className="grow basis-[0%]">
-                    <div className="font-semibold text-xs text-gray-800">{item.medicationName}</div>
+                    <div className={`font-semibold text-xs transition-colors ${item.taken ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{item.medicationName}</div>
                   </div>
                   <button
                     type="button"
@@ -165,8 +165,8 @@ export default function HomeMedicationSection() {
                         : 'border-purple-300 bg-purple-50 text-purple-700'
                     }`}
                   >
-                    <Check className="w-3 h-3" strokeWidth={2.8} />
-                    {isPending ? '기록 중' : item.taken ? '완료 취소' : '복용 완료'}
+                    {item.taken && <Check className="w-3 h-3" strokeWidth={2.8} />}
+                    {isPending ? '기록 중' : item.taken ? '완료' : '복용하기'}
                   </button>
                 </div>
               </div>
