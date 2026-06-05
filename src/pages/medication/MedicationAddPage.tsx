@@ -157,7 +157,8 @@ export default function MedicationAddPage() {
     input.click();
   };
 
-  const canSave = (isEditMode || (selectedMedication !== null && selectedDosageId !== null)) && !isSaving;
+  const hasValidRange = !endAt || !startedAt || startedAt <= endAt;
+  const canSave = (isEditMode || (selectedMedication !== null && selectedDosageId !== null)) && !isSaving && hasValidRange;
 
   return (
     <div
