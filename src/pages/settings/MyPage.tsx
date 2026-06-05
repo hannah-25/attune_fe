@@ -137,7 +137,7 @@ export default function MyPage() {
           {profileError ? <div className="text-red-500 text-xs px-1 pb-2">{profileError}</div> : null}
           <Section title="설정">
             <MenuRow icon={<Bell />} label="알림" badge="phase2 작업" />
-            <MenuRow icon={<CalendarDays />} label="캘린더 연동" value={calendarConnectionCount ? `${calendarConnectionCount}개 연결` : undefined} onClick={() => navigate('/calendar/external')} />
+            <MenuRow icon={<CalendarDays />} label="캘린더 연동" value={calendarConnectionCount !== null ? `${calendarConnectionCount}개 연결` : undefined} onClick={() => navigate('/calendar/external')} />
             <MenuRow icon={<Moon />} label="테마" value="자동" badge="phase2 작업" last />
           </Section>
           <Section title="지원">
