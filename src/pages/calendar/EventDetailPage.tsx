@@ -77,9 +77,7 @@ export default function EventDetailPage() {
             </div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
               <DetailRow label="언제" value={formatExternalWhen(externalEvent)} onClick={() => undefined} />
-              <DetailRow label="어디서" value={externalEvent.location || '위치 없음'} onClick={() => undefined} />
-              <DetailRow label="알림" value="일정 알림" onClick={() => undefined} />
-              <DetailRow label="반복" value="안 함" last onClick={() => undefined} />
+              <DetailRow label="어디서" value={externalEvent.location || '위치 없음'} last onClick={() => undefined} />
             </div>
             <div className="text-xs text-gray-400 px-1 mt-2">
               Google Calendar 일정의 제목, 시간, 장소는 에이튠에서 수정할 수 없어요.
