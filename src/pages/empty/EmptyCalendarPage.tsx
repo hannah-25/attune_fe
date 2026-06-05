@@ -60,7 +60,7 @@ export default function EmptyCalendarPage() {
             <IconTile
               ariaLabel="일정 새로고침"
               disabled={isRefreshing}
-              onClick={() => void refreshSchedules()}
+              onClick={() => setRefreshTrigger((prev) => prev + 1)}
             >
               <RefreshCw className={`w-[14px] h-[14px] text-gray-700 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2.4} />
             </IconTile>
