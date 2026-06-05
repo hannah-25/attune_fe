@@ -41,7 +41,8 @@ export default function ExternalCalendarPage() {
         setConnections(response.connections);
         setError('');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load calendar connections:', err);
         if (!ignore) setError('캘린더 연결 상태를 불러오지 못했어요.');
       })
       .finally(() => {
@@ -70,10 +71,12 @@ export default function ExternalCalendarPage() {
       try {
         await syncCalendarConnection(connection.connectionId);
         setMessage('Google Calendar를 연결하고 일정을 가져왔어요.');
-      } catch {
+      } catch (syncErr) {
+        console.error('Initial sync failed after connection:', syncErr);
         setMessage('Google Calendar를 연결했어요. 일정 동기화에 실패했어요.');
       }
     } catch (err) {
+      console.error('Failed to connect Google Calendar:', err);
       setError(err instanceof Error ? err.message : 'Google Calendar 연결에 실패했어요.');
     } finally {
       setConnecting(false);
@@ -91,7 +94,8 @@ export default function ExternalCalendarPage() {
       const result = await syncCalendarConnection(googleConnection.connectionId);
       await refreshConnections();
       setMessage(`${result.syncedCount}개의 Google Calendar 일정을 확인했어요.`);
-    } catch {
+    } catch (err) {
+      console.error('Failed to sync Google Calendar:', err);
       setError('Google Calendar 일정을 동기화하지 못했어요.');
     } finally {
       setSyncing(false);
@@ -109,7 +113,8 @@ export default function ExternalCalendarPage() {
       await disconnectCalendarConnection(googleConnection.connectionId);
       await refreshConnections();
       setMessage('Google Calendar 연결을 해제했어요.');
-    } catch {
+    } catch (err) {
+      console.error('Failed to disconnect Google Calendar:', err);
       setError('Google Calendar 연결을 해제하지 못했어요.');
     } finally {
       setDisconnecting(false);

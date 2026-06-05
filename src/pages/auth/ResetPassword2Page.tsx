@@ -17,7 +17,8 @@ export default function ResetPassword2Page() {
     try {
       await requestPasswordReset(email);
       setMessage('재설정 메일을 다시 보냈습니다.');
-    } catch {
+    } catch (err) {
+      console.error('Failed to resend password reset email:', err);
       setMessage('메일 재발송에 실패했습니다.');
     } finally {
       setIsSubmitting(false);

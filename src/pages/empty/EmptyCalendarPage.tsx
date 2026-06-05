@@ -32,7 +32,8 @@ export default function EmptyCalendarPage() {
       if (response.schedules.length > 0) {
         navigate('/calendar', { replace: true });
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to load schedules:', err);
       if (isMountedRef.current) {
         setError('일정을 불러오지 못했습니다.');
       }

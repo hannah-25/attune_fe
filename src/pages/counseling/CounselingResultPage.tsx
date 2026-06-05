@@ -52,7 +52,8 @@ export default function CounselingResultPage() {
         setGoal(detail.nextTreatmentGoal ?? '');
         setPrescriptions([{ id: 'prescription', name: detail.prescriptionNote || '처방 내용', before: null, after: null, status: '유지' }]);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load consultation details:', err);
         if (!ignore) setError('상담 기록을 불러오지 못했습니다.');
       });
 
@@ -85,7 +86,8 @@ export default function CounselingResultPage() {
         nextTreatmentGoal: goal,
       });
       setSaved(true);
-    } catch {
+    } catch (err) {
+      console.error('Failed to save consultation result:', err);
       setError('상담 결과를 저장하지 못했습니다.');
     }
   };

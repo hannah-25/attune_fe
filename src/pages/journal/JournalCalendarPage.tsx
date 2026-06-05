@@ -59,7 +59,8 @@ export default function JournalCalendarPage() {
       .then((response) => {
         if (!ignore) setRecordDates(new Set(response.dates));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load journal record dates:', err);
         if (!ignore) setError('일지 기록을 불러오지 못했습니다.');
       });
 

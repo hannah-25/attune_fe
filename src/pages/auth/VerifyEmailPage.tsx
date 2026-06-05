@@ -34,7 +34,8 @@ export default function VerifyEmailPage() {
           setTimeout(() => navigate('/onboarding/1'), 1500);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to verify email:', err);
         if (!ignore) setState('error');
       });
 
@@ -50,7 +51,8 @@ export default function VerifyEmailPage() {
     try {
       await resendVerificationEmail(email);
       setResendMessage('인증 메일을 다시 보냈습니다.');
-    } catch {
+    } catch (err) {
+      console.error('Failed to resend verification email:', err);
       setResendMessage('메일 재발송에 실패했습니다.');
     } finally {
       setIsResending(false);

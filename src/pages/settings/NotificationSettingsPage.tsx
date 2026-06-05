@@ -14,7 +14,7 @@ function loadMedAlarmPrefs() {
     const raw = localStorage.getItem('medicationAlarmPrefs');
     if (!raw) return null;
     return JSON.parse(raw) as { offsets: number[]; repeatEnabled: boolean; activeDays: string[] };
-  } catch { return null; }
+  } catch (err) { console.error('Failed to parse medication alarm prefs:', err); return null; }
 }
 function saveMedAlarmPrefs(prefs: { offsets: number[]; repeatEnabled: boolean; activeDays: string[] }) {
   localStorage.setItem('medicationAlarmPrefs', JSON.stringify(prefs));
@@ -33,7 +33,7 @@ function loadCounselingAlarmPrefs() {
     const raw = localStorage.getItem('counselingAlarmPrefs');
     if (!raw) return null;
     return JSON.parse(raw) as { offsets: number[] };
-  } catch { return null; }
+  } catch (err) { console.error('Failed to parse counseling alarm prefs:', err); return null; }
 }
 function saveCounselingAlarmPrefs(prefs: { offsets: number[] }) {
   localStorage.setItem('counselingAlarmPrefs', JSON.stringify(prefs));
@@ -115,7 +115,8 @@ export default function NotificationSettingsPage() {
       const nextSettings = await updateUserSettings(payload);
       setSettings(nextSettings);
       return nextSettings;
-    } catch {
+    } catch (err) {
+      console.error('Failed to update notification settings:', err);
       setSettings(previous);
       setError('설정을 저장하지 못했습니다.');
       return null;

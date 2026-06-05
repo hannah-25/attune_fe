@@ -71,7 +71,8 @@ export default function CommunityFeedPage() {
         const category = specificSelected.length === 1 ? CATEGORY_TO_API[specificSelected[0]] : undefined;
         const results = await getPosts({ q: searchQuery, category });
         setSearchResults(results);
-      } catch {
+      } catch (err) {
+        console.error('Failed to search posts:', err);
         setSearchResults([]);
       } finally {
         setIsSearching(false);

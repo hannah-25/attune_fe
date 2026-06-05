@@ -29,7 +29,8 @@ export default function MedicationHistoryPage() {
       .then((response) => {
         if (!ignore) setLogs(extractLogs(response));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load medication logs:', err);
         if (!ignore) setError('복용 이력을 불러오지 못했습니다.');
       });
 

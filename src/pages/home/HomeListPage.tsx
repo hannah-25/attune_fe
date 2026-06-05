@@ -44,7 +44,8 @@ export default function HomeListPage() {
 
         setShowOnboardingPrompt(true);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load onboarding status:', err);
         if (!ignore) {
           setShowOnboardingPrompt(false);
         }
@@ -75,7 +76,8 @@ export default function HomeListPage() {
           .sort((a, b) => toTimestamp(a.dueAt) - toTimestamp(b.dueAt));
         setTodos(nextTodos);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load todos:', err);
         if (!ignore) setTodos([]);
       });
 
@@ -94,7 +96,8 @@ export default function HomeListPage() {
           .sort((a, b) => toTimestamp(a.startTime) - toTimestamp(b.startTime));
         setScheduleItems(nextSchedules);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load schedules:', err);
         if (!ignore) setScheduleItems([]);
       });
 
@@ -121,7 +124,8 @@ export default function HomeListPage() {
       setTodos((current) =>
         current.map((todo) => (todo.id === id ? { ...todo, done: resolvedDone } : todo))
       );
-    } catch {
+    } catch (err) {
+      console.error('Failed to toggle todo:', err);
       setTodos((current) =>
         current.map((todo) => (todo.id === id ? { ...todo, done: previousTodo.done } : todo))
       );

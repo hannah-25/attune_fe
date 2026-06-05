@@ -26,7 +26,8 @@ export default function MedicationInfoPage() {
       .then((response) => {
         if (!ignore) setMedication(response);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load medication info:', err);
         if (!ignore) setError('약품 정보를 불러오지 못했습니다.');
       });
 

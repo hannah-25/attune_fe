@@ -64,7 +64,8 @@ export default function HomeMedicationSection() {
       });
 
       setDoseItems(buildDoseItems(activeMedications, takenScheduleKeys));
-    } catch {
+    } catch (err) {
+      console.error('Failed to load home medication:', err);
       setActiveMedicationCount(0);
       setDoseItems([]);
       setError('복약 정보를 불러오지 못했어요.');
@@ -99,7 +100,8 @@ export default function HomeMedicationSection() {
         action: nextTaken ? 'TAKEN' : 'SKIPPED',
         scheduleId: item.scheduleId,
       });
-    } catch {
+    } catch (err) {
+      console.error('Failed to toggle dose:', err);
       setDoseItems((current) =>
         current.map((dose) => (dose.key === item.key ? { ...dose, taken: !nextTaken } : dose))
       );

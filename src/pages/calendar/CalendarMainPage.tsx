@@ -88,7 +88,8 @@ export default function CalendarMainPage() {
         setEvents(calendarResponse.events);
         setError('');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load calendar events:', err);
         if (!ignore) setError('일정을 불러오지 못했습니다.');
       });
 
@@ -105,7 +106,8 @@ export default function CalendarMainPage() {
         if (ignore) return;
         setCategories(categoryResponse.categories);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load schedule categories:', err);
         if (!ignore) setCategories([]);
       });
 
@@ -123,7 +125,8 @@ export default function CalendarMainPage() {
         setTodos(response.todos);
         setTodoError('');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load todos:', err);
         if (!ignore) setTodoError('할일을 불러오지 못했습니다.');
       });
 
@@ -163,7 +166,8 @@ export default function CalendarMainPage() {
         console.error('Failed calendar syncs:', rejectedResults);
       }
       setRefreshTrigger((prev) => prev + 1);
-    } catch {
+    } catch (err) {
+      console.error('Failed to sync calendar:', err);
       setError('동기화에 실패했어요.');
     } finally {
       setSyncing(false);
@@ -177,7 +181,8 @@ export default function CalendarMainPage() {
     );
     try {
       await updateTodo(todo.todoId, { isCompleted: nextCompleted });
-    } catch {
+    } catch (err) {
+      console.error('Failed to update todo:', err);
       setTodos((current) =>
         current.map((t) => (t.todoId === todo.todoId ? { ...t, isCompleted: !nextCompleted } : t)),
       );

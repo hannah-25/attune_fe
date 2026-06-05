@@ -35,7 +35,8 @@ export default function EventDetailPage() {
         setCategories(categoryResponse.categories);
         setMemo(detail.description ?? '');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load event details:', err);
         if (!ignore) setError('일정을 불러오지 못했습니다.');
       });
 
@@ -50,7 +51,8 @@ export default function EventDetailPage() {
     try {
       await deleteSchedule(scheduleId);
       navigate('/calendar');
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete schedule:', err);
       setError('일정을 삭제하지 못했습니다.');
     }
   };

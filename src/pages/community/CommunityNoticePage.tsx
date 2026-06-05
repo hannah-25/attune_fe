@@ -37,7 +37,8 @@ export default function CommunityNoticePage() {
         setError('');
         setFallbackNotice('');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load notices:', err);
         if (ignore) return;
         setNotices(mockNotices);
         setError('');

@@ -31,7 +31,8 @@ export default function MyPage() {
         setEmail(profile.email);
         setProfileImageUrl(profile.profileImageUrl ?? null);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load profile:', err);
         if (!ignore) setProfileError('프로필 정보를 불러오지 못했습니다.');
       });
 
@@ -48,7 +49,7 @@ export default function MyPage() {
         if (ignore) return;
         setCalendarConnectionCount(connections.filter((c) => c.active).length);
       })
-      .catch(() => {});
+      .catch((err) => { console.error('Failed to load calendar connections:', err); });
 
     return () => {
       ignore = true;
@@ -69,7 +70,8 @@ export default function MyPage() {
       await updateNickname(nextNickname);
       setNickname(nextNickname);
       setIsEditingProfile(false);
-    } catch {
+    } catch (err) {
+      console.error('Failed to update nickname:', err);
       setProfileError('닉네임 변경에 실패했습니다.');
     }
   };

@@ -27,7 +27,7 @@ export default function InquiryPage() {
   useEffect(() => {
     getMyProfile()
       .then((profile) => setEmail(profile.email))
-      .catch(() => {});
+      .catch((err) => { console.error('Failed to load profile for inquiry:', err); });
   }, []);
 
   const canSubmit = type !== null && title.trim().length > 0 && content.trim().length > 0 && email.trim().length > 0 && !isSubmitting;
@@ -46,7 +46,8 @@ export default function InquiryPage() {
         email: email.trim(),
       });
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      console.error('Failed to submit inquiry:', err);
       setSubmitError('문의 제출에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);

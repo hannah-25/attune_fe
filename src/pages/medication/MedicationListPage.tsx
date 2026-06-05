@@ -95,7 +95,8 @@ export default function MedicationListPage() {
       setNextDose(next);
       setTodayDoseSummary(buildTodayDoseSummary(active, takenScheduleKeys));
       setSecondsLeft(next ? getSecondsUntil(next.dueAt) : null);
-    } catch {
+    } catch (err) {
+      console.error('Failed to load medications:', err);
       setError('복용 목록을 불러오지 못했습니다.');
       setActiveMedications([]);
       setPastMedications([]);
@@ -135,7 +136,8 @@ export default function MedicationListPage() {
         scheduleId: nextDose.scheduleId,
       });
       await loadMedications();
-    } catch {
+    } catch (err) {
+      console.error('Failed to save medication log:', err);
       setError('복용 기록을 저장하지 못했습니다.');
     } finally {
       setIsLogging(false);
@@ -154,7 +156,8 @@ export default function MedicationListPage() {
         endAt: nextIsActive ? null : toDateKey(new Date()),
       });
       await loadMedications();
-    } catch {
+    } catch (err) {
+      console.error('Failed to change medication status:', err);
       setError('약 상태를 변경하지 못했습니다.');
     } finally {
       setTogglingId(null);
@@ -177,7 +180,8 @@ export default function MedicationListPage() {
         scheduleId: nextDose.scheduleId,
       });
       await loadMedications();
-    } catch {
+    } catch (err) {
+      console.error('Failed to save skip log:', err);
       setError('스킵 기록을 저장하지 못했습니다.');
     } finally {
       setIsLogging(false);

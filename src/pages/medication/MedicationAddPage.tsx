@@ -56,7 +56,7 @@ export default function MedicationAddPage() {
     setIsSearching(true);
     searchMedications()
       .then(setSearchResults)
-      .catch(() => setSearchResults([]))
+      .catch((err) => { console.error('Failed to load medications:', err); setSearchResults([]); })
       .finally(() => setIsSearching(false));
   }, [searchOpen]);
 
@@ -68,7 +68,7 @@ export default function MedicationAddPage() {
       setIsSearching(true);
       searchMedications(query || undefined)
         .then(setSearchResults)
-        .catch(() => setSearchResults([]))
+        .catch((err) => { console.error('Failed to search medications:', err); setSearchResults([]); })
         .finally(() => setIsSearching(false));
     }, 300);
     return () => {

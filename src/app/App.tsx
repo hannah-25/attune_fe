@@ -106,7 +106,8 @@ function RootRoute() {
       .then(() => {
         if (!ignore) setDestination('/home');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to get profile for routing:', err);
         if (!ignore) setDestination('/splash');
       });
 
