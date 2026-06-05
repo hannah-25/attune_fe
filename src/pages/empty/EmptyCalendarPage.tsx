@@ -8,7 +8,8 @@ import { getSchedules } from '@/api/schedule';
 export default function EmptyCalendarPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [selectedDate] = useState(() => parseDateParam(searchParams.get('date')) ?? new Date());
+  const dateParam = searchParams.get('date');
+  const selectedDate = React.useMemo(() => parseDateParam(dateParam) ?? new Date(), [dateParam]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
   const dateKey = toDateKey(selectedDate);
