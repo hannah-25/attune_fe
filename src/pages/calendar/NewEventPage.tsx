@@ -12,6 +12,18 @@ import {
   updateSchedule,
 } from '@/api/schedule';
 import { ApiError } from '@/api/client';
+import {
+  addHours,
+  parseDateParam,
+  parseDateTimeInputs,
+  parseLocalDateTime,
+  toDateInputValue,
+  toDateInputValueFromDateTime,
+  toLocalIso,
+  toLocalIsoFromInputs,
+  toTimeInputValue,
+  toTimeInputValueFromDateTime,
+} from '@/lib/date';
 
 const REPEAT_OPTIONS = ['없음', '매주', '매월'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
@@ -485,15 +497,6 @@ export default function NewEventPage() {
   );
 }
 
-function toLocalIso(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}:00`;
-}
-
 function getAlarmedAt(startTime: Date, minutesBefore: number | null) {
   if (!minutesBefore || minutesBefore <= 0) return [];
 
@@ -553,6 +556,7 @@ function RowButton({ icon, label, last = false, onClick, value }: { icon?: React
   );
 }
 
+<<<<<<< Updated upstream
 function parseDateParam(value: string | null, hour: number, minute: number) {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
 
@@ -613,6 +617,8 @@ function parseLocalDateTime(value: string): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+=======
+>>>>>>> Stashed changes
 function ToggleSwitch({ active }: { active: boolean }) {
   return (
     <span className={`relative block w-[38px] h-[22px] rounded-[0.6875rem] transition-colors ${active ? 'bg-purple-300' : 'bg-purple-50'}`}>

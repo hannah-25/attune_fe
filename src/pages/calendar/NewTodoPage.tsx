@@ -4,6 +4,13 @@ import { NavBackButton } from '@/components/NavButtons';
 import { TopBar } from '@/components/TopBar';
 import { createTodo, getTodo, updateTodo } from '@/api/todo';
 import { ApiError } from '@/api/client';
+import {
+  toDateInputValue,
+  toDateInputValueFromDateTime,
+  toLocalIsoFromInputs,
+  toTimeInputValue,
+  toTimeInputValueFromDateTime,
+} from '@/lib/date';
 
 export default function NewTodoPage() {
   const navigate = useNavigate();
@@ -41,7 +48,7 @@ export default function NewTodoPage() {
         setTodoText(todo.text);
         setIsAllDay(todo.isAllDay);
         setDateValue(toDateInputValueFromDateTime(todo.dueAt));
-        setTimeValue(toTimeInputValueFromDateTime(todo.dueAt));
+        setTimeValue(toTimeInputValueFromDateTime(todo.dueAt, '09:00'));
         setDirty(false);
       })
       .catch((err) => {
@@ -166,38 +173,6 @@ export default function NewTodoPage() {
       </div>
     </div>
   );
-}
-
-function toDateInputValue(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function toTimeInputValue(date: Date) {
-  const hour = String(date.getHours()).padStart(2, '0');
-  const minute = String(date.getMinutes()).padStart(2, '0');
-  return `${hour}:${minute}`;
-}
-
-function toDateInputValueFromDateTime(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return toDateInputValue(new Date());
-  return toDateInputValue(date);
-}
-
-function toTimeInputValueFromDateTime(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '09:00';
-  return toTimeInputValue(date);
-}
-
-function toLocalIsoFromInputs(dateValue: string, timeValue: string, isAllDay: boolean) {
-  const timePart = isAllDay ? '00:00' : (timeValue || '00:00');
-  return `${dateValue}T${timePart}:00`;
 }
 
 function ToggleSwitch({ active }: { active: boolean }) {
