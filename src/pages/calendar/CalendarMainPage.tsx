@@ -29,6 +29,7 @@ export default function CalendarMainPage() {
   const [eventsOpen, setEventsOpen] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [hasConnection, setHasConnection] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const selectedDateKey = toDateKey(selectedDate);
 
   const [rangeStartDate, rangeEndDate] = useMemo(() => {
