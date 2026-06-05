@@ -12,6 +12,7 @@ export default function EmptyCalendarPage() {
   const selectedDate = React.useMemo(() => parseDateParam(dateParam) ?? new Date(), [dateParam]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const dateKey = toDateKey(selectedDate);
   const isMountedRef = React.useRef(true);
 
@@ -40,7 +41,7 @@ export default function EmptyCalendarPage() {
         setIsRefreshing(false);
       }
     }
-  }, [dateKey, navigate]);
+  }, [dateKey, navigate, refreshTrigger]);
 
   useEffect(() => {
     void refreshSchedules();
