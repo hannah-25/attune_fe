@@ -13,6 +13,13 @@ export default function EmptyCalendarPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
   const dateKey = toDateKey(selectedDate);
+  const isMountedRef = React.useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const refreshSchedules = useCallback(async () => {
     setIsRefreshing(true);
@@ -20,13 +27,18 @@ export default function EmptyCalendarPage() {
 
     try {
       const response = await getSchedules({ startDate: dateKey, endDate: dateKey });
+      if (!isMountedRef.current) return;
       if (response.schedules.length > 0) {
         navigate('/calendar', { replace: true });
       }
     } catch {
-      setError('일정을 불러오지 못했습니다.');
+      if (isMountedRef.current) {
+        setError('일정을 불러오지 못했습니다.');
+      }
     } finally {
-      setIsRefreshing(false);
+      if (isMountedRef.current) {
+        setIsRefreshing(false);
+      }
     }
   }, [dateKey, navigate]);
 
