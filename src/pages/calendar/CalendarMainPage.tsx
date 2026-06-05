@@ -155,8 +155,10 @@ export default function CalendarMainPage() {
       const { connections } = await getCalendarConnections();
       const active = connections.filter((c) => c.active);
       const results = await Promise.allSettled(active.map((c) => syncCalendarConnection(c.connectionId)));
-      if (results.some((r) => r.status === 'rejected')) {
+      const rejectedResults = results.filter((r) => r.status === 'rejected');
+      if (rejectedResults.length > 0) {
         setError('일부 캘린더 동기화에 실패했어요.');
+        console.error('Failed calendar syncs:', rejectedResults);
       }
       setRefreshTrigger((prev) => prev + 1);
     } catch {
