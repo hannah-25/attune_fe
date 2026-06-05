@@ -166,7 +166,7 @@ export default function HomeMedicationSection() {
                     }`}
                   >
                     {item.taken && <Check className="w-3 h-3" strokeWidth={2.8} />}
-                    {isPending ? '기록 중' : item.taken ? '완료' : '복용하기'}
+                    {isPending ? '기록 중' : item.taken ? '복용 취소' : '복용하기'}
                   </button>
                 </div>
               </div>
