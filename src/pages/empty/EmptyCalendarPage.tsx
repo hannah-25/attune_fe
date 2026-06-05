@@ -42,11 +42,11 @@ export default function EmptyCalendarPage() {
         setIsRefreshing(false);
       }
     }
-  }, [dateKey, navigate, refreshTrigger]);
+  }, [dateKey, navigate]);
 
   useEffect(() => {
     void refreshSchedules();
-  }, [refreshSchedules]);
+  }, [refreshSchedules, refreshTrigger]);
 
   return (
     <div
