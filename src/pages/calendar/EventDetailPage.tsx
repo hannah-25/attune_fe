@@ -95,9 +95,7 @@ export default function EventDetailPage() {
               <textarea
                 ref={memoRef}
                 value={memo}
-                onChange={(e) => setMemo(e.target.value)}
-                onFocus={() => setMemoFocused(true)}
-                onBlur={() => setMemoFocused(false)}
+                readOnly
                 placeholder="메모 없음"
                 rows={2}
                 className="w-full resize-none bg-transparent text-base text-gray-800 outline-none placeholder:text-gray-400"
