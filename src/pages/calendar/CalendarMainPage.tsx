@@ -14,7 +14,7 @@ const TODO_LONG_PRESS_MS = 450;
 
 export default function CalendarMainPage() {
   const navigate = useNavigate();
-  const longPressTimerRef = useRef<number | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggeredRef = useRef(false);
   const touchPressActiveRef = useRef(false);
   const [viewMode, setViewMode] = useState<ViewMode>('month');
