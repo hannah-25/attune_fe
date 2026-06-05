@@ -153,7 +153,10 @@ export default function CalendarMainPage() {
     try {
       const { connections } = await getCalendarConnections();
       const active = connections.filter((c) => c.active);
-      await Promise.allSettled(active.map((c) => syncCalendarConnection(c.connectionId)));
+      const results = await Promise.allSettled(active.map((c) => syncCalendarConnection(c.connectionId)));
+      if (results.some((r) => r.status === 'rejected')) {
+        setError('일부 캘린더 동기화에 실패했어요.');
+      }
       setRefreshTrigger((prev) => prev + 1);
     } catch {
       setError('동기화에 실패했어요.');
