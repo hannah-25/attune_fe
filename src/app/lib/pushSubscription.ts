@@ -23,7 +23,11 @@ export async function subscribeToPush(): Promise<boolean> {
   if (permission !== 'granted') return false;
 
   try {
-    const registration = await navigator.serviceWorker.ready;
+    const timeout = (ms: number) => new Promise<never>((_, reject) => setTimeout(() => reject(new Error('ServiceWorker ready timeout')), ms));
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      timeout(5000),
+    ]);
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
