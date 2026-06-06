@@ -11,12 +11,12 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export async function subscribeToPush(): Promise<boolean> {
   if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return false;
+    return true;
   }
 
   if (!VAPID_PUBLIC_KEY) {
     console.warn('[push] VITE_VAPID_PUBLIC_KEY not set — skipping push subscription');
-    return false;
+    return true;
   }
 
   const permission = await Notification.requestPermission();
