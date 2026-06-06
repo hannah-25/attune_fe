@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ChevronDown, ChevronUp, Clock, History, MoreVertical, Pencil, Pill, Plus } from 'lucide-react';
+import { Bell, BellOff, ChevronDown, ChevronUp, Clock, History, MoreVertical, Pencil, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -25,6 +25,7 @@ type MedicationCard = {
   detail: string;
   schedule: string;
   active: boolean;
+  alarmActive: boolean;
   startedAt?: string;
   endAt?: string | null;
   schedules: MedicationScheduleSummary[];
@@ -55,6 +56,7 @@ export default function MedicationListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLogging, setIsLogging] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [togglingAlarmId, setTogglingAlarmId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [actionSheetTarget, setActionSheetTarget] = useState<MedicationCard | null>(null);
 
@@ -188,6 +190,19 @@ export default function MedicationListPage() {
     }
   };
 
+  const handleToggleAlarm = async (medication: MedicationCard) => {
+    if (togglingAlarmId !== null) return;
+    setTogglingAlarmId(medication.userMedicationId);
+    try {
+      await updateMedication(medication.userMedicationId, { alarmActive: !medication.alarmActive });
+      await loadMedications();
+    } catch (err) {
+      console.error('Failed to toggle alarm:', err);
+    } finally {
+      setTogglingAlarmId(null);
+    }
+  };
+
   const openMedicationInfo = (medication: MedicationCard) => {
     if (typeof medication.medicationId !== 'number') {
       setError('약품 표준 정보를 확인할 수 없습니다.');
@@ -276,7 +291,19 @@ export default function MedicationListPage() {
               </div>
               <div className="items-center flex mt-3 bg-gray-100 text-gray-800 gap-1.5 pt-2 pr-[10px] pb-2 pl-[10px] rounded-xl">
                 <Clock className="w-[11px] h-[11px] text-gray-600" strokeWidth={2.5} />
-                {medication.schedule}
+                <span className="grow">{medication.schedule}</span>
+                <button
+                  type="button"
+                  aria-label={medication.alarmActive ? '알람 끄기' : '알람 켜기'}
+                  onClick={() => void handleToggleAlarm(medication)}
+                  disabled={togglingAlarmId === medication.userMedicationId}
+                  className="shrink-0 disabled:opacity-50"
+                >
+                  {medication.alarmActive
+                    ? <Bell className="w-[13px] h-[13px] text-purple-500" strokeWidth={2.4} />
+                    : <BellOff className="w-[13px] h-[13px] text-gray-400" strokeWidth={2.4} />
+                  }
+                </button>
               </div>
             </div>
           ))}
@@ -389,6 +416,7 @@ function normalizeMedication(medication: MedicationSummary, index: number): Medi
     detail: buildMedicationDetail(dosageLabel, medication.startedAt),
     schedule: buildScheduleLabel(schedules),
     active: medication.isActive,
+    alarmActive: medication.alarmActive ?? true,
     startedAt: medication.startedAt,
     endAt: medication.endAt,
     schedules,

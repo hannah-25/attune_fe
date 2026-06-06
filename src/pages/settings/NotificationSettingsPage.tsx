@@ -3,8 +3,16 @@ import { ChevronRight, X } from 'lucide-react';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '../../app/components/NavButtons';
 import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
+import { subscribeToPush } from '../../app/lib/pushSubscription';
 
-type NotificationSettings = Pick<UserSettings, 'medicationNotification' | 'reportNotification' | 'marketingNotification'>;
+type NotificationSettings = Pick<
+  UserSettings,
+  | 'medicationNotification'
+  | 'reportNotification'
+  | 'marketingNotification'
+  | 'communityNotification'
+  | 'todoNotification'
+>;
 const QUIET_HOUR_EXCLUSION_OPTIONS = ['복약 알림', '일정 알림', '커뮤니티 알림'] as const;
 const ALARM_OFFSETS = [5, 10, 15, 30] as const;
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'] as const;
@@ -26,7 +34,6 @@ const COUNSELING_ALARM_OPTIONS = [
   { label: '1시간 전', minutes: 60 },
   { label: '30분 전', minutes: 30 },
 ] as const;
-type CounselingAlarmMinutes = typeof COUNSELING_ALARM_OPTIONS[number]['minutes'];
 
 function loadCounselingAlarmPrefs() {
   try {
@@ -44,6 +51,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   medicationNotification: true,
   reportNotification: true,
   marketingNotification: false,
+  communityNotification: true,
+  todoNotification: true,
   takeMedicationOnHoliday: false,
   theme: 'SYSTEM',
 };
@@ -52,6 +61,8 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   medicationNotification: DEFAULT_SETTINGS.medicationNotification,
   reportNotification: DEFAULT_SETTINGS.reportNotification,
   marketingNotification: DEFAULT_SETTINGS.marketingNotification,
+  communityNotification: DEFAULT_SETTINGS.communityNotification,
+  todoNotification: DEFAULT_SETTINGS.todoNotification,
 };
 
 export default function NotificationSettingsPage() {
@@ -60,8 +71,6 @@ export default function NotificationSettingsPage() {
   const [lastEnabledSettings, setLastEnabledSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [counselingNotification, setCounselingNotification] = useState(true);
   const [lastEnabledCounselingNotification, setLastEnabledCounselingNotification] = useState(true);
-  const [communityNotification, setCommunityNotification] = useState(false);
-  const [lastEnabledCommunityNotification, setLastEnabledCommunityNotification] = useState(false);
   const [medAlarmOffsets, setMedAlarmOffsets] = useState<number[]>(() => loadMedAlarmPrefs()?.offsets ?? [10]);
   const [medRepeatEnabled, setMedRepeatEnabled] = useState(() => loadMedAlarmPrefs()?.repeatEnabled ?? true);
   const [medActiveDays, setMedActiveDays] = useState<string[]>(() => loadMedAlarmPrefs()?.activeDays ?? ['월', '화', '수', '목', '금']);
@@ -125,30 +134,27 @@ export default function NotificationSettingsPage() {
 
   const toggleAllNotifications = async () => {
     if (allNotificationsEnabled) {
-      const previousCommunityNotification = communityNotification;
       const previousCounselingNotification = counselingNotification;
       setAllNotificationsEnabled(false);
       setLastEnabledSettings(pickNotificationSettings(settings));
-      setLastEnabledCommunityNotification(previousCommunityNotification);
       setLastEnabledCounselingNotification(previousCounselingNotification);
-      setCommunityNotification(false);
       setCounselingNotification(false);
       const nextSettings = await patchSettings({
         medicationNotification: false,
         reportNotification: false,
         marketingNotification: false,
+        communityNotification: false,
+        todoNotification: false,
       });
 
       if (!nextSettings) {
         setAllNotificationsEnabled(true);
-        setCommunityNotification(previousCommunityNotification);
         setCounselingNotification(previousCounselingNotification);
       }
       return;
     }
 
     setAllNotificationsEnabled(true);
-    setCommunityNotification(lastEnabledCommunityNotification);
     setCounselingNotification(lastEnabledCounselingNotification);
     const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
       ? lastEnabledSettings
@@ -157,12 +163,12 @@ export default function NotificationSettingsPage() {
 
     if (!nextSettings) {
       setAllNotificationsEnabled(false);
-      setCommunityNotification(false);
       setCounselingNotification(false);
       return;
     }
 
     setLastEnabledSettings(pickNotificationSettings(nextSettings));
+    void subscribeToPush();
   };
 
   const toggleCategory = async (key: keyof NotificationSettings) => {
@@ -236,15 +242,6 @@ export default function NotificationSettingsPage() {
     });
   };
 
-  const toggleCommunityNotification = () => {
-    if (!allNotificationsEnabled) return;
-    setCommunityNotification((current) => {
-      const next = !current;
-      setLastEnabledCommunityNotification(next);
-      return next;
-    });
-  };
-
   const toggleQuietHourExclusion = (option: QuietHourExclusionOption) => {
     setQuietHourExclusions((current) => (
       current.includes(option)
@@ -254,13 +251,12 @@ export default function NotificationSettingsPage() {
   };
 
   const medAlarmActive = allNotificationsEnabled ? settings.medicationNotification : false;
-  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays, medRepeatEnabled) : '하루 평균 2-3건';
+  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays) : '하루 평균 2-3건';
 
   const categories = [
     {
       color: 'bg-purple-500',
       desc: '월요일 아침',
-
       onToggle: () => toggleCategory('reportNotification'),
       active: allNotificationsEnabled ? settings.reportNotification : false,
       title: '주간 리포트',
@@ -269,8 +265,15 @@ export default function NotificationSettingsPage() {
       color: 'bg-purple-300',
       title: '커뮤니티',
       desc: '댓글·공감',
-      active: allNotificationsEnabled ? communityNotification : false,
-      onToggle: toggleCommunityNotification,
+      active: allNotificationsEnabled ? settings.communityNotification : false,
+      onToggle: () => toggleCategory('communityNotification'),
+    },
+    {
+      color: 'bg-purple-400',
+      title: 'Todo 알림',
+      desc: '마감 시각 정각',
+      active: allNotificationsEnabled ? settings.todoNotification : false,
+      onToggle: () => toggleCategory('todoNotification'),
     },
     {
       color: 'bg-[rgb(138,131,152)]',
@@ -552,11 +555,19 @@ function pickNotificationSettings(settings: UserSettings): NotificationSettings 
     medicationNotification: settings.medicationNotification,
     reportNotification: settings.reportNotification,
     marketingNotification: settings.marketingNotification,
+    communityNotification: settings.communityNotification,
+    todoNotification: settings.todoNotification,
   };
 }
 
 function isAnyNotificationEnabled(settings: NotificationSettings): boolean {
-  return settings.medicationNotification || settings.reportNotification || settings.marketingNotification;
+  return (
+    settings.medicationNotification ||
+    settings.reportNotification ||
+    settings.marketingNotification ||
+    settings.communityNotification ||
+    settings.todoNotification
+  );
 }
 
 function formatQuietHourExclusionSummary(selected: QuietHourExclusionOption[]): string {

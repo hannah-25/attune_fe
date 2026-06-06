@@ -15,6 +15,8 @@ export type UserSettings = {
   medicationNotification: boolean;
   reportNotification: boolean;
   marketingNotification: boolean;
+  communityNotification: boolean;
+  todoNotification: boolean;
   takeMedicationOnHoliday: boolean;
   theme: 'DARK' | 'LIGHT' | 'SYSTEM';
 };
