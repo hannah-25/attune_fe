@@ -53,7 +53,11 @@ export async function unsubscribeFromPush(): Promise<void> {
     if (!subscription) return;
 
     const endpoint = subscription.endpoint;
-    await unsubscribeAlarm(endpoint);
+    try {
+      await unsubscribeAlarm(endpoint);
+    } catch (err) {
+      console.error('[push] server unsubscribe failed:', err);
+    }
     await subscription.unsubscribe();
   } catch (err) {
     console.error('[push] unsubscribe failed:', err);
