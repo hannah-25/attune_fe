@@ -23,7 +23,7 @@ export async function subscribeToPush(): Promise<boolean> {
   if (permission !== 'granted') return false;
 
   try {
-    let timeoutId: any;
+    let timeoutId: ReturnType<typeof setTimeout>;
     const timeout = (ms: number) => new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => reject(new Error('ServiceWorker ready timeout')), ms);
     });
