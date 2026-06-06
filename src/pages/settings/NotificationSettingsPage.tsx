@@ -3,7 +3,7 @@ import { ChevronRight, X } from 'lucide-react';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '../../app/components/NavButtons';
 import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
-import { subscribeToPush } from '../../app/lib/pushSubscription';
+import { subscribeToPush, unsubscribeFromPush } from '../../app/lib/pushSubscription';
 
 type NotificationSettings = Pick<
   UserSettings,
