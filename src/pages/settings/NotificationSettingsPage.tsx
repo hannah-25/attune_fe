@@ -256,7 +256,7 @@ export default function NotificationSettingsPage() {
   };
 
   const medAlarmActive = allNotificationsEnabled ? settings.medicationNotification : false;
-  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays) : '하루 평균 2-3건';
+  const medAlarmSummary = medAlarmActive ? formatMedAlarmSummary(medAlarmOffsets, medActiveDays, medRepeatEnabled) : '하루 평균 2-3건';
 
   const categories = [
     {
@@ -580,11 +580,12 @@ function formatQuietHourExclusionSummary(selected: QuietHourExclusionOption[]): 
   return selected.join(', ');
 }
 
-function formatMedAlarmSummary(offsets: number[], activeDays: string[]): string {
+function formatMedAlarmSummary(offsets: number[], activeDays: string[], repeatEnabled: boolean): string {
+  const offsetLabel = offsets.length === 0 ? '알림 없음' : offsets.map((o) => `${o}분`).join(', ') + ' 전';
+  if (!repeatEnabled) return `${offsetLabel} · 반복 안 함`;
   const weekdays = ['월', '화', '수', '목', '금'];
   const isWeekdays = activeDays.length === 5 && weekdays.every((d) => activeDays.includes(d));
   const isEveryday = activeDays.length === 7;
   const dayLabel = isEveryday ? '매일' : isWeekdays ? '평일' : activeDays.join('');
-  const offsetLabel = offsets.length === 0 ? '알림 없음' : offsets.map((o) => `${o}분`).join(', ') + ' 전';
   return `${offsetLabel} · ${dayLabel}`;
 }
