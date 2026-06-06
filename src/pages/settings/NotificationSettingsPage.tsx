@@ -69,6 +69,7 @@ export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [allNotificationsEnabled, setAllNotificationsEnabled] = useState(true);
   const [lastEnabledSettings, setLastEnabledSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [counselingNotification, setCounselingNotification] = useState(true);
   const [lastEnabledCounselingNotification, setLastEnabledCounselingNotification] = useState(true);
   const [medAlarmOffsets, setMedAlarmOffsets] = useState<number[]>(() => loadMedAlarmPrefs()?.offsets ?? [10]);
@@ -133,50 +134,65 @@ export default function NotificationSettingsPage() {
   };
 
   const toggleAllNotifications = async () => {
-    if (allNotificationsEnabled) {
-      const previousCounselingNotification = counselingNotification;
-      setAllNotificationsEnabled(false);
-      setLastEnabledSettings(pickNotificationSettings(settings));
-      setLastEnabledCounselingNotification(previousCounselingNotification);
-      setCounselingNotification(false);
-      const nextSettings = await patchSettings({
-        medicationNotification: false,
-        reportNotification: false,
-        marketingNotification: false,
-        communityNotification: false,
-        todoNotification: false,
-      });
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      if (allNotificationsEnabled) {
+        const previousCounselingNotification = counselingNotification;
+        setAllNotificationsEnabled(false);
+        setLastEnabledSettings(pickNotificationSettings(settings));
+        setLastEnabledCounselingNotification(previousCounselingNotification);
+        setCounselingNotification(false);
+        const nextSettings = await patchSettings({
+          medicationNotification: false,
+          reportNotification: false,
+          marketingNotification: false,
+          communityNotification: false,
+          todoNotification: false,
+        });
+
+        if (!nextSettings) {
+          setAllNotificationsEnabled(true);
+          setCounselingNotification(previousCounselingNotification);
+        } else {
+          await unsubscribeFromPush();
+        }
+        return;
+      }
+
+      setAllNotificationsEnabled(true);
+      setCounselingNotification(lastEnabledCounselingNotification);
+      const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
+        ? lastEnabledSettings
+        : DEFAULT_NOTIFICATION_SETTINGS;
+      const nextSettings = await patchSettings(restoreSettings);
 
       if (!nextSettings) {
-        setAllNotificationsEnabled(true);
-        setCounselingNotification(previousCounselingNotification);
-      } else {
-        void unsubscribeFromPush();
+        setAllNotificationsEnabled(false);
+        setCounselingNotification(false);
+        return;
       }
-      return;
-    }
 
-    setAllNotificationsEnabled(true);
-    setCounselingNotification(lastEnabledCounselingNotification);
-    const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
-      ? lastEnabledSettings
-      : DEFAULT_NOTIFICATION_SETTINGS;
-    const nextSettings = await patchSettings(restoreSettings);
-
-    if (!nextSettings) {
-      setAllNotificationsEnabled(false);
-      setCounselingNotification(false);
-      return;
-    }
-
-    setLastEnabledSettings(pickNotificationSettings(nextSettings));
-    const success = await subscribeToPush();
-    if (!success) {
-      if ('Notification' in window && Notification.permission === 'denied') {
-        setError('알림 권한이 거부되었습니다. 브라우저 설정에서 알림을 허용해주세요.');
-      } else {
-        setError('실시간 알림 등록에 실패했습니다. 다시 시도해주세요.');
+      setLastEnabledSettings(pickNotificationSettings(nextSettings));
+      const success = await subscribeToPush();
+      if (!success) {
+        await patchSettings({
+          medicationNotification: false,
+          reportNotification: false,
+          marketingNotification: false,
+          communityNotification: false,
+          todoNotification: false,
+        });
+        setAllNotificationsEnabled(false);
+        setCounselingNotification(false);
+        if ('Notification' in window && Notification.permission === 'denied') {
+          setError('알림 권한이 거부되었습니다. 브라우저 설정에서 알림을 허용해주세요.');
+        } else {
+          setError('알림 구독에 실패했습니다. 다시 시도해주세요.');
+        }
       }
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -305,7 +321,7 @@ export default function NotificationSettingsPage() {
             <div className="font-bold text-gray-600">전체 알림</div>
             <div className="items-center flex mt-[6px] gap-2.5">
               <div className="grow font-extrabold basis-[0%] text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>받기</div>
-              <Toggle active={allNotificationsEnabled} onClick={toggleAllNotifications} />
+              <Toggle active={allNotificationsEnabled} onClick={toggleAllNotifications} disabled={isUpdating} />
             </div>
           </div>
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
