@@ -193,13 +193,19 @@ export default function MedicationListPage() {
   const handleToggleAlarm = async (medication: MedicationCard) => {
     if (togglingAlarmId !== null) return;
     setError('');
+    const next = !medication.alarmActive;
+    setActiveMedications((prev) =>
+      prev.map((m) => m.userMedicationId === medication.userMedicationId ? { ...m, alarmActive: next } : m)
+    );
     setTogglingAlarmId(medication.userMedicationId);
     try {
-      await updateMedication(medication.userMedicationId, { alarmActive: !medication.alarmActive });
-      await loadMedications();
+      await updateMedication(medication.userMedicationId, { alarmActive: next });
     } catch (err) {
       console.error('Failed to toggle alarm:', err);
       setError('알람 설정을 변경하지 못했습니다.');
+      setActiveMedications((prev) =>
+        prev.map((m) => m.userMedicationId === medication.userMedicationId ? { ...m, alarmActive: !next } : m)
+      );
     } finally {
       setTogglingAlarmId(null);
     }
