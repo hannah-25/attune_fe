@@ -160,6 +160,16 @@ export default function NotificationSettingsPage() {
         return;
       }
 
+      const success = await subscribeToPush();
+      if (!success) {
+        if ('Notification' in window && Notification.permission === 'denied') {
+          setError('알림 권한이 거부되었습니다. 브라우저 설정에서 알림을 허용해주세요.');
+        } else {
+          setError('알림 구독에 실패했습니다. 다시 시도해주세요.');
+        }
+        return;
+      }
+
       setAllNotificationsEnabled(true);
       setCounselingNotification(lastEnabledCounselingNotification);
       const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
@@ -174,23 +184,6 @@ export default function NotificationSettingsPage() {
       }
 
       setLastEnabledSettings(pickNotificationSettings(nextSettings));
-      const success = await subscribeToPush();
-      if (!success) {
-        await patchSettings({
-          medicationNotification: false,
-          reportNotification: false,
-          marketingNotification: false,
-          communityNotification: false,
-          todoNotification: false,
-        });
-        setAllNotificationsEnabled(false);
-        setCounselingNotification(false);
-        if ('Notification' in window && Notification.permission === 'denied') {
-          setError('알림 권한이 거부되었습니다. 브라우저 설정에서 알림을 허용해주세요.');
-        } else {
-          setError('알림 구독에 실패했습니다. 다시 시도해주세요.');
-        }
-      }
     } finally {
       setIsUpdating(false);
     }
