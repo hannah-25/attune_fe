@@ -86,8 +86,8 @@ export default function EventDetailPage() {
             </div>
             <div className="font-bold text-gray-600 pt-4 pr-1 pb-1.5 pl-1">메모</div>
             <div className="bg-white border border-transparent shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
-              <p className={`text-base whitespace-pre-wrap ${memo ? 'text-gray-800' : 'text-gray-400'}`}>
-                {memo || '메모 없음'}
+              <p className={`text-base whitespace-pre-wrap break-words ${memo.trim() ? 'text-gray-800' : 'text-gray-400'}`}>
+                {memo.trim() || '메모 없음'}
               </p>
             </div>
           </div>
