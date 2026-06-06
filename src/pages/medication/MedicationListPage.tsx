@@ -192,12 +192,14 @@ export default function MedicationListPage() {
 
   const handleToggleAlarm = async (medication: MedicationCard) => {
     if (togglingAlarmId !== null) return;
+    setError('');
     setTogglingAlarmId(medication.userMedicationId);
     try {
       await updateMedication(medication.userMedicationId, { alarmActive: !medication.alarmActive });
       await loadMedications();
     } catch (err) {
       console.error('Failed to toggle alarm:', err);
+      setError('알람 설정을 변경하지 못했습니다.');
     } finally {
       setTogglingAlarmId(null);
     }
