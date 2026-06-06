@@ -79,8 +79,8 @@ export default function MyPage() {
 
   const handleLogout = async () => {
     try {
+      await unsubscribeFromPush();
       await logout();
-      void unsubscribeFromPush();
     } finally {
       navigate('/login');
     }
