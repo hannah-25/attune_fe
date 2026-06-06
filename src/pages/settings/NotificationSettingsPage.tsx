@@ -150,6 +150,8 @@ export default function NotificationSettingsPage() {
       if (!nextSettings) {
         setAllNotificationsEnabled(true);
         setCounselingNotification(previousCounselingNotification);
+      } else {
+        void unsubscribeFromPush();
       }
       return;
     }
