@@ -304,7 +304,7 @@ export default function MedicationListPage() {
                   type="button"
                   aria-label={medication.alarmActive ? '알람 끄기' : '알람 켜기'}
                   onClick={() => void handleToggleAlarm(medication)}
-                  disabled={togglingAlarmId !== null}
+                  disabled={togglingAlarmId === medication.userMedicationId}
                   className="shrink-0 disabled:opacity-50"
                 >
                   {medication.alarmActive
