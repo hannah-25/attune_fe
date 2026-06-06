@@ -23,9 +23,6 @@ export async function subscribeToPush(): Promise<boolean> {
   if (permission !== 'granted') return false;
 
   try {
-    const existingRegistration = await navigator.serviceWorker.getRegistration();
-    if (!existingRegistration) return false;
-
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
