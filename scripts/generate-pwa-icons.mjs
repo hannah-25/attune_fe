@@ -33,9 +33,9 @@ async function generate() {
   console.log(`Trimmed source: ${width} x ${height}`);
 
   const icons = [
-    { out: 'pwa-192x192.png',         size: 192, padding: 0.05 },
-    { out: 'pwa-512x512.png',         size: 512, padding: 0.05 },
-    { out: 'pwa-maskable-512x512.png', size: 512, padding: 0.10 }, // safe zone = inner 80%
+    { out: 'pwa-v2-192x192.png',         size: 192, padding: 0.05 },
+    { out: 'pwa-v2-512x512.png',         size: 512, padding: 0.05 },
+    { out: 'pwa-v2-maskable-512x512.png', size: 512, padding: 0.10 }, // safe zone = inner 80%
   ];
 
   for (const { out, size, padding } of icons) {
