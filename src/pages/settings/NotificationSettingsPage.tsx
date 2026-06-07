@@ -49,15 +49,22 @@ export default function NotificationSettingsPage() {
 
   useEffect(() => {
     let ignore = false;
-    Promise.all([getUserSettings(), syncPushSubscription()])
-      .then(([nextSettings, subscribed]) => {
-        if (ignore) return;
-        setSettings(nextSettings);
-        setDeviceSubscribed(subscribed);
+    getUserSettings()
+      .then((nextSettings) => {
+        if (!ignore) setSettings(nextSettings);
       })
       .catch(() => {
         if (!ignore) setError('알림 설정을 불러오지 못했습니다.');
       });
+
+    syncPushSubscription()
+      .then((subscribed) => {
+        if (!ignore) setDeviceSubscribed(subscribed);
+      })
+      .catch((err) => {
+        console.error('[push] initial subscription sync failed:', err);
+      });
+
     return () => { ignore = true; };
   }, []);
 
