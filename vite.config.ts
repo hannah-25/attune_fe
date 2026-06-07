@@ -17,6 +17,7 @@ export default defineConfig({
       srcDir: 'src',
       filename: 'sw.ts',
       registerType: 'autoUpdate',
+      injectRegister: 'script',
       manifestFilename: 'manifest-v2.webmanifest',
       includeAssets: ['pwa-v2-192x192.png', 'pwa-v2-512x512.png', 'pwa-v2-maskable-512x512.png'],
       manifest: {
@@ -52,6 +53,10 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
       },
     }),
   ],
