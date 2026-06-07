@@ -9,6 +9,7 @@ import { NavCloseButton } from '../../app/components/NavButtons';
 import { logout } from '../../app/api/auth';
 import { getMyProfile, updateNickname } from '../../app/api/user';
 import { getCalendarConnections } from '../../app/api/calendarConnection';
+import { unsubscribeFromPush } from '../../app/lib/pushSubscription';
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -78,6 +79,7 @@ export default function MyPage() {
 
   const handleLogout = async () => {
     try {
+      await unsubscribeFromPush();
       await logout();
     } finally {
       navigate('/login');

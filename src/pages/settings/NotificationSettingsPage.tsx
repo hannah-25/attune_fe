@@ -3,8 +3,16 @@ import { ChevronRight, X } from 'lucide-react';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '../../app/components/NavButtons';
 import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
+import { subscribeToPush, unsubscribeFromPush } from '../../app/lib/pushSubscription';
 
-type NotificationSettings = Pick<UserSettings, 'medicationNotification' | 'reportNotification' | 'marketingNotification'>;
+type NotificationSettings = Pick<
+  UserSettings,
+  | 'medicationNotification'
+  | 'reportNotification'
+  | 'marketingNotification'
+  | 'communityNotification'
+  | 'todoNotification'
+>;
 const QUIET_HOUR_EXCLUSION_OPTIONS = ['복약 알림', '일정 알림', '커뮤니티 알림'] as const;
 const ALARM_OFFSETS = [5, 10, 15, 30] as const;
 const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'] as const;
@@ -26,7 +34,6 @@ const COUNSELING_ALARM_OPTIONS = [
   { label: '1시간 전', minutes: 60 },
   { label: '30분 전', minutes: 30 },
 ] as const;
-type CounselingAlarmMinutes = typeof COUNSELING_ALARM_OPTIONS[number]['minutes'];
 
 function loadCounselingAlarmPrefs() {
   try {
@@ -44,6 +51,8 @@ const DEFAULT_SETTINGS: UserSettings = {
   medicationNotification: true,
   reportNotification: true,
   marketingNotification: false,
+  communityNotification: true,
+  todoNotification: true,
   takeMedicationOnHoliday: false,
   theme: 'SYSTEM',
 };
@@ -52,16 +61,17 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   medicationNotification: DEFAULT_SETTINGS.medicationNotification,
   reportNotification: DEFAULT_SETTINGS.reportNotification,
   marketingNotification: DEFAULT_SETTINGS.marketingNotification,
+  communityNotification: DEFAULT_SETTINGS.communityNotification,
+  todoNotification: DEFAULT_SETTINGS.todoNotification,
 };
 
 export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [allNotificationsEnabled, setAllNotificationsEnabled] = useState(true);
   const [lastEnabledSettings, setLastEnabledSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [counselingNotification, setCounselingNotification] = useState(true);
   const [lastEnabledCounselingNotification, setLastEnabledCounselingNotification] = useState(true);
-  const [communityNotification, setCommunityNotification] = useState(false);
-  const [lastEnabledCommunityNotification, setLastEnabledCommunityNotification] = useState(false);
   const [medAlarmOffsets, setMedAlarmOffsets] = useState<number[]>(() => loadMedAlarmPrefs()?.offsets ?? [10]);
   const [medRepeatEnabled, setMedRepeatEnabled] = useState(() => loadMedAlarmPrefs()?.repeatEnabled ?? true);
   const [medActiveDays, setMedActiveDays] = useState<string[]>(() => loadMedAlarmPrefs()?.activeDays ?? ['월', '화', '수', '목', '금']);
@@ -124,45 +134,59 @@ export default function NotificationSettingsPage() {
   };
 
   const toggleAllNotifications = async () => {
-    if (allNotificationsEnabled) {
-      const previousCommunityNotification = communityNotification;
-      const previousCounselingNotification = counselingNotification;
-      setAllNotificationsEnabled(false);
-      setLastEnabledSettings(pickNotificationSettings(settings));
-      setLastEnabledCommunityNotification(previousCommunityNotification);
-      setLastEnabledCounselingNotification(previousCounselingNotification);
-      setCommunityNotification(false);
-      setCounselingNotification(false);
-      const nextSettings = await patchSettings({
-        medicationNotification: false,
-        reportNotification: false,
-        marketingNotification: false,
-      });
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      if (allNotificationsEnabled) {
+        const previousCounselingNotification = counselingNotification;
+        setAllNotificationsEnabled(false);
+        setLastEnabledSettings(pickNotificationSettings(settings));
+        setLastEnabledCounselingNotification(previousCounselingNotification);
+        setCounselingNotification(false);
+        const nextSettings = await patchSettings({
+          medicationNotification: false,
+          reportNotification: false,
+          marketingNotification: false,
+          communityNotification: false,
+          todoNotification: false,
+        });
+
+        if (!nextSettings) {
+          setAllNotificationsEnabled(true);
+          setCounselingNotification(previousCounselingNotification);
+        } else {
+          await unsubscribeFromPush();
+        }
+        return;
+      }
+
+      const success = await subscribeToPush();
+      if (!success) {
+        if ('Notification' in window && Notification.permission === 'denied') {
+          setError('알림 권한이 거부되었습니다. 브라우저 설정에서 알림을 허용해주세요.');
+        } else {
+          setError('알림 구독에 실패했습니다. 다시 시도해주세요.');
+        }
+        return;
+      }
+
+      setAllNotificationsEnabled(true);
+      setCounselingNotification(lastEnabledCounselingNotification);
+      const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
+        ? lastEnabledSettings
+        : DEFAULT_NOTIFICATION_SETTINGS;
+      const nextSettings = await patchSettings(restoreSettings);
 
       if (!nextSettings) {
-        setAllNotificationsEnabled(true);
-        setCommunityNotification(previousCommunityNotification);
-        setCounselingNotification(previousCounselingNotification);
+        setAllNotificationsEnabled(false);
+        setCounselingNotification(false);
+        return;
       }
-      return;
+
+      setLastEnabledSettings(pickNotificationSettings(nextSettings));
+    } finally {
+      setIsUpdating(false);
     }
-
-    setAllNotificationsEnabled(true);
-    setCommunityNotification(lastEnabledCommunityNotification);
-    setCounselingNotification(lastEnabledCounselingNotification);
-    const restoreSettings = isAnyNotificationEnabled(lastEnabledSettings)
-      ? lastEnabledSettings
-      : DEFAULT_NOTIFICATION_SETTINGS;
-    const nextSettings = await patchSettings(restoreSettings);
-
-    if (!nextSettings) {
-      setAllNotificationsEnabled(false);
-      setCommunityNotification(false);
-      setCounselingNotification(false);
-      return;
-    }
-
-    setLastEnabledSettings(pickNotificationSettings(nextSettings));
   };
 
   const toggleCategory = async (key: keyof NotificationSettings) => {
@@ -236,15 +260,6 @@ export default function NotificationSettingsPage() {
     });
   };
 
-  const toggleCommunityNotification = () => {
-    if (!allNotificationsEnabled) return;
-    setCommunityNotification((current) => {
-      const next = !current;
-      setLastEnabledCommunityNotification(next);
-      return next;
-    });
-  };
-
   const toggleQuietHourExclusion = (option: QuietHourExclusionOption) => {
     setQuietHourExclusions((current) => (
       current.includes(option)
@@ -260,7 +275,6 @@ export default function NotificationSettingsPage() {
     {
       color: 'bg-purple-500',
       desc: '월요일 아침',
-
       onToggle: () => toggleCategory('reportNotification'),
       active: allNotificationsEnabled ? settings.reportNotification : false,
       title: '주간 리포트',
@@ -269,8 +283,15 @@ export default function NotificationSettingsPage() {
       color: 'bg-purple-300',
       title: '커뮤니티',
       desc: '댓글·공감',
-      active: allNotificationsEnabled ? communityNotification : false,
-      onToggle: toggleCommunityNotification,
+      active: allNotificationsEnabled ? settings.communityNotification : false,
+      onToggle: () => toggleCategory('communityNotification'),
+    },
+    {
+      color: 'bg-purple-400',
+      title: 'Todo 알림',
+      desc: '마감 시각 정각',
+      active: allNotificationsEnabled ? settings.todoNotification : false,
+      onToggle: () => toggleCategory('todoNotification'),
     },
     {
       color: 'bg-[rgb(138,131,152)]',
@@ -293,7 +314,7 @@ export default function NotificationSettingsPage() {
             <div className="font-bold text-gray-600">전체 알림</div>
             <div className="items-center flex mt-[6px] gap-2.5">
               <div className="grow font-extrabold basis-[0%] text-lg" style={{ fontFamily: 'NanumSquare, system-ui' }}>받기</div>
-              <Toggle active={allNotificationsEnabled} onClick={toggleAllNotifications} />
+              <Toggle active={allNotificationsEnabled} onClick={toggleAllNotifications} disabled={isUpdating} />
             </div>
           </div>
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
@@ -552,11 +573,19 @@ function pickNotificationSettings(settings: UserSettings): NotificationSettings 
     medicationNotification: settings.medicationNotification,
     reportNotification: settings.reportNotification,
     marketingNotification: settings.marketingNotification,
+    communityNotification: settings.communityNotification,
+    todoNotification: settings.todoNotification,
   };
 }
 
 function isAnyNotificationEnabled(settings: NotificationSettings): boolean {
-  return settings.medicationNotification || settings.reportNotification || settings.marketingNotification;
+  return (
+    settings.medicationNotification ||
+    settings.reportNotification ||
+    settings.marketingNotification ||
+    settings.communityNotification ||
+    settings.todoNotification
+  );
 }
 
 function formatQuietHourExclusionSummary(selected: QuietHourExclusionOption[]): string {
@@ -564,11 +593,12 @@ function formatQuietHourExclusionSummary(selected: QuietHourExclusionOption[]): 
   return selected.join(', ');
 }
 
-function formatMedAlarmSummary(offsets: number[], activeDays: string[]): string {
+function formatMedAlarmSummary(offsets: number[], activeDays: string[], repeatEnabled: boolean): string {
+  const offsetLabel = offsets.length === 0 ? '알림 없음' : offsets.map((o) => `${o}분`).join(', ') + ' 전';
+  if (!repeatEnabled) return `${offsetLabel} · 반복 안 함`;
   const weekdays = ['월', '화', '수', '목', '금'];
   const isWeekdays = activeDays.length === 5 && weekdays.every((d) => activeDays.includes(d));
   const isEveryday = activeDays.length === 7;
   const dayLabel = isEveryday ? '매일' : isWeekdays ? '평일' : activeDays.join('');
-  const offsetLabel = offsets.length === 0 ? '알림 없음' : offsets.map((o) => `${o}분`).join(', ') + ' 전';
   return `${offsetLabel} · ${dayLabel}`;
 }
