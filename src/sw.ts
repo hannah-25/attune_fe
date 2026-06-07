@@ -15,7 +15,7 @@ declare const self: ServiceWorkerGlobalScope & {
 const sw = self;
 const PRECACHE_NAME = 'attune-precache-v1';
 const RUNTIME_CACHE_NAME = 'attune-runtime-v1';
-const precacheUrls = self.__WB_MANIFEST.map((entry) => entry.url);
+const precacheUrls = (self.__WB_MANIFEST ?? []).map((entry) => entry.url);
 const precachePathnames = new Set(precacheUrls.map((url) => new URL(url, sw.location.origin).pathname));
 
 sw.addEventListener('install', (event) => {
