@@ -45,7 +45,7 @@ sw.addEventListener('fetch', (event) => {
           return response;
         });
         if (cached) {
-          network.catch(() => {});
+          event.waitUntil(network.catch(() => {}));
           return cached;
         }
         return network;
