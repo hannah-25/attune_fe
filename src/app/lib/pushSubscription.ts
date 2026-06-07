@@ -50,7 +50,13 @@ export async function subscribeToPush(): Promise<boolean> {
 
   try {
     let registration: ServiceWorkerRegistration;
-    const existing = await navigator.serviceWorker.getRegistration();
+    let existing = await navigator.serviceWorker.getRegistration();
+    if (!existing && import.meta.env.PROD) {
+      existing = await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
+        scope: import.meta.env.BASE_URL,
+      });
+    }
+
     if (existing?.active) {
       registration = existing;
     } else {
