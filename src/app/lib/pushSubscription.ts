@@ -70,7 +70,7 @@ export async function subscribeToPush(): Promise<boolean> {
     return await registerSubscription(subscription);
   } catch (err) {
     console.error('[push] subscribe failed:', err);
-    if (err instanceof Error && err.message === 'ServiceWorker ready timeout') throw err;
+    if (err instanceof Error && err.name === 'ServiceWorkerTimeoutError') throw err;
     return false;
   }
 }
