@@ -14,7 +14,7 @@ export function supportsPush(): boolean {
 export async function isPushSubscribed(): Promise<boolean> {
   if (!supportsPush() || Notification.permission !== 'granted') return false;
   const registration = await navigator.serviceWorker.getRegistration();
-  return Boolean(await registration?.pushManager.getSubscription());
+  return Boolean(await registration?.pushManager?.getSubscription());
 }
 
 export async function syncPushSubscription(): Promise<boolean> {
