@@ -25,10 +25,22 @@ sw.addEventListener('install', (event) => {
 });
 
 sw.addEventListener('activate', (event) => {
+  const currentPrecacheUrls = new Set(precacheUrls);
+
   event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== PRECACHE_NAME && key !== RUNTIME_CACHE_NAME).map((key) => caches.delete(key))))
-      .then(() => sw.clients.claim()),
+    Promise.all([
+      caches.keys()
+        .then((keys) => Promise.all(keys.filter((key) => key !== PRECACHE_NAME && key !== RUNTIME_CACHE_NAME).map((key) => caches.delete(key)))),
+      caches.open(PRECACHE_NAME).then((cache) =>
+        cache.keys().then((requests) =>
+          Promise.all(
+            requests
+              .filter((req) => !currentPrecacheUrls.has(new URL(req.url).pathname))
+              .map((req) => cache.delete(req)),
+          ),
+        ),
+      ),
+    ]).then(() => sw.clients.claim()),
   );
 });
 
