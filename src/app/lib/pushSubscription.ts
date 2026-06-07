@@ -64,7 +64,7 @@ export async function subscribeToPush(): Promise<boolean> {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-    return registerSubscription(subscription);
+    return await registerSubscription(subscription);
   } catch (err) {
     console.error('[push] subscribe failed:', err);
     return false;
