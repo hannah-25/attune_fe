@@ -57,12 +57,12 @@ export default function NotificationSettingsPage() {
         if (!ignore) setError('알림 설정을 불러오지 못했습니다.');
       });
 
-    syncPushSubscription()
+    isPushSubscribed()
       .then((subscribed) => {
         if (!ignore) setDeviceSubscribed(subscribed);
       })
       .catch((err) => {
-        console.error('[push] initial subscription sync failed:', err);
+        console.error('[push] initial subscription check failed:', err);
       });
 
     return () => { ignore = true; };
