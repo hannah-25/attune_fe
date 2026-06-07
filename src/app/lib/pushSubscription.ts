@@ -25,7 +25,7 @@ export async function syncPushSubscription(): Promise<boolean> {
     const subscription = await registration?.pushManager.getSubscription();
     if (!subscription) return false;
 
-    return registerSubscription(subscription);
+    return await registerSubscription(subscription);
   } catch (err) {
     console.error('[push] subscription sync failed:', err);
     return false;
