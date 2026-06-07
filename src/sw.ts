@@ -84,9 +84,13 @@ sw.addEventListener('fetch', (event) => {
 sw.addEventListener('push', (event) => {
   let payload: PushPayload = {};
   try {
-    payload = event.data?.json() as PushPayload;
+    payload = (event.data?.json() as PushPayload) ?? {};
   } catch {
     payload = { body: event.data?.text() };
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    payload = {};
   }
 
   event.waitUntil(sw.registration.showNotification(payload.title ?? 'a.tune 알림', {
