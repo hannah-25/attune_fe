@@ -113,7 +113,7 @@ export default function NotificationSettingsPage() {
       setDeviceSubscribed(true);
     } catch (err) {
       console.error('[push] toggleDeviceSubscription failed:', err);
-      const msg = err instanceof Error && err.message === 'ServiceWorker ready timeout'
+      const msg = err instanceof Error && err.name === 'ServiceWorkerTimeoutError'
         ? '페이지를 새로고침한 후 다시 시도해주세요.'
         : '알림 설정 중 오류가 발생했습니다. 다시 시도해주세요.';
       setError(msg);
