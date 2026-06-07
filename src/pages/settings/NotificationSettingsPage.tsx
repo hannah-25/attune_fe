@@ -92,11 +92,15 @@ export default function NotificationSettingsPage() {
 
       const success = await subscribeToPush();
       if (!success) {
-        setError(
-          'Notification' in window && Notification.permission === 'denied'
-            ? '브라우저 설정에서 알림 권한을 허용해주세요.'
-            : '이 브라우저에서는 푸시 알림을 사용할 수 없습니다.',
-        );
+        let msg = '푸시 알림을 설정할 수 없습니다. 다시 시도해주세요.';
+        if ('Notification' in window) {
+          if (Notification.permission === 'denied') {
+            msg = '브라우저 설정에서 알림 권한을 허용해주세요.';
+          } else if (Notification.permission === 'default') {
+            msg = '알림 권한 허용이 필요합니다.';
+          }
+        }
+        setError(msg);
         return;
       }
       setDeviceSubscribed(true);
