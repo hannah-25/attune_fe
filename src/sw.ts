@@ -103,18 +103,22 @@ sw.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = new URL((event.notification.data as { url?: string } | undefined)?.url ?? '/home', sw.location.origin).href;
 
+  const isSameOrigin = new URL(url).origin === sw.location.origin;
+
   event.waitUntil(
     sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
-      const exact = clients.find((client) => client.url === url);
-      if (exact && 'focus' in exact) {
-        await exact.focus();
-        return;
-      }
-      const any = clients.find((client) => 'focus' in client);
-      if (any) {
-        await any.focus();
-        await any.navigate(url);
-        return;
+      if (isSameOrigin) {
+        const exact = clients.find((client) => client.url === url);
+        if (exact && 'focus' in exact) {
+          await exact.focus();
+          return;
+        }
+        const any = clients.find((client) => 'focus' in client);
+        if (any) {
+          await any.focus();
+          await any.navigate(url);
+          return;
+        }
       }
       await sw.clients.openWindow(url);
     }),
