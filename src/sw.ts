@@ -68,10 +68,12 @@ sw.addEventListener('fetch', (event) => {
   if (url.origin === sw.location.origin) {
     if (event.request.mode === 'navigate') {
       event.respondWith(
-        caches.match('/index.html').then((cached) => cached ?? fetch(event.request)),
+        caches.match('/index.html', { ignoreSearch: true }).then((cached) => cached ?? fetch(event.request)),
       );
       return;
     }
+
+    if (url.pathname.startsWith('/v1/')) return;
 
     event.respondWith(
       caches.match(event.request).then((cached) => cached ?? fetch(event.request)),
