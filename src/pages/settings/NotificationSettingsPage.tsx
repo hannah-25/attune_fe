@@ -5,7 +5,7 @@ import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api
 import {
   subscribeToPush,
   supportsPush,
-  syncPushSubscription,
+  isPushSubscribed,
   unsubscribeFromPush,
 } from '../../app/lib/pushSubscription';
 
