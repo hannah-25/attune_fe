@@ -465,14 +465,15 @@ export default function NewEventPage() {
                           setAlarmOpen(false);
                           return;
                         }
-                        if (preset.key === 'custom' || preset.minutes === null) return;
-                        if (!alarmMinutesBeforeList.includes(preset.minutes) && alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE) {
+                        const minutes = preset.minutes;
+                        if (preset.key === 'custom' || minutes === null) return;
+                        if (!alarmMinutesBeforeList.includes(minutes) && alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE) {
                           setError(`일정 알림은 최대 ${MAX_ALARMS_PER_SCHEDULE}개까지 설정할 수 있습니다.`);
                           return;
                         }
-                        setAlarmMinutesBeforeList((current) => current.includes(preset.minutes!)
-                          ? current.filter((minutes) => minutes !== preset.minutes)
-                          : [...current, preset.minutes!].sort((a, b) => a - b));
+                        setAlarmMinutesBeforeList((current) => current.includes(minutes)
+                          ? current.filter((m) => m !== minutes)
+                          : [...current, minutes].sort((a, b) => a - b));
                         setError('');
                         markDirty();
                       }}

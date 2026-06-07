@@ -50,7 +50,7 @@ sw.addEventListener('fetch', (event) => {
       caches.open(RUNTIME_CACHE_NAME).then(async (cache) => {
         const cached = await cache.match(event.request);
         const network = fetch(event.request).then((response) => {
-          if (response.ok) void cache.put(event.request, response.clone());
+          if (response.status === 200) cache.put(event.request, response.clone()).catch(() => {});
           return response;
         });
         if (cached) {
