@@ -49,15 +49,18 @@ export async function subscribeToPush(): Promise<boolean> {
   if (permission !== 'granted') return false;
 
   try {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const timeout = (ms: number) => new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error('ServiceWorker ready timeout')), ms);
-    });
-    const registration = await Promise.race([
-      navigator.serviceWorker.ready,
-      timeout(5000),
-    ]);
-    clearTimeout(timeoutId);
+    let registration: ServiceWorkerRegistration;
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (existing?.active) {
+      registration = existing;
+    } else {
+      let timeoutId: ReturnType<typeof setTimeout>;
+      const timeout = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('ServiceWorker ready timeout')), 15000);
+      });
+      registration = await Promise.race([navigator.serviceWorker.ready, timeout]);
+      clearTimeout(timeoutId!);
+    }
     const subscription = await registration.pushManager.getSubscription()
       ?? await registration.pushManager.subscribe({
         userVisibleOnly: true,
