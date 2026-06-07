@@ -2,6 +2,21 @@ import { subscribeAlarm, unsubscribeAlarm } from '../api/alarm';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
 
+export function supportsPush(): boolean {
+  return Boolean(
+    VAPID_PUBLIC_KEY
+    && 'Notification' in window
+    && 'serviceWorker' in navigator
+    && 'PushManager' in window,
+  );
+}
+
+export async function isPushSubscribed(): Promise<boolean> {
+  if (!supportsPush() || Notification.permission !== 'granted') return false;
+  const registration = await navigator.serviceWorker.getRegistration();
+  return Boolean(await registration?.pushManager.getSubscription());
+}
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -10,13 +25,9 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 export async function subscribeToPush(): Promise<boolean> {
-  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-    return true;
-  }
-
-  if (!VAPID_PUBLIC_KEY) {
-    console.warn('[push] VITE_VAPID_PUBLIC_KEY not set — skipping push subscription');
-    return true;
+  if (!supportsPush() || !VAPID_PUBLIC_KEY) {
+    console.warn('[push] Web Push is not supported or VITE_VAPID_PUBLIC_KEY is missing');
+    return false;
   }
 
   const permission = await Notification.requestPermission();
@@ -32,10 +43,11 @@ export async function subscribeToPush(): Promise<boolean> {
       timeout(5000),
     ]);
     clearTimeout(timeoutId);
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-    });
+    const subscription = await registration.pushManager.getSubscription()
+      ?? await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
 
     const json = subscription.toJSON();
     const endpoint = json.endpoint;

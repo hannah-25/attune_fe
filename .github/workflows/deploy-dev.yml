@@ -28,6 +28,8 @@ jobs:
 
       - name: Build project
         run: pnpm build --mode staging
+        env:
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

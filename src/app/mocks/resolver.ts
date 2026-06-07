@@ -149,7 +149,15 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   if (p === '/v1/users/me/nickname' && m === 'PUT') return noContent();
   if (p === '/v1/users/me/image' && m === 'POST') return noContent();
   if (p === '/v1/users/settings' && m === 'GET') {
-    return ok({ medicationNotification: true, reportNotification: true, marketingNotification: false, takeMedicationOnHoliday: false, theme: 'SYSTEM' });
+    return ok({
+      medicationNotification: true,
+      reportNotification: true,
+      marketingNotification: false,
+      communityNotification: true,
+      todoNotification: true,
+      takeMedicationOnHoliday: false,
+      theme: 'SYSTEM',
+    });
   }
   if (p === '/v1/users/settings' && m === 'PATCH') return ok({ ...(body as object) });
 
