@@ -18,6 +18,7 @@ const sw = globalThis as unknown as ServiceWorkerGlobalScope;
 const PRECACHE_NAME = 'attune-precache-v1';
 const RUNTIME_CACHE_NAME = 'attune-runtime-v1';
 const precacheUrls = self.__WB_MANIFEST.map((entry) => entry.url);
+const precachePathnames = new Set(precacheUrls.map((url) => new URL(url, sw.location.origin).pathname));
 
 sw.addEventListener('install', (event) => {
   event.waitUntil(caches.open(PRECACHE_NAME).then((cache) => cache.addAll(precacheUrls)));
@@ -25,8 +26,6 @@ sw.addEventListener('install', (event) => {
 });
 
 sw.addEventListener('activate', (event) => {
-  const currentPrecacheUrls = new Set(precacheUrls);
-
   event.waitUntil(
     Promise.all([
       caches.keys()
@@ -35,7 +34,7 @@ sw.addEventListener('activate', (event) => {
         cache.keys().then((requests) =>
           Promise.all(
             requests
-              .filter((req) => !currentPrecacheUrls.has(new URL(req.url).pathname))
+              .filter((req) => !precachePathnames.has(new URL(req.url).pathname))
               .map((req) => cache.delete(req)),
           ),
         ),
@@ -67,19 +66,15 @@ sw.addEventListener('fetch', (event) => {
   }
 
   if (url.origin === sw.location.origin) {
+    if (event.request.mode === 'navigate') {
+      event.respondWith(
+        caches.match('/index.html').then((cached) => cached ?? fetch(event.request)),
+      );
+      return;
+    }
+
     event.respondWith(
-      caches.match(event.request).then(async (cached) => {
-        if (cached) return cached;
-        try {
-          return await fetch(event.request);
-        } catch (error) {
-          if (event.request.mode === 'navigate') {
-            const fallback = await caches.match('/index.html');
-            if (fallback) return fallback;
-          }
-          throw error;
-        }
-      }),
+      caches.match(event.request).then((cached) => cached ?? fetch(event.request)),
     );
   }
 });
