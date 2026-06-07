@@ -511,7 +511,7 @@ export default function NewEventPage() {
                           markDirty();
                           setAlarmOpen(false);
                         }}
-                        disabled={!alarmMinutesBefore || alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE && !alarmMinutesBeforeList.includes(alarmMinutesBefore)}
+                        disabled={!alarmMinutesBefore || (alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE && !alarmMinutesBeforeList.includes(alarmMinutesBefore))}
                       className="font-bold text-xs text-purple-700 disabled:opacity-30"
                     >
                       적용
