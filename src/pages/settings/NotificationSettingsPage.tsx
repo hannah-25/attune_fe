@@ -62,8 +62,10 @@ export default function NotificationSettingsPage() {
   }, []);
 
   const patchSettings = async (payload: Partial<UserSettings>) => {
+    if (isUpdating) return;
     const previous = settings;
     setSettings({ ...settings, ...payload });
+    setIsUpdating(true);
     setError('');
     try {
       const nextSettings = await updateUserSettings(payload);
@@ -72,6 +74,8 @@ export default function NotificationSettingsPage() {
       console.error('Failed to update notification settings:', err);
       setSettings(previous);
       setError('설정을 저장하지 못했습니다.');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -141,6 +145,7 @@ export default function NotificationSettingsPage() {
                   </div>
                   <Toggle
                     active={settings[category.key]}
+                    disabled={isUpdating}
                     onClick={() => patchSettings({ [category.key]: !settings[category.key] })}
                   />
                 </div>

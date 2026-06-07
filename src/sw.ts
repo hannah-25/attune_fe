@@ -44,7 +44,11 @@ sw.addEventListener('fetch', (event) => {
           if (response.ok) void cache.put(event.request, response.clone());
           return response;
         });
-        return cached ?? network;
+        if (cached) {
+          network.catch(() => {});
+          return cached;
+        }
+        return network;
       }),
     );
     return;
@@ -90,9 +94,15 @@ sw.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
-      const existing = clients.find((client) => client.url === url);
-      if (existing && 'focus' in existing) {
-        await existing.focus();
+      const exact = clients.find((client) => client.url === url);
+      if (exact && 'focus' in exact) {
+        await exact.focus();
+        return;
+      }
+      const any = clients.find((client) => 'focus' in client);
+      if (any) {
+        await any.focus();
+        await any.navigate(url);
         return;
       }
       await sw.clients.openWindow(url);
