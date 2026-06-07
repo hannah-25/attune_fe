@@ -57,8 +57,10 @@ jobs:
             fi
           done
           for file in ./dist/workbox-*.js; do
-            [ -f "$file" ] && aws s3 cp $file s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }}/$(basename $file) \
-              --cache-control "no-cache,no-store,must-revalidate"
+            if [ -f "$file" ]; then
+              aws s3 cp "$file" s3://${{ secrets.AWS_S3_BUCKET_NAME_DEV }}/$(basename "$file") \
+                --cache-control "no-cache,no-store,must-revalidate"
+            fi
           done
 
       - name: CloudFront Invalidate Cache
