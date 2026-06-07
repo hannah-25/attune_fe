@@ -13,14 +13,26 @@ declare const self: ServiceWorkerGlobalScope & {
 };
 
 const sw = self;
-const PRECACHE_NAME = 'attune-precache-v1';
+const PRECACHE_NAME = 'attune-precache-v2';
 const RUNTIME_CACHE_NAME = 'attune-runtime-v1';
 const precacheUrls = (self.__WB_MANIFEST ?? []).map((entry) => entry.url);
 const precachePathnames = new Set(precacheUrls.map((url) => new URL(url, sw.location.origin).pathname));
 
 sw.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(PRECACHE_NAME).then((cache) => cache.addAll(precacheUrls)));
-  void sw.skipWaiting();
+  event.waitUntil(sw.skipWaiting());
+
+  void (async () => {
+    try {
+      const cache = await caches.open(PRECACHE_NAME);
+      const results = await Promise.allSettled(precacheUrls.map((url) => cache.add(url)));
+      const failedUrls = results.flatMap((result, index) => result.status === 'rejected' ? [precacheUrls[index]] : []);
+      if (failedUrls.length > 0) {
+        console.warn('[service-worker] precache failed for:', failedUrls);
+      }
+    } catch (err) {
+      console.warn('[service-worker] precache error:', err);
+    }
+  })();
 });
 
 sw.addEventListener('activate', (event) => {
