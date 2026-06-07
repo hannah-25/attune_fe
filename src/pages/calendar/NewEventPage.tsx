@@ -460,6 +460,7 @@ export default function NewEventPage() {
                         setAlarmOptionKey(preset.key);
                         if (preset.key === 'none') {
                           setAlarmMinutesBeforeList([]);
+                          setError('');
                           markDirty();
                           setAlarmOpen(false);
                           return;
