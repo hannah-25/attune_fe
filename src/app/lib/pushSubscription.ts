@@ -22,7 +22,7 @@ export async function syncPushSubscription(): Promise<boolean> {
 
   try {
     const registration = await navigator.serviceWorker.getRegistration();
-    const subscription = await registration?.pushManager.getSubscription();
+    const subscription = await registration?.pushManager?.getSubscription();
     if (!subscription) return false;
 
     return await registerSubscription(subscription);
