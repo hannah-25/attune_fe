@@ -27,6 +27,7 @@ import {
 
 const REPEAT_OPTIONS = ['없음', '매주', '매월'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
+const MAX_ALARMS_PER_SCHEDULE = 3;
 
 type AlarmOptionKey = 'none' | '5m' | '10m' | '15m' | '30m' | '1h' | 'custom';
 
@@ -69,6 +70,7 @@ export default function NewEventPage() {
   const [alarmOpen, setAlarmOpen] = useState(false);
   const [alarmOptionKey, setAlarmOptionKey] = useState<AlarmOptionKey>('none');
   const [customAlarmMinutesInput, setCustomAlarmMinutesInput] = useState('20');
+  const [alarmMinutesBeforeList, setAlarmMinutesBeforeList] = useState<number[]>([]);
 
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
@@ -95,9 +97,11 @@ export default function NewEventPage() {
   const alarmMinutesBefore = alarmOptionKey === 'custom'
     ? (Number.isFinite(customAlarmMinutes) && customAlarmMinutes > 0 ? customAlarmMinutes : null)
     : selectedAlarmPreset.minutes;
-  const selectedAlarmLabel = alarmOptionKey === 'custom'
-    ? (alarmMinutesBefore ? `${alarmMinutesBefore}분 전` : '맞춤')
-    : selectedAlarmPreset.label;
+  const selectedAlarmLabel = alarmMinutesBeforeList.length === 0
+    ? ALARM_PRESETS[0].label
+    : alarmMinutesBeforeList.length === 1
+      ? `${alarmMinutesBeforeList[0]}분 전`
+      : `${alarmMinutesBeforeList.length}개`;
 
   const syncEndAfterStart = (nextStartDateValue: string, nextStartTimeValue: string) => {
     if (!nextStartDateValue) return;
@@ -155,6 +159,20 @@ export default function NewEventPage() {
           setMemo(detail.description ?? '');
           setMemoOpen(Boolean(detail.description));
           setSelectedCategoryId(detail.categoryId);
+          const restoredAlarmOffsets = detail.alarmEnabled
+            ? getAlarmMinutesBeforeAll(detail.startTime, detail.alarms)
+            : [];
+          const restoredAlarmMinutes = restoredAlarmOffsets[0] ?? null;
+          const restoredPreset = ALARM_PRESETS.find((preset) => preset.minutes === restoredAlarmMinutes);
+          setAlarmMinutesBeforeList(restoredAlarmOffsets);
+          if (!detail.alarmEnabled || restoredAlarmMinutes === null) {
+            setAlarmOptionKey('none');
+          } else if (restoredPreset && restoredPreset.key !== 'none' && restoredPreset.key !== 'custom') {
+            setAlarmOptionKey(restoredPreset.key);
+          } else {
+            setAlarmOptionKey('custom');
+            setCustomAlarmMinutesInput(String(restoredAlarmMinutes));
+          }
           setDirty(false);
         })
         .catch((err) => {
@@ -187,7 +205,8 @@ export default function NewEventPage() {
   const saveSchedule = async () => {
     if (!canSave || selectedCategoryId === null) return;
 
-    const alarmedAt = getAlarmedAt(parseLocalDateTime(startTimeForPayload), alarmMinutesBefore);
+    const scheduleStart = parseLocalDateTime(startTimeForPayload);
+    const alarmedAt = getAlarmsAt(scheduleStart, alarmMinutesBeforeList);
     const payload = {
       title: title.trim(),
       description: memo.trim() || undefined,
@@ -410,8 +429,28 @@ export default function NewEventPage() {
             </button>
             {alarmOpen ? (
               <div className="px-2 pt-2 pb-1 flex flex-col gap-1.5">
+                {alarmMinutesBeforeList.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 pb-1">
+                    {alarmMinutesBeforeList.map((minutes) => (
+                      <button
+                        key={minutes}
+                        type="button"
+                        onClick={() => {
+                          setAlarmMinutesBeforeList((current) => current.filter((value) => value !== minutes));
+                          markDirty();
+                        }}
+                        className="text-xs font-semibold bg-gray-100 text-gray-600 px-2.5 py-1.5 rounded-full"
+                        aria-label={`${minutes}분 전 알림 삭제`}
+                      >
+                        {minutes}분 전 ×
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 {ALARM_PRESETS.map((preset) => {
-                  const selected = alarmOptionKey === preset.key;
+                  const selected = preset.minutes === null
+                    ? preset.key === 'none' && alarmMinutesBeforeList.length === 0
+                    : alarmMinutesBeforeList.includes(preset.minutes);
 
                   return (
                     <button
@@ -419,10 +458,22 @@ export default function NewEventPage() {
                       type="button"
                       onClick={() => {
                         setAlarmOptionKey(preset.key);
-                        markDirty();
-                        if (preset.key !== 'custom') {
+                        if (preset.key === 'none') {
+                          setAlarmMinutesBeforeList([]);
+                          markDirty();
                           setAlarmOpen(false);
+                          return;
                         }
+                        if (preset.key === 'custom' || preset.minutes === null) return;
+                        if (!alarmMinutesBeforeList.includes(preset.minutes) && alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE) {
+                          setError(`일정 알림은 최대 ${MAX_ALARMS_PER_SCHEDULE}개까지 설정할 수 있습니다.`);
+                          return;
+                        }
+                        setAlarmMinutesBeforeList((current) => current.includes(preset.minutes!)
+                          ? current.filter((minutes) => minutes !== preset.minutes)
+                          : [...current, preset.minutes!].sort((a, b) => a - b));
+                        setError('');
+                        markDirty();
                       }}
                       className={`items-center flex w-full text-left text-sm font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
                         selected
@@ -443,15 +494,24 @@ export default function NewEventPage() {
                       value={customAlarmMinutesInput}
                       onChange={(event) => {
                         setCustomAlarmMinutesInput(event.target.value);
-                        markDirty();
                       }}
                       className="w-20 text-sm bg-transparent outline-none"
                     />
                     <span className="text-xs text-gray-500">분 전</span>
-                    <button
-                      type="button"
-                      onClick={() => setAlarmOpen(false)}
-                      disabled={!alarmMinutesBefore}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!alarmMinutesBefore) return;
+                          if (!alarmMinutesBeforeList.includes(alarmMinutesBefore) && alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE) {
+                            setError(`일정 알림은 최대 ${MAX_ALARMS_PER_SCHEDULE}개까지 설정할 수 있습니다.`);
+                            return;
+                          }
+                          setAlarmMinutesBeforeList((current) => [...new Set([...current, alarmMinutesBefore])].sort((a, b) => a - b));
+                          setError('');
+                          markDirty();
+                          setAlarmOpen(false);
+                        }}
+                        disabled={!alarmMinutesBefore || alarmMinutesBeforeList.length >= MAX_ALARMS_PER_SCHEDULE && !alarmMinutesBeforeList.includes(alarmMinutesBefore)}
                       className="font-bold text-xs text-purple-700 disabled:opacity-30"
                     >
                       적용
@@ -497,12 +557,22 @@ export default function NewEventPage() {
   );
 }
 
-function getAlarmedAt(startTime: Date, minutesBefore: number | null) {
-  if (!minutesBefore || minutesBefore <= 0) return [];
+function getAlarmsAt(startTime: Date, minutesBefore: number[]) {
+  return [...new Set(minutesBefore)].map((minutes) => {
+    const alarmDate = new Date(startTime);
+    alarmDate.setMinutes(startTime.getMinutes() - minutes);
+    return toLocalIso(alarmDate);
+  });
+}
 
-  const alarmDate = new Date(startTime);
-  alarmDate.setMinutes(startTime.getMinutes() - minutesBefore);
-  return [toLocalIso(alarmDate)];
+function getAlarmMinutesBeforeAll(startTime: string, alarms?: string[]) {
+  if (!alarms?.length) return [];
+
+  const start = parseLocalDateTime(startTime);
+  return [...new Set(alarms
+    .map((alarmAt) => Math.round((start.getTime() - parseLocalDateTime(alarmAt).getTime()) / 60_000))
+    .filter((minutes) => Number.isFinite(minutes) && minutes > 0))]
+    .sort((a, b) => a - b);
 }
 
 function DateTimeInputRow({

@@ -17,6 +17,21 @@ export async function isPushSubscribed(): Promise<boolean> {
   return Boolean(await registration?.pushManager.getSubscription());
 }
 
+export async function syncPushSubscription(): Promise<boolean> {
+  if (!supportsPush() || Notification.permission !== 'granted') return false;
+
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return false;
+
+    return registerSubscription(subscription);
+  } catch (err) {
+    console.error('[push] subscription sync failed:', err);
+    return false;
+  }
+}
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -49,19 +64,23 @@ export async function subscribeToPush(): Promise<boolean> {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-    const json = subscription.toJSON();
-    const endpoint = json.endpoint;
-    const p256dh = json.keys?.['p256dh'];
-    const auth = json.keys?.['auth'];
-
-    if (!endpoint || !p256dh || !auth) return false;
-
-    await subscribeAlarm({ platform: 'WEB', provider: 'WEB_PUSH', endpoint, p256dh, auth });
-    return true;
+    return registerSubscription(subscription);
   } catch (err) {
     console.error('[push] subscribe failed:', err);
     return false;
   }
+}
+
+async function registerSubscription(subscription: PushSubscription): Promise<boolean> {
+  const json = subscription.toJSON();
+  const endpoint = json.endpoint;
+  const p256dh = json.keys?.['p256dh'];
+  const auth = json.keys?.['auth'];
+
+  if (!endpoint || !p256dh || !auth) return false;
+
+  await subscribeAlarm({ platform: 'WEB', provider: 'WEB_PUSH', endpoint, p256dh, auth });
+  return true;
 }
 
 export async function unsubscribeFromPush(): Promise<void> {

@@ -3,9 +3,9 @@ import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '../../app/components/NavButtons';
 import { getUserSettings, updateUserSettings, UserSettings } from '../../app/api/user';
 import {
-  isPushSubscribed,
   subscribeToPush,
   supportsPush,
+  syncPushSubscription,
   unsubscribeFromPush,
 } from '../../app/lib/pushSubscription';
 
@@ -49,7 +49,7 @@ export default function NotificationSettingsPage() {
 
   useEffect(() => {
     let ignore = false;
-    Promise.all([getUserSettings(), isPushSubscribed()])
+    Promise.all([getUserSettings(), syncPushSubscription()])
       .then(([nextSettings, subscribed]) => {
         if (ignore) return;
         setSettings(nextSettings);

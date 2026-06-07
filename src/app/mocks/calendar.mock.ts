@@ -20,4 +20,6 @@ export const mockScheduleDetail: ScheduleDetail = {
   isAllDay: false,
   startTime: '2026-05-31T14:00:00',
   endTime: '2026-05-31T14:40:00',
+  alarmEnabled: true,
+  alarms: ['2026-05-31T13:50:00'],
 };

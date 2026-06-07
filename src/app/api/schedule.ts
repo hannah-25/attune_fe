@@ -37,6 +37,8 @@ export type ScheduleDetail = {
   isAllDay: boolean;
   startTime: string;
   endTime: string;
+  alarmEnabled: boolean;
+  alarms: string[];
 };
 
 export function getScheduleCategories() {
