@@ -55,13 +55,16 @@ export async function subscribeToPush(): Promise<boolean> {
       registration = existing;
     } else {
       let timeoutId: ReturnType<typeof setTimeout> | undefined;
-      const timeout = new Promise<never>((_, reject) => {
-        const error = new Error('ServiceWorker ready timeout');
-        error.name = 'ServiceWorkerTimeoutError';
-        timeoutId = setTimeout(() => reject(error), 15000);
-      });
-      registration = await Promise.race([navigator.serviceWorker.ready, timeout]);
-      if (timeoutId) clearTimeout(timeoutId);
+      try {
+        const timeout = new Promise<never>((_, reject) => {
+          const error = new Error('ServiceWorker ready timeout');
+          error.name = 'ServiceWorkerTimeoutError';
+          timeoutId = setTimeout(() => reject(error), 15000);
+        });
+        registration = await Promise.race([navigator.serviceWorker.ready, timeout]);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
     }
     const subscription = await registration.pushManager.getSubscription()
       ?? await registration.pushManager.subscribe({
