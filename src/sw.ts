@@ -93,8 +93,8 @@ sw.addEventListener('push', (event) => {
 
   event.waitUntil(sw.registration.showNotification(payload.title ?? 'a.tune 알림', {
     body: payload.body,
-    icon: '/pwa-192x192.png',
-    badge: '/pwa-192x192.png',
+    icon: '/pwa-v2-192x192.png',
+    badge: '/pwa-v2-192x192.png',
     data: { url: payload.url ?? '/home' },
   }));
 });
