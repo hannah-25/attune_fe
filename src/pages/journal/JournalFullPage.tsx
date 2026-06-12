@@ -304,8 +304,8 @@ export default function JournalFullPage() {
     getJournal(journalDate)
       .then((journal) => {
         if (ignore) return;
-        const checked = journal.checked;
-        const activeTags = journal.activeTags;
+        const checked = journal?.checked;
+        const activeTags = journal?.activeTags;
 
         const checkedConditionIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
         const checkedSideEffectIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
