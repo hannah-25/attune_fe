@@ -49,6 +49,7 @@ export default function OnboardingAiResultPage() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
   const [newGoalText, setNewGoalText] = useState('');
+  const [newGoalType, setNewGoalType] = useState<DailyGoalType | null>(null);
   const [showNewGoalInput, setShowNewGoalInput] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,9 +89,10 @@ export default function OnboardingAiResultPage() {
 
   const addNewGoal = () => {
     const trimmed = newGoalText.trim();
-    if (!trimmed) return;
-    setGoals((prev: AiGoalItem[]) => [...prev, { goal: trimmed, type: 'WORK_STUDY' as DailyGoalType }]);
+    if (!trimmed || !newGoalType) return;
+    setGoals((prev: AiGoalItem[]) => [...prev, { goal: trimmed, type: newGoalType }]);
     setNewGoalText('');
+    setNewGoalType(null);
     setShowNewGoalInput(false);
   };
 
@@ -235,22 +237,38 @@ export default function OnboardingAiResultPage() {
             </div>
 
             {showNewGoalInput ? (
-              <div className="flex gap-2 mt-2">
-                <input
-                  type="text"
-                  value={newGoalText}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewGoalText(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') addNewGoal(); }}
-                  autoFocus
-                  placeholder="목표를 입력해 주세요"
-                  className="flex-1 h-10 rounded-xl border border-purple-300 bg-white px-3 text-sm outline-none"
-                />
-                <button type="button" onClick={addNewGoal} className="h-10 px-3 rounded-xl bg-purple-500 text-white text-xs font-bold">
-                  추가
-                </button>
-                <button type="button" onClick={() => setShowNewGoalInput(false)} className="h-10 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold">
-                  취소
-                </button>
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newGoalText}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewGoalText(e.target.value)}
+                    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') addNewGoal(); }}
+                    autoFocus
+                    placeholder="목표를 입력해 주세요"
+                    className="flex-1 h-10 rounded-xl border border-purple-300 bg-white px-3 text-sm outline-none"
+                  />
+                  <button type="button" onClick={addNewGoal} disabled={!newGoalText.trim() || !newGoalType} className="h-10 px-3 rounded-xl bg-purple-500 text-white text-xs font-bold disabled:opacity-40">
+                    추가
+                  </button>
+                  <button type="button" onClick={() => setShowNewGoalInput(false)} className="h-10 px-3 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold">
+                    취소
+                  </button>
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {(Object.entries(GOAL_TYPE_LABELS) as [DailyGoalType, string][]).map(([type, label]) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setNewGoalType(type)}
+                      className={`px-2.5 py-1 rounded-full border text-[10px] font-semibold transition-all active:scale-95 ${
+                        newGoalType === type ? GOAL_TYPE_COLORS[type] : 'bg-white text-gray-400 border-gray-200'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <button
