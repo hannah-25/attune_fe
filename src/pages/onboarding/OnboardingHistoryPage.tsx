@@ -162,7 +162,11 @@ function EmptyState({ onStart }: { onStart: () => void }) {
 
 function addMonths(date: Date, months: number): Date {
   const next = new Date(date);
-  next.setMonth(next.getMonth() + months);
+  const targetMonth = next.getMonth() + months;
+  next.setDate(1);
+  next.setMonth(targetMonth);
+  const maxDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+  next.setDate(Math.min(date.getDate(), maxDay));
   return next;
 }
 

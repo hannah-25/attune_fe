@@ -61,14 +61,18 @@ function AnimatedMessages({ messages }: { messages: string[] }) {
   const [visible, setVisible] = React.useState(true);
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
     const interval = setInterval(() => {
       setVisible(false);
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         setIndex((prev: number) => (prev + 1) % messages.length);
         setVisible(true);
       }, 300);
     }, 2000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, [messages.length]);
 
   return (

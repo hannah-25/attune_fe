@@ -188,7 +188,10 @@ export default function OnboardingAiResultPage() {
                         type="text"
                         value={editText}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditText(e.target.value)}
-                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') saveEdit(); }}
+                        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                          if (e.key === 'Enter') saveEdit();
+                          else if (e.key === 'Escape') setEditingIndex(null);
+                        }}
                         autoFocus
                         className="w-full text-sm text-gray-800 bg-transparent outline-none border-b border-purple-300"
                       />
