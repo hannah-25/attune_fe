@@ -17,7 +17,7 @@ export default function Onboarding5Page() {
       navigate('/home');
     } catch (err) {
       console.error('Failed to complete onboarding:', err);
-      setError('온보딩 완료 처리에 실패했습니다.');
+      setError('자가 체크 완료 처리에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -29,7 +29,7 @@ export default function Onboarding5Page() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <TopBar title="온보딩 완료" centered />
+        <TopBar title="자가 체크 완료" centered />
         <div className="items-center flex flex-col grow min-h-0 overflow-y-auto overscroll-contain justify-center text-center basis-[0%] px-5 py-8">
           <div className="flex items-center justify-center text-center w-24 h-24">
             <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
