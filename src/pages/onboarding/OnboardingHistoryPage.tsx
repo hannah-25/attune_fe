@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getOnboardingStatus } from '@/api/onboarding';
+import { formatLongDate } from '@/lib/date';
 
 type CheckRecord = {
   id: string;
@@ -78,7 +79,7 @@ export default function OnboardingHistoryPage() {
               </div>
               <div className="grow">
                 <div className="text-[11px] text-purple-500">다음 자가 체크 권장일</div>
-                <div className="font-semibold text-sm text-purple-800 mt-0.5">{formatDate(nextCheckDate)}</div>
+                <div className="font-semibold text-sm text-purple-800 mt-0.5">{formatLongDate(nextCheckDate)}</div>
               </div>
               <button
                 type="button"
@@ -109,7 +110,7 @@ export default function OnboardingHistoryPage() {
                       <ClipboardList className="h-4 w-4 text-purple-500" strokeWidth={2} />
                     </div>
                     <div className="grow min-w-0">
-                      <div className="font-semibold text-xs text-gray-800">{formatDate(new Date(record.doneAt))}</div>
+                      <div className="font-semibold text-xs text-gray-800">{formatLongDate(new Date(record.doneAt))}</div>
                       <div className="items-center flex gap-1.5 mt-0.5">
                         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${ASRS_COLOR[record.asrsLevel]}`}>
                           ASRS {ASRS_LABEL[record.asrsLevel]}
@@ -168,12 +169,4 @@ function addMonths(date: Date, months: number): Date {
   const maxDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
   next.setDate(Math.min(date.getDate(), maxDay));
   return next;
-}
-
-function formatDate(date: Date): string {
-  if (isNaN(date.getTime())) return '-';
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  return `${year}년 ${month}월 ${day}일`;
 }

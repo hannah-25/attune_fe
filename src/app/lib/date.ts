@@ -7,6 +7,11 @@ export function formatDate(date: Date): string {
   return `${m}월 ${d}일 ${day}`;
 }
 
+export function formatLongDate(date: Date): string {
+  if (isNaN(date.getTime())) return '-';
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
 export function formatMonthDay(date: Date): string {
   const m = date.getMonth() + 1;
   const d = date.getDate();
