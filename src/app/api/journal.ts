@@ -63,7 +63,7 @@ export type JournalDetail = {
 };
 
 export function getJournal(date: string) {
-  return apiRequest<JournalDetail>(`${JOURNALS_BASE_PATH}/${date}`);
+  return apiRequest<JournalDetail | null | undefined>(`${JOURNALS_BASE_PATH}/${date}`);
 }
 
 export function getJournalDates(params: JournalDateRange) {

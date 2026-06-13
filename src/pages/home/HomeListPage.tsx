@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Bell, ClipboardList } from 'lucide-react';
+import { ArrowRight, Bell, ClipboardList, History } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { getOnboardingStatus } from '@/api/onboarding';
 import { getTodosByDate, updateTodo } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
@@ -27,34 +26,8 @@ export default function HomeListPage() {
   const navigate = useNavigate();
   const [todos, setTodos] = useState<HomeTodo[]>([]);
   const [scheduleItems, setScheduleItems] = useState<HomeScheduleItem[]>([]);
-  const [showOnboardingPrompt, setShowOnboardingPrompt] = useState(false);
   const [todoError, setTodoError] = useState('');
   const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    getOnboardingStatus()
-      .then((status) => {
-        if (ignore) return;
-        if (status.onboarded || status.skipped) {
-          setShowOnboardingPrompt(false);
-          return;
-        }
-
-        setShowOnboardingPrompt(true);
-      })
-      .catch((err) => {
-        console.error('Failed to load onboarding status:', err);
-        if (!ignore) {
-          setShowOnboardingPrompt(false);
-        }
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -186,22 +159,33 @@ export default function HomeListPage() {
               </div>
             </div>
           </div>
-          {showOnboardingPrompt ? (
+          <div className="items-center flex justify-between px-1 mt-3">
+            <div className="font-semibold text-sm text-gray-800">자가 체크</div>
+          </div>
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => navigate('/onboarding/1')}
-              className="items-center flex gap-3 bg-red-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-2xl w-full text-left"
+              className="grow basis-[0%] bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] pt-3 px-3 pb-3 rounded-2xl text-left flex flex-col gap-1.5 transition-transform active:scale-[0.97]"
             >
-              <div className="items-center flex justify-center w-9 h-9 bg-red-200 shrink-0 rounded-xl">
-                <ClipboardList className="h-5 w-5 text-red-700" strokeWidth={2} />
+              <div className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-xl shrink-0">
+                <ClipboardList className="h-4 w-4 text-purple-700" strokeWidth={2} />
               </div>
-              <div className="grow">
-                <div className="font-semibold text-sm text-gray-800">{'온보딩 시작하기'}</div>
-                <div className="text-[11px] text-red-700 mt-0.5">{'증상 서술 · ASRS 체크 · 목표 설정'}</div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-red-400 shrink-0" strokeWidth={2.5} />
+              <div className="font-semibold text-xs text-gray-800">자가 체크하기</div>
+              <div className="text-[10px] text-purple-600">3개월마다 확인</div>
             </button>
-          ) : null}
+            <button
+              type="button"
+              onClick={() => navigate('/onboarding/history')}
+              className="grow basis-[0%] bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] pt-3 px-3 pb-3 rounded-2xl text-left flex flex-col gap-1.5 transition-transform active:scale-[0.97]"
+            >
+              <div className="items-center flex justify-center w-8 h-8 bg-gray-100 rounded-xl shrink-0">
+                <History className="h-4 w-4 text-gray-500" strokeWidth={2} />
+              </div>
+              <div className="font-semibold text-xs text-gray-800">체크 이력</div>
+              <div className="text-[10px] text-gray-500">지난 기록 보기</div>
+            </button>
+          </div>
           <div className="px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
           </div>

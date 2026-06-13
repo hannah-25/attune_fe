@@ -26,6 +26,7 @@ import {
   uncheckCondition,
   uncheckSideEffect,
   uncheckTrouble,
+  type JournalDetail,
   type SleepQuality,
 } from '@/api/journal';
 
@@ -304,16 +305,45 @@ export default function JournalFullPage() {
   useEffect(() => {
     let ignore = false;
 
-    Promise.all([
-      getConditionTags(),
-      getSideEffectTags(),
-      getTroubleTags(),
-      getJournal(journalDate).catch((err) => { console.error('Failed to load journal:', err); return null; }),
-    ])
-      .then(([conditionTags, sideEffectTags, troubleTags, journal]) => {
-        if (ignore) return;
-        const checked = journal?.checked;
-        const activeTags = journal?.activeTags;
+    const loadJournal = async () => {
+      let journal: JournalDetail | null | undefined;
+
+      try {
+        journal = await getJournal(journalDate);
+      } catch (err) {
+        console.error('Failed to load journal:', err);
+      }
+
+      if (ignore) return;
+
+      let activeTags = journal?.activeTags;
+
+      if (
+        !Array.isArray(activeTags?.conditions)
+        || !Array.isArray(activeTags?.sideEffects)
+        || !Array.isArray(activeTags?.troubles)
+      ) {
+        try {
+          const [conditions, sideEffects, troubles] = await Promise.all([
+            getConditionTags(),
+            getSideEffectTags(),
+            getTroubleTags(),
+          ]);
+          activeTags = {
+            conditions,
+            sideEffects,
+            troubles,
+            goals: activeTags?.goals ?? [],
+          };
+        } catch (err) {
+          console.error('Failed to load journal tags:', err);
+          if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
+          return;
+        }
+      }
+
+      if (ignore) return;
+      const checked = journal?.checked;
 
         const checkedConditionIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
         const checkedSideEffectIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
@@ -323,17 +353,17 @@ export default function JournalFullPage() {
           {
             title: '감정 · 증상',
             tone: 'purple',
-            tags: conditionTags.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.condition, selected: checkedConditionIds.has(tag.tagId), tagId: tag.tagId, source: 'condition' })),
+            tags: (activeTags?.conditions ?? []).filter((tag) => tag.visible).map((tag) => ({ label: tag.condition, selected: checkedConditionIds.has(tag.tagId), tagId: tag.tagId, source: 'condition' as const })),
           },
           {
             title: '부작용',
             tone: 'orange',
-            tags: sideEffectTags.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.sideEffect, selected: checkedSideEffectIds.has(tag.tagId), tagId: tag.tagId, source: 'sideEffect' })),
+            tags: (activeTags?.sideEffects ?? []).filter((tag) => tag.visible).map((tag) => ({ label: tag.sideEffect, selected: checkedSideEffectIds.has(tag.tagId), tagId: tag.tagId, source: 'sideEffect' as const })),
           },
           {
             title: '업무 실수 · 불편',
             tone: 'blue',
-            tags: troubleTags.filter((tag) => tag.visible === true).map((tag) => ({ label: tag.trouble, selected: checkedTroubleIds.has(tag.tagId), tagId: tag.tagId, source: 'trouble' })),
+            tags: (activeTags?.troubles ?? []).filter((tag) => tag.visible).map((tag) => ({ label: tag.trouble, selected: checkedTroubleIds.has(tag.tagId), tagId: tag.tagId, source: 'trouble' as const })),
           },
         ]);
 
@@ -363,11 +393,9 @@ export default function JournalFullPage() {
             value: checkedGoals.get(goal.goalId) ?? 0,
           })));
         }
-      })
-      .catch((err) => {
-        console.error('Failed to load journal tags:', err);
-        if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
-      });
+    };
+
+    void loadJournal();
 
     return () => {
       ignore = true;

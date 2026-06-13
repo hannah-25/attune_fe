@@ -21,6 +21,10 @@ import Onboarding2Page from '../pages/onboarding/Onboarding2Page';
 import Onboarding3Page from '../pages/onboarding/Onboarding3Page';
 import Onboarding4Page from '../pages/onboarding/Onboarding4Page';
 import Onboarding5Page from '../pages/onboarding/Onboarding5Page';
+import OnboardingHistoryPage from '../pages/onboarding/OnboardingHistoryPage';
+import OnboardingQuickPage from '../pages/onboarding/OnboardingQuickPage';
+import OnboardingAiLoadingPage from '../pages/onboarding/OnboardingAiLoadingPage';
+import OnboardingAiResultPage from '../pages/onboarding/OnboardingAiResultPage';
 
 // Home
 import HomeListPage from '../pages/home/HomeListPage';
@@ -144,9 +148,15 @@ export default function App() {
         <Route path="/onboarding/3" element={<Onboarding3Page />} />
         <Route path="/onboarding/4" element={<Onboarding4Page />} />
         <Route path="/onboarding/5" element={<Onboarding5Page />} />
+        <Route path="/onboarding/quick" element={<OnboardingQuickPage />} />
+        <Route path="/onboarding/ai-loading" element={<OnboardingAiLoadingPage />} />
+        <Route path="/onboarding/ai-result" element={<OnboardingAiResultPage />} />
 
         {/* Protected routes — 토큰 없으면 /login 리다이렉트 */}
         <Route element={<ProtectedRoute />}>
+          {/* Onboarding history */}
+          <Route path="/onboarding/history" element={<OnboardingHistoryPage />} />
+
           {/* Home */}
           <Route path="/home" element={<HomeListPage />} />
           <Route path="/home/calendar" element={<HomeCalendarPage />} />
