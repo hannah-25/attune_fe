@@ -55,7 +55,7 @@ export default function OnboardingAiResultPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const groupedTags = React.useMemo(() => {
-    if (!aiResult) return {} as Record<string, AiTagItem[]>;
+    if (!aiResult || !Array.isArray(aiResult.tags)) return {} as Record<string, AiTagItem[]>;
     const groups: Record<string, AiTagItem[]> = {};
     for (const tag of aiResult.tags) {
       if (!groups[tag.type]) groups[tag.type] = [];
