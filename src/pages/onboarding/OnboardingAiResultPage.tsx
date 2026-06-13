@@ -53,6 +53,7 @@ export default function OnboardingAiResultPage() {
   const [showNewGoalInput, setShowNewGoalInput] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isCancellingRef = React.useRef(false);
 
   const groupedTags = React.useMemo(() => {
     if (!aiResult || !Array.isArray(aiResult.tags)) return {} as Record<string, AiTagItem[]>;
