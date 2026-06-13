@@ -171,6 +171,7 @@ function addMonths(date: Date, months: number): Date {
 }
 
 function formatDate(date: Date): string {
+  if (isNaN(date.getTime())) return '-';
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
