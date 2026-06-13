@@ -44,14 +44,19 @@ export default function OnboardingAiLoadingPage() {
   // 메시지·이미지 순환 (마지막 스텝에서 멈춤)
   useEffect(() => {
     if (stepIndex >= STEPS.length - 1) return;
-    const interval = setInterval(() => {
+    let transitionTimeout: ReturnType<typeof setTimeout> | undefined;
+    const stepTimeout = setTimeout(() => {
       setVisible(false);
-      setTimeout(() => {
+      transitionTimeout = setTimeout(() => {
         setStepIndex((prev) => Math.min(prev + 1, STEPS.length - 1));
         setVisible(true);
       }, 350);
     }, 2200);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearTimeout(stepTimeout);
+      if (transitionTimeout) clearTimeout(transitionTimeout);
+    };
   }, [stepIndex]);
 
   const { message, image } = STEPS[stepIndex];

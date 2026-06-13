@@ -74,7 +74,8 @@ export default function OnboardingHistoryDetailPage() {
 }
 
 function HistoryDetail({ detail }: { detail: OnboardingHistoryDetail }) {
-  const { symptom } = detail;
+  const isQuickOnboarding = detail.symptom?.isQuickOnboarding ?? false;
+  const goals = detail.goals ?? [];
 
   return (
     <>
@@ -90,27 +91,27 @@ function HistoryDetail({ detail }: { detail: OnboardingHistoryDetail }) {
 
       <DetailSection icon={<ClipboardList className="w-4 h-4" />} title="증상 기록">
         <div className="text-[11px] font-semibold text-purple-600 mb-3">
-          {symptom.isQuickOnboarding ? '빠른 온보딩으로 기록' : '상세 온보딩으로 기록'}
+          {isQuickOnboarding ? '빠른 온보딩으로 기록' : '상세 온보딩으로 기록'}
         </div>
-        {symptom.isQuickOnboarding ? (
+        {isQuickOnboarding ? (
           <div className="flex flex-col gap-4">
-            <TagGroup title="취약 증상 영역" values={symptom.selectedSymptomTypes} />
-            <TagGroup title="취약 기능 영역" values={symptom.selectedFunctionalAreas} />
+            <TagGroup title="취약 증상 영역" values={detail.symptom?.selectedSymptomTypes ?? []} />
+            <TagGroup title="취약 기능 영역" values={detail.symptom?.selectedFunctionalAreas ?? []} />
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <TextRecord title="증상 서술" value={symptom.description} />
-            <TextRecord title="감정적 사건" value={symptom.emotionalEvent} />
+            <TextRecord title="증상 서술" value={detail.symptom?.description ?? null} />
+            <TextRecord title="감정적 사건" value={detail.symptom?.emotionalEvent ?? null} />
           </div>
         )}
       </DetailSection>
 
-      <DetailSection icon={<Target className="w-4 h-4" />} title={`치료 목표 ${detail.goals.length}개`}>
-        {detail.goals.length === 0 ? (
+      <DetailSection icon={<Target className="w-4 h-4" />} title={`치료 목표 ${goals.length}개`}>
+        {goals.length === 0 ? (
           <div className="text-xs text-gray-500 py-2">활성화된 치료 목표가 없어요.</div>
         ) : (
           <div className="flex flex-col gap-2">
-            {detail.goals.map((goal) => (
+            {goals.map((goal) => (
               <div key={goal.id} className="flex items-start gap-3 bg-gray-50 rounded-xl px-3 py-3">
                 <Flag className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
                 <div className="min-w-0">
