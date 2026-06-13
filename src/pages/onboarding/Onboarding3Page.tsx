@@ -88,7 +88,7 @@ export default function Onboarding3Page() {
           <button
             type="button"
             onClick={goNext}
-            disabled={symptomText.length < 50 || isSubmitting}
+            disabled={symptomText.trim().length < 50 || isSubmitting}
             className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white text-base min-h-11 mt-3 pt-0 pr-5 pb-0 pl-5 rounded-xl disabled:opacity-40"
           >
             <span className="block">{isSubmitting ? '저장 중...' : '다음'}</span>
