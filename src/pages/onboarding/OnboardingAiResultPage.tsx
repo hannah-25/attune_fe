@@ -199,7 +199,10 @@ export default function OnboardingAiResultPage() {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditText(e.target.value)}
                         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                           if (e.key === 'Enter') saveEdit();
-                          else if (e.key === 'Escape') setEditingIndex(null);
+                          else if (e.key === 'Escape') {
+                            isCancellingRef.current = true;
+                            setEditingIndex(null);
+                          }
                         }}
                         onBlur={saveEdit}
                         autoFocus
