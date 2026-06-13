@@ -194,7 +194,7 @@ export default function OnboardingAiResultPage() {
             <div className="flex flex-col gap-2">
               {goals.map((goal: AiGoalItem, index: number) => (
                 <div
-                  key={index}
+                  key={`${goal.goal}-${goal.type}`}
                   className="bg-white border border-gray-200 rounded-xl p-3 flex items-start gap-2 shadow-sm"
                 >
                   <div className="flex-1 min-w-0">
