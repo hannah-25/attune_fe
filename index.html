@@ -1,22 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>a.tune</title>
+    <meta name="theme-color" content="#1f1b2e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="a.tune" />
+    <link rel="apple-touch-icon" href="/pwa-v2-192x192.png" />
+    <style>
+      html, body { height: 100%; margin: 0; }
+      #root { height: 100%; }
+      @keyframes app-float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes app-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      #app-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        background: #f9fafb;
+        animation: app-fade-in 0.3s ease-out;
+      }
+      #app-loading img {
+        width: 140px;
+        height: 140px;
+        object-fit: contain;
+        animation: app-float 3s ease-in-out infinite;
+      }
+    </style>
+  </head>
 
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>a.tune</title>
-      <meta name="theme-color" content="#1f1b2e" />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="apple-mobile-web-app-title" content="a.tune" />
-      <link rel="apple-touch-icon" href="/pwa-v2-192x192.png" />
-      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
-    </head>
-
-    <body>
-      <div id="root"></div>
-      <script type="module" src="/src/main.tsx"></script>
-    </body>
-  </html>
-  
+  <body>
+    <div id="root">
+      <div id="app-loading">
+        <img src="/logo-square.png" alt="a.tune" />
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
