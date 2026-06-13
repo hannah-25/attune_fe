@@ -92,7 +92,12 @@ export default function OnboardingHistoryPage() {
                       <ClipboardList className="h-4 w-4 text-purple-500" strokeWidth={2} />
                     </div>
                     <div className="grow min-w-0">
-                      <div className="font-semibold text-xs text-gray-800">{formatLongDate(new Date(record.doneAt))}</div>
+                      <div className="font-semibold text-xs text-gray-800">
+                        {(() => {
+                          const date = new Date(record.doneAt);
+                          return !isNaN(date.getTime()) ? formatLongDate(date) : '-';
+                        })()}
+                      </div>
                       <div className="items-center flex flex-wrap gap-x-1.5 gap-y-0.5 mt-0.5 text-[10px] text-gray-500">
                         <span>부주의 {record.inattentionScore}점</span>
                         <span>과잉행동·충동성 {record.hyperactivityScore}점</span>
