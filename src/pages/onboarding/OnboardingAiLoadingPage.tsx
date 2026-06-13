@@ -12,6 +12,14 @@ const LOADING_MESSAGES = [
 export default function OnboardingAiLoadingPage() {
   const navigate = useNavigate();
   const calledRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (calledRef.current) return;
@@ -19,10 +27,12 @@ export default function OnboardingAiLoadingPage() {
 
     getAiRecommendations()
       .then((result) => {
+        if (!mountedRef.current) return;
         navigate('/onboarding/ai-result', { state: { aiResult: result }, replace: true });
       })
       .catch((err) => {
         console.error('AI recommendation failed:', err);
+        if (!mountedRef.current) return;
         navigate('/onboarding/ai-result', { state: { aiResult: null, error: true }, replace: true });
       });
   }, [navigate]);

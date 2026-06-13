@@ -314,6 +314,8 @@ export default function JournalFullPage() {
         console.error('Failed to load journal:', err);
       }
 
+      if (ignore) return;
+
       let activeTags = journal?.activeTags;
 
       if (
