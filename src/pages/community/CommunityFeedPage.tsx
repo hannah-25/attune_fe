@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Pencil, Search, X } from 'lucide-react';
+import { useDelayedLoading } from '@/lib/useDelayedLoading';
+import { MessageSquare, Pencil, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { getPosts, POST_CATEGORY_LABEL, PostCategory, PostResponse } from '@/api/community';
@@ -38,6 +39,7 @@ export default function CommunityFeedPage() {
   const [selectedCategories, setSelectedCategories] = useState<Set<CategoryFilter>>(new Set(['전체']));
   const [posts, setPosts] = useState<PostResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const showLoading = useDelayedLoading(isLoading);
   const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,9 +174,17 @@ export default function CommunityFeedPage() {
         </div>
 
         {/* 목록 */}
-        {isLoading || isSearching ? (
+        {showLoading || isSearching ? (
           <div className="flex flex-1 items-center justify-center text-gray-400 text-xs">
-            {isSearching ? '검색 중...' : '불러오는 중...'}
+            {isSearching ? '검색 중...' : (
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
+                  <MessageSquare className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+                </div>
+                <div className="font-semibold text-sm text-gray-700">게시글을 불러오고 있어요</div>
+                <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
+              </div>
+            )}
           </div>
         ) : error ? (
           <div className="flex flex-1 items-center justify-center px-6 text-center text-red-400 text-xs">{error}</div>

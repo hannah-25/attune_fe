@@ -6,12 +6,14 @@ import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getOnboardingHistory, OnboardingHistoryRecord } from '@/api/onboarding';
 import { formatLongDate } from '@/lib/date';
+import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 export default function OnboardingHistoryPage() {
   const navigate = useNavigate();
   const [records, setRecords] = useState<OnboardingHistoryRecord[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const showLoading = useDelayedLoading(isLoading);
 
   useEffect(() => {
     let ignore = false;
@@ -62,8 +64,14 @@ export default function OnboardingHistoryPage() {
             </div>
           )}
 
-          {isLoading ? (
-            <div className="text-center text-xs text-gray-500 py-8">불러오는 중...</div>
+          {showLoading ? (
+            <div className="flex flex-col items-center text-center py-12 gap-3">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
+                <ClipboardList className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+              </div>
+              <div className="font-semibold text-sm text-gray-700">자가 체크 기록을 불러오고 있어요</div>
+              <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
+            </div>
           ) : error ? (
             <ErrorState message={error} />
           ) : records.length === 0 ? (

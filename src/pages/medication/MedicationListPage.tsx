@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
+import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 const CARD_BACKGROUNDS = ['bg-purple-300', 'bg-purple-500', 'bg-purple-400', 'bg-purple-600'];
 
@@ -54,6 +55,7 @@ export default function MedicationListPage() {
   const [nextDose, setNextDose] = useState<NextDose | null>(null);
   const [todayDoseSummary, setTodayDoseSummary] = useState<TodayDoseSummary>({ taken: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const showLoading = useDelayedLoading(isLoading);
   const [isLogging, setIsLogging] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [togglingAlarmId, setTogglingAlarmId] = useState<number | null>(null);
@@ -272,8 +274,14 @@ export default function MedicationListPage() {
             </div>
           </div>
           <div className="font-bold text-gray-600 pt-1 pr-1 pb-0 pl-1">복용 중 ({activeMedications.length})</div>
-          {isLoading && activeMedications.length === 0 && pastMedications.length === 0 ? (
-            <div className="text-gray-400 text-xs px-1">불러오는 중...</div>
+          {showLoading && activeMedications.length === 0 && pastMedications.length === 0 ? (
+            <div className="flex flex-col items-center text-center py-12 gap-3">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
+                <Pill className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+              </div>
+              <div className="font-semibold text-sm text-gray-700">복약 정보를 불러오고 있어요</div>
+              <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
+            </div>
           ) : null}
           {activeMedications.map((medication) => (
             <div
