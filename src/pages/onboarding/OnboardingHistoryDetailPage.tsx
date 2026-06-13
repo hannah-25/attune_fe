@@ -22,7 +22,7 @@ export default function OnboardingHistoryDetailPage() {
   const [detail, setDetail] = useState<OnboardingHistoryDetail | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const title = detail ? formatLongDate(new Date(detail.doneAt)) : '자가 체크 상세';
+  const title = detail?.doneAt ? formatLongDate(new Date(detail.doneAt)) : '자가 체크 상세';
 
   useEffect(() => {
     if (!id) {
