@@ -10,6 +10,7 @@ import { formatLongDate } from '@/lib/date';
 export default function OnboardingHistoryPage() {
   const navigate = useNavigate();
   const [records, setRecords] = useState<OnboardingHistoryRecord[]>([]);
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function OnboardingHistoryPage() {
       })
       .catch((err) => {
         console.error('Failed to load check history:', err);
-        if (!ignore) setRecords([]);
+        if (!ignore) setError('체크 기록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
       })
       .finally(() => {
         if (!ignore) setIsLoading(false);
@@ -63,6 +64,8 @@ export default function OnboardingHistoryPage() {
 
           {isLoading ? (
             <div className="text-center text-xs text-gray-500 py-8">불러오는 중...</div>
+          ) : error ? (
+            <ErrorState message={error} />
           ) : records.length === 0 ? (
             <EmptyState onStart={() => navigate('/onboarding/1')} />
           ) : (
@@ -119,6 +122,17 @@ function EmptyState({ onStart }: { onStart: () => void }) {
       >
         시작하기
       </button>
+    </div>
+  );
+}
+
+function ErrorState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center text-center py-12 gap-3">
+      <div className="items-center flex justify-center w-16 h-16 bg-purple-100 rounded-2xl">
+        <ClipboardList className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+      </div>
+      <div className="font-semibold text-sm text-gray-700">{message}</div>
     </div>
   );
 }

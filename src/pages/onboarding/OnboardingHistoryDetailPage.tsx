@@ -22,7 +22,10 @@ export default function OnboardingHistoryDetailPage() {
   const [detail, setDetail] = useState<OnboardingHistoryDetail | null>(null);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const title = detail?.doneAt ? formatLongDate(new Date(detail.doneAt)) : '자가 체크 상세';
+  const parsedDoneAt = detail?.doneAt ? new Date(detail.doneAt) : null;
+  const title = parsedDoneAt && !isNaN(parsedDoneAt.getTime())
+    ? formatLongDate(parsedDoneAt)
+    : '자가 체크 상세';
 
   useEffect(() => {
     if (!id) {
@@ -76,12 +79,14 @@ export default function OnboardingHistoryDetailPage() {
 function HistoryDetail({ detail }: { detail: OnboardingHistoryDetail }) {
   const isQuickOnboarding = detail.symptom?.isQuickOnboarding ?? false;
   const goals = detail.goals ?? [];
+  const doneDate = detail.doneAt ? new Date(detail.doneAt) : null;
+  const doneDateText = doneDate && !isNaN(doneDate.getTime()) ? formatLongDate(doneDate) : '-';
 
   return (
     <>
       <section className="bg-white border border-gray-200 rounded-2xl p-4 shadow-[rgba(60,40,90,0.08)_0px_4px_16px_0px]">
         <div className="text-xs text-gray-500">완료일</div>
-        <div className="font-bold text-base text-gray-900 mt-1">{formatLongDate(new Date(detail.doneAt))}</div>
+        <div className="font-bold text-base text-gray-900 mt-1">{doneDateText}</div>
         <div className="font-bold text-sm text-gray-800 mt-4">ASRS 검사 점수</div>
         <div className="grid grid-cols-2 gap-2 mt-2">
           <ScoreCard label="부주의" score={detail.inattentionScore} icon={<Brain className="w-4 h-4" />} />
