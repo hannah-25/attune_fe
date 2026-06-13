@@ -166,6 +166,7 @@ export default function OnboardingAiResultPage() {
                             key={tag.id}
                             type="button"
                             onClick={() => toggleTag(tag.id)}
+                            aria-pressed={visible}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-[0.96] ${
                               visible
                                 ? 'bg-purple-500 text-white border-purple-500 shadow-sm'
