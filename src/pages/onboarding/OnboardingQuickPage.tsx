@@ -72,6 +72,7 @@ export default function OnboardingQuickPage() {
                   <button
                     key={s.id}
                     type="button"
+                    aria-pressed={selected}
                     onClick={() => setSelectedSymptoms(toggle(selectedSymptoms, s.id))}
                     className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all active:scale-[0.98] ${
                       selected
@@ -104,6 +105,7 @@ export default function OnboardingQuickPage() {
                   <button
                     key={a.id}
                     type="button"
+                    aria-pressed={selected}
                     onClick={() => setSelectedAreas(toggle(selectedAreas, a.id))}
                     className={`flex flex-col items-start p-3.5 rounded-xl border-2 transition-all active:scale-[0.97] ${
                       selected

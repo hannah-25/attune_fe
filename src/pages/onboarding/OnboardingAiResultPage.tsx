@@ -225,6 +225,7 @@ export default function OnboardingAiResultPage() {
                     {editingIndex === index ? (
                       <button
                         type="button"
+                        onMouseDown={(e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault()}
                         onClick={saveEdit}
                         className="w-7 h-7 flex items-center justify-center rounded-lg bg-purple-100 text-purple-600 active:scale-95"
                       >
