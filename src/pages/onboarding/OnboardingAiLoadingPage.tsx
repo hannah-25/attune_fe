@@ -71,6 +71,7 @@ function AnimatedMessages({ messages }: { messages: string[] }) {
   const [visible, setVisible] = React.useState(true);
 
   useEffect(() => {
+    if (messages.length === 0) return;
     let timeout: ReturnType<typeof setTimeout>;
     const interval = setInterval(() => {
       setVisible(false);
