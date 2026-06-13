@@ -71,7 +71,7 @@ export default function OnboardingHistoryPage() {
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title="자가 체크 이력" left={<NavBackButton />} />
         <ScrollArea className="flex flex-col gap-3">
-          {nextCheckDate && (
+          {nextCheckDate && !isNaN(nextCheckDate.getTime()) && (
             <div className="items-center flex gap-3 bg-purple-50 border border-purple-100 px-4 py-3 rounded-2xl">
               <div className="items-center flex justify-center w-8 h-8 bg-purple-100 rounded-xl shrink-0">
                 <CalendarDays className="h-4 w-4 text-purple-600" strokeWidth={2} />
