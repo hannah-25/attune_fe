@@ -41,7 +41,7 @@ export default function OnboardingAiResultPage() {
   const hasError = state?.error ?? false;
 
   const [tagVisibility, setTagVisibility] = useState<Record<number, boolean>>(() => {
-    if (!aiResult) return {};
+    if (!aiResult || !Array.isArray(aiResult.tags)) return {};
     return Object.fromEntries(aiResult.tags.map((t: AiTagItem) => [t.id, t.recommended]));
   });
 
