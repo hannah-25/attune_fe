@@ -76,10 +76,11 @@ export default function OnboardingAiResultPage() {
   const saveEdit = () => {
     if (editingIndex === null) return;
     const trimmed = editText.trim();
-    if (!trimmed) return;
-    setGoals((prev: AiGoalItem[]) =>
-      prev.map((g: AiGoalItem, i: number) => (i === editingIndex ? { ...g, goal: trimmed } : g))
-    );
+    if (trimmed) {
+      setGoals((prev: AiGoalItem[]) =>
+        prev.map((g: AiGoalItem, i: number) => (i === editingIndex ? { ...g, goal: trimmed } : g))
+      );
+    }
     setEditingIndex(null);
   };
 
