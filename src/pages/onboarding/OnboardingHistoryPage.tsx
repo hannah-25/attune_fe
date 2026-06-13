@@ -38,10 +38,7 @@ export default function OnboardingHistoryPage() {
   const nextCheckDate = latestRecord ? addMonths(new Date(latestRecord.doneAt), 3) : null;
 
   return (
-    <div
-      className="w-full h-full bg-gray-50 text-sm flex flex-col"
-      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
-    >
+    <div className="w-full h-full bg-gray-50 text-sm flex flex-col">
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title="자가 체크 이력" left={<NavBackButton />} />
         <ScrollArea className="flex flex-col gap-3">
@@ -64,14 +61,16 @@ export default function OnboardingHistoryPage() {
             </div>
           )}
 
-          {showLoading ? (
-            <div className="flex flex-col items-center text-center py-12 gap-3">
-              <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
-                <ClipboardList className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+          {isLoading ? (
+            showLoading ? (
+              <div className="flex flex-col items-center text-center py-12 gap-3">
+                <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
+                  <ClipboardList className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+                </div>
+                <div className="font-semibold text-sm text-gray-700">자가 체크 기록을 불러오고 있어요</div>
+                <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
               </div>
-              <div className="font-semibold text-sm text-gray-700">자가 체크 기록을 불러오고 있어요</div>
-              <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
-            </div>
+            ) : null
           ) : error ? (
             <ErrorState message={error} />
           ) : records.length === 0 ? (

@@ -64,7 +64,6 @@ export default function OnboardingAiLoadingPage() {
   return (
     <div
       className="w-full h-dvh bg-gray-50 flex flex-col items-center justify-center gap-8 px-5"
-      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       {/* 캐릭터 이미지 */}
       <div

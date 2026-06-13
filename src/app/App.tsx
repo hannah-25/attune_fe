@@ -87,7 +87,6 @@ function AppLoadingScreen() {
   return (
     <div
       className="w-full h-full bg-gray-50 flex items-center justify-center"
-      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <img
         src={logoSquare}

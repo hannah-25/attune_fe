@@ -122,7 +122,6 @@ export default function CommunityFeedPage() {
   return (
     <div
       className="w-full h-full bg-gray-50 text-sm flex flex-col"
-      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title="경험 공유" />
@@ -174,18 +173,20 @@ export default function CommunityFeedPage() {
         </div>
 
         {/* 목록 */}
-        {showLoading || isSearching ? (
-          <div className="flex flex-1 items-center justify-center text-gray-400 text-xs">
-            {isSearching ? '검색 중...' : (
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
-                  <MessageSquare className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+        {(isLoading || isSearching) ? (
+          (showLoading || isSearching) ? (
+            <div className="flex flex-1 items-center justify-center text-gray-400 text-xs">
+              {isSearching ? '검색 중...' : (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-2xl animate-pulse">
+                    <MessageSquare className="h-8 w-8 text-purple-400" strokeWidth={1.5} />
+                  </div>
+                  <div className="font-semibold text-sm text-gray-700">게시글을 불러오고 있어요</div>
+                  <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
                 </div>
-                <div className="font-semibold text-sm text-gray-700">게시글을 불러오고 있어요</div>
-                <div className="text-xs text-gray-400">잠시만 기다려 주세요</div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : null
         ) : error ? (
           <div className="flex flex-1 items-center justify-center px-6 text-center text-red-400 text-xs">{error}</div>
         ) : visiblePosts.length === 0 ? (
