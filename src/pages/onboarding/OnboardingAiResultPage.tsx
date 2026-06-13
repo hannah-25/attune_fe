@@ -75,6 +75,10 @@ export default function OnboardingAiResultPage() {
   };
 
   const saveEdit = () => {
+    if (isCancellingRef.current) {
+      isCancellingRef.current = false;
+      return;
+    }
     if (editingIndex === null) return;
     const trimmed = editText.trim();
     if (trimmed) {
