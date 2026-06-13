@@ -201,6 +201,7 @@ export default function OnboardingAiResultPage() {
                           if (e.key === 'Enter') saveEdit();
                           else if (e.key === 'Escape') setEditingIndex(null);
                         }}
+                        onBlur={saveEdit}
                         autoFocus
                         className="w-full text-sm text-gray-800 bg-transparent outline-none border-b border-purple-300"
                       />
