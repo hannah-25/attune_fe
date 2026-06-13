@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
-import { submitOnboardingSymptoms, DailyGoalType } from '@/api/onboarding';
+import { submitOnboardingSymptoms, DailyGoalType, OnboardingSymptomType } from '@/api/onboarding';
 
-const SYMPTOM_TYPES = [
+const SYMPTOM_TYPES: { id: OnboardingSymptomType; label: string; desc: string }[] = [
   { id: 'INATTENTION', label: '부주의', desc: '집중 유지, 실수, 잊어버림' },
   { id: 'HYPERACTIVITY', label: '과잉행동·충동성', desc: '안절부절, 충동적 행동, 말 끊기' },
 ];
@@ -17,7 +17,7 @@ const FUNCTIONAL_AREAS: { id: DailyGoalType; label: string; icon: string; desc: 
 
 export default function OnboardingQuickPage() {
   const navigate = useNavigate();
-  const [selectedSymptoms, setSelectedSymptoms] = useState<Set<string>>(new Set());
+  const [selectedSymptoms, setSelectedSymptoms] = useState<Set<OnboardingSymptomType>>(new Set());
   const [selectedAreas, setSelectedAreas] = useState<Set<DailyGoalType>>(new Set());
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

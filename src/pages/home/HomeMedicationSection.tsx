@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -9,6 +9,7 @@ import {
   type MedicationScheduleSummary,
   type MedicationSummary,
 } from '@/api/medication';
+import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 type ActiveMedication = {
   userMedicationId: number;
@@ -32,6 +33,7 @@ export default function HomeMedicationSection() {
   const [activeMedicationCount, setActiveMedicationCount] = useState(0);
   const [doseItems, setDoseItems] = useState<HomeDoseItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const showLoading = useDelayedLoading(isLoading);
   const [error, setError] = useState('');
   const [loggingKeys, setLoggingKeys] = useState<string[]>([]);
 
@@ -124,7 +126,14 @@ export default function HomeMedicationSection() {
 
       {error ? <div className="text-red-500 text-xs">{error}</div> : null}
 
-      {isLoading ? <div className="text-xs text-gray-400">복약 정보를 불러오는 중...</div> : null}
+      {showLoading ? (
+        <div className="flex items-center gap-2 py-1">
+          <div className="flex items-center justify-center w-6 h-6 bg-purple-100 rounded-lg animate-pulse">
+            <Pill className="w-3.5 h-3.5 text-purple-400" strokeWidth={1.5} />
+          </div>
+          <span className="text-xs text-gray-400">복약 정보를 불러오고 있어요</span>
+        </div>
+      ) : null}
 
       {!isLoading && activeMedicationCount === 0 ? (
         <button

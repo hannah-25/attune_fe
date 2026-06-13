@@ -6,6 +6,7 @@ export type AsrsAnswer = {
 };
 
 export type DailyGoalType = 'WORK_STUDY' | 'TIME_MANAGEMENT' | 'LIFE_MANAGEMENT' | 'EMOTIONAL_SOCIAL';
+export type OnboardingSymptomType = 'INATTENTION' | 'HYPERACTIVITY';
 
 export type AiTagItem = {
   id: number;
@@ -33,8 +34,47 @@ export type OnboardingStatus = {
   resumeStep: OnboardingResumeStep | null;
 };
 
+export type OnboardingHistoryRecord = {
+  id: string;
+  doneAt: string;
+  inattentionScore: number;
+  hyperactivityScore: number;
+  goalCount: number;
+};
+
+export type OnboardingHistoryResponse = {
+  records: OnboardingHistoryRecord[];
+};
+
+export type OnboardingHistoryDetail = {
+  id: string;
+  doneAt: string;
+  inattentionScore: number;
+  hyperactivityScore: number;
+  symptom: {
+    description: string | null;
+    emotionalEvent: string | null;
+    isQuickOnboarding: boolean;
+    selectedSymptomTypes: OnboardingSymptomType[] | null;
+    selectedFunctionalAreas: DailyGoalType[] | null;
+  };
+  goals: {
+    id: number;
+    title: string;
+    type: DailyGoalType;
+  }[];
+};
+
 export function getOnboardingStatus() {
   return apiRequest<OnboardingStatus>('/v1/onboarding/status');
+}
+
+export function getOnboardingHistory() {
+  return apiRequest<OnboardingHistoryResponse>('/v1/onboarding/history');
+}
+
+export function getOnboardingHistoryDetail(id: string) {
+  return apiRequest<OnboardingHistoryDetail>(`/v1/onboarding/history/${encodeURIComponent(id)}`);
 }
 
 export function skipOnboarding() {
@@ -53,7 +93,7 @@ export function submitAsrs(answers: AsrsAnswer[]) {
 export function submitOnboardingSymptoms(payload: {
   description?: string;
   emotionalEvent?: string;
-  selectedSymptomTypes?: string[];
+  selectedSymptomTypes?: OnboardingSymptomType[];
   selectedFunctionalAreas?: DailyGoalType[];
   isQuickOnboarding?: boolean;
 }) {

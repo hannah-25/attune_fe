@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, Routes, Route } from 'react-router';
+import logoSquare from '@src/assets/logo-square.png';
 import { AppViewport } from './components/AppViewport';
 import GuestBanner from './components/GuestBanner';
 import { getAccessToken } from './api/client';
@@ -22,6 +23,7 @@ import Onboarding3Page from '../pages/onboarding/Onboarding3Page';
 import Onboarding4Page from '../pages/onboarding/Onboarding4Page';
 import Onboarding5Page from '../pages/onboarding/Onboarding5Page';
 import OnboardingHistoryPage from '../pages/onboarding/OnboardingHistoryPage';
+import OnboardingHistoryDetailPage from '../pages/onboarding/OnboardingHistoryDetailPage';
 import OnboardingQuickPage from '../pages/onboarding/OnboardingQuickPage';
 import OnboardingAiLoadingPage from '../pages/onboarding/OnboardingAiLoadingPage';
 import OnboardingAiResultPage from '../pages/onboarding/OnboardingAiResultPage';
@@ -81,6 +83,21 @@ import InquiryPage from '../pages/settings/InquiryPage';
 
 import OverviewPage from './pages/OverviewPage';
 
+function AppLoadingScreen() {
+  return (
+    <div
+      className="w-full h-full bg-gray-50 flex items-center justify-center"
+    >
+      <img
+        src={logoSquare}
+        alt="a.tune"
+        className="w-36 h-36 object-contain"
+        style={{ animation: 'float 3s ease-in-out infinite' }}
+      />
+    </div>
+  );
+}
+
 function ProtectedRoute() {
   if (!getAccessToken() && !isGuestMode()) {
     return <Navigate to="/login" replace />;
@@ -120,7 +137,7 @@ function RootRoute() {
     };
   }, []);
 
-  if (!destination) return null;
+  if (!destination) return <AppLoadingScreen />;
 
   return <Navigate to={destination} replace />;
 }
@@ -156,6 +173,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           {/* Onboarding history */}
           <Route path="/onboarding/history" element={<OnboardingHistoryPage />} />
+          <Route path="/onboarding/history/:id" element={<OnboardingHistoryDetailPage />} />
 
           {/* Home */}
           <Route path="/home" element={<HomeListPage />} />

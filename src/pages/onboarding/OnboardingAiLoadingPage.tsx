@@ -1,24 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { getAiRecommendations } from '@/api/onboarding';
+import emotion3 from '@src/assets/emotion3.png';
+import emotion6 from '@src/assets/emotion6.png';
+import emotion5 from '@src/assets/emotion5.png';
+import logo from '@src/assets/logo.png';
 
-const LOADING_MESSAGES = [
-  '증상 데이터를 분석하고 있어요...',
-  '나에게 맞는 태그를 찾고 있어요...',
-  '맞춤 목표를 생성하고 있어요...',
-  '거의 다 됐어요!',
+const STEPS: { message: string; image: string }[] = [
+  { message: '증상 데이터를 분석하고 있어요...', image: emotion3 },
+  { message: '나에게 맞는 태그를 찾고 있어요...', image: emotion6 },
+  { message: '맞춤 목표를 생성하고 있어요...', image: emotion5 },
+  { message: '거의 다 됐어요!', image: logo },
 ];
 
 export default function OnboardingAiLoadingPage() {
   const navigate = useNavigate();
   const calledRef = useRef(false);
   const mountedRef = useRef(true);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    return () => { mountedRef.current = false; };
   }, []);
 
   useEffect(() => {
@@ -37,61 +41,53 @@ export default function OnboardingAiLoadingPage() {
       });
   }, [navigate]);
 
-  return (
-    <div
-      className="w-full h-dvh bg-gray-50 flex flex-col items-center justify-center gap-6 px-5"
-      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
-    >
-      {/* 스피너 */}
-      <div className="relative w-20 h-20">
-        <div className="absolute inset-0 rounded-full border-4 border-purple-100" />
-        <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl">✨</span>
-        </div>
-      </div>
-
-      <div className="text-center">
-        <div className="font-bold text-gray-900 text-lg">AI가 분석 중이에요</div>
-        <div className="text-gray-500 text-sm mt-1.5 leading-relaxed">
-          나에게 꼭 맞는 태그와 목표를
-          <br />
-          준비하고 있어요
-        </div>
-      </div>
-
-      {/* 순환 메시지 */}
-      <AnimatedMessages messages={LOADING_MESSAGES} />
-    </div>
-  );
-}
-
-function AnimatedMessages({ messages }: { messages: string[] }) {
-  const [index, setIndex] = React.useState(0);
-  const [visible, setVisible] = React.useState(true);
-
+  // 메시지·이미지 순환 (마지막 스텝에서 멈춤)
   useEffect(() => {
-    if (messages.length === 0) return;
-    let timeout: ReturnType<typeof setTimeout>;
-    const interval = setInterval(() => {
+    if (stepIndex >= STEPS.length - 1) return;
+    let transitionTimeout: ReturnType<typeof setTimeout> | undefined;
+    const stepTimeout = setTimeout(() => {
       setVisible(false);
-      timeout = setTimeout(() => {
-        setIndex((prev: number) => (prev + 1) % messages.length);
+      transitionTimeout = setTimeout(() => {
+        setStepIndex((prev) => Math.min(prev + 1, STEPS.length - 1));
         setVisible(true);
-      }, 300);
-    }, 2000);
+      }, 350);
+    }, 2200);
+
     return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
+      clearTimeout(stepTimeout);
+      if (transitionTimeout) clearTimeout(transitionTimeout);
     };
-  }, [messages.length]);
+  }, [stepIndex]);
+
+  const { message, image } = STEPS[stepIndex];
 
   return (
     <div
-      className="text-purple-600 text-sm font-semibold transition-opacity duration-300"
-      style={{ opacity: visible ? 1 : 0 }}
+      className="w-full h-dvh bg-gray-50 flex flex-col items-center justify-center gap-8 px-5"
     >
-      {messages[index]}
+      {/* 캐릭터 이미지 */}
+      <div
+        className="w-52 h-52 flex items-center justify-center"
+        style={{ animation: 'float 3s ease-in-out infinite' }}
+      >
+        <img
+          src={image}
+          alt=""
+          className="w-full h-full object-contain transition-opacity duration-350"
+          style={{ opacity: visible ? 1 : 0 }}
+        />
+      </div>
+
+      {/* 텍스트 */}
+      <div className="text-center flex flex-col gap-2">
+        <div className="font-bold text-gray-900 text-lg">AI가 분석 중이에요</div>
+        <div
+          className="text-purple-600 text-sm font-semibold transition-opacity duration-350"
+          style={{ opacity: visible ? 1 : 0 }}
+        >
+          {message}
+        </div>
+      </div>
     </div>
   );
 }
