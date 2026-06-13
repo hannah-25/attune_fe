@@ -18,11 +18,15 @@ import {
   createSleepMeal,
   createTroubleTag,
   deleteJournalGoal,
+  getConditionTags,
   getJournal,
+  getSideEffectTags,
+  getTroubleTags,
   scoreJournalGoal,
   uncheckCondition,
   uncheckSideEffect,
   uncheckTrouble,
+  type JournalDetail,
   type SleepQuality,
 } from '@/api/journal';
 
@@ -301,11 +305,43 @@ export default function JournalFullPage() {
   useEffect(() => {
     let ignore = false;
 
-    getJournal(journalDate)
-      .then((journal) => {
-        if (ignore) return;
-        const checked = journal?.checked;
-        const activeTags = journal?.activeTags;
+    const loadJournal = async () => {
+      let journal: JournalDetail | null | undefined;
+
+      try {
+        journal = await getJournal(journalDate);
+      } catch (err) {
+        console.error('Failed to load journal:', err);
+      }
+
+      let activeTags = journal?.activeTags;
+
+      if (
+        !Array.isArray(activeTags?.conditions)
+        || !Array.isArray(activeTags?.sideEffects)
+        || !Array.isArray(activeTags?.troubles)
+      ) {
+        try {
+          const [conditions, sideEffects, troubles] = await Promise.all([
+            getConditionTags(),
+            getSideEffectTags(),
+            getTroubleTags(),
+          ]);
+          activeTags = {
+            conditions,
+            sideEffects,
+            troubles,
+            goals: activeTags?.goals ?? [],
+          };
+        } catch (err) {
+          console.error('Failed to load journal tags:', err);
+          if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
+          return;
+        }
+      }
+
+      if (ignore) return;
+      const checked = journal?.checked;
 
         const checkedConditionIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
         const checkedSideEffectIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
@@ -355,11 +391,9 @@ export default function JournalFullPage() {
             value: checkedGoals.get(goal.goalId) ?? 0,
           })));
         }
-      })
-      .catch((err) => {
-        console.error('Failed to load journal:', err);
-        if (!ignore) setError('일지를 불러오지 못했습니다.');
-      });
+    };
+
+    void loadJournal();
 
     return () => {
       ignore = true;

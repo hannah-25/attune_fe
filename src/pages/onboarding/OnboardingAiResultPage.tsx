@@ -85,6 +85,12 @@ export default function OnboardingAiResultPage() {
 
   const removeGoal = (index: number) => {
     setGoals((prev: AiGoalItem[]) => prev.filter((_: AiGoalItem, i: number) => i !== index));
+    setEditingIndex((prev) => {
+      if (prev === null) return null;
+      if (prev === index) return null;
+      if (index < prev) return prev - 1;
+      return prev;
+    });
   };
 
   const addNewGoal = () => {
