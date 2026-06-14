@@ -235,43 +235,59 @@ export default function MedicationListPage() {
         <ScrollArea className="flex flex-col gap-3 pt-1">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
-            <div className="font-bold text-gray-500 text-xs mb-1">{nextDose ? '다음 복용' : '복용 일정'}</div>
-            <div className="font-extrabold text-xl leading-tight" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-              {nextDose ? nextDose.name : '-'}
-            </div>
-            <div className="items-center flex mt-1.5 gap-2">
-              {nextDose ? (
-                <span className="text-xs font-semibold text-gray-500">{nextDose.time}</span>
-              ) : null}
-              {nextDose && secondsLeft !== null ? (
-                <span className="text-xs font-bold text-purple-700 bg-purple-200 px-2 py-0.5 rounded-full">
-                  {formatCountdown(secondsLeft)} 후
-                </span>
-              ) : null}
-              <span className="ml-auto text-xs font-semibold text-gray-500">
-                오늘 {todayDoseSummary.taken}/{todayDoseSummary.total}
-              </span>
-            </div>
-            <div className="flex mt-3 gap-1.5">
-              <button
-                type="button"
-                onClick={handleTakeNow}
-                disabled={!nextDose || isLogging}
-                className="items-center flex grow font-bold justify-center h-9 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem] disabled:opacity-50 transition-opacity"
-              >
-                <span className="block">{isLogging ? '기록 중' : '지금 복용'}</span>
-              </button>
-              {nextDose ? (
-                <button
-                  type="button"
-                  onClick={handleSkipDose}
-                  disabled={isLogging}
-                  className="items-center flex grow font-bold justify-center h-9 border-gray-900 border basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem] disabled:opacity-50"
-                >
-                  <span className="block">건너뛰기</span>
-                </button>
-              ) : null}
-            </div>
+            {nextDose ? (
+              <>
+                <div className="font-bold text-gray-500 text-xs mb-1">다음 복용</div>
+                <div className="font-extrabold text-xl leading-tight" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                  {nextDose.name}
+                </div>
+                <div className="items-center flex mt-1.5 gap-2">
+                  <span className="text-xs font-semibold text-gray-500">{nextDose.time}</span>
+                  {secondsLeft !== null ? (
+                    <span className="text-xs font-bold text-purple-700 bg-purple-200 px-2 py-0.5 rounded-full">
+                      {formatCountdown(secondsLeft)} 후
+                    </span>
+                  ) : null}
+                  <span className="ml-auto text-xs font-semibold text-gray-500">
+                    오늘 {todayDoseSummary.taken}/{todayDoseSummary.total}
+                  </span>
+                </div>
+                <div className="flex mt-3 gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleTakeNow}
+                    disabled={isLogging}
+                    className="items-center flex grow font-bold justify-center h-9 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem] disabled:opacity-50 transition-opacity"
+                  >
+                    <span className="block">{isLogging ? '기록 중' : '지금 복용'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSkipDose}
+                    disabled={isLogging}
+                    className="items-center flex grow font-bold justify-center h-9 border-gray-900 border basis-[0%] tracking-tight min-h-11 pt-0 pr-[18px] pb-0 pl-[18px] rounded-[1.125rem] disabled:opacity-50"
+                  >
+                    <span className="block">건너뛰기</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="font-bold text-gray-500 text-xs mb-1">오늘 복용</div>
+                <div className="font-extrabold text-xl leading-tight" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                  {todayDoseSummary.total > 0 && todayDoseSummary.taken >= todayDoseSummary.total
+                    ? '오늘 복용 완료'
+                    : '복용 일정 없음'}
+                </div>
+                <div className="items-center flex mt-1.5 gap-2">
+                  {todayDoseSummary.total > 0 ? (
+                    <span className="text-xs font-semibold text-gray-500">
+                      {todayDoseSummary.taken}/{todayDoseSummary.total}회 복용
+                    </span>
+                  ) : null}
+                </div>
+              </>
+            )}
           </div>
           <div className="font-bold text-gray-600 pt-1 pr-1 pb-0 pl-1">복용 중 ({activeMedications.length})</div>
           {showLoading && activeMedications.length === 0 && pastMedications.length === 0 ? (
@@ -532,8 +548,10 @@ function findNextDose(medications: MedicationCard[], takenScheduleKeys: Set<stri
       if (typeof schedule.scheduleId !== 'number') return;
       const dueAt = getNextOccurrence(schedule.doseTime, now);
       if (!dueAt) return;
+      // 오늘 일정만 표시 — 내일 스케줄은 후보에서 제외
+      if (!isSameDate(dueAt, now)) return;
       const isTakenToday = takenScheduleKeys.has(buildDoseKey(medication.userMedicationId, schedule.scheduleId));
-      if (isTakenToday && isSameDate(dueAt, now)) return;
+      if (isTakenToday) return;
 
       const nextDose: NextDose = {
         userMedicationId: medication.userMedicationId,

@@ -1,21 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarDays, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronDown, Plus, Search, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-import { getConsultation, updateConsultationResult } from '@/api/consultation';
+import { createConsultation, getConsultation, updateConsultationResult } from '@/api/consultation';
+import {
+  createMedication,
+  getMedications,
+  searchMedications,
+  updateMedication,
+  getDosageId,
+  type MedicationDosageOption,
+  type MedicationSearchResult,
+} from '@/api/medication';
 
-type PrescriptionStatus = '증량' | '감량' | '유지';
-
-const STATUS_OPTIONS: PrescriptionStatus[] = ['증량', '감량', '유지'];
-const STATUS_COLOR: Record<PrescriptionStatus, string> = {
-  증량: 'bg-purple-100 text-purple-800',
-  감량: 'bg-orange-100 text-orange-800',
-  유지: 'bg-gray-100 text-gray-700',
-};
-const INITIAL_PRESCRIPTIONS = [
-  { id: 'prescription', name: '처방 내용', before: null as string | null, after: null as string | null, status: '유지' as PrescriptionStatus },
-];
 type ConsultationDetail = {
   consultationDate: string;
   place: string;
@@ -25,51 +23,220 @@ type ConsultationDetail = {
   nextTreatmentGoal?: string;
 };
 
+type PrescriptionEntry = {
+  key: string;
+  userMedicationId?: number;
+  name: string;
+  currentAmount: number | null;
+  selectedDosageId: number | null;
+  dosageOptions: MedicationDosageOption[];
+  stopped: boolean;
+  isNew: boolean;
+  expanded: boolean;
+  scheduleTime: string;
+};
+
+type SavedPrescriptionItem = {
+  name: string;
+  amount: number | null;
+  prevAmount: number | null;
+  status: string;
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  유지: 'bg-gray-100 text-gray-700',
+  증량: 'bg-purple-100 text-purple-800',
+  감량: 'bg-orange-100 text-orange-800',
+  중단: 'bg-red-50 text-red-600',
+  추가: 'bg-green-100 text-green-700',
+};
+
+function getEntryStatus(entry: PrescriptionEntry): string {
+  if (entry.stopped) return '중단';
+  if (entry.isNew) return '추가';
+  const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+  const selectedAmount = selectedOption?.amount ?? entry.currentAmount;
+  if (selectedAmount === null || selectedAmount === entry.currentAmount) return '유지';
+  return selectedAmount > (entry.currentAmount ?? 0) ? '증량' : '감량';
+}
+
+function serializeEntries(entries: PrescriptionEntry[]): string {
+  return JSON.stringify(entries.map(e => {
+    const selectedOption = e.dosageOptions.find(d => getDosageId(d) === e.selectedDosageId);
+    const selectedAmount = selectedOption?.amount ?? e.currentAmount;
+    return {
+      name: e.name,
+      amount: e.stopped ? null : selectedAmount,
+      prevAmount: e.currentAmount,
+      status: getEntryStatus(e),
+    };
+  }));
+}
+
+function parsePrescriptionNote(note: string | undefined): SavedPrescriptionItem[] {
+  if (!note) return [];
+  try {
+    return JSON.parse(note) as SavedPrescriptionItem[];
+  } catch {
+    return [];
+  }
+}
+
 export default function CounselingResultPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const consultationId = Number(searchParams.get('id'));
+
+  const editMode = searchParams.get('mode') === 'edit';
+
   const [consultation, setConsultation] = useState<ConsultationDetail | null>(null);
-  const [prescriptions, setPrescriptions] = useState(INITIAL_PRESCRIPTIONS);
+  const [entries, setEntries] = useState<PrescriptionEntry[]>([]);
+  const [addingSearch, setAddingSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<MedicationSearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [saved, setSaved] = useState(true);
-  const [nextDateRaw, setNextDateRaw] = useState('2026-05-16');
+  const [isEditing, setIsEditing] = useState(false);
+  const [nextDateRaw, setNextDateRaw] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 21);
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  });
   const [advice, setAdvice] = useState('');
   const [goal, setGoal] = useState('');
   const [error, setError] = useState('');
   const adviceRef = useRef<HTMLTextAreaElement>(null);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!consultationId) return;
-
     let ignore = false;
 
-    getConsultation(consultationId)
-      .then((response) => {
-        if (ignore) return;
-        const detail = response as ConsultationDetail;
-        setConsultation(detail);
-        setAdvice(detail.doctorAdvice ?? '');
-        setGoal(detail.nextTreatmentGoal ?? '');
-        setPrescriptions([{ id: 'prescription', name: detail.prescriptionNote || '처방 내용', before: null, after: null, status: '유지' }]);
-      })
-      .catch((err) => {
-        console.error('Failed to load consultation details:', err);
-        if (!ignore) setError('상담 기록을 불러오지 못했습니다.');
-      });
+    async function load() {
+      try {
+        const [detailResult, medsResult, catalogResult] = await Promise.allSettled([
+          getConsultation(consultationId),
+          getMedications(),
+          searchMedications(),
+        ]);
 
-    return () => {
-      ignore = true;
-    };
+        if (ignore) return;
+
+        if (detailResult.status === 'fulfilled') {
+          const detail = detailResult.value as unknown as ConsultationDetail;
+          setConsultation(detail);
+          setAdvice(detail.doctorAdvice ?? '');
+          setGoal(detail.nextTreatmentGoal ?? '');
+          setIsEditing(editMode);
+        } else {
+          setError('상담 기록을 불러오지 못했습니다.');
+        }
+
+        if (medsResult.status === 'fulfilled' && catalogResult.status === 'fulfilled') {
+          const catalog = catalogResult.value;
+          const built: PrescriptionEntry[] = medsResult.value
+            .filter(m => m.isActive)
+            .map(m => {
+              const catalogEntry = catalog.find(c => c.medicationId === m.medicationId);
+              const dosageOptions = catalogEntry?.dosageOptions ?? [];
+              const currentDosageOption = dosageOptions.find(d => d.amount === m.dosageAmount);
+              const currentDosageId = currentDosageOption ? getDosageId(currentDosageOption) : null;
+              const rawTime = m.schedules?.[0]?.doseTime ?? '08:00:00';
+              return {
+                key: `med-${m.userMedicationId}`,
+                userMedicationId: m.userMedicationId,
+                name: m.medicationName,
+                currentAmount: m.dosageAmount ?? null,
+                selectedDosageId: currentDosageId,
+                dosageOptions,
+                stopped: false,
+                isNew: false,
+                expanded: false,
+                scheduleTime: rawTime.slice(0, 5),
+              };
+            });
+          setEntries(built);
+        }
+      } catch (err) {
+        console.error('Failed to load:', err);
+        if (!ignore) setError('데이터를 불러오지 못했습니다.');
+      }
+    }
+
+    load();
+    return () => { ignore = true; };
   }, [consultationId]);
+
+  useEffect(() => {
+    if (!addingSearch || !searchQuery) { setSearchResults([]); return; }
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    setIsSearching(true);
+    searchTimerRef.current = setTimeout(() => {
+      searchMedications(searchQuery)
+        .then(setSearchResults)
+        .catch(() => setSearchResults([]))
+        .finally(() => setIsSearching(false));
+    }, 300);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchQuery, addingSearch]);
 
   const autoResize = (el: HTMLTextAreaElement) => {
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   };
 
-  const cycleStatus = (id: string, current: PrescriptionStatus) => {
-    const next = STATUS_OPTIONS[(STATUS_OPTIONS.indexOf(current) + 1) % STATUS_OPTIONS.length];
-    setPrescriptions((prev) => prev.map((p) => (p.id === id ? { ...p, status: next } : p)));
+  const setDosage = (key: string, dosageId: number) => {
+    setEntries(prev => prev.map(e => e.key === key ? { ...e, selectedDosageId: dosageId, stopped: false, expanded: false } : e));
+    setSaved(false);
+  };
+
+  const toggleStop = (key: string) => {
+    setEntries(prev => prev.map(e => e.key === key ? { ...e, stopped: !e.stopped } : e));
+    setSaved(false);
+  };
+
+  const removeEntry = (key: string) => {
+    setEntries(prev => prev.filter(e => e.key !== key));
+    setSaved(false);
+  };
+
+  const toggleExpanded = (key: string) => {
+    setEntries(prev => prev.map(e => e.key === key ? { ...e, expanded: !e.expanded } : e));
+  };
+
+  const resetToDefault = (key: string) => {
+    setEntries(prev => prev.map(e => {
+      if (e.key !== key) return e;
+      const originalOption = e.dosageOptions.find(d => d.amount === e.currentAmount);
+      const originalId = originalOption ? getDosageId(originalOption) : null;
+      return { ...e, selectedDosageId: originalId, stopped: false, expanded: false };
+    }));
+    setSaved(false);
+  };
+
+  const setScheduleTime = (key: string, time: string) => {
+    setEntries(prev => prev.map(e => e.key === key ? { ...e, scheduleTime: time } : e));
+    setSaved(false);
+  };
+
+  const addNewMedication = (medication: MedicationSearchResult) => {
+    const dosageOptions = medication.dosageOptions ?? [];
+    const firstId = dosageOptions.length > 0 ? getDosageId(dosageOptions[0]) : null;
+    setEntries(prev => [...prev, {
+      key: `new-${Date.now()}`,
+      name: medication.name,
+      currentAmount: null,
+      selectedDosageId: firstId,
+      dosageOptions,
+      stopped: false,
+      isNew: true,
+      expanded: true,
+      scheduleTime: '08:00',
+    }]);
+    setAddingSearch(false);
+    setSearchQuery('');
     setSaved(false);
   };
 
@@ -79,18 +246,70 @@ export default function CounselingResultPage() {
       return;
     }
 
-    try {
-      await updateConsultationResult(consultationId, {
+    const today = toDateKey(new Date());
+
+    const medTasks = entries.map(async (entry) => {
+      const status = getEntryStatus(entry);
+      const schedules = [{ doseTime: `${entry.scheduleTime}:00`, label: '복용' }];
+      if (status === '중단' && entry.userMedicationId) {
+        return updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+      }
+      if (status === '추가' && entry.selectedDosageId) {
+        return createMedication({
+          medicationDosageId: entry.selectedDosageId,
+          consultationId,
+          startedAt: today,
+          schedules,
+        });
+      }
+      if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
+        await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+        return createMedication({
+          medicationDosageId: entry.selectedDosageId,
+          consultationId,
+          startedAt: today,
+          schedules,
+        });
+      }
+    });
+
+    const results = await Promise.allSettled([
+      updateConsultationResult(consultationId, {
         doctorAdvice: advice,
-        prescriptionNote: prescriptions.map((prescription) => prescription.name).join('\n'),
+        prescriptionNote: serializeEntries(entries),
         nextTreatmentGoal: goal,
-      });
-      setSaved(true);
-    } catch (err) {
-      console.error('Failed to save consultation result:', err);
+      }),
+      ...medTasks,
+    ]);
+
+    const [consultationSave, ...medResults] = results;
+    if (consultationSave.status === 'rejected') {
       setError('상담 결과를 저장하지 못했습니다.');
+      return;
     }
+    const failCount = medResults.filter(r => r.status === 'rejected').length;
+    if (failCount > 0) {
+      setError(`처방 업데이트 중 일부 실패했습니다. (${failCount}건)`);
+    }
+
+    if (nextDateRaw && consultation) {
+      try {
+        await createConsultation({
+          consultationDate: `${nextDateRaw}T10:00:00`,
+          place: consultation.place,
+          doctorName: consultation.doctorName,
+          isFirstVisit: false,
+        });
+      } catch {
+        setError('다음 진료 일정 생성에 실패했습니다.');
+        return;
+      }
+    }
+
+    navigate('/counseling');
   };
+
+  const savedPrescription = parsePrescriptionNote(consultation?.prescriptionNote);
 
   return (
     <div
@@ -103,17 +322,40 @@ export default function CounselingResultPage() {
           left={<NavBackButton onClick={() => navigate(-1)} />}
           right={
             <div className="h-11 flex items-center">
-              {!saved ? <button type="button" onClick={saveResult} className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]">저장</button> : null}
+              {isEditing ? (
+                !saved && (
+                  <button
+                    type="button"
+                    onClick={saveResult}
+                    className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]"
+                  >
+                    저장
+                  </button>
+                )
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center justify-end min-w-11 h-11 text-sm font-bold text-purple-600"
+                >
+                  수정
+                </button>
+              )}
             </div>
           }
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-5 pt-1 pr-4 pb-8 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
+
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
             <div className="flex items-center gap-4">
               <div className="shrink-0 text-center">
-                <div className="text-xs text-purple-700 font-semibold">{consultation ? new Date(consultation.consultationDate).getMonth() + 1 : '-'}월</div>
-                <div className="font-extrabold text-3xl leading-none text-gray-700 mt-0.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>{consultation ? new Date(consultation.consultationDate).getDate() : '-'}</div>
+                <div className="text-xs text-purple-700 font-semibold">
+                  {consultation ? new Date(consultation.consultationDate).getMonth() + 1 : '-'}월
+                </div>
+                <div className="font-extrabold text-3xl leading-none text-gray-700 mt-0.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                  {consultation ? new Date(consultation.consultationDate).getDate() : '-'}
+                </div>
               </div>
               <div className="w-px self-stretch bg-purple-200" />
               <div className="min-w-0">
@@ -122,60 +364,266 @@ export default function CounselingResultPage() {
               </div>
             </div>
           </div>
-          <EditableBlock title="의사 조언">
-            <textarea
-              ref={adviceRef}
-              value={advice}
-              onChange={(e) => { setAdvice(e.target.value); setSaved(false); autoResize(e.target); }}
-              rows={3}
-              className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none overflow-hidden bg-transparent placeholder:text-gray-300"
-              placeholder="의사 조언을 입력하세요"
-            />
-          </EditableBlock>
-          <div>
-            <div className="font-bold text-gray-800 mb-2">처방 변경</div>
-            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
-              {prescriptions.map((prescription, index) => (
-                <div key={prescription.id} className={`flex items-center gap-3 pt-3 pr-4 pb-3 pl-4 ${index < prescriptions.length - 1 ? 'border-b' : ''}`} style={index < prescriptions.length - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}>
-                  <div className="w-1.5 h-1.5 bg-purple-300 rounded-full shrink-0" />
-                  <div className="grow basis-[0%] font-semibold">
-                    {prescription.before && prescription.after ? (
-                      <>{prescription.name} <span className="line-through text-gray-400">{prescription.before}</span> - <span className="font-bold">{prescription.after}</span></>
-                    ) : prescription.name}
-                  </div>
-                  <button type="button" onClick={() => cycleStatus(prescription.id, prescription.status)} className={`flex items-center gap-1 font-semibold text-xs px-3 py-1.5 rounded-full transition-all active:scale-[0.97] shrink-0 ${STATUS_COLOR[prescription.status]}`}>
-                    <span>{prescription.status}</span>
-                    <ChevronRight className="w-3 h-3 opacity-50" strokeWidth={2.5} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-          <EditableBlock title="다음 달 치료 목표">
-            <textarea
-              value={goal}
-              onChange={(e) => { setGoal(e.target.value); setSaved(false); autoResize(e.target); }}
-              rows={2}
-              className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none overflow-hidden bg-transparent placeholder:text-gray-300"
-              placeholder="다음 상담까지의 목표를 입력하세요"
-            />
-          </EditableBlock>
-          <div className="bg-purple-50 border border-purple-100 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] p-3 rounded-2xl">
-            <div className="flex items-start gap-2">
-              <CalendarDays className="w-4 h-4 text-purple-500 shrink-0 mt-[3px]" strokeWidth={2.4} />
+
+          {isEditing ? (
+            <>
+              <EditableBlock title="의사 조언">
+                <textarea
+                  ref={adviceRef}
+                  value={advice}
+                  onChange={(e) => { setAdvice(e.target.value); setSaved(false); autoResize(e.target); }}
+                  rows={3}
+                  className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none overflow-hidden bg-transparent placeholder:text-gray-300"
+                  placeholder="의사 조언을 입력하세요"
+                />
+              </EditableBlock>
+
               <div>
-                <div className="font-bold text-gray-800 flex items-center gap-1.5">
-                  다음 진료
-                  <input type="date" value={nextDateRaw} onChange={(e) => { setNextDateRaw(e.target.value); setSaved(false); }} className="font-bold bg-transparent outline-none text-gray-800 border-b border-gray-300 focus:border-purple-500 text-sm" />
+                <div className="font-bold text-gray-800 mb-2">처방 입력</div>
+                <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+                  {entries.map((entry, index) => {
+                    const status = getEntryStatus(entry);
+                    const isLast = index === entries.length - 1;
+                    const showBorder = !isLast || addingSearch;
+                    const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+                    const hasChange = !entry.isNew && !entry.stopped && selectedOption && selectedOption.amount !== entry.currentAmount;
+                    const showChips = entry.dosageOptions.length > 0 && (entry.expanded || entry.isNew);
+                    return (
+                      <div
+                        key={entry.key}
+                        className={`px-4 py-3 ${showBorder ? 'border-b' : ''}`}
+                        style={showBorder ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          {!entry.isNew ? (
+                            <button
+                              type="button"
+                              onClick={() => toggleExpanded(entry.key)}
+                              className="flex items-center gap-1.5 min-w-0 flex-1 text-left"
+                            >
+                              <ChevronDown
+                                className={`w-3.5 h-3.5 shrink-0 transition-transform ${entry.expanded ? 'rotate-180 text-purple-500' : 'text-gray-300'}`}
+                                strokeWidth={2.5}
+                              />
+                              <span className={`font-semibold truncate ${entry.stopped ? 'text-gray-400 line-through' : ''}`}>
+                                {entry.name}{entry.currentAmount ? ` ${entry.currentAmount}mg` : ''}
+                              </span>
+                              {hasChange && (
+                                <span className="shrink-0 text-xs font-semibold text-purple-600">
+                                  → {selectedOption!.amount}mg
+                                </span>
+                              )}
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                              <div className="w-1.5 h-1.5 bg-purple-300 rounded-full shrink-0" />
+                              <span className="font-semibold truncate">{entry.name}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${STATUS_COLOR[status] ?? 'bg-gray-100 text-gray-700'}`}>
+                              {status}
+                            </span>
+                            {entry.isNew && (
+                              <>
+                                <input
+                                  type="time"
+                                  value={entry.scheduleTime}
+                                  onChange={e => setScheduleTime(entry.key, e.target.value)}
+                                  className="text-xs text-gray-400 bg-transparent outline-none w-[68px]"
+                                />
+                                <button type="button" onClick={() => removeEntry(entry.key)} className="text-gray-300 hover:text-red-400">
+                                  <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {showChips && (
+                          <div className="flex flex-wrap gap-1.5 ml-3.5 mt-2">
+                            {entry.dosageOptions.map(d => {
+                              const id = getDosageId(d);
+                              const isSelected = !entry.stopped && entry.selectedDosageId === id;
+                              return (
+                                <button
+                                  key={id}
+                                  type="button"
+                                  onClick={() => setDosage(entry.key, id)}
+                                  className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                                    isSelected
+                                      ? 'bg-purple-100 border-purple-300 text-purple-800'
+                                      : 'bg-white border-gray-200 text-gray-600'
+                                  }`}
+                                >
+                                  {d.amount}mg
+                                </button>
+                              );
+                            })}
+                            {!entry.isNew && (
+                              <button
+                                type="button"
+                                onClick={() => toggleStop(entry.key)}
+                                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                                  entry.stopped
+                                    ? 'bg-red-50 border-red-300 text-red-500'
+                                    : 'bg-white border-gray-200 text-gray-400'
+                                }`}
+                              >
+                                중단
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {addingSearch ? (
+                    <>
+                      <div className="flex items-center gap-2 px-4 pt-3 pb-2">
+                        <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" strokeWidth={2.4} />
+                        <input
+                          autoFocus
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          placeholder="약 이름 검색"
+                          className="grow bg-transparent outline-none text-sm placeholder:text-gray-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => { setAddingSearch(false); setSearchQuery(''); }}
+                          className="text-gray-400 shrink-0"
+                        >
+                          <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                        </button>
+                      </div>
+                      {searchQuery.length > 0 && (
+                        <div className="border-t mx-3 mb-1" style={{ borderTopColor: 'rgb(233, 228, 220)' }}>
+                          {isSearching ? (
+                            <div className="py-4 text-center text-gray-400 text-xs">검색 중...</div>
+                          ) : searchResults.length === 0 ? (
+                            <div className="py-4 text-center text-gray-400 text-xs">검색 결과가 없습니다.</div>
+                          ) : (
+                            searchResults.slice(0, 5).map((med, index) => (
+                              <button
+                                key={med.medicationId}
+                                type="button"
+                                onClick={() => addNewMedication(med)}
+                                className={`w-full text-left px-1 py-2.5 ${index < Math.min(searchResults.length, 5) - 1 ? 'border-b' : ''}`}
+                                style={index < Math.min(searchResults.length, 5) - 1 ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+                              >
+                                <div className="font-semibold text-sm">{med.name}</div>
+                                <div className="flex gap-1 mt-1 flex-wrap">
+                                  {(med.dosageOptions ?? []).map(d => (
+                                    <span key={getDosageId(d)} className="text-[10px] font-semibold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">
+                                      {d.amount}mg
+                                    </span>
+                                  ))}
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setAddingSearch(true)}
+                      className="flex items-center w-full text-left text-gray-500 gap-2 pt-3 pr-4 pb-3 pl-4 transition-all active:scale-[0.99]"
+                    >
+                      <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+                      <span>약 추가</span>
+                    </button>
+                  )}
                 </div>
-                <div className="mt-1 text-gray-500 text-xs">알림으로 미리 알려드릴게요</div>
               </div>
-            </div>
-          </div>
+
+              <EditableBlock title="다음 달 치료 목표">
+                <textarea
+                  value={goal}
+                  onChange={(e) => { setGoal(e.target.value); setSaved(false); autoResize(e.target); }}
+                  rows={2}
+                  className="w-full text-base text-gray-700 leading-relaxed resize-none outline-none overflow-hidden bg-transparent placeholder:text-gray-300"
+                  placeholder="다음 상담까지의 목표를 입력하세요"
+                />
+              </EditableBlock>
+
+              <div className="bg-purple-50 border border-purple-100 shadow-[rgba(60,40,90,0.04)_0px_2px_8px_0px] p-3 rounded-2xl">
+                <div className="flex items-start gap-2">
+                  <CalendarDays className="w-4 h-4 text-purple-500 shrink-0 mt-[3px]" strokeWidth={2.4} />
+                  <div>
+                    <div className="font-bold text-gray-800 flex items-center gap-1.5">
+                      다음 진료
+                      <input
+                        type="date"
+                        value={nextDateRaw}
+                        onChange={(e) => { setNextDateRaw(e.target.value); setSaved(false); }}
+                        className="font-bold bg-transparent outline-none text-gray-800 border-b border-gray-300 focus:border-purple-500 text-sm"
+                      />
+                    </div>
+                    <div className="mt-1 text-gray-500 text-xs">저장하면 다음 진료 일정이 자동으로 추가돼요</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <ViewBlock title="의사 조언">
+                {advice ? (
+                  <p className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">{advice}</p>
+                ) : (
+                  <p className="text-base text-gray-300">기록된 조언이 없어요</p>
+                )}
+              </ViewBlock>
+
+              <div>
+                <div className="font-bold text-gray-800 mb-2">처방</div>
+                <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+                  {savedPrescription.length > 0 ? (
+                    savedPrescription.map((item, index) => {
+                      const isLast = index === savedPrescription.length - 1;
+                      return (
+                        <div
+                          key={`${item.name}-${index}`}
+                          className={`flex items-center gap-2 px-4 py-3 ${!isLast ? 'border-b' : ''}`}
+                          style={!isLast ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
+                        >
+                          <div className="w-1.5 h-1.5 bg-purple-300 rounded-full shrink-0" />
+                          <span className={`font-semibold flex-1 ${item.status === '중단' ? 'text-gray-400 line-through' : ''}`}>
+                            {item.name}{item.amount != null ? ` ${item.amount}mg` : ''}
+                          </span>
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${STATUS_COLOR[item.status] ?? 'bg-gray-100 text-gray-700'}`}>
+                            {item.status}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="px-4 py-3 text-gray-300">기록된 처방이 없어요</div>
+                  )}
+                </div>
+              </div>
+
+              <ViewBlock title="다음 달 치료 목표">
+                {goal ? (
+                  <p className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">{goal}</p>
+                ) : (
+                  <p className="text-base text-gray-300">기록된 목표가 없어요</p>
+                )}
+              </ViewBlock>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+function toDateKey(date: Date) {
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${m}-${d}`;
 }
 
 function EditableBlock({ children, title }: { children: React.ReactNode; title: string }) {
@@ -183,6 +631,17 @@ function EditableBlock({ children, title }: { children: React.ReactNode; title: 
     <div>
       <div className="font-bold text-gray-800 mb-2">{title}</div>
       <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ViewBlock({ children, title }: { children: React.ReactNode; title: string }) {
+  return (
+    <div>
+      <div className="font-bold text-gray-800 mb-2">{title}</div>
+      <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
         {children}
       </div>
     </div>

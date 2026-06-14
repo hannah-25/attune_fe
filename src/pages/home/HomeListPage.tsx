@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Bell, ClipboardList, History } from 'lucide-react';
+import { ArrowRight, Bell, ClipboardList, History, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
@@ -186,6 +186,22 @@ export default function HomeListPage() {
               <div className="text-[10px] text-gray-500">지난 기록 보기</div>
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate('/counseling')}
+            className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-4 py-3 rounded-2xl items-center flex gap-3 w-full text-left transition-transform active:scale-[0.97]"
+          >
+            <div className="items-center flex justify-center w-9 h-9 bg-purple-100 shrink-0 rounded-xl">
+              <MessageCircle className="w-[18px] h-[18px] text-purple-600" strokeWidth={2} />
+            </div>
+            <div className="grow">
+              <div className="font-bold text-xs text-gray-900">상담 준비하기</div>
+              <div className="text-[10px] text-gray-500 mt-0.5">다음 진료를 위한 기록 정리</div>
+            </div>
+            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
           <div className="px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
           </div>
