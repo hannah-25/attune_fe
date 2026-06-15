@@ -18,7 +18,6 @@ import {
 import { mockScheduleCategories, mockScheduleSummaries, mockScheduleDetail } from './calendar.mock';
 import { mockPosts, mockCommentsByPost, mockNotices } from './community.mock';
 import { mockSession, mockPrescriptions, mockQnA, mockSummaryStats, mockSummaryText, mockQuestions } from './counseling.mock';
-import { mockWeeklyStats, mockWeeklyInsight, mockWeeklyChartData, mockMonthlyStats, mockMonthlyInsight, mockMonthlyChartData } from './report.mock';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -711,6 +710,86 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     if (m === 'DELETE') return noContent();
   }
 
+  // ── Consultation questions ────────────────────────────────────────────────
+  const consultationQuestionsMatch = p.match(/^\/v1\/consultations\/(\d+)\/questions$/);
+  if (consultationQuestionsMatch) {
+    const cid = consultationQuestionsMatch[1];
+    const key = `consultation-questions-${cid}`;
+    const defaultQuestions = mockQuestions.map((q, i) => ({ questionId: i + 1, text: q.text }));
+    if (m === 'GET') {
+      return ok(guestRead<{ questionId: number; text: string }[]>(key) ?? defaultQuestions);
+    }
+    if (m === 'POST') {
+      const question = { questionId: genId(), text: (body as { text: string }).text };
+      guestWrite<{ questionId: number; text: string }[]>(key, (prev) => [...(prev ?? defaultQuestions), question]);
+      return created(question);
+    }
+  }
+  const consultationQuestionMatch = p.match(/^\/v1\/consultations\/(\d+)\/questions\/(\d+)$/);
+  if (consultationQuestionMatch && m === 'DELETE') {
+    const cid = consultationQuestionMatch[1];
+    const qid = Number(consultationQuestionMatch[2]);
+    const key = `consultation-questions-${cid}`;
+    const defaultQuestions = mockQuestions.map((q, i) => ({ questionId: i + 1, text: q.text }));
+    guestWrite<{ questionId: number; text: string }[]>(key, (prev) =>
+      (prev ?? defaultQuestions).filter((q) => q.questionId !== qid),
+    );
+    return noContent();
+  }
+
+  // ── Medication analysis ───────────────────────────────────────────────────
+  if (p === '/v1/medication-analysis/availability' && m === 'GET') {
+    return ok({ available: true, recordedDays: 24, unavailableReasons: [] });
+  }
+  if (p === '/v1/medication-analysis/summary' && m === 'GET') {
+    return ok({ totalScheduled: 60, takenCount: 45, skippedCount: 5, unrecordedCount: 10, adherenceRate: 75.0, recordingRate: 83.3 });
+  }
+  if (p === '/v1/medication-analysis/reports' && m === 'GET') {
+    return ok(guestRead('medication-reports') ?? []);
+  }
+  if (p === '/v1/medication-analysis/reports' && m === 'POST') {
+    const payload = body as { periodStart: string; periodEnd: string; includeMemoExcerpts: boolean };
+    const snapshot = JSON.stringify({ totalScheduled: 60, takenCount: 45, skippedCount: 5, unrecordedCount: 10, adherenceRate: 75.0, recordingRate: 83.3 });
+    const aiResult = JSON.stringify({
+      summary: '아침 약 복용 직후 2시간 동안 집중력 패턴이 안정적이었어요.',
+      insights: [
+        {
+          category: '복약 패턴',
+          title: '아침 복용이 가장 안정적',
+          description: '분석 기간 동안 아침 복용률이 90% 이상으로 가장 높았습니다.',
+          evidenceIds: [],
+          confidence: 'HIGH' as const,
+          limitation: '기록되지 않은 날은 분석에서 제외됩니다.',
+        },
+      ],
+      consultationQuestions: ['복용량 조정이 필요한 시점이 언제인가요?', '식욕 저하 증상이 지속되면 어떻게 해야 하나요?'],
+      disclaimer: 'AI 분석은 패턴 관찰이며 의료 진단을 대체하지 않습니다.',
+    });
+    const report = {
+      reportId: genId(),
+      periodStart: payload.periodStart,
+      periodEnd: payload.periodEnd,
+      status: 'COMPLETED' as const,
+      outdated: false,
+      snapshotJson: snapshot,
+      aiResultJson: aiResult,
+      generatedAt: new Date().toISOString(),
+    };
+    guestWrite<typeof report[]>('medication-reports', (prev) => [report, ...(prev ?? [])]);
+    return created(report);
+  }
+  const medicationReportMatch = p.match(/^\/v1\/medication-analysis\/reports\/(\d+)$/);
+  if (medicationReportMatch && m === 'GET') {
+    const rid = Number(medicationReportMatch[1]);
+    const reports = guestRead<{ reportId: number }[]>('medication-reports') ?? [];
+    return ok(reports.find((r) => r.reportId === rid));
+  }
+
+  // ── AI analysis consent ───────────────────────────────────────────────────
+  if (p === '/v1/ai-analysis-consent' && (m === 'PUT' || m === 'DELETE')) {
+    return noContent();
+  }
+
   // ── Community posts ───────────────────────────────────────────────────────
   if (p === '/v1/community/posts' && m === 'GET') {
     return ok(guestRead('posts') ?? mockPosts);
@@ -768,9 +847,9 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok(mockNotices.find((n) => n.noticeId === nid) ?? mockNotices[0]);
   }
 
-  // ── Report (read-only mock) ───────────────────────────────────────────────
+  // ── Report (legacy stub — kept for safety) ───────────────────────────────
   if (p.startsWith('/v1/report') && m === 'GET') {
-    return ok({ weekly: { stats: mockWeeklyStats, insight: mockWeeklyInsight, chart: mockWeeklyChartData }, monthly: { stats: mockMonthlyStats, insight: mockMonthlyInsight, chart: mockMonthlyChartData } });
+    return ok({});
   }
 
   // ── Counseling prep mock data ─────────────────────────────────────────────

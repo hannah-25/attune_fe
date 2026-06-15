@@ -34,13 +34,6 @@ export function updateConsultation(consultationId: number, payload: Partial<Cons
   return apiRequest<void>(`/v1/consultations/${consultationId}`, { method: 'PATCH', body: payload });
 }
 
-export function updateConsultationPreparation(consultationId: number, preConsultationNote: string) {
-  return apiRequest<void>(`/v1/consultations/${consultationId}/preparation`, {
-    method: 'PATCH',
-    body: { preConsultationNote },
-  });
-}
-
 export function updateConsultationResult(
   consultationId: number,
   payload: { doctorAdvice: string; prescriptionNote: string; nextTreatmentGoal: string },
