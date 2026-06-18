@@ -114,6 +114,7 @@ export default function CounselingResultPage() {
   const [entriesLoadFailed, setEntriesLoadFailed] = useState(false);
   const adviceRef = useRef<HTMLTextAreaElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nextConsultationCreatedRef = useRef(false);
 
   useEffect(() => {
     if (!consultationId) return;
@@ -231,14 +232,6 @@ export default function CounselingResultPage() {
     }
   };
 
-  const resetToDefault = (key: string) => {
-    setEntries(prev => prev.map(e => {
-      if (e.key !== key) return e;
-      return { ...e, selectedDosageId: e.originalDosageId, stopped: false, expanded: false };
-    }));
-    setSaved(false);
-  };
-
   const setScheduleTime = (key: string, time: string) => {
     setEntries(prev => prev.map(e => e.key === key ? { ...e, scheduleTime: time } : e));
     setSaved(false);
@@ -301,7 +294,7 @@ export default function CounselingResultPage() {
         if (status === '중단' && entry.userMedicationId) {
           if (entry.processed) return null;
           await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-          return (prev) => prev.filter(e => e.key !== entry.key);
+          return (prev) => prev.map(e => e.key === entry.key ? { ...e, processed: true } : e);
         }
         if (status === '추가' && entry.selectedDosageId) {
           const result = await createMedication({
@@ -358,7 +351,7 @@ export default function CounselingResultPage() {
         return;
       }
 
-      if (nextDateRaw && consultation) {
+      if (nextDateRaw && consultation && !nextConsultationCreatedRef.current) {
         try {
           await createConsultation({
             consultationDate: `${nextDateRaw}T10:00:00`,
@@ -366,6 +359,7 @@ export default function CounselingResultPage() {
             doctorName: consultation.doctorName,
             isFirstVisit: false,
           });
+          nextConsultationCreatedRef.current = true;
         } catch {
           // 처방/상담 결과는 이미 저장됐으므로 다음 진료 일정 생성 실패가 이동을 막지 않음
           console.error('다음 진료 일정 생성 실패');
@@ -379,6 +373,20 @@ export default function CounselingResultPage() {
   };
 
   const savedPrescription = parsePrescriptionNote(consultation?.prescriptionNote);
+
+  if (!consultation && !error) {
+    return (
+      <div
+        className="w-full h-full bg-gray-50 text-sm flex flex-col"
+        style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+      >
+        <TopBar title="상담 후 기록" left={<NavBackButton onClick={() => navigate(-1)} />} />
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-gray-400 text-sm">불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

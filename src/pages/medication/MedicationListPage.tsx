@@ -275,8 +275,8 @@ export default function MedicationListPage() {
               <>
                 <div className="font-bold text-gray-500 text-xs mb-1">오늘 복용</div>
                 <div className="font-extrabold text-xl leading-tight" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                  {todayDoseSummary.total > 0 && todayDoseSummary.taken >= todayDoseSummary.total
-                    ? '오늘 복용 완료'
+                  {todayDoseSummary.total > 0
+                    ? (todayDoseSummary.taken >= todayDoseSummary.total ? '오늘 복용 완료' : '오늘 복용 미완료')
                     : '복용 일정 없음'}
                 </div>
                 <div className="items-center flex mt-1.5 gap-2">

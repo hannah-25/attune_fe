@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { CalendarDays, Clock } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
@@ -33,17 +33,6 @@ export default function CounselingAddPage() {
   const [isFirstVisit, setIsFirstVisit] = useState(false);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-
-  const dateInputRef = useRef<HTMLInputElement>(null);
-
-  const openDatePicker = () => {
-    const input = dateInputRef.current;
-    if (!input) return;
-    const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
-    if (typeof pickerInput.showPicker === 'function') { pickerInput.showPicker(); return; }
-    input.focus();
-    input.click();
-  };
 
   const canSave = date !== '' && time !== '' && place.trim() !== '' && doctorName.trim() !== '' && !isSaving;
 
@@ -101,7 +90,6 @@ export default function CounselingAddPage() {
 
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             {/* 날짜 */}
-            <div className="relative">
             <div className="relative">
               <div
                 className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b"
