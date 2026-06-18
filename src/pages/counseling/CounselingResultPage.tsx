@@ -301,10 +301,15 @@ export default function CounselingResultPage() {
       return null;
     };
 
-    try {
-      const patches = await Promise.all(entries.map(applyEntry));
+    const results = await Promise.allSettled(entries.map(applyEntry));
+    const patches = results
+      .filter((r): r is PromiseFulfilledResult<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => r.status === 'fulfilled')
+      .map(r => r.value);
+    if (patches.length > 0) {
       setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
-    } catch {
+    }
+    const hasFailure = results.some(r => r.status === 'rejected');
+    if (hasFailure) {
       setError('처방 업데이트 중 일부 실패했습니다.');
       return;
     }
