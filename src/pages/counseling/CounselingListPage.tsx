@@ -254,12 +254,12 @@ function formatPrescriptionNote(note?: string): string {
   if (!note) return '';
   try {
     const entries = JSON.parse(note) as PrescriptionEntry[];
-    if (!Array.isArray(entries) || entries.length === 0) return '';
+    if (!Array.isArray(entries) || entries.length === 0) return note;
     return entries
       .map(e => `${e.name}${e.amount != null ? ` ${e.amount}mg` : ''} (${e.status})`)
       .join(' · ');
   } catch {
-    return '';
+    return note;
   }
 }
 
