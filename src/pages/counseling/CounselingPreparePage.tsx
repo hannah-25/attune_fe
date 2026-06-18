@@ -29,6 +29,7 @@ export default function CounselingPreparePage() {
   const [addingQuestion, setAddingQuestion] = useState(false);
   const [newQuestion, setNewQuestion] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const consultationId = state?.consultationId;
   const consultationDate = state?.consultationDate;
@@ -63,14 +64,15 @@ export default function CounselingPreparePage() {
 
     setNewQuestion('');
     setAddingQuestion(false);
+    setError('');
 
     try {
       const created = await createConsultationQuestion(consultationId, trimmed);
       setQuestions((cur) => [...cur, { ...created, checked: false }]);
     } catch {
-      // 실패 시 입력 복원
       setNewQuestion(trimmed);
       setAddingQuestion(true);
+      setError('질문을 추가하지 못했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -79,11 +81,13 @@ export default function CounselingPreparePage() {
 
     const prev = questions;
     setQuestions((cur) => cur.filter((q) => q.questionId !== questionId));
+    setError('');
 
     try {
       await deleteConsultationQuestion(consultationId, questionId);
     } catch {
       setQuestions(prev);
+      setError('질문을 삭제하지 못했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -184,6 +188,7 @@ export default function CounselingPreparePage() {
                 </>
               )}
             </div>
+            {error ? <div className="text-red-500 text-xs px-1 mt-1.5">{error}</div> : null}
           </div>
         </div>
         <div className="px-4 pb-6 pt-2 shrink-0">
