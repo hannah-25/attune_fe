@@ -239,7 +239,7 @@ function getDDay(value: string) {
   const today = new Date();
   const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate());
   const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  return Math.max(0, Math.floor((targetDate.getTime() - todayDate.getTime()) / 86400000));
+  return Math.max(0, Math.round((targetDate.getTime() - todayDate.getTime()) / 86400000));
 }
 
 function formatConsultationDate(value: string) {
