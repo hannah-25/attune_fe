@@ -26,9 +26,11 @@ type ConsultationDetail = {
 type PrescriptionEntry = {
   key: string;
   userMedicationId?: number;
+  medicationId?: number;
   name: string;
   currentAmount: number | null;
   selectedDosageId: number | null;
+  originalDosageId: number | null;
   dosageOptions: MedicationDosageOption[];
   stopped: boolean;
   isNew: boolean;
@@ -117,10 +119,9 @@ export default function CounselingResultPage() {
 
     async function load() {
       try {
-        const [detailResult, medsResult, catalogResult] = await Promise.allSettled([
+        const [detailResult, medsResult] = await Promise.allSettled([
           getConsultation(consultationId),
           getMedications(),
-          searchMedications(),
         ]);
 
         if (ignore) return;
@@ -135,23 +136,21 @@ export default function CounselingResultPage() {
           setError('상담 기록을 불러오지 못했습니다.');
         }
 
-        if (medsResult.status === 'fulfilled' && catalogResult.status === 'fulfilled') {
-          const catalog = catalogResult.value;
+        if (medsResult.status === 'fulfilled') {
           const built: PrescriptionEntry[] = medsResult.value
             .filter(m => m.isActive)
             .map(m => {
-              const catalogEntry = catalog.find(c => c.medicationId === m.medicationId);
-              const dosageOptions = catalogEntry?.dosageOptions ?? [];
-              const currentDosageOption = dosageOptions.find(d => d.amount === m.dosageAmount);
-              const currentDosageId = currentDosageOption ? getDosageId(currentDosageOption) : null;
+              const currentDosageId = m.medicationDosageId ?? null;
               const rawTime = m.schedules?.[0]?.doseTime ?? '08:00:00';
               return {
                 key: `med-${m.userMedicationId}`,
                 userMedicationId: m.userMedicationId,
+                medicationId: m.medicationId,
                 name: m.medicationName,
                 currentAmount: m.dosageAmount ?? null,
                 selectedDosageId: currentDosageId,
-                dosageOptions,
+                originalDosageId: currentDosageId,
+                dosageOptions: [],
                 stopped: false,
                 isNew: false,
                 expanded: false,
@@ -211,15 +210,29 @@ export default function CounselingResultPage() {
   };
 
   const toggleExpanded = (key: string) => {
-    setEntries(prev => prev.map(e => e.key === key ? { ...e, expanded: !e.expanded } : e));
+    setEntries(prev => prev.map(e => {
+      if (e.key !== key) return e;
+      const opening = !e.expanded;
+      if (opening && e.dosageOptions.length === 0 && !e.isNew && e.medicationId != null) {
+        const medId = e.medicationId;
+        const medName = e.name;
+        searchMedications(medName)
+          .then(results => {
+            const match = results.find(r => r.medicationId === medId);
+            if (match?.dosageOptions) {
+              setEntries(cur => cur.map(x => x.key === key ? { ...x, dosageOptions: match.dosageOptions! } : x));
+            }
+          })
+          .catch(() => {});
+      }
+      return { ...e, expanded: opening };
+    }));
   };
 
   const resetToDefault = (key: string) => {
     setEntries(prev => prev.map(e => {
       if (e.key !== key) return e;
-      const originalOption = e.dosageOptions.find(d => d.amount === e.currentAmount);
-      const originalId = originalOption ? getDosageId(originalOption) : null;
-      return { ...e, selectedDosageId: originalId, stopped: false, expanded: false };
+      return { ...e, selectedDosageId: e.originalDosageId, stopped: false, expanded: false };
     }));
     setSaved(false);
   };
@@ -234,9 +247,11 @@ export default function CounselingResultPage() {
     const firstId = dosageOptions.length > 0 ? getDosageId(dosageOptions[0]) : null;
     setEntries(prev => [...prev, {
       key: "new-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9),
+      medicationId: medication.medicationId,
       name: medication.name,
       currentAmount: null,
       selectedDosageId: firstId,
+      originalDosageId: null,
       dosageOptions,
       stopped: false,
       isNew: true,

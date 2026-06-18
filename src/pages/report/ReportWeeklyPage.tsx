@@ -180,8 +180,11 @@ export default function ReportWeeklyPage() {
             availability?.available ? (
               <div className={`bg-purple-50 ${SHADOW} p-4 rounded-[1.375rem]`}>
                 <div className="font-bold mb-[10px]">리포트 생성</div>
-                <div
-                  className="flex items-center justify-between mb-3 cursor-pointer"
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={includeAi}
+                  className="flex items-center justify-between mb-3 w-full"
                   onClick={() => setIncludeAi((v) => !v)}
                 >
                   <div className="flex items-center gap-2">
@@ -191,7 +194,7 @@ export default function ReportWeeklyPage() {
                   <div className={`w-[38px] h-[22px] rounded-full transition-colors flex items-center px-[3px] ${includeAi ? 'bg-purple-500 justify-end' : 'bg-gray-300 justify-start'}`}>
                     <div className="w-[16px] h-[16px] bg-white rounded-full shadow-sm" />
                   </div>
-                </div>
+                </button>
                 {includeAi && (
                   <div className="bg-white/60 rounded-xl p-2.5 mb-3 flex gap-1.5">
                     <Info className="w-3 h-3 text-purple-400 shrink-0 mt-[1px]" strokeWidth={2.5} />
