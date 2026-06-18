@@ -225,7 +225,7 @@ export default function CounselingResultPage() {
     const dosageOptions = medication.dosageOptions ?? [];
     const firstId = dosageOptions.length > 0 ? getDosageId(dosageOptions[0]) : null;
     setEntries(prev => [...prev, {
-      key: `new-${Date.now()}`,
+      key: "new-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9),
       name: medication.name,
       currentAmount: null,
       selectedDosageId: firstId,
