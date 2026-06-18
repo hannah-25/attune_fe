@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Bell, ClipboardList, History, MessageCircle } from 'lucide-react';
+import { ArrowRight, Bell, ClipboardList, History, MessageCircle, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
@@ -7,6 +7,7 @@ import { TabBar } from '@/components/TabBar';
 import { getTodosByDate, updateTodo } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { getSummary, type SummaryStats } from '@/api/medicationAnalysis';
+import { getMyProfile } from '@/api/user';
 import HomeMedicationSection from './HomeMedicationSection';
 
 type HomeTodo = {
@@ -27,6 +28,7 @@ export default function HomeListPage() {
   const [todos, setTodos] = useState<HomeTodo[]>([]);
   const [scheduleItems, setScheduleItems] = useState<HomeScheduleItem[]>([]);
   const [weeklyStats, setWeeklyStats] = useState<SummaryStats | null>(null);
+  const [profile, setProfile] = useState<{ nickname: string; profileImageUrl: string | null } | null>(null);
   const [todoError, setTodoError] = useState('');
   const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
 
@@ -37,6 +39,15 @@ export default function HomeListPage() {
     const endDate = toDateKey(addDays(today, 6));
 
     const statsStart = toDateKey(addDays(today, -6));
+    getMyProfile()
+      .then(({ nickname, profileImageUrl }) => {
+        if (ignore) return;
+        setProfile({ nickname, profileImageUrl: profileImageUrl ?? null });
+      })
+      .catch((err) => {
+        console.error('Failed to load profile:', err);
+      });
+
     getSummary(statsStart, startDate)
       .then((stats) => {
         if (ignore) return;
@@ -142,10 +153,18 @@ export default function HomeListPage() {
             <button
               type="button"
               onClick={() => navigate('/settings')}
-              className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full shrink-0 transition-transform active:scale-95"
+              className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full overflow-hidden shrink-0 transition-transform active:scale-95"
               aria-label="마이페이지로 이동"
             >
-              <span className="font-bold text-purple-700 text-xs">J</span>
+              {profile?.profileImageUrl ? (
+                <img src={profile.profileImageUrl} alt="" className="w-full h-full object-cover" />
+              ) : profile?.nickname.trim() ? (
+                <span className="font-bold text-purple-700 text-xs">
+                  {Array.from(profile.nickname.trim())[0]}
+                </span>
+              ) : (
+                <UserRound className="w-4 h-4 text-purple-700" strokeWidth={2.25} />
+              )}
             </button>
           </div>
         </div>
@@ -300,40 +319,6 @@ export default function HomeListPage() {
               />
             )}
           </div>
-          <div className="items-center flex justify-between px-1 mt-3">
-            <div className="font-semibold text-sm text-gray-800">주간 인사이트</div>
-            <button type="button" onClick={() => navigate('/report')} className="text-xs text-gray-400">전체보기</button>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/report')}
-            className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-[1.375rem] items-center flex gap-3 w-full text-left"
-          >
-            <div className="items-center flex justify-center w-9 h-9 bg-purple-200 shrink-0 rounded-xl">
-              <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                <polyline points="16 7 22 7 22 13"/>
-              </svg>
-            </div>
-            <div className="grow">
-              {(() => {
-                const pct = weeklyStats ? `${Math.round(weeklyStats.adherenceRate)}%` : null;
-                const title = pct ? `이번 주 복약률 ${pct}` : '이번 주 복약 현황';
-                const subtitle = weeklyStats
-                  ? `기록률 ${Math.round(weeklyStats.recordingRate)}% · 복약 ${weeklyStats.takenCount}/${weeklyStats.totalScheduled}회`
-                  : '통계를 불러오는 중...';
-                return (
-                  <>
-                    <div className="font-bold text-xs text-gray-900 leading-tight">{pct ? title.replace(pct, '') : title}<span className="text-purple-600">{pct ?? ''}</span></div>
-                    <div className="text-[10px] text-gray-500 mt-1">{subtitle}</div>
-                  </>
-                );
-              })()}
-            </div>
-            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
         </ScrollArea>
         <TabBar active="홈" />
       </div>
