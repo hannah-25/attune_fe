@@ -458,13 +458,13 @@ export default function JournalFullPage() {
     let createdTag: Tag | null = null;
     try {
       const response = await createCatalogTag({ category, name: label, tagType, visible: true });
+      await checkCatalogTag(response.catalogTagId);
       createdTag = {
         label: response.name,
         selected: true,
         catalogTagId: response.catalogTagId,
         category,
       };
-      void checkCatalogTag(response.catalogTagId).catch(console.error);
     } catch (err) {
       console.error('Failed to add tag:', err);
       setError('태그 추가에 실패했습니다.');

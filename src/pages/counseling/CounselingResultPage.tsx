@@ -245,52 +245,62 @@ export default function CounselingResultPage() {
       setError('상담 ID가 없어 저장할 수 없습니다.');
       return;
     }
+    setError('');
 
     const today = toDateKey(new Date());
 
-    const medTasks = entries.map(async (entry) => {
-      const status = getEntryStatus(entry);
-      const schedules = [{ doseTime: `${entry.scheduleTime}:00`, label: '복용' }];
-      if (status === '중단' && entry.userMedicationId) {
-        return updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-      }
-      if (status === '추가' && entry.selectedDosageId) {
-        return createMedication({
-          medicationDosageId: entry.selectedDosageId,
-          consultationId,
-          startedAt: today,
-          schedules,
-        });
-      }
-      if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
-        await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-        return createMedication({
-          medicationDosageId: entry.selectedDosageId,
-          consultationId,
-          startedAt: today,
-          schedules,
-        });
-      }
-    });
-
-    const results = await Promise.allSettled([
-      updateConsultationResult(consultationId, {
+    try {
+      await updateConsultationResult(consultationId, {
         doctorAdvice: advice,
         prescriptionNote: serializeEntries(entries),
         nextTreatmentGoal: goal,
-      }),
-      ...medTasks,
-    ]);
-
-    const [consultationSave, ...medResults] = results;
-    if (consultationSave.status === 'rejected') {
+      });
+    } catch {
       setError('상담 결과를 저장하지 못했습니다.');
       return;
     }
-    const failCount = medResults.filter(r => r.status === 'rejected').length;
-    if (failCount > 0) {
-      setError(`처방 업데이트 중 일부 실패했습니다. (${failCount}건)`);
-      return;
+
+    for (const entry of entries) {
+      const status = getEntryStatus(entry);
+      const schedules = [{ doseTime: `${entry.scheduleTime}:00`, label: '복용' }];
+
+      try {
+        if (status === '중단' && entry.userMedicationId) {
+          await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+          setEntries(prev => prev.filter(e => e.key !== entry.key));
+        } else if (status === '추가' && entry.selectedDosageId) {
+          const result = await createMedication({
+            medicationDosageId: entry.selectedDosageId,
+            consultationId,
+            startedAt: today,
+            schedules,
+          });
+          const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+          setEntries(prev => prev.map(e => e.key === entry.key ? {
+            ...e,
+            isNew: false,
+            userMedicationId: result.userMedicationId,
+            currentAmount: selectedOption?.amount ?? e.currentAmount,
+          } : e));
+        } else if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
+          await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+          const result = await createMedication({
+            medicationDosageId: entry.selectedDosageId,
+            consultationId,
+            startedAt: today,
+            schedules,
+          });
+          const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+          setEntries(prev => prev.map(e => e.key === entry.key ? {
+            ...e,
+            userMedicationId: result.userMedicationId,
+            currentAmount: selectedOption?.amount ?? e.currentAmount,
+          } : e));
+        }
+      } catch {
+        setError('처방 업데이트 중 일부 실패했습니다.');
+        return;
+      }
     }
 
     if (nextDateRaw && consultation) {
@@ -302,8 +312,8 @@ export default function CounselingResultPage() {
           isFirstVisit: false,
         });
       } catch {
-        setError('다음 진료 일정 생성에 실패했습니다.');
-        return;
+        // 처방/상담 결과는 이미 저장됐으므로 다음 진료 일정 생성 실패가 이동을 막지 않음
+        console.error('다음 진료 일정 생성 실패');
       }
     }
 

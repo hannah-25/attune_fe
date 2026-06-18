@@ -29,10 +29,13 @@ export default function CounselingListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [pastExpanded, setPastExpanded] = useState(true);
+  const [retryKey, setRetryKey] = useState(0);
   const now = new Date();
 
   useEffect(() => {
     let ignore = false;
+    setLoading(true);
+    setError('');
     const start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
     const end = new Date(now.getFullYear(), now.getMonth() + 6, now.getDate());
 
@@ -54,7 +57,7 @@ export default function CounselingListPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [retryKey]);
 
   const nextConsultation = useMemo(
     () => consultations.filter((item) => new Date(item.consultationDate) >= now).sort((a, b) => a.consultationDate.localeCompare(b.consultationDate))[0],
@@ -84,10 +87,30 @@ export default function CounselingListPage() {
 
   if (loading) return pageShell(<div />);
 
+  if (error) return pageShell(
+    <ScrollArea className="flex flex-col items-center text-center pt-12 px-6">
+      <div className="flex items-center justify-center w-28 h-28 bg-red-50 rounded-[2rem] shrink-0 mb-6">
+        <CalendarDays className="w-12 h-12 text-red-300" strokeWidth={1.6} />
+      </div>
+      <div className="font-extrabold text-2xl text-gray-800 leading-snug mb-3" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+        불러오지 못했어요
+      </div>
+      <p className="text-gray-500 leading-relaxed max-w-[240px] mb-8">
+        {error}
+      </p>
+      <button
+        type="button"
+        onClick={() => setRetryKey(k => k + 1)}
+        className="flex items-center justify-center h-[50px] min-w-[200px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white font-bold text-base px-5 rounded-[1.5625rem]"
+      >
+        다시 시도
+      </button>
+    </ScrollArea>
+  );
+
   // 상담 이력 자체가 없는 첫 진입
   if (consultations.length === 0) return pageShell(
     <ScrollArea className="flex flex-col items-center text-center pt-12 px-6">
-      {error ? <div className="text-red-500 text-xs px-1 mb-4">{error}</div> : null}
       <div className="flex items-center justify-center w-28 h-28 bg-purple-100 rounded-[2rem] shrink-0 mb-6">
         <CalendarDays className="w-12 h-12 text-purple-500" strokeWidth={1.6} />
       </div>
@@ -109,7 +132,6 @@ export default function CounselingListPage() {
 
   return pageShell(
     <ScrollArea className="flex flex-col gap-3">
-      {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
       <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
         {nextConsultation ? (
           <>
