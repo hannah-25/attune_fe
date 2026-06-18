@@ -345,17 +345,17 @@ export default function CounselingResultPage() {
       };
 
       const results = await Promise.allSettled(entries.map(applyEntry));
+      const patches = results
+        .map(r => r.status === 'fulfilled' ? r.value : null);
+      if (patches.some(p => p !== null)) {
+        setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
+      }
+
       const hasFailure = results.some(r => r.status === 'rejected');
       if (hasFailure) {
-        setError('처방 업데이트 중 일부 실패했습니다.');
+        setError('처방 업데이트 중 일부 실패했습니다. 성공한 항목은 반영되었으니 다시 시도해주세요.');
         setIsSaving(false);
         return;
-      }
-      const patches = results
-        .filter((r): r is PromiseFulfilledResult<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => r.status === 'fulfilled')
-        .map(r => r.value);
-      if (patches.length > 0) {
-        setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
       }
 
       if (nextDateRaw && consultation) {
