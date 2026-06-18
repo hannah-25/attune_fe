@@ -329,6 +329,10 @@ export default function JournalFullPage() {
         const checkedConditionLegacyIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
         const checkedSideEffectLegacyIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
         const checkedTroubleLegacyIds = new Set(checked?.troubles?.map((item) => item.tagId) ?? []);
+        const checkedCatalogTagIdSet = new Set(checked?.checkedCatalogTagIds ?? []);
+
+        const isSelected = (t: { catalogTagId: number; legacyTagId: number | null }, legacySet: Set<number>) =>
+          t.legacyTagId != null ? legacySet.has(t.legacyTagId) : checkedCatalogTagIdSet.has(t.catalogTagId);
 
         setSections([
           {
@@ -336,7 +340,7 @@ export default function JournalFullPage() {
             tone: 'purple',
             tags: conditionCatalogTags.filter((t) => t.enabled).map((t) => ({
               label: t.name,
-              selected: t.legacyTagId != null && checkedConditionLegacyIds.has(t.legacyTagId),
+              selected: isSelected(t, checkedConditionLegacyIds),
               catalogTagId: t.catalogTagId,
               category: 'CONDITION' as const,
             })),
@@ -346,7 +350,7 @@ export default function JournalFullPage() {
             tone: 'orange',
             tags: sideEffectCatalogTags.filter((t) => t.enabled).map((t) => ({
               label: t.name,
-              selected: t.legacyTagId != null && checkedSideEffectLegacyIds.has(t.legacyTagId),
+              selected: isSelected(t, checkedSideEffectLegacyIds),
               catalogTagId: t.catalogTagId,
               category: 'SIDE_EFFECT' as const,
             })),
@@ -356,7 +360,7 @@ export default function JournalFullPage() {
             tone: 'blue',
             tags: troubleCatalogTags.filter((t) => t.enabled).map((t) => ({
               label: t.name,
-              selected: t.legacyTagId != null && checkedTroubleLegacyIds.has(t.legacyTagId),
+              selected: isSelected(t, checkedTroubleLegacyIds),
               catalogTagId: t.catalogTagId,
               category: 'TROUBLE' as const,
             })),

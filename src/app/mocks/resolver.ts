@@ -583,6 +583,14 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
             }));
           }
         }
+      } else {
+        updateJournalDetail(date, (detail) => ({
+          ...detail,
+          checked: {
+            ...detail.checked,
+            checkedCatalogTagIds: [...new Set([...(detail.checked.checkedCatalogTagIds ?? []), catalogTagId])],
+          },
+        }));
       }
 
       return created({ catalogTagId, category: catalogTag?.category, checkedAt });
@@ -610,6 +618,14 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
             checked: { ...detail.checked, troubles: detail.checked.troubles.filter((t) => t.tagId !== legacyTagId) },
           }));
         }
+      } else {
+        updateJournalDetail(date, (detail) => ({
+          ...detail,
+          checked: {
+            ...detail.checked,
+            checkedCatalogTagIds: (detail.checked.checkedCatalogTagIds ?? []).filter((id) => id !== catalogTagId),
+          },
+        }));
       }
 
       return noContent();

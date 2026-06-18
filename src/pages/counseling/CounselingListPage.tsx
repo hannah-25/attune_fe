@@ -237,8 +237,9 @@ function extractConsultations(response: unknown): ConsultationListItem[] {
 function getDDay(value: string) {
   const target = new Date(value);
   const today = new Date();
-  const diff = target.getTime() - today.getTime();
-  return Math.max(0, Math.ceil(diff / 86400000));
+  const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  return Math.max(0, Math.floor((targetDate.getTime() - todayDate.getTime()) / 86400000));
 }
 
 function formatConsultationDate(value: string) {

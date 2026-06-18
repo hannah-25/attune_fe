@@ -55,6 +55,7 @@ export type JournalDetail = {
     conditions: Array<ConditionTag & { checkedAt: string }>;
     sideEffects: Array<SideEffectTag & { checkedAt: string }>;
     troubles: Array<TroubleTag & { checkedAt: string }>;
+    checkedCatalogTagIds?: number[];
     sleep?: { sleepHour: number; sleepQuality: SleepQuality } | null;
     meal?: { ateBreakfast: boolean; ateLunch: boolean; ateDinner: boolean } | null;
     goals: Array<JournalGoal & { score: number }>;

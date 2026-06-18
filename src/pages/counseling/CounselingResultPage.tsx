@@ -296,13 +296,21 @@ export default function CounselingResultPage() {
         } : e);
       }
       if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
-        await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-        const result = await createMedication({
-          medicationDosageId: entry.selectedDosageId,
-          consultationId,
-          startedAt: today,
-          schedules,
-        });
+        const oldMedicationId = entry.userMedicationId;
+        await updateMedication(oldMedicationId, { endAt: today, isActive: false });
+        let result;
+        try {
+          result = await createMedication({
+            medicationDosageId: entry.selectedDosageId,
+            consultationId,
+            startedAt: today,
+            schedules,
+          });
+        } catch (createErr) {
+          // roll back the deactivation so the entry stays consistent for retry
+          try { await updateMedication(oldMedicationId, { endAt: null, isActive: true }); } catch { /* best effort */ }
+          throw createErr;
+        }
         const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
         return (prev) => prev.map(e => e.key === entry.key ? {
           ...e,

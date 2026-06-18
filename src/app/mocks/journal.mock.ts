@@ -71,6 +71,7 @@ export const mockJournalDetail: JournalDetail = {
       { tagId: 10, sideEffect: '식욕 저하', visible: true, checkedAt: '2026-05-31T08:30:00' },
     ],
     troubles: [],
+    checkedCatalogTagIds: [],
     sleep: { sleepHour: 7, sleepQuality: 'NORMAL' },
     meal: { ateBreakfast: true, ateLunch: false, ateDinner: false },
     goals: [{ goalId: 1, content: '30분 집중 블록 3회', score: 3 }],
