@@ -7,25 +7,18 @@ import { formatDate } from '@/lib/date';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton, NavCloseButton } from '@/components/NavButtons';
 import {
-  checkCondition,
-  checkSideEffect,
-  checkTrouble,
-  createConditionTag,
+  getCatalogTags,
+  createCatalogTag,
+  checkCatalogTag,
+  uncheckCatalogTag,
   createJournalGoal,
   updateJournalGoal,
   createMemo,
-  createSideEffectTag,
   createSleepMeal,
-  createTroubleTag,
   deleteJournalGoal,
-  getConditionTags,
   getJournal,
-  getSideEffectTags,
-  getTroubleTags,
   scoreJournalGoal,
-  uncheckCondition,
-  uncheckSideEffect,
-  uncheckTrouble,
+  type JournalTagCategory,
   type JournalDetail,
   type SleepQuality,
 } from '@/api/journal';
@@ -34,8 +27,8 @@ type Tone = 'purple' | 'orange' | 'blue';
 type Tag = {
   label: string;
   selected?: boolean;
-  tagId?: number;
-  source?: 'condition' | 'sideEffect' | 'trouble';
+  catalogTagId?: number;
+  category?: JournalTagCategory;
 };
 type Section = {
   title: string;
@@ -316,54 +309,57 @@ export default function JournalFullPage() {
 
       if (ignore) return;
 
-      let activeTags = journal?.activeTags;
-
-      if (
-        !Array.isArray(activeTags?.conditions)
-        || !Array.isArray(activeTags?.sideEffects)
-        || !Array.isArray(activeTags?.troubles)
-      ) {
-        try {
-          const [conditions, sideEffects, troubles] = await Promise.all([
-            getConditionTags(),
-            getSideEffectTags(),
-            getTroubleTags(),
-          ]);
-          activeTags = {
-            conditions,
-            sideEffects,
-            troubles,
-            goals: activeTags?.goals ?? [],
-          };
-        } catch (err) {
-          console.error('Failed to load journal tags:', err);
-          if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
-          return;
-        }
+      let catalogTags: Awaited<ReturnType<typeof getCatalogTags>>[] = [[], [], []];
+      try {
+        catalogTags = await Promise.all([
+          getCatalogTags('CONDITION'),
+          getCatalogTags('SIDE_EFFECT'),
+          getCatalogTags('TROUBLE'),
+        ]);
+      } catch (err) {
+        console.error('Failed to load catalog tags:', err);
+        if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
+        return;
       }
 
       if (ignore) return;
       const checked = journal?.checked;
+      const [conditionCatalogTags, sideEffectCatalogTags, troubleCatalogTags] = catalogTags;
 
-        const checkedConditionIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
-        const checkedSideEffectIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
-        const checkedTroubleIds = new Set(checked?.troubles?.map((item) => item.tagId) ?? []);
+        const checkedConditionLegacyIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
+        const checkedSideEffectLegacyIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
+        const checkedTroubleLegacyIds = new Set(checked?.troubles?.map((item) => item.tagId) ?? []);
 
         setSections([
           {
             title: '감정 · 증상',
             tone: 'purple',
-            tags: (activeTags?.conditions ?? []).filter((tag) => tag.visible).map((tag) => ({ label: tag.condition, selected: checkedConditionIds.has(tag.tagId), tagId: tag.tagId, source: 'condition' as const })),
+            tags: conditionCatalogTags.filter((t) => t.enabled).map((t) => ({
+              label: t.name,
+              selected: t.legacyTagId != null && checkedConditionLegacyIds.has(t.legacyTagId),
+              catalogTagId: t.catalogTagId,
+              category: 'CONDITION' as const,
+            })),
           },
           {
             title: '부작용',
             tone: 'orange',
-            tags: (activeTags?.sideEffects ?? []).filter((tag) => tag.visible).map((tag) => ({ label: tag.sideEffect, selected: checkedSideEffectIds.has(tag.tagId), tagId: tag.tagId, source: 'sideEffect' as const })),
+            tags: sideEffectCatalogTags.filter((t) => t.enabled).map((t) => ({
+              label: t.name,
+              selected: t.legacyTagId != null && checkedSideEffectLegacyIds.has(t.legacyTagId),
+              catalogTagId: t.catalogTagId,
+              category: 'SIDE_EFFECT' as const,
+            })),
           },
           {
             title: '업무 실수 · 불편',
             tone: 'blue',
-            tags: (activeTags?.troubles ?? []).filter((tag) => tag.visible).map((tag) => ({ label: tag.trouble, selected: checkedTroubleIds.has(tag.tagId), tagId: tag.tagId, source: 'trouble' as const })),
+            tags: troubleCatalogTags.filter((t) => t.enabled).map((t) => ({
+              label: t.name,
+              selected: t.legacyTagId != null && checkedTroubleLegacyIds.has(t.legacyTagId),
+              catalogTagId: t.catalogTagId,
+              category: 'TROUBLE' as const,
+            })),
           },
         ]);
 
@@ -385,9 +381,10 @@ export default function JournalFullPage() {
           setMeals(nextMeals);
         }
 
-        if (activeTags?.goals?.length) {
+        const journalGoals = journal?.activeTags?.goals;
+        if (journalGoals?.length) {
           const checkedGoals = new Map(checked?.goals?.map((goal) => [goal.goalId, goal.score]) ?? []);
-          setGoals(activeTags.goals.map((goal) => ({
+          setGoals(journalGoals.map((goal) => ({
             goalId: goal.goalId,
             label: goal.content,
             value: checkedGoals.get(goal.goalId) ?? 0,
@@ -424,17 +421,13 @@ export default function JournalFullPage() {
       ),
     );
 
-    if (!tag?.tagId || !tag.source) return;
+    if (!tag?.catalogTagId) return;
 
     try {
       if (nextSelected) {
-        if (tag.source === 'condition') await checkCondition(tag.tagId);
-        if (tag.source === 'sideEffect') await checkSideEffect(tag.tagId);
-        if (tag.source === 'trouble') await checkTrouble(tag.tagId);
+        await checkCatalogTag(tag.catalogTagId);
       } else {
-        if (tag.source === 'condition') await uncheckCondition(tag.tagId, journalDate);
-        if (tag.source === 'sideEffect') await uncheckSideEffect(tag.tagId, journalDate);
-        if (tag.source === 'trouble') await uncheckTrouble(tag.tagId, journalDate);
+        await uncheckCatalogTag(tag.catalogTagId, journalDate);
       }
     } catch (err) {
       console.error('Failed to toggle tag:', err);
@@ -456,44 +449,22 @@ export default function JournalFullPage() {
 
 
   const addTag = async (sectionTitle: string, label: string) => {
-    let createdTag: Tag | null = null;
+    const category: JournalTagCategory =
+      sectionTitle === '감정 · 증상' ? 'CONDITION' :
+      sectionTitle === '부작용' ? 'SIDE_EFFECT' :
+      'TROUBLE';
+    const tagType = category === 'SIDE_EFFECT' ? 'NONE' : 'USER_INPUT';
 
+    let createdTag: Tag | null = null;
     try {
-      if (sectionTitle === '감정 · 증상') {
-        const response = await createConditionTag({
-          condition: label,
-          conditionType: 'USER_INPUT',
-          journalDate,
-        });
-        createdTag = {
-          label: response.condition,
-          selected: true,
-          tagId: response.tagId,
-          source: 'condition',
-        };
-      }
-      if (sectionTitle === '부작용') {
-        const response = await createSideEffectTag({ sideEffect: label, journalDate });
-        createdTag = {
-          label: response.sideEffect,
-          selected: true,
-          tagId: response.tagId,
-          source: 'sideEffect',
-        };
-      }
-      if (sectionTitle === '업무 실수 · 불편') {
-        const response = await createTroubleTag({
-          trouble: label,
-          type: 'USER_INPUT',
-          journalDate,
-        });
-        createdTag = {
-          label: response.trouble,
-          selected: true,
-          tagId: response.tagId,
-          source: 'trouble',
-        };
-      }
+      const response = await createCatalogTag({ category, name: label, tagType, visible: true });
+      createdTag = {
+        label: response.name,
+        selected: true,
+        catalogTagId: response.catalogTagId,
+        category,
+      };
+      void checkCatalogTag(response.catalogTagId).catch(console.error);
     } catch (err) {
       console.error('Failed to add tag:', err);
       setError('태그 추가에 실패했습니다.');
@@ -508,7 +479,7 @@ export default function JournalFullPage() {
         if (section.title !== sectionTitle) return section;
 
         const existingIndex = section.tags.findIndex(
-          (tag) => tag.tagId === nextTag.tagId || tag.label === nextTag.label,
+          (tag) => tag.catalogTagId === nextTag.catalogTagId || tag.label === nextTag.label,
         );
         if (existingIndex >= 0) {
           return {

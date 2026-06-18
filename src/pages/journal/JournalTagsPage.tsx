@@ -6,17 +6,14 @@ import { TabBar } from '@/components/TabBar';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import {
-  createConditionTag,
-  createSideEffectTag,
-  createTroubleTag,
-  getConditionTags,
-  getSideEffectTags,
-  getTroubleTags,
-  ConditionType,
-  TroubleType,
-  toggleConditionTagVisible,
-  toggleSideEffectTagVisible,
-  toggleTroubleTagVisible,
+  getCatalogTags,
+  updateCatalogTagPreference,
+  createCatalogTag,
+  type CatalogJournalTag,
+  type JournalTagCategory,
+  type JournalTagScope,
+  type ConditionType,
+  type TroubleType,
 } from '@/api/journal';
 
 type Category = '감정·증상' | '부작용' | '업무';
@@ -31,6 +28,21 @@ const TROUBLE_TYPE_LABELS: Record<TroubleType, string> = {
   TIME_MANAGEMENT: '시간 관리', COGNITIVE_ERROR: '인지 오류', USER_INPUT: '직접 입력',
 };
 
+function toCatalogCategory(category: Category): JournalTagCategory {
+  if (category === '감정·증상') return 'CONDITION';
+  if (category === '부작용') return 'SIDE_EFFECT';
+  return 'TROUBLE';
+}
+
+type Tag = {
+  count?: string;
+  catalogTagId: number;
+  label: string;
+  scope: JournalTagScope;
+  enabled: boolean;
+  visible: boolean;
+};
+
 export default function JournalTagsPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0]);
@@ -42,9 +54,8 @@ export default function JournalTagsPage() {
   const [newTroubleType, setNewTroubleType] = useState<TroubleType>('COGNITIVE_ERROR');
   const [isSaving, setIsSaving] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const journalDate = useMemo(() => toDateKey(new Date()), []);
-  const activeTags = tags.filter((tag) => tag.visible);
-  const inactiveTags = tags.filter((tag) => !tag.visible);
+  const activeTags = tags.filter((tag) => tag.enabled);
+  const inactiveTags = tags.filter((tag) => !tag.enabled);
 
   useEffect(() => {
     void loadTags(activeCategory);
@@ -53,16 +64,16 @@ export default function JournalTagsPage() {
   const loadTags = async (category: Category) => {
     setError('');
     try {
-      if (category === '감정·증상') {
-        const response = await getConditionTags();
-        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.condition, source: 'condition', visible: tag.visible })));
-      } else if (category === '부작용') {
-        const response = await getSideEffectTags();
-        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.sideEffect, source: 'sideEffect', visible: tag.visible })));
-      } else {
-        const response = await getTroubleTags();
-        setTags(response.map((tag) => ({ id: String(tag.tagId), label: tag.trouble, source: 'trouble', visible: tag.visible })));
-      }
+      const response = await getCatalogTags(toCatalogCategory(category));
+      setTags(
+        response.map((tag) => ({
+          catalogTagId: tag.catalogTagId,
+          label: tag.name,
+          scope: tag.scope,
+          enabled: tag.enabled,
+          visible: tag.visible,
+        })),
+      );
     } catch (err) {
       console.error('Failed to load tags:', err);
       setError('태그를 불러오지 못했습니다.');
@@ -83,13 +94,12 @@ export default function JournalTagsPage() {
     setIsSaving(true);
     setError('');
     try {
-      if (activeCategory === '감정·증상') {
-        await createConditionTag({ condition: trimmedLabel, conditionType: newConditionType, journalDate });
-      } else if (activeCategory === '부작용') {
-        await createSideEffectTag({ sideEffect: trimmedLabel, journalDate });
-      } else {
-        await createTroubleTag({ trouble: trimmedLabel, type: newTroubleType, journalDate });
-      }
+      const category = toCatalogCategory(activeCategory);
+      const tagType =
+        category === 'SIDE_EFFECT' ? 'NONE' :
+        category === 'CONDITION' ? newConditionType :
+        newTroubleType;
+      await createCatalogTag({ category, name: trimmedLabel, tagType, visible: true });
       await loadTags(activeCategory);
       setAddSheetOpen(false);
     } catch (err) {
@@ -100,24 +110,17 @@ export default function JournalTagsPage() {
     }
   };
 
-  const toggleTagVisibility = async (tag: Tag) => {
+  const toggleTagEnabled = async (tag: Tag) => {
     setError('');
     setTags((currentTags) =>
-      currentTags.map((item) => (item.id === tag.id ? { ...item, visible: !item.visible } : item)),
+      currentTags.map((item) => (item.catalogTagId === tag.catalogTagId ? { ...item, enabled: !item.enabled } : item)),
     );
     try {
-      const tagId = Number(tag.id);
-      if (tag.source === 'condition') {
-        await toggleConditionTagVisible(tagId);
-      } else if (tag.source === 'sideEffect') {
-        await toggleSideEffectTagVisible(tagId);
-      } else {
-        await toggleTroubleTagVisible(tagId);
-      }
+      await updateCatalogTagPreference(tag.catalogTagId, { enabled: !tag.enabled, visible: tag.visible });
     } catch (err) {
-      console.error('Failed to toggle tag visibility:', err);
+      console.error('Failed to toggle tag:', err);
       setTags((currentTags) =>
-        currentTags.map((item) => (item.id === tag.id ? { ...item, visible: tag.visible } : item)),
+        currentTags.map((item) => (item.catalogTagId === tag.catalogTagId ? { ...item, enabled: tag.enabled } : item)),
       );
       setError('태그 활성 상태를 바꾸지 못했습니다.');
     }
@@ -166,8 +169,8 @@ export default function JournalTagsPage() {
             })}
           </div>
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <TagSection title={`활성 (${activeTags.length})`} tags={activeTags} active onToggle={toggleTagVisibility} />
-          <TagSection title={`비활성 (${inactiveTags.length})`} tags={inactiveTags} active={false} onToggle={toggleTagVisibility} />
+          <TagSection title={`활성 (${activeTags.length})`} tags={activeTags} active onToggle={toggleTagEnabled} />
+          <TagSection title={`비활성 (${inactiveTags.length})`} tags={inactiveTags} active={false} onToggle={toggleTagEnabled} />
         </ScrollArea>
         <button
           type="button"
@@ -249,14 +252,6 @@ export default function JournalTagsPage() {
   );
 }
 
-type Tag = {
-  count?: string;
-  id: string;
-  label: string;
-  source: 'condition' | 'sideEffect' | 'trouble';
-  visible: boolean;
-};
-
 function TagSection({
   active,
   onToggle,
@@ -280,7 +275,7 @@ function TagSection({
       <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
         {tags.map((tag, index) => (
           <div
-            key={tag.id}
+            key={tag.catalogTagId}
             className={`items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 ${
               !active ? 'opacity-[0.6]' : ''
             } ${index < tags.length - 1 ? 'border-b' : ''}`}
@@ -301,10 +296,4 @@ function TagSection({
       </div>
     </>
   );
-}
-
-function toDateKey(date: Date) {
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${day}`;
 }

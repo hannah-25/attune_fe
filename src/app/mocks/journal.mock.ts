@@ -1,4 +1,4 @@
-import type { JournalDetail, ConditionTag, SideEffectTag, TroubleTag } from '../api/journal';
+import type { JournalDetail, ConditionTag, SideEffectTag, TroubleTag, CatalogJournalTag } from '../api/journal';
 
 export const mockJournalDates: { dates: string[] } = {
   dates: [
@@ -29,6 +29,27 @@ export const mockSideEffectTags: SideEffectTag[] = [
 export const mockTroubleTags: TroubleTag[] = [
   { tagId: 20, trouble: '집중 실수', type: 'INATTENTION', visible: true },
   { tagId: 21, trouble: '시간 관리 실패', type: 'TIME_MANAGEMENT', visible: true },
+];
+
+export const mockCatalogConditionTags: CatalogJournalTag[] = [
+  { catalogTagId: 101, legacyTagId: 1, category: 'CONDITION', name: '집중 어려움', tagType: 'USER_INPUT', scope: 'USER', enabled: true, visible: true },
+  { catalogTagId: 102, legacyTagId: 2, category: 'CONDITION', name: '멍해짐', tagType: 'FOGGY', scope: 'SYSTEM', enabled: true, visible: true },
+  { catalogTagId: 103, legacyTagId: 3, category: 'CONDITION', name: '짜증', tagType: 'USER_INPUT', scope: 'USER', enabled: true, visible: true },
+  { catalogTagId: 104, legacyTagId: 4, category: 'CONDITION', name: '불안', tagType: 'USER_INPUT', scope: 'USER', enabled: true, visible: true },
+  { catalogTagId: 105, legacyTagId: 5, category: 'CONDITION', name: '무기력', tagType: 'DOWN', scope: 'SYSTEM', enabled: true, visible: true },
+  { catalogTagId: 106, legacyTagId: 6, category: 'CONDITION', name: '두근거림', tagType: 'USER_INPUT', scope: 'USER', enabled: false, visible: true },
+  { catalogTagId: 107, legacyTagId: 7, category: 'CONDITION', name: '졸림', tagType: 'DOWN', scope: 'SYSTEM', enabled: false, visible: true },
+];
+
+export const mockCatalogSideEffectTags: CatalogJournalTag[] = [
+  { catalogTagId: 201, legacyTagId: 10, category: 'SIDE_EFFECT', name: '식욕 저하', tagType: 'NONE', scope: 'SYSTEM', enabled: true, visible: true },
+  { catalogTagId: 202, legacyTagId: 11, category: 'SIDE_EFFECT', name: '두통', tagType: 'NONE', scope: 'SYSTEM', enabled: true, visible: true },
+  { catalogTagId: 203, legacyTagId: 12, category: 'SIDE_EFFECT', name: '입마름', tagType: 'NONE', scope: 'SYSTEM', enabled: false, visible: true },
+];
+
+export const mockCatalogTroubleTags: CatalogJournalTag[] = [
+  { catalogTagId: 301, legacyTagId: 20, category: 'TROUBLE', name: '집중 실수', tagType: 'INATTENTION', scope: 'SYSTEM', enabled: true, visible: true },
+  { catalogTagId: 302, legacyTagId: 21, category: 'TROUBLE', name: '시간 관리 실패', tagType: 'TIME_MANAGEMENT', scope: 'SYSTEM', enabled: true, visible: true },
 ];
 
 export const mockJournalDetail: JournalDetail = {

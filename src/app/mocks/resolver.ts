@@ -8,7 +8,11 @@ import {
   mockConditionTags,
   mockSideEffectTags,
   mockTroubleTags,
+  mockCatalogConditionTags,
+  mockCatalogSideEffectTags,
+  mockCatalogTroubleTags,
 } from './journal.mock';
+import type { CatalogJournalTag, JournalTagCategory } from '../api/journal';
 import {
   mockMedications,
   mockMedicationLogs,
@@ -45,6 +49,64 @@ function genId(): number {
 const MEDICATION_LOGS_KEY = 'medication-logs';
 
 type GuestJournalDetail = typeof mockJournalDetail;
+
+const SEED_MEDICATION_REPORT = {
+  reportId: 901,
+  periodStart: '2026-05-01',
+  periodEnd: '2026-05-31',
+  status: 'COMPLETED' as const,
+  outdated: false,
+  snapshotJson: JSON.stringify({
+    totalScheduled: 60, takenCount: 45, skippedCount: 5, unrecordedCount: 10,
+    adherenceRate: 75.0, recordingRate: 83.3,
+  }),
+  aiResultJson: JSON.stringify({
+    summary: '아침 약 복용 직후 2시간 동안 집중력 패턴이 안정적이었어요. 전반적으로 아침 복용 시간대가 가장 규칙적이었고, 오후 복용은 변동이 있었습니다.',
+    insights: [
+      {
+        category: '복약 패턴',
+        title: '아침 복용이 가장 안정적',
+        description: '분석 기간 동안 아침 복용률이 90% 이상으로 가장 높았습니다. 복용 시간도 일정하게 유지되었어요.',
+        evidenceIds: [],
+        confidence: 'HIGH',
+        limitation: '기록되지 않은 날은 분석에서 제외됩니다.',
+      },
+      {
+        category: '부작용',
+        title: '식욕 저하가 오전에 집중',
+        description: '식욕 저하 기록이 복용 후 1~2시간 내 집중되는 경향이 있습니다.',
+        evidenceIds: [],
+        confidence: 'MEDIUM',
+        limitation: '일지 기록 빈도에 따라 정확도가 달라질 수 있습니다.',
+      },
+    ],
+    consultationQuestions: [
+      '복용량 조정이 필요한 시점이 언제인가요?',
+      '식욕 저하 증상이 지속되면 어떻게 해야 하나요?',
+    ],
+    disclaimer: 'AI 분석은 패턴 관찰이며 의료 진단을 대체하지 않습니다. 복약 변경은 반드시 전문가와 상의하세요.',
+  }),
+  generatedAt: '2026-06-01T10:00:00.000Z',
+};
+
+function getDefaultCatalogTags(category: JournalTagCategory): CatalogJournalTag[] {
+  if (category === 'CONDITION') return mockCatalogConditionTags;
+  if (category === 'SIDE_EFFECT') return mockCatalogSideEffectTags;
+  return mockCatalogTroubleTags;
+}
+
+function getCatalogTagsForCategory(category: JournalTagCategory): CatalogJournalTag[] {
+  return guestRead<CatalogJournalTag[]>(`catalog-tags/${category}`) ?? getDefaultCatalogTags(category);
+}
+
+function findCatalogTagById(catalogTagId: number): CatalogJournalTag | undefined {
+  const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
+  for (const cat of categories) {
+    const found = getCatalogTagsForCategory(cat).find((t) => t.catalogTagId === catalogTagId);
+    if (found) return found;
+  }
+  return undefined;
+}
 
 function toDateKey(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -450,6 +512,150 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return noContent();
   }
 
+  // ── Catalog tags ──────────────────────────────────────────────────────────
+  if (p === '/v1/journals/catalog-tags' && m === 'GET') {
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const category = query.get('category') as JournalTagCategory | null;
+    if (!category) return ok([]);
+    return ok(getCatalogTagsForCategory(category));
+  }
+
+  if (p === '/v1/journals/catalog-tags' && m === 'POST') {
+    const { category, name, tagType, visible } = (body ?? {}) as {
+      category: JournalTagCategory;
+      name: string;
+      tagType: string;
+      visible: boolean;
+    };
+    const newTag: CatalogJournalTag = {
+      catalogTagId: genId(),
+      legacyTagId: null,
+      category,
+      name,
+      tagType,
+      scope: 'USER',
+      enabled: true,
+      visible,
+    };
+    guestWrite<CatalogJournalTag[]>(`catalog-tags/${category}`, (prev) => [
+      ...(prev ?? getDefaultCatalogTags(category)),
+      newTag,
+    ]);
+    return created(newTag);
+  }
+
+  const catalogTagChecksMatch = p.match(/^\/v1\/journals\/catalog-tags\/(\d+)\/checks$/);
+  if (catalogTagChecksMatch) {
+    const catalogTagId = Number(catalogTagChecksMatch[1]);
+    const catalogTag = findCatalogTagById(catalogTagId);
+
+    if (m === 'POST') {
+      const checkedAt = new Date().toISOString();
+      const date = toDateKey(new Date());
+
+      if (catalogTag?.legacyTagId != null) {
+        const { legacyTagId, category } = catalogTag;
+        if (category === 'CONDITION') {
+          const condTags = guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags;
+          const legacyTag = condTags.find((t) => t.tagId === legacyTagId);
+          if (legacyTag) {
+            updateJournalDetail(date, (detail) => ({
+              ...detail,
+              checked: { ...detail.checked, conditions: upsertByTagId(detail.checked.conditions, { ...legacyTag, checkedAt }) },
+            }));
+          }
+        } else if (category === 'SIDE_EFFECT') {
+          const seTags = guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags;
+          const legacyTag = seTags.find((t) => t.tagId === legacyTagId);
+          if (legacyTag) {
+            updateJournalDetail(date, (detail) => ({
+              ...detail,
+              checked: { ...detail.checked, sideEffects: upsertByTagId(detail.checked.sideEffects, { ...legacyTag, checkedAt }) },
+            }));
+          }
+        } else if (category === 'TROUBLE') {
+          const trTags = guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags;
+          const legacyTag = trTags.find((t) => t.tagId === legacyTagId);
+          if (legacyTag) {
+            updateJournalDetail(date, (detail) => ({
+              ...detail,
+              checked: { ...detail.checked, troubles: upsertByTagId(detail.checked.troubles, { ...legacyTag, checkedAt }) },
+            }));
+          }
+        }
+      }
+
+      return created({ catalogTagId, category: catalogTag?.category, checkedAt });
+    }
+
+    if (m === 'DELETE') {
+      const query = new URLSearchParams(path.split('?')[1] ?? '');
+      const date = query.get('date') ?? toDateKey(new Date());
+
+      if (catalogTag?.legacyTagId != null) {
+        const { legacyTagId, category } = catalogTag;
+        if (category === 'CONDITION') {
+          updateJournalDetail(date, (detail) => ({
+            ...detail,
+            checked: { ...detail.checked, conditions: detail.checked.conditions.filter((c) => c.tagId !== legacyTagId) },
+          }));
+        } else if (category === 'SIDE_EFFECT') {
+          updateJournalDetail(date, (detail) => ({
+            ...detail,
+            checked: { ...detail.checked, sideEffects: detail.checked.sideEffects.filter((s) => s.tagId !== legacyTagId) },
+          }));
+        } else if (category === 'TROUBLE') {
+          updateJournalDetail(date, (detail) => ({
+            ...detail,
+            checked: { ...detail.checked, troubles: detail.checked.troubles.filter((t) => t.tagId !== legacyTagId) },
+          }));
+        }
+      }
+
+      return noContent();
+    }
+  }
+
+  const catalogTagPreferenceMatch = p.match(/^\/v1\/journals\/catalog-tags\/(\d+)\/preference$/);
+  if (catalogTagPreferenceMatch && m === 'PATCH') {
+    const catalogTagId = Number(catalogTagPreferenceMatch[1]);
+    const { enabled, visible } = (body ?? {}) as { enabled: boolean; visible: boolean };
+    const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
+    for (const cat of categories) {
+      const key = `catalog-tags/${cat}`;
+      const tags = getCatalogTagsForCategory(cat);
+      if (tags.some((t) => t.catalogTagId === catalogTagId)) {
+        guestWrite<CatalogJournalTag[]>(key, (prev) =>
+          (prev ?? getDefaultCatalogTags(cat)).map((t) =>
+            t.catalogTagId === catalogTagId ? { ...t, enabled, visible } : t,
+          ),
+        );
+        break;
+      }
+    }
+    return noContent();
+  }
+
+  const catalogTagDeleteMatch = p.match(/^\/v1\/journals\/catalog-tags\/(\d+)$/);
+  if (catalogTagDeleteMatch && m === 'DELETE') {
+    const catalogTagId = Number(catalogTagDeleteMatch[1]);
+    const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
+    for (const cat of categories) {
+      const key = `catalog-tags/${cat}`;
+      const tags = getCatalogTagsForCategory(cat);
+      const tag = tags.find((t) => t.catalogTagId === catalogTagId);
+      if (tag) {
+        guestWrite<CatalogJournalTag[]>(key, (prev) =>
+          (prev ?? getDefaultCatalogTags(cat)).map((t) =>
+            t.catalogTagId === catalogTagId ? { ...t, enabled: false } : t,
+          ),
+        );
+        break;
+      }
+    }
+    return noContent();
+  }
+
   // ── Journal goals ─────────────────────────────────────────────────────────
   if (p === '/v1/journals/goals' && m === 'POST') {
     const date = resolveJournalDate(path, body);
@@ -745,7 +951,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return ok({ totalScheduled: 60, takenCount: 45, skippedCount: 5, unrecordedCount: 10, adherenceRate: 75.0, recordingRate: 83.3 });
   }
   if (p === '/v1/medication-analysis/reports' && m === 'GET') {
-    return ok(guestRead('medication-reports') ?? []);
+    return ok(guestRead('medication-reports') ?? [SEED_MEDICATION_REPORT]);
   }
   if (p === '/v1/medication-analysis/reports' && m === 'POST') {
     const payload = body as { periodStart: string; periodEnd: string; includeMemoExcerpts: boolean };
@@ -781,8 +987,8 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const medicationReportMatch = p.match(/^\/v1\/medication-analysis\/reports\/(\d+)$/);
   if (medicationReportMatch && m === 'GET') {
     const rid = Number(medicationReportMatch[1]);
-    const reports = guestRead<{ reportId: number }[]>('medication-reports') ?? [];
-    return ok(reports.find((r) => r.reportId === rid));
+    const reports = guestRead<{ reportId: number }[]>('medication-reports') ?? [SEED_MEDICATION_REPORT];
+    return ok(reports.find((r) => r.reportId === rid) ?? (rid === SEED_MEDICATION_REPORT.reportId ? SEED_MEDICATION_REPORT : undefined));
   }
 
   // ── AI analysis consent ───────────────────────────────────────────────────

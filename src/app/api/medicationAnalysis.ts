@@ -17,6 +17,82 @@ export type SummaryStats = {
   recordingRate: number;
 };
 
+export type DailyMedicationGroup = 'TAKEN_DAY' | 'SKIPPED_ONLY_DAY' | 'UNRECORDED_DAY';
+
+export type ReportSnapshot = {
+  period: { start: string; end: string; days: number };
+  dataQuality: {
+    recordedDays: number;
+    confidence: 'HIGH' | 'MEDIUM' | 'LOW';
+    limitations: string[];
+  };
+  adherenceSummary: {
+    totalScheduled: number;
+    takenCount: number;
+    skippedCount: number;
+    unrecordedCount: number;
+    adherenceRate: number;
+    recordingRate: number;
+    byTimeWindow: Array<{
+      window: string;
+      takenCount: number;
+      skippedCount: number;
+      unrecordedCount: number;
+    }>;
+  };
+  dailyMedicationStatuses: Array<{
+    date: string;
+    group: DailyMedicationGroup;
+    takenCount: number;
+    skippedCount: number;
+    unrecordedCount: number;
+  }>;
+  dayGroupComparisons: Array<{
+    group: string;
+    dayCount: number;
+    eligible: boolean;
+    avgGoalScore: number | null;
+    conditionDayCounts: Record<string, number> | null;
+    sideEffectDayCounts: Record<string, number> | null;
+    troubleDayCounts: Record<string, number> | null;
+    avgSleepHour: number | null;
+    sleepQualityDist: Record<string, number> | null;
+    breakfastRate: number | null;
+    lunchRate: number | null;
+    dinnerRate: number | null;
+  }>;
+  timeWindowPatterns: Array<{
+    window: string;
+    evidenceId: string;
+    conditionDayCounts: Record<string, number>;
+    sideEffectDayCounts: Record<string, number>;
+    troubleDayCounts: Record<string, number>;
+    medicationTakenDays: number;
+  }>;
+  sideEffects: Array<{
+    tagId: number;
+    tagName: string;
+    recordedDays: number;
+    peakWindow: string | null;
+    recordedDates: string[];
+  }>;
+  medicationChanges: Array<{
+    changeType: string;
+    confirmed: boolean;
+    changeDate: string;
+    consultationId: number | null;
+    medicationName: string;
+    dosage: string;
+    previousMedicationName: string | null;
+    previousDosage: string | null;
+    beforeAfterComparison: {
+      eligible: boolean;
+      ineligibleReason: string | null;
+    };
+  }>;
+  memoEvidence: unknown[];
+};
+
 export type AiInsight = {
   category: string;
   title: string;
