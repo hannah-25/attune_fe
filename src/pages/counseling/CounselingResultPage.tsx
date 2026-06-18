@@ -290,6 +290,7 @@ export default function CounselingResultPage() {
     const failCount = medResults.filter(r => r.status === 'rejected').length;
     if (failCount > 0) {
       setError(`처방 업데이트 중 일부 실패했습니다. (${failCount}건)`);
+      return;
     }
 
     if (nextDateRaw && consultation) {
