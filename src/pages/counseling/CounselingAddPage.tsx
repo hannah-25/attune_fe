@@ -53,7 +53,7 @@ export default function CounselingAddPage() {
     setIsSaving(true);
     try {
       const consultationDate = `${date}T${time}:00`;
-      if (isEditMode) {
+      if (editState) {
         await updateConsultation(editState.consultationId, {
           consultationDate,
           place: place.trim(),
