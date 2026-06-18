@@ -62,6 +62,7 @@ export default function ReportWeeklyPage() {
   const { startDate, endDate } = useMemo(() => getPeriodDates(preset), [preset]);
 
   useEffect(() => {
+    let ignore = false;
     setStatsLoading(true);
     setSummary(null);
     setAvailability(null);
@@ -69,10 +70,12 @@ export default function ReportWeeklyPage() {
       getAvailability(startDate, endDate).catch(() => null),
       getSummary(startDate, endDate).catch(() => null),
     ]).then(([avail, sum]) => {
+      if (ignore) return;
       setAvailability(avail);
       setSummary(sum);
       setStatsLoading(false);
     });
+    return () => { ignore = true; };
   }, [startDate, endDate]);
 
   useEffect(() => {

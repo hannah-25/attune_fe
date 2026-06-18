@@ -36,6 +36,7 @@ type PrescriptionEntry = {
   isNew: boolean;
   expanded: boolean;
   scheduleTime: string;
+  processed?: boolean;
 };
 
 type SavedPrescriptionItem = {
@@ -298,6 +299,7 @@ export default function CounselingResultPage() {
         const schedules = [{ doseTime, label: '복용' }];
 
         if (status === '중단' && entry.userMedicationId) {
+          if (entry.processed) return null;
           await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
           return (prev) => prev.filter(e => e.key !== entry.key);
         }
@@ -343,17 +345,17 @@ export default function CounselingResultPage() {
       };
 
       const results = await Promise.allSettled(entries.map(applyEntry));
-      const patches = results
-        .filter((r): r is PromiseFulfilledResult<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => r.status === 'fulfilled')
-        .map(r => r.value);
-      if (patches.length > 0) {
-        setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
-      }
       const hasFailure = results.some(r => r.status === 'rejected');
       if (hasFailure) {
         setError('처방 업데이트 중 일부 실패했습니다.');
         setIsSaving(false);
         return;
+      }
+      const patches = results
+        .filter((r): r is PromiseFulfilledResult<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => r.status === 'fulfilled')
+        .map(r => r.value);
+      if (patches.length > 0) {
+        setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
       }
 
       if (nextDateRaw && consultation) {

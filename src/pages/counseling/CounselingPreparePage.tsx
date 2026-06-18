@@ -50,7 +50,10 @@ export default function CounselingPreparePage() {
         }
       })
       .catch(() => {
-        if (!ignore) setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+          setError('질문 목록을 불러오지 못했습니다. 페이지를 새로고침 해주세요.');
+        }
       });
 
     return () => {
