@@ -183,19 +183,22 @@ export default function JournalTimelinePage() {
   };
 
   const removeTag = (entryId: string, tag: TagItem) => {
-    uncheckCatalogTag(tag.catalogTagId, journalDate).catch((err) => {
-      console.error('Failed to remove tag:', err);
-      setError('태그 삭제에 실패했습니다.');
-    });
-
-    setEntries(prev =>
-      prev
+    setEntries(prev => {
+      const next = prev
         .map(entry => {
           if (entry.id !== entryId || entry.kind !== 'tags') return entry;
           return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.catalogTagId !== tag.catalogTagId) };
         })
-        .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0)
-    );
+        .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0);
+
+      uncheckCatalogTag(tag.catalogTagId, journalDate).catch((err) => {
+        console.error('Failed to remove tag:', err);
+        setError('태그 삭제에 실패했습니다.');
+        setEntries(prev);
+      });
+
+      return next;
+    });
   };
 
   const openSheet = (category: Category) => {

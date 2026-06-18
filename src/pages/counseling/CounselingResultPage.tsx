@@ -260,47 +260,53 @@ export default function CounselingResultPage() {
       return;
     }
 
-    for (const entry of entries) {
+    const applyEntry = async (entry: PrescriptionEntry): Promise<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => {
       const status = getEntryStatus(entry);
       const schedules = [{ doseTime: `${entry.scheduleTime}:00`, label: '복용' }];
 
-      try {
-        if (status === '중단' && entry.userMedicationId) {
-          await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-          setEntries(prev => prev.filter(e => e.key !== entry.key));
-        } else if (status === '추가' && entry.selectedDosageId) {
-          const result = await createMedication({
-            medicationDosageId: entry.selectedDosageId,
-            consultationId,
-            startedAt: today,
-            schedules,
-          });
-          const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
-          setEntries(prev => prev.map(e => e.key === entry.key ? {
-            ...e,
-            isNew: false,
-            userMedicationId: result.userMedicationId,
-            currentAmount: selectedOption?.amount ?? e.currentAmount,
-          } : e));
-        } else if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
-          await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-          const result = await createMedication({
-            medicationDosageId: entry.selectedDosageId,
-            consultationId,
-            startedAt: today,
-            schedules,
-          });
-          const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
-          setEntries(prev => prev.map(e => e.key === entry.key ? {
-            ...e,
-            userMedicationId: result.userMedicationId,
-            currentAmount: selectedOption?.amount ?? e.currentAmount,
-          } : e));
-        }
-      } catch {
-        setError('처방 업데이트 중 일부 실패했습니다.');
-        return;
+      if (status === '중단' && entry.userMedicationId) {
+        await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+        return (prev) => prev.filter(e => e.key !== entry.key);
       }
+      if (status === '추가' && entry.selectedDosageId) {
+        const result = await createMedication({
+          medicationDosageId: entry.selectedDosageId,
+          consultationId,
+          startedAt: today,
+          schedules,
+        });
+        const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+        return (prev) => prev.map(e => e.key === entry.key ? {
+          ...e,
+          isNew: false,
+          userMedicationId: result.userMedicationId,
+          currentAmount: selectedOption?.amount ?? e.currentAmount,
+        } : e);
+      }
+      if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
+        await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+        const result = await createMedication({
+          medicationDosageId: entry.selectedDosageId,
+          consultationId,
+          startedAt: today,
+          schedules,
+        });
+        const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+        return (prev) => prev.map(e => e.key === entry.key ? {
+          ...e,
+          userMedicationId: result.userMedicationId,
+          currentAmount: selectedOption?.amount ?? e.currentAmount,
+        } : e);
+      }
+      return null;
+    };
+
+    try {
+      const patches = await Promise.all(entries.map(applyEntry));
+      setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
+    } catch {
+      setError('처방 업데이트 중 일부 실패했습니다.');
+      return;
     }
 
     if (nextDateRaw && consultation) {

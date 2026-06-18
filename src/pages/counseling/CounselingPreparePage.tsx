@@ -40,12 +40,21 @@ export default function CounselingPreparePage() {
       return;
     }
 
+    let ignore = false;
     getConsultationQuestions(consultationId)
       .then((list) => {
-        setQuestions(list.map((q) => ({ ...q, checked: false })));
-        setLoading(false);
+        if (!ignore) {
+          setQuestions(list.map((q) => ({ ...q, checked: false })));
+          setLoading(false);
+        }
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [consultationId]);
 
   const addQuestion = async () => {

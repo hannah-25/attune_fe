@@ -61,6 +61,7 @@ export default function ReportMonthlyDetailPage() {
     }
 
     let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     const load = async () => {
       try {
         const r = await getReport(reportId);
@@ -72,7 +73,7 @@ export default function ReportMonthlyDetailPage() {
         }
         setLoading(false);
         if (r.status === 'PENDING') {
-          setTimeout(() => { if (!cancelled) load(); }, 3000);
+          timerId = setTimeout(() => { if (!cancelled) load(); }, 3000);
         }
       } catch {
         if (!cancelled) {
@@ -82,7 +83,7 @@ export default function ReportMonthlyDetailPage() {
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; if (timerId) clearTimeout(timerId); };
   }, [reportId]);
 
   const title = report
