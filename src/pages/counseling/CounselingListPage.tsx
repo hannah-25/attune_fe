@@ -210,7 +210,7 @@ export default function CounselingListPage() {
       </button>
       {pastExpanded && pastConsultations.map((consultation) => (
         <button
-          key={`${consultation.consultationDate}-${consultation.place}`}
+          key={consultation.consultationId ?? `${consultation.consultationDate}-${consultation.place}`}
           type="button"
           onClick={() => consultation.consultationId && navigate(`/counseling/result?id=${consultation.consultationId}`)}
           className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem] text-left w-full"
