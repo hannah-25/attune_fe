@@ -102,26 +102,23 @@ export default function CounselingAddPage() {
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
             {/* 날짜 */}
             <div className="relative">
-              <button
-                type="button"
-                onClick={openDatePicker}
+            <div className="relative">
+              <div
                 className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b"
                 style={{ borderBottomColor: 'rgb(233, 228, 220)' }}
               >
                 <div className="font-semibold w-[84px] text-gray-600 text-left shrink-0">날짜</div>
                 <div className="grow font-semibold basis-[0%] text-left">{formatDateDot(date)}</div>
                 <CalendarDays className="w-[13px] h-[13px] text-gray-500" strokeWidth={2.5} />
-              </button>
+              </div>
               <input
-                ref={dateInputRef}
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="sr-only"
+                className="absolute inset-0 opacity-0 cursor-pointer"
                 aria-label="상담 날짜"
               />
             </div>
-
             {/* 시간 */}
             <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
               <div className="font-semibold w-[84px] text-gray-600 shrink-0">시간</div>
