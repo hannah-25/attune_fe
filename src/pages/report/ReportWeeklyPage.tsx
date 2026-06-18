@@ -85,7 +85,11 @@ export default function ReportWeeklyPage() {
     setGenerating(true);
     setGenerateError('');
     try {
-      if (includeAi) await giveAiConsent();
+      if (includeAi) {
+        await giveAiConsent();
+      } else {
+        await revokeAiConsent();
+      }
       const report = await createReport({
         periodStart: startDate,
         periodEnd: endDate,
