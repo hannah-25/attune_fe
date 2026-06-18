@@ -107,6 +107,7 @@ export default function CounselingResultPage() {
   const [advice, setAdvice] = useState('');
   const [goal, setGoal] = useState('');
   const [error, setError] = useState('');
+  const [entriesLoadFailed, setEntriesLoadFailed] = useState(false);
   const adviceRef = useRef<HTMLTextAreaElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -158,6 +159,9 @@ export default function CounselingResultPage() {
               };
             });
           setEntries(built);
+        } else {
+          setEntriesLoadFailed(true);
+          setError('처방 정보를 불러오지 못했습니다. 저장 시 기존 처방이 유실될 수 있어 저장이 제한됩니다.');
         }
       } catch (err) {
         console.error('Failed to load:', err);
@@ -171,15 +175,19 @@ export default function CounselingResultPage() {
 
   useEffect(() => {
     if (!addingSearch || !searchQuery) { setSearchResults([]); return; }
+    let ignore = false;
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     setIsSearching(true);
     searchTimerRef.current = setTimeout(() => {
       searchMedications(searchQuery)
-        .then(setSearchResults)
-        .catch(() => setSearchResults([]))
-        .finally(() => setIsSearching(false));
+        .then(results => { if (!ignore) setSearchResults(results); })
+        .catch(() => { if (!ignore) setSearchResults([]); })
+        .finally(() => { if (!ignore) setIsSearching(false); });
     }, 300);
-    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+    return () => {
+      ignore = true;
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
   }, [searchQuery, addingSearch]);
 
   const autoResize = (el: HTMLTextAreaElement) => {
@@ -243,6 +251,10 @@ export default function CounselingResultPage() {
   const saveResult = async () => {
     if (!consultationId) {
       setError('상담 ID가 없어 저장할 수 없습니다.');
+      return;
+    }
+    if (entriesLoadFailed) {
+      setError('처방 정보를 불러오지 못했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
       return;
     }
     setError('');
