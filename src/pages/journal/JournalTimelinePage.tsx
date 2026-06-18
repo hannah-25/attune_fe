@@ -190,14 +190,19 @@ export default function JournalTimelinePage() {
           return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.catalogTagId !== tag.catalogTagId) };
         })
         .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0);
-
-      uncheckCatalogTag(tag.catalogTagId, journalDate).catch((err) => {
-        console.error('Failed to remove tag:', err);
-        setError('태그 삭제에 실패했습니다.');
-        setEntries(prev);
-      });
-
       return next;
+    });
+
+    uncheckCatalogTag(tag.catalogTagId, journalDate).catch((err) => {
+      console.error('Failed to remove tag:', err);
+      setError('태그 삭제에 실패했습니다.');
+      setEntries(prev => {
+        if (prev.some(e => e.id === entryId && e.kind === 'tags' && (e as TagEntry).tags.some(t => t.catalogTagId === tag.catalogTagId))) return prev;
+        return prev.map(entry => {
+          if (entry.id !== entryId || entry.kind !== 'tags') return entry;
+          return { ...entry, tags: [...(entry as TagEntry).tags, tag] };
+        });
+      });
     });
   };
 
