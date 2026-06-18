@@ -9,6 +9,7 @@ import {
   getReports,
   createReport,
   giveAiConsent,
+  revokeAiConsent,
   type AvailabilityResult,
   type SummaryStats,
   type MedicationReport,
