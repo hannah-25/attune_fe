@@ -209,24 +209,24 @@ export default function CounselingResultPage() {
     setSaved(false);
   };
 
-  const toggleExpanded = (key: string) => {
-    setEntries(prev => prev.map(e => {
-      if (e.key !== key) return e;
-      const opening = !e.expanded;
-      if (opening && e.dosageOptions.length === 0 && !e.isNew && e.medicationId != null) {
-        const medId = e.medicationId;
-        const medName = e.name;
-        searchMedications(medName)
-          .then(results => {
-            const match = results.find(r => r.medicationId === medId);
-            if (match?.dosageOptions) {
-              setEntries(cur => cur.map(x => x.key === key ? { ...x, dosageOptions: match.dosageOptions! } : x));
-            }
-          })
-          .catch(() => {});
+  const toggleExpanded = async (key: string) => {
+    const entry = entries.find(e => e.key === key);
+    if (!entry) return;
+
+    const opening = !entry.expanded;
+    setEntries(prev => prev.map(e => e.key === key ? { ...e, expanded: opening } : e));
+
+    if (opening && entry.dosageOptions.length === 0 && !entry.isNew && entry.medicationId != null) {
+      try {
+        const results = await searchMedications(entry.name);
+        const match = results.find(r => r.medicationId === entry.medicationId);
+        if (match?.dosageOptions) {
+          setEntries(cur => cur.map(x => x.key === key ? { ...x, dosageOptions: match.dosageOptions! } : x));
+        }
+      } catch (err) {
+        console.error('Failed to fetch dosage options:', err);
       }
-      return { ...e, expanded: opening };
-    }));
+    }
   };
 
   const resetToDefault = (key: string) => {
