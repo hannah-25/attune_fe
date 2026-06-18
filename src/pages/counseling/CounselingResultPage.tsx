@@ -81,7 +81,7 @@ function parsePrescriptionNote(note: string | undefined): SavedPrescriptionItem[
   try {
     return JSON.parse(note) as SavedPrescriptionItem[];
   } catch {
-    return [];
+    return [{ name: note, amount: null, prevAmount: null, status: '유지' }];
   }
 }
 
