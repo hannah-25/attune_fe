@@ -59,6 +59,7 @@ import ReportMonthlyDetailPage from '../pages/report/ReportMonthlyDetailPage';
 
 // Counseling
 import CounselingListPage from '../pages/counseling/CounselingListPage';
+import CounselingAddPage from '../pages/counseling/CounselingAddPage';
 import CounselingPreparePage from '../pages/counseling/CounselingPreparePage';
 import CounselingResultPage from '../pages/counseling/CounselingResultPage';
 
@@ -207,6 +208,7 @@ export default function App() {
 
           {/* Counseling */}
           <Route path="/counseling" element={<CounselingListPage />} />
+          <Route path="/counseling/add" element={<CounselingAddPage />} />
           <Route path="/counseling/prepare" element={<CounselingPreparePage />} />
           <Route path="/counseling/result" element={<CounselingResultPage />} />
 

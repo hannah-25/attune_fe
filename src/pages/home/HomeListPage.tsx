@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Bell, ClipboardList, History } from 'lucide-react';
+import { ArrowRight, Bell, ClipboardList, History, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { getTodosByDate, updateTodo } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
-import { mockWeeklyStats, mockInsight } from '@/mocks/home.mock';
+import { getSummary, type SummaryStats } from '@/api/medicationAnalysis';
 import HomeMedicationSection from './HomeMedicationSection';
 
 type HomeTodo = {
@@ -26,6 +26,7 @@ export default function HomeListPage() {
   const navigate = useNavigate();
   const [todos, setTodos] = useState<HomeTodo[]>([]);
   const [scheduleItems, setScheduleItems] = useState<HomeScheduleItem[]>([]);
+  const [weeklyStats, setWeeklyStats] = useState<SummaryStats | null>(null);
   const [todoError, setTodoError] = useState('');
   const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
 
@@ -34,6 +35,16 @@ export default function HomeListPage() {
     const today = new Date();
     const startDate = toDateKey(today);
     const endDate = toDateKey(addDays(today, 6));
+
+    const statsStart = toDateKey(addDays(today, -6));
+    getSummary(statsStart, startDate)
+      .then((stats) => {
+        if (ignore) return;
+        setWeeklyStats(stats);
+      })
+      .catch((err) => {
+        console.error('Failed to load weekly stats:', err);
+      });
 
     getTodosByDate(startDate)
       .then((response) => {
@@ -146,11 +157,11 @@ export default function HomeListPage() {
           <div className="flex gap-2">
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">달성률</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{mockWeeklyStats.goalAchievement}</div>
+              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{weeklyStats ? `${Math.round(weeklyStats.recordingRate)}%` : '–'}</div>
             </div>
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">복약률</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{mockWeeklyStats.adherence}</div>
+              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{weeklyStats ? `${Math.round(weeklyStats.adherenceRate)}%` : '–'}</div>
             </div>
             <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
               <div className="text-[10px] text-gray-500 leading-tight">일지 작성</div>
@@ -186,6 +197,22 @@ export default function HomeListPage() {
               <div className="text-[10px] text-gray-500">지난 기록 보기</div>
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => navigate('/counseling')}
+            className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-4 py-3 rounded-2xl items-center flex gap-3 w-full text-left transition-transform active:scale-[0.97]"
+          >
+            <div className="items-center flex justify-center w-9 h-9 bg-purple-100 shrink-0 rounded-xl">
+              <MessageCircle className="w-[18px] h-[18px] text-purple-600" strokeWidth={2} />
+            </div>
+            <div className="grow">
+              <div className="font-bold text-xs text-gray-900">상담 준비하기</div>
+              <div className="text-[10px] text-gray-500 mt-0.5">다음 진료를 위한 기록 정리</div>
+            </div>
+            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
           <div className="px-1 mt-3">
             <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
           </div>
@@ -289,8 +316,19 @@ export default function HomeListPage() {
               </svg>
             </div>
             <div className="grow">
-              <div className="font-bold text-xs text-gray-900 leading-tight whitespace-nowrap">{mockInsight.title.replace(mockInsight.highlight, '')} <span className="text-purple-600">{mockInsight.highlight}</span></div>
-              <div className="text-[10px] text-gray-500 mt-1">{mockInsight.subtitle}</div>
+              {(() => {
+                const pct = weeklyStats ? `${Math.round(weeklyStats.adherenceRate)}%` : null;
+                const title = pct ? `이번 주 복약률 ${pct}` : '이번 주 복약 현황';
+                const subtitle = weeklyStats
+                  ? `기록률 ${Math.round(weeklyStats.recordingRate)}% · 복약 ${weeklyStats.takenCount}/${weeklyStats.totalScheduled}회`
+                  : '통계를 불러오는 중...';
+                return (
+                  <>
+                    <div className="font-bold text-xs text-gray-900 leading-tight">{pct ? title.replace(pct, '') : title}<span className="text-purple-600">{pct ?? ''}</span></div>
+                    <div className="text-[10px] text-gray-500 mt-1">{subtitle}</div>
+                  </>
+                );
+              })()}
             </div>
             <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6"/>

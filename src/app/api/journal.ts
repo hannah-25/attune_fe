@@ -55,6 +55,7 @@ export type JournalDetail = {
     conditions: Array<ConditionTag & { checkedAt: string }>;
     sideEffects: Array<SideEffectTag & { checkedAt: string }>;
     troubles: Array<TroubleTag & { checkedAt: string }>;
+    checkedCatalogTagIds?: number[];
     sleep?: { sleepHour: number; sleepQuality: SleepQuality } | null;
     meal?: { ateBreakfast: boolean; ateLunch: boolean; ateDinner: boolean } | null;
     goals: Array<JournalGoal & { score: number }>;
@@ -204,4 +205,62 @@ export function scoreJournalGoal(date: string, payload: { goalId: number; score:
 
 export function createMemo(date: string, memo: string) {
   return apiRequest<MemoRecord>(`${JOURNALS_BASE_PATH}/${date}/memo`, { method: 'POST', body: { memo } });
+}
+
+// ── Catalog tag API ───────────────────────────────────────────────────────────
+
+export type JournalTagCategory = 'CONDITION' | 'SIDE_EFFECT' | 'TROUBLE';
+export type JournalTagScope = 'SYSTEM' | 'USER';
+
+export type CatalogJournalTag = {
+  catalogTagId: number;
+  legacyTagId: number | null;
+  category: JournalTagCategory;
+  name: string;
+  tagType: string;
+  scope: JournalTagScope;
+  enabled: boolean;
+  visible: boolean;
+};
+
+export type CatalogTagCheck = {
+  catalogTagId: number;
+  category: JournalTagCategory;
+  checkedAt: string;
+};
+
+export function getCatalogTags(category: JournalTagCategory) {
+  return apiRequest<CatalogJournalTag[]>(`${JOURNALS_BASE_PATH}/catalog-tags?category=${category}`);
+}
+
+export function updateCatalogTagPreference(catalogTagId: number, payload: { enabled: boolean; visible: boolean }) {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}/preference`, {
+    method: 'PATCH',
+    body: payload,
+  });
+}
+
+export function createCatalogTag(payload: { category: JournalTagCategory; name: string; tagType: string; visible: boolean }) {
+  return apiRequest<CatalogJournalTag>(`${JOURNALS_BASE_PATH}/catalog-tags`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export function checkCatalogTag(catalogTagId: number) {
+  return apiRequest<CatalogTagCheck>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}/checks`, {
+    method: 'POST',
+  });
+}
+
+export function uncheckCatalogTag(catalogTagId: number, date: string) {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}/checks?date=${encodeURIComponent(date)}`, {
+    method: 'DELETE',
+  });
+}
+
+export function deleteCatalogTag(catalogTagId: number, journalDate: string) {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}?journalDate=${encodeURIComponent(journalDate)}`, {
+    method: 'DELETE',
+  });
 }

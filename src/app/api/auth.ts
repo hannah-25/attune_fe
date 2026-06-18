@@ -107,7 +107,7 @@ export function restoreAccount(email: string, password: string) {
 export function requestAccountWithdrawal(password?: string) {
   const trimmedPassword = password?.trim();
 
-  return apiRequest<void>('/v1/account', {
+  return apiRequest<void>('/v1/account/withdraw', {
     method: 'POST',
     body: trimmedPassword ? { password: trimmedPassword } : undefined,
     retryOnUnauthorized: false,

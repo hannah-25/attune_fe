@@ -1,5 +1,16 @@
 import { apiRequest } from './client';
 
+export type ConsultationDetail = {
+  consultationId: number;
+  consultationDate: string;
+  place: string;
+  doctorName: string;
+  isFirstVisit: boolean;
+  preConsultationNote?: string | null;
+  summaryReport?: string | null;
+  prescriptionNote?: string | null;
+};
+
 export type ConsultationPayload = {
   consultationDate: string;
   place: string;
@@ -16,18 +27,11 @@ export function getConsultations(params: { startDate: string; endDate: string })
 }
 
 export function getConsultation(consultationId: number) {
-  return apiRequest<unknown>(`/v1/consultations/${consultationId}`);
+  return apiRequest<ConsultationDetail>(`/v1/consultations/${consultationId}`);
 }
 
 export function updateConsultation(consultationId: number, payload: Partial<ConsultationPayload>) {
   return apiRequest<void>(`/v1/consultations/${consultationId}`, { method: 'PATCH', body: payload });
-}
-
-export function updateConsultationPreparation(consultationId: number, preConsultationNote: string) {
-  return apiRequest<void>(`/v1/consultations/${consultationId}/preparation`, {
-    method: 'PATCH',
-    body: { preConsultationNote },
-  });
 }
 
 export function updateConsultationResult(
@@ -46,4 +50,26 @@ export function deleteConsultation(consultationId: number) {
 
 export function deleteConsultationResult(consultationId: number) {
   return apiRequest<void>(`/v1/consultations/${consultationId}/result`, { method: 'DELETE' });
+}
+
+export type ConsultationQuestion = {
+  questionId: number;
+  text: string;
+};
+
+export function getConsultationQuestions(consultationId: number) {
+  return apiRequest<ConsultationQuestion[]>(`/v1/consultations/${consultationId}/questions`);
+}
+
+export function createConsultationQuestion(consultationId: number, text: string) {
+  return apiRequest<ConsultationQuestion>(`/v1/consultations/${consultationId}/questions`, {
+    method: 'POST',
+    body: { text },
+  });
+}
+
+export function deleteConsultationQuestion(consultationId: number, questionId: number) {
+  return apiRequest<void>(`/v1/consultations/${consultationId}/questions/${questionId}`, {
+    method: 'DELETE',
+  });
 }
