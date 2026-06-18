@@ -45,7 +45,7 @@ export default function CounselingAddPage() {
     input.click();
   };
 
-  const canSave = place.trim() !== '' && doctorName.trim() !== '' && !isSaving;
+  const canSave = date !== '' && time !== '' && place.trim() !== '' && doctorName.trim() !== '' && !isSaving;
 
   const save = async () => {
     if (!canSave) return;
