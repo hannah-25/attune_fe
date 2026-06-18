@@ -98,6 +98,7 @@ export default function CounselingResultPage() {
   const [searchResults, setSearchResults] = useState<MedicationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [saved, setSaved] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [nextDateRaw, setNextDateRaw] = useState(() => {
     const d = new Date();
@@ -173,7 +174,7 @@ export default function CounselingResultPage() {
   }, [consultationId]);
 
   useEffect(() => {
-    if (!addingSearch || !searchQuery) { setSearchResults([]); return; }
+    if (!addingSearch || !searchQuery) { setSearchResults([]); setIsSearching(false); return; }
     let ignore = false;
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     setIsSearching(true);
@@ -264,6 +265,7 @@ export default function CounselingResultPage() {
   };
 
   const saveResult = async () => {
+    if (isSaving) return;
     if (!consultationId) {
       setError('상담 ID가 없어 저장할 수 없습니다.');
       return;
@@ -273,97 +275,105 @@ export default function CounselingResultPage() {
       return;
     }
     setError('');
+    setIsSaving(true);
 
     const today = toDateKey(new Date());
 
     try {
-      await updateConsultationResult(consultationId, {
-        doctorAdvice: advice,
-        prescriptionNote: serializeEntries(entries),
-        nextTreatmentGoal: goal,
-      });
-    } catch {
-      setError('상담 결과를 저장하지 못했습니다.');
-      return;
-    }
-
-    const applyEntry = async (entry: PrescriptionEntry): Promise<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => {
-      const status = getEntryStatus(entry);
-      const doseTime = `${entry.scheduleTime || '08:00'}:00`;
-      const schedules = [{ doseTime, label: '복용' }];
-      if (status === '중단' && entry.userMedicationId) {
-        await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
-        return (prev) => prev.filter(e => e.key !== entry.key);
-      }
-      if (status === '추가' && entry.selectedDosageId) {
-        const result = await createMedication({
-          medicationDosageId: entry.selectedDosageId,
-          consultationId,
-          startedAt: today,
-          schedules,
+      try {
+        await updateConsultationResult(consultationId, {
+          doctorAdvice: advice,
+          prescriptionNote: serializeEntries(entries),
+          nextTreatmentGoal: goal,
         });
-        const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
-        return (prev) => prev.map(e => e.key === entry.key ? {
-          ...e,
-          isNew: false,
-          userMedicationId: result.userMedicationId,
-          currentAmount: selectedOption?.amount ?? e.currentAmount,
-        } : e);
+      } catch {
+        setError('상담 결과를 저장하지 못했습니다.');
+        setIsSaving(false);
+        return;
       }
-      if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
-        const oldMedicationId = entry.userMedicationId;
-        await updateMedication(oldMedicationId, { endAt: today, isActive: false });
-        let result;
-        try {
-          result = await createMedication({
+
+      const applyEntry = async (entry: PrescriptionEntry): Promise<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => {
+        const status = getEntryStatus(entry);
+        const doseTime = `${entry.scheduleTime || '08:00'}:00`;
+        const schedules = [{ doseTime, label: '복용' }];
+
+        if (status === '중단' && entry.userMedicationId) {
+          await updateMedication(entry.userMedicationId, { endAt: today, isActive: false });
+          return (prev) => prev.filter(e => e.key !== entry.key);
+        }
+        if (status === '추가' && entry.selectedDosageId) {
+          const result = await createMedication({
             medicationDosageId: entry.selectedDosageId,
             consultationId,
             startedAt: today,
             schedules,
           });
-        } catch (createErr) {
-          // roll back the deactivation so the entry stays consistent for retry
-          try { await updateMedication(oldMedicationId, { endAt: null, isActive: true }); } catch { /* best effort */ }
-          throw createErr;
+          const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+          return (prev) => prev.map(e => e.key === entry.key ? {
+            ...e,
+            isNew: false,
+            userMedicationId: result.userMedicationId,
+            currentAmount: selectedOption?.amount ?? e.currentAmount,
+          } : e);
         }
-        const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
-        return (prev) => prev.map(e => e.key === entry.key ? {
-          ...e,
-          userMedicationId: result.userMedicationId,
-          currentAmount: selectedOption?.amount ?? e.currentAmount,
-        } : e);
+        if ((status === '증량' || status === '감량') && entry.userMedicationId && entry.selectedDosageId) {
+          const oldMedicationId = entry.userMedicationId;
+          await updateMedication(oldMedicationId, { endAt: today, isActive: false });
+          let result;
+          try {
+            result = await createMedication({
+              medicationDosageId: entry.selectedDosageId,
+              consultationId,
+              startedAt: today,
+              schedules,
+            });
+          } catch (createErr) {
+            // roll back the deactivation so the entry stays consistent for retry
+            try { await updateMedication(oldMedicationId, { endAt: null, isActive: true }); } catch { /* best effort */ }
+            throw createErr;
+          }
+          const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
+          return (prev) => prev.map(e => e.key === entry.key ? {
+            ...e,
+            userMedicationId: result.userMedicationId,
+            currentAmount: selectedOption?.amount ?? e.currentAmount,
+          } : e);
+        }
+        return null;
+      };
+
+      const results = await Promise.allSettled(entries.map(applyEntry));
+      const patches = results
+        .filter((r): r is PromiseFulfilledResult<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => r.status === 'fulfilled')
+        .map(r => r.value);
+      if (patches.length > 0) {
+        setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
       }
-      return null;
-    };
-
-    const results = await Promise.allSettled(entries.map(applyEntry));
-    const patches = results
-      .filter((r): r is PromiseFulfilledResult<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => r.status === 'fulfilled')
-      .map(r => r.value);
-    if (patches.length > 0) {
-      setEntries(prev => patches.reduce((acc, patch) => patch ? patch(acc) : acc, prev));
-    }
-    const hasFailure = results.some(r => r.status === 'rejected');
-    if (hasFailure) {
-      setError('처방 업데이트 중 일부 실패했습니다.');
-      return;
-    }
-
-    if (nextDateRaw && consultation) {
-      try {
-        await createConsultation({
-          consultationDate: `${nextDateRaw}T10:00:00`,
-          place: consultation.place,
-          doctorName: consultation.doctorName,
-          isFirstVisit: false,
-        });
-      } catch {
-        // 처방/상담 결과는 이미 저장됐으므로 다음 진료 일정 생성 실패가 이동을 막지 않음
-        console.error('다음 진료 일정 생성 실패');
+      const hasFailure = results.some(r => r.status === 'rejected');
+      if (hasFailure) {
+        setError('처방 업데이트 중 일부 실패했습니다.');
+        setIsSaving(false);
+        return;
       }
-    }
 
-    navigate('/counseling');
+      if (nextDateRaw && consultation) {
+        try {
+          await createConsultation({
+            consultationDate: `${nextDateRaw}T10:00:00`,
+            place: consultation.place,
+            doctorName: consultation.doctorName,
+            isFirstVisit: false,
+          });
+        } catch {
+          // 처방/상담 결과는 이미 저장됐으므로 다음 진료 일정 생성 실패가 이동을 막지 않음
+          console.error('다음 진료 일정 생성 실패');
+        }
+      }
+
+      navigate('/counseling');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const savedPrescription = parsePrescriptionNote(consultation?.prescriptionNote);
@@ -384,9 +394,10 @@ export default function CounselingResultPage() {
                   <button
                     type="button"
                     onClick={saveResult}
-                    className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97]"
+                    disabled={isSaving}
+                    className="text-sm px-5 py-2 rounded-xl font-bold text-white whitespace-nowrap bg-[rgb(31,27,46)] transition-all active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100"
                   >
-                    저장
+                    {isSaving ? '저장 중...' : '저장'}
                   </button>
                 )
               ) : (
