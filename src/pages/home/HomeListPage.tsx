@@ -1,10 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowRight, Bell, ClipboardList, History, MessageCircle, UserRound } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  Bell,
+  CalendarDays,
+  ChevronRight,
+  ClipboardList,
+  CheckSquare2,
+  MessageCircle,
+  UserRound,
+} from 'lucide-react';
 import { useNavigate } from 'react-router';
 import logoImage from '@src/assets/logo.png';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { getTodosByDate, updateTodo } from '@/api/todo';
+import { getTodosByDate } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { getSummary, type SummaryStats } from '@/api/medicationAnalysis';
 import { getMyProfile } from '@/api/user';
@@ -18,49 +26,44 @@ type HomeTodo = {
   isAllDay: boolean;
 };
 
-type HomeScheduleItem = Pick<ScheduleSummary, 'scheduleId' | 'title' | 'startTime' | 'endTime' | 'isAllDay'> & {
-  color?: string;
-};
+type HomeScheduleItem = Pick<
+  ScheduleSummary,
+  'scheduleId' | 'title' | 'startTime' | 'endTime' | 'isAllDay'
+>;
 
 const WEEK_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
 export default function HomeListPage() {
   const navigate = useNavigate();
+  const mountedRef = useRef(false);
+  const todoRequestIdRef = useRef(0);
+  const scheduleRequestIdRef = useRef(0);
   const [todos, setTodos] = useState<HomeTodo[]>([]);
   const [scheduleItems, setScheduleItems] = useState<HomeScheduleItem[]>([]);
   const [weeklyStats, setWeeklyStats] = useState<SummaryStats | null>(null);
-  const [profile, setProfile] = useState<{ nickname: string; profileImageUrl: string | null } | null>(null);
-  const [todoError, setTodoError] = useState('');
-  const [updatingTodoIds, setUpdatingTodoIds] = useState<number[]>([]);
+  const [profile, setProfile] = useState<{
+    nickname: string;
+    profileImageUrl: string | null;
+  } | null>(null);
+  const [todosLoading, setTodosLoading] = useState(true);
+  const [todosLoadError, setTodosLoadError] = useState('');
+  const [schedulesLoading, setSchedulesLoading] = useState(true);
+  const [schedulesLoadError, setSchedulesLoadError] = useState('');
+  const [weeklyStatsLoading, setWeeklyStatsLoading] = useState(true);
+  const [weeklyStatsLoadError, setWeeklyStatsLoadError] = useState('');
 
-  useEffect(() => {
-    let ignore = false;
-    const today = new Date();
-    const startDate = toDateKey(today);
-    const endDate = toDateKey(addDays(today, 6));
+  const loadTodos = useCallback(async () => {
+    const requestId = todoRequestIdRef.current + 1;
+    todoRequestIdRef.current = requestId;
+    setTodosLoading(true);
+    setTodosLoadError('');
 
-    const statsStart = toDateKey(addDays(today, -6));
-    getMyProfile()
-      .then(({ nickname, profileImageUrl }) => {
-        if (ignore) return;
-        setProfile({ nickname, profileImageUrl: profileImageUrl ?? null });
-      })
-      .catch((err) => {
-        console.error('Failed to load profile:', err);
-      });
+    try {
+      const response = await getTodosByDate(toDateKey(new Date()));
+      if (!mountedRef.current || requestId !== todoRequestIdRef.current) return;
 
-    getSummary(statsStart, startDate)
-      .then((stats) => {
-        if (ignore) return;
-        setWeeklyStats(stats);
-      })
-      .catch((err) => {
-        console.error('Failed to load weekly stats:', err);
-      });
-
-    getTodosByDate(startDate)
-      .then((response) => {
-        if (ignore) return;
-        const nextTodos = response.todos
+      setTodos(
+        response.todos
           .map((item) => ({
             id: item.todoId,
             text: item.text,
@@ -68,260 +71,350 @@ export default function HomeListPage() {
             dueAt: item.dueAt,
             isAllDay: item.isAllDay,
           }))
-          .sort((a, b) => toTimestamp(a.dueAt) - toTimestamp(b.dueAt));
-        setTodos(nextTodos);
-      })
-      .catch((err) => {
-        console.error('Failed to load todos:', err);
-        if (!ignore) setTodos([]);
-      });
+          .sort((a, b) => toTimestamp(a.dueAt) - toTimestamp(b.dueAt)),
+      );
+    } catch (err) {
+      console.error('Failed to load todos:', err);
+      if (mountedRef.current && requestId === todoRequestIdRef.current) {
+        setTodosLoadError('할 일을 불러오지 못했어요.');
+      }
+    } finally {
+      if (mountedRef.current && requestId === todoRequestIdRef.current) {
+        setTodosLoading(false);
+      }
+    }
+  }, []);
 
-    getSchedules({ startDate, endDate })
-      .then((response) => {
-        if (ignore) return;
-        const nextSchedules = response.schedules
+  const loadSchedules = useCallback(async () => {
+    const requestId = scheduleRequestIdRef.current + 1;
+    scheduleRequestIdRef.current = requestId;
+    setSchedulesLoading(true);
+    setSchedulesLoadError('');
+
+    const today = new Date();
+    try {
+      const response = await getSchedules({
+        startDate: toDateKey(today),
+        endDate: toDateKey(addDays(today, 6)),
+      });
+      if (!mountedRef.current || requestId !== scheduleRequestIdRef.current) return;
+
+      setScheduleItems(
+        response.schedules
           .map((item) => ({
             scheduleId: item.scheduleId,
             title: item.title,
             startTime: item.startTime,
             endTime: item.endTime,
             isAllDay: item.isAllDay,
-            color: (item as { color?: string }).color,
           }))
-          .sort((a, b) => toTimestamp(a.startTime) - toTimestamp(b.startTime));
-        setScheduleItems(nextSchedules);
-      })
-      .catch((err) => {
-        console.error('Failed to load schedules:', err);
-        if (!ignore) setScheduleItems([]);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  const toggleTodo = async (id: number) => {
-    if (updatingTodoIds.includes(id)) return;
-    const previousTodo = todos.find((todo) => todo.id === id);
-    if (!previousTodo) return;
-    const nextDone = !previousTodo.done;
-
-    setTodoError('');
-    setUpdatingTodoIds((current) => [...current, id]);
-    setTodos((current) =>
-      current.map((todo) => (todo.id === id ? { ...todo, done: nextDone } : todo))
-    );
-
-    try {
-      const response = await updateTodo(id, { isCompleted: nextDone });
-      const resolvedDone = typeof response?.isCompleted === 'boolean' ? response.isCompleted : nextDone;
-      setTodos((current) =>
-        current.map((todo) => (todo.id === id ? { ...todo, done: resolvedDone } : todo))
+          .sort((a, b) => toTimestamp(a.startTime) - toTimestamp(b.startTime)),
       );
     } catch (err) {
-      console.error('Failed to toggle todo:', err);
-      setTodos((current) =>
-        current.map((todo) => (todo.id === id ? { ...todo, done: previousTodo.done } : todo))
-      );
-      setTodoError('할일 상태를 변경하지 못했습니다.');
+      console.error('Failed to load schedules:', err);
+      if (mountedRef.current && requestId === scheduleRequestIdRef.current) {
+        setSchedulesLoadError('일정을 불러오지 못했어요.');
+      }
     } finally {
-      setUpdatingTodoIds((current) => current.filter((todoId) => todoId !== id));
+      if (mountedRef.current && requestId === scheduleRequestIdRef.current) {
+        setSchedulesLoading(false);
+      }
     }
-  };
+  }, []);
+
+  const loadWeeklyStats = useCallback(async () => {
+    setWeeklyStatsLoading(true);
+    setWeeklyStatsLoadError('');
+
+    const today = new Date();
+    try {
+      const stats = await getSummary(toDateKey(addDays(today, -6)), toDateKey(today));
+      if (!mountedRef.current) return;
+      setWeeklyStats(stats);
+    } catch (err) {
+      console.error('Failed to load weekly stats:', err);
+      if (mountedRef.current) {
+        setWeeklyStatsLoadError('주간 요약을 불러오지 못했어요.');
+      }
+    } finally {
+      if (mountedRef.current) {
+        setWeeklyStatsLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    getMyProfile()
+      .then(({ nickname, profileImageUrl }) => {
+        if (!mountedRef.current) return;
+        setProfile({ nickname, profileImageUrl: profileImageUrl ?? null });
+      })
+      .catch((err) => {
+        console.error('Failed to load profile:', err);
+      });
+
+    void loadWeeklyStats();
+    void loadTodos();
+    void loadSchedules();
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [loadSchedules, loadTodos, loadWeeklyStats]);
+
+  const hasConsultationSchedule = scheduleItems.some((item) =>
+    /(병원|진료|상담|의원)/.test(item.title),
+  );
+  const completedTodoCount = todos.filter((todo) => todo.done).length;
+  const nextSchedule = scheduleItems[0] ?? null;
+  const nextIncompleteTodo = todos.find((todo) => !todo.done) ?? null;
 
   return (
     <div
-      className="w-full h-full bg-gray-50 text-sm flex flex-col"
-      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+      className="relative mx-auto flex h-full w-full max-w-[480px] flex-col bg-gray-50 text-sm"
+      style={{
+        fontFamily:
+          "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      }}
     >
-      <div className="flex flex-col flex-1 min-h-0">
-        <div className="relative items-center flex pt-2 pr-5 pb-2 pl-5 min-h-[52px]">
-          <div className="w-8 h-8 shrink-0">
-            <img src={logoImage} alt="attune" className="w-full h-full object-contain" />
-          </div>
-          <div className="grow basis-[0%]"></div>
-          <div className="items-center flex gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => navigate('/settings/notifications')}
-              className="items-center flex justify-center w-8 h-8 bg-white shadow-[rgba(0,0,0,0.06)_0px_1px_4px_0px] rounded-full shrink-0 transition-transform active:scale-95"
-              aria-label="알림 설정으로 이동"
-            >
-              <Bell className="h-[15px] w-[15px] text-[rgb(31,27,46)]" strokeWidth={2.25} />
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/settings')}
-              className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-full overflow-hidden shrink-0 transition-transform active:scale-95"
-              aria-label="마이페이지로 이동"
-            >
-              {profile?.profileImageUrl ? (
-                <img src={profile.profileImageUrl} alt="" className="w-full h-full object-cover" />
-              ) : profile?.nickname.trim() ? (
-                <span className="font-bold text-purple-700 text-xs">
-                  {Array.from(profile.nickname.trim())[0]}
-                </span>
-              ) : (
-                <UserRound className="w-4 h-4 text-purple-700" strokeWidth={2.25} />
-              )}
-            </button>
-          </div>
-        </div>
-        <ScrollArea className="flex flex-col gap-2 pt-1">
-          <div className="items-center flex justify-between px-1">
-            <div className="font-semibold text-sm text-gray-800">주간 통계</div>
-            <button type="button" onClick={() => navigate('/report')} className="text-xs text-gray-400">전체보기</button>
-          </div>
-          <div className="flex gap-2">
-            <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
-              <div className="text-[10px] text-gray-500 leading-tight">달성률</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{weeklyStats ? `${Math.round(weeklyStats.recordingRate)}%` : '–'}</div>
-            </div>
-            <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
-              <div className="text-[10px] text-gray-500 leading-tight">복약률</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>{weeklyStats ? `${Math.round(weeklyStats.adherenceRate)}%` : '–'}</div>
-            </div>
-            <div className="grow bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] basis-[0%] pt-2.5 px-3 pb-2.5 rounded-2xl text-center">
-              <div className="text-[10px] text-gray-500 leading-tight">일지 작성</div>
-              <div className="font-bold text-lg mt-0.5 text-gray-900" style={{"fontFamily":"NanumSquare, system-ui"}}>
-                {todos.filter((t) => t.done).length}/{todos.length}
-              </div>
-            </div>
-          </div>
-          <div className="items-center flex justify-between px-1 mt-3">
-            <div className="font-semibold text-sm text-gray-800">자가 체크</div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/1')}
-              className="grow basis-[0%] bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] pt-3 px-3 pb-3 rounded-2xl text-left flex flex-col gap-1.5 transition-transform active:scale-[0.97]"
-            >
-              <div className="items-center flex justify-center w-8 h-8 bg-purple-200 rounded-xl shrink-0">
-                <ClipboardList className="h-4 w-4 text-purple-700" strokeWidth={2} />
-              </div>
-              <div className="font-semibold text-xs text-gray-800">자가 체크하기</div>
-              <div className="text-[10px] text-purple-600">3개월마다 확인</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/onboarding/history')}
-              className="grow basis-[0%] bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] pt-3 px-3 pb-3 rounded-2xl text-left flex flex-col gap-1.5 transition-transform active:scale-[0.97]"
-            >
-              <div className="items-center flex justify-center w-8 h-8 bg-gray-100 rounded-xl shrink-0">
-                <History className="h-4 w-4 text-gray-500" strokeWidth={2} />
-              </div>
-              <div className="font-semibold text-xs text-gray-800">체크 이력</div>
-              <div className="text-[10px] text-gray-500">지난 기록 보기</div>
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate('/counseling')}
-            className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-4 py-3 rounded-2xl items-center flex gap-3 w-full text-left transition-transform active:scale-[0.97]"
-          >
-            <div className="items-center flex justify-center w-9 h-9 bg-purple-100 shrink-0 rounded-xl">
-              <MessageCircle className="w-[18px] h-[18px] text-purple-600" strokeWidth={2} />
-            </div>
-            <div className="grow">
-              <div className="font-bold text-xs text-gray-900">상담 준비하기</div>
-              <div className="text-[10px] text-gray-500 mt-0.5">다음 진료를 위한 기록 정리</div>
-            </div>
-            <svg className="w-4 h-4 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </button>
-          <div className="px-1 mt-3">
-            <div className="font-semibold text-sm text-gray-800">오늘 할일</div>
-          </div>
-          {todoError ? <div className="text-red-500 text-xs px-1">{todoError}</div> : null}
-          <HomeMedicationSection />
-          <button
-            type="button"
-            onClick={() => navigate('/journal')}
-            className="items-center flex justify-between bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-4 py-3 rounded-2xl w-full text-left"
-          >
-            <div>
-              <div className="font-semibold text-sm text-gray-800">오늘 일지 작성하기</div>
-              <div className="text-[11px] text-purple-600 mt-0.5">감정 · 증상 · 수면 · 목표</div>
-            </div>
-            <div className="items-center flex justify-center w-8 h-8 bg-purple-200 shrink-0 rounded-full">
-              <svg className="w-[15px] h-[15px] text-purple-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-              </svg>
-            </div>
-          </button>
-          <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] p-3 rounded-2xl">
-            {todos.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                {todos.map((todo) => (
-                  <button
-                    key={todo.id}
-                    type="button"
-                    onClick={() => toggleTodo(todo.id)}
-                    disabled={updatingTodoIds.includes(todo.id)}
-                    className="items-center flex gap-2 text-left w-full disabled:opacity-60"
-                  >
-                    <div
-                      className={`items-center flex justify-center w-4 h-4 shrink-0 rounded-full transition-colors ${
-                        todo.done ? 'bg-purple-300' : 'border border-gray-300'
-                      }`}
-                    >
-                      {todo.done && (
-                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 13l4 4L19 7"/>
-                        </svg>
-                      )}
-                    </div>
-                    <div className={`text-xs transition-colors ${todo.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}>
-                      {todo.text}
-                    </div>
-                  </button>
-                ))}
-              </div>
+      <header className="flex min-h-[60px] items-center px-4 py-2">
+        <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
+        <div className="grow" />
+        <HeaderButton label="알림 설정으로 이동" onClick={() => navigate('/settings/notifications')}>
+          <Bell className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.25} />
+        </HeaderButton>
+        <HeaderButton label="마이페이지로 이동" onClick={() => navigate('/settings')}>
+          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-purple-200">
+            {profile?.profileImageUrl ? (
+              <img src={profile.profileImageUrl} alt="" className="h-full w-full object-cover" />
+            ) : profile?.nickname.trim() ? (
+              <span className="text-xs font-bold text-purple-700">
+                {Array.from(profile.nickname.trim())[0]}
+              </span>
             ) : (
-              <EmptyActionCard
-                description="오늘 등록된 할일이 없어요."
-                actionLabel="할일 추가하기"
-                onClick={() => navigate(`/calendar/new-todo?date=${toDateKey(new Date())}`)}
-              />
+              <UserRound className="h-4 w-4 text-purple-700" strokeWidth={2.25} />
             )}
-          </div>
-          <div className="items-center flex justify-between px-1 mt-3">
-            <div className="font-semibold text-sm text-gray-800">예정 일정</div>
-            <button type="button" onClick={() => navigate('/calendar')} className="text-xs text-gray-400">전체보기</button>
-          </div>
-          <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.22)_0px_8px_28px_0px,_rgba(60,40,90,0.12)_0px_2px_6px_0px] px-3 py-2 rounded-2xl flex flex-col">
-            {scheduleItems.length > 0 ? (
-              scheduleItems.map((item, index) => {
-                const label = formatRelativeDateLabel(item.startTime);
-                const timeText = item.isAllDay ? '종일' : formatTime(item.startTime);
-                const isToday = label === '오늘';
+          </span>
+        </HeaderButton>
+      </header>
 
-                return (
-                  <div key={item.scheduleId} className={`items-center flex gap-3 py-2 ${index > 0 ? 'border-t border-gray-100' : ''}`}>
-                    <div className={`font-medium text-[11px] w-[34px] shrink-0 ${isToday ? 'text-purple-500' : 'text-gray-400'}`}>{label}</div>
-                    <div
-                      className={`w-2 h-2 shrink-0 rounded-full ${item.color ? '' : isToday ? 'bg-purple-500' : 'bg-purple-300'}`}
-                      style={item.color ? { backgroundColor: item.color } : undefined}
-                    />
-                    <div className="font-semibold text-xs text-gray-800 grow">{item.title}</div>
-                    <div className="text-[10px] text-gray-400 shrink-0">{timeText}</div>
-                  </div>
-                );
-              })
+      <ScrollArea className="flex flex-col gap-4 pt-2">
+        <button
+          type="button"
+          onClick={() => navigate('/journal')}
+          className="relative min-h-[108px] w-full overflow-hidden rounded-2xl border border-purple-100 bg-purple-100 p-4 text-left shadow-[rgba(60,40,90,0.08)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
+        >
+          <span className="block pr-16 text-base font-extrabold text-gray-900">
+            오늘 일지 작성하기
+          </span>
+          <span className="mt-1.5 block pr-16 text-xs font-medium leading-relaxed text-gray-700">
+            감정 · 증상 · 수면 · 목표를 기록해 보세요
+          </span>
+          <span className="absolute bottom-4 right-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-200 text-purple-700">
+            <ClipboardList className="h-5 w-5" strokeWidth={2} />
+          </span>
+          <ChevronRight className="absolute right-4 top-4 h-4 w-4 text-purple-700" />
+        </button>
+
+        <HomeMedicationSection />
+
+        <section>
+          <div className="grid grid-cols-2 gap-3">
+            <DashboardCard
+              title="오늘 일정"
+              icon={<CalendarDays className="h-5 w-5" strokeWidth={2} />}
+              value={
+                schedulesLoading ? '…' : schedulesLoadError ? '–' : `${scheduleItems.length}개`
+              }
+              detail={
+                schedulesLoading
+                  ? '불러오는 중'
+                  : schedulesLoadError
+                    ? '다시 확인해 주세요'
+                    : nextSchedule
+                      ? `${nextSchedule.isAllDay ? '종일' : formatTime(nextSchedule.startTime)} · ${nextSchedule.title}`
+                      : '예정된 일정 없음'
+              }
+              onClick={() => {
+                if (schedulesLoadError) {
+                  void loadSchedules();
+                  return;
+                }
+                navigate('/calendar');
+              }}
+            />
+            <DashboardCard
+              title="오늘 할 일"
+              icon={<CheckSquare2 className="h-5 w-5" strokeWidth={2} />}
+              value={todosLoading ? '…' : todosLoadError ? '–' : `${completedTodoCount}/${todos.length}개`}
+              detail={
+                todosLoading
+                  ? '불러오는 중'
+                  : todosLoadError
+                    ? '다시 확인해 주세요'
+                    : nextIncompleteTodo
+                      ? `${todos.length - completedTodoCount}개 남음 · ${nextIncompleteTodo.text}`
+                      : todos.length > 0
+                        ? '오늘 할 일 완료'
+                        : '등록된 할 일 없음'
+              }
+              onClick={() => {
+                if (todosLoadError) {
+                  void loadTodos();
+                  return;
+                }
+                navigate('/calendar');
+              }}
+            />
+          </div>
+          {hasConsultationSchedule ? (
+            <button
+              type="button"
+              onClick={() => navigate('/counseling')}
+              className="mt-2 flex min-h-11 w-full items-center gap-2 rounded-xl px-1 text-left text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+            >
+              <MessageCircle className="h-4 w-4" strokeWidth={2} />
+              다음 진료를 위한 기록 정리하기
+              <ChevronRight className="ml-auto h-4 w-4" />
+            </button>
+          ) : null}
+        </section>
+
+        <section>
+          <SectionHeader
+            title="이번 주"
+            action="전체 기록"
+            onAction={() => navigate('/report')}
+          />
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-[rgba(60,40,90,0.08)_0px_5px_18px_0px]">
+            {weeklyStatsLoading ? (
+              <StatusRow>주간 요약을 불러오고 있어요.</StatusRow>
+            ) : weeklyStatsLoadError ? (
+              <div className="flex min-h-[56px] items-center justify-between gap-3" role="alert">
+                <span className="text-xs text-red-700">{weeklyStatsLoadError}</span>
+                <button
+                  type="button"
+                  onClick={() => void loadWeeklyStats()}
+                  className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                >
+                  다시 시도
+                </button>
+              </div>
             ) : (
-              <EmptyActionCard
-                description="예정된 일정이 없어요."
-                actionLabel="일정 추가하기"
-                onClick={() => navigate('/empty/calendar?date=' + toDateInputValue(new Date()))}
-              />
+              <div className="grid grid-cols-2 divide-x divide-gray-300">
+                <StatItem
+                  label="기록률"
+                  value={weeklyStats ? `${Math.round(weeklyStats.recordingRate)}%` : '–'}
+                />
+                <StatItem
+                  label="복약"
+                  value={
+                    weeklyStats
+                      ? `${weeklyStats.takenCount}/${weeklyStats.totalScheduled}회`
+                      : '–'
+                  }
+                />
+              </div>
             )}
           </div>
-        </ScrollArea>
-        <TabBar active="홈" />
-      </div>
+        </section>
+      </ScrollArea>
+
+      <TabBar active="홈" />
+    </div>
+  );
+}
+
+function HeaderButton({
+  children,
+  label,
+  onClick,
+}: {
+  children: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-11 w-11 items-center justify-center rounded-full transition-colors active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
+      aria-label={label}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SectionHeader({
+  action,
+  onAction,
+  title,
+}: {
+  action: string;
+  onAction: () => void;
+  title: string;
+}) {
+  return (
+    <div className="mb-2 flex items-center justify-between px-1">
+      <h2 className="text-sm font-bold text-gray-900">{title}</h2>
+      <button
+        type="button"
+        onClick={onAction}
+        className="min-h-11 rounded-lg px-2 text-xs font-semibold text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+      >
+        {action}
+      </button>
+    </div>
+  );
+}
+
+function DashboardCard({
+  detail,
+  icon,
+  onClick,
+  title,
+  value,
+}: {
+  detail: string;
+  icon: ReactNode;
+  onClick: () => void;
+  title: string;
+  value: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative min-h-[124px] overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-[rgba(60,40,90,0.08)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
+    >
+      <span className="block text-sm font-bold text-gray-900">{title}</span>
+      <span className="mt-2 block text-xl font-extrabold text-gray-900">{value}</span>
+      <span className="mt-1 block max-w-[75%] truncate text-xs font-medium text-gray-600">
+        {detail}
+      </span>
+      <span className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-purple-100 text-purple-700">
+        {icon}
+      </span>
+    </button>
+  );
+}
+
+function StatusRow({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex min-h-[68px] items-center text-xs font-medium text-gray-600" role="status">
+      {children}
+    </div>
+  );
+}
+
+function StatItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="px-4 first:pl-0 last:pr-0">
+      <div className="text-xs font-medium text-gray-600">{label}</div>
+      <div className="mt-1 text-xl font-extrabold text-gray-900">{value}</div>
     </div>
   );
 }
@@ -338,9 +431,14 @@ function toDateKey(date: Date) {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+function toTimestamp(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return Number.POSITIVE_INFINITY;
+  return date.getTime();
+}
+
 function toDateKeyFromDateTime(value: string) {
   if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   return toDateKey(date);
@@ -353,54 +451,18 @@ function formatRelativeDateLabel(value: string) {
 
   if (dateKey === todayKey) return '오늘';
   if (dateKey === tomorrowKey) return '내일';
-
   if (!dateKey) return '-';
+
   const [yearText, monthText, dayText] = dateKey.split('-');
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
-
   if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return '-';
-  return WEEK_DAYS[new Date(year, month - 1, day).getDay()] ?? '-';
+  return `${WEEK_DAYS[new Date(year, month - 1, day).getDay()] ?? '-'}요일`;
 }
 
 function formatTime(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value.slice(11, 16);
-
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
-function toTimestamp(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return Number.POSITIVE_INFINITY;
-  return date.getTime();
-}
-
-function EmptyActionCard({
-  actionLabel,
-  description,
-  onClick,
-}: {
-  actionLabel: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full text-left px-1 py-1 rounded-lg"
-    >
-      <div>
-        <div className="text-xs text-gray-500">{description}</div>
-        <div className="items-center flex font-semibold text-xs text-purple-700 gap-0.5 mt-0.5">
-          <span>{actionLabel}</span>
-          <ArrowRight className="w-3.5 h-3.5 text-purple-400 shrink-0" strokeWidth={2.5} />
-        </div>
-      </div>
-    </button>
-  );
+  if (Number.isNaN(date.getTime())) return value.slice(11, 16) || '--:--';
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

@@ -30,7 +30,7 @@ import OnboardingAiResultPage from '../pages/onboarding/OnboardingAiResultPage';
 
 // Home
 import HomeListPage from '../pages/home/HomeListPage';
-import HomeCalendarPage from '../pages/home/HomeCalendarPage';
+import HomePreviewPage from '../pages/home/HomePreviewPage';
 
 // Journal
 import JournalFullPage from '../pages/journal/JournalFullPage';
@@ -149,6 +149,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<RootRoute />} />
         <Route path="/overview" element={<OverviewPage />} />
+        <Route path="/preview/home" element={<HomePreviewPage />} />
 
         {/* Auth */}
         <Route path="/splash" element={<SplashPage />} />
@@ -178,7 +179,7 @@ export default function App() {
 
           {/* Home */}
           <Route path="/home" element={<HomeListPage />} />
-          <Route path="/home/calendar" element={<HomeCalendarPage />} />
+          <Route path="/home/calendar" element={<Navigate to="/calendar" replace />} />
 
           {/* Journal */}
           <Route path="/journal" element={<JournalFullPage />} />
