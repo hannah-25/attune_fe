@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, Pill } from 'lucide-react';
+import { Pill } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -89,13 +89,7 @@ export default function HomeMedicationSection({ className }: { className?: strin
     void loadHomeMedication();
   }, [loadHomeMedication]);
 
-  const summary = useMemo(() => {
-    const total = doseItems.length;
-    const taken = doseItems.filter((item) => item.status === 'TAKEN').length;
-    const skipped = doseItems.filter((item) => item.status === 'SKIPPED').length;
-
-    return { total, taken, skipped, recorded: taken + skipped };
-  }, [doseItems]);
+  const totalDoses = useMemo(() => doseItems.length, [doseItems]);
 
   const handleLog = async (item: HomeDoseItem, action: Extract<QuickMedicationLogAction, 'TAKEN' | 'SKIPPED'>) => {
     if (item.status !== 'PENDING' || loggingKeysRef.current.has(item.key)) return;
@@ -127,122 +121,110 @@ export default function HomeMedicationSection({ className }: { className?: strin
 
   return (
     <section className={className} aria-busy={isLoading || loggingKeys.length > 0}>
-      <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="text-sm font-bold text-gray-900">오늘 복약</h2>
+      <div className="overflow-hidden rounded-[1.75rem] bg-purple-50 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]">
         <button
           type="button"
           onClick={() => navigate('/medication')}
-          className="min-h-11 rounded-lg px-2 text-xs font-semibold text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+          className="relative w-full overflow-hidden px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
         >
-          전체 관리
+          <span
+            className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-purple-200/50"
+            aria-hidden="true"
+          />
+          <span
+            className="absolute bottom-2 right-4 flex h-9 w-9 rotate-6 items-center justify-center rounded-[0.875rem] bg-purple-100 text-purple-600"
+            aria-hidden="true"
+          >
+            <Pill className="h-5 w-5" strokeWidth={1.8} />
+          </span>
+          <h2 className="relative z-[1] text-sm font-bold text-gray-900">오늘 복약</h2>
         </button>
-      </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 shadow-[rgba(60,40,90,0.08)_0px_5px_18px_0px]">
-        {error ? (
-          <div className="flex min-h-[68px] items-center justify-between gap-3" role="alert">
-            <span className="text-xs text-red-700">{error}</span>
+        <div>
+          {error ? (
+            <div className="flex min-h-[52px] items-center justify-between gap-3 px-4" role="alert">
+              <span className="text-xs text-red-700">{error}</span>
+              <button
+                type="button"
+                onClick={() => void loadHomeMedication()}
+                className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : showLoading ? (
+            <div className="flex min-h-[52px] items-center px-4" role="status" aria-live="polite">
+              <span className="text-xs font-medium text-purple-700/60">복약 정보를 불러오고 있어요.</span>
+            </div>
+          ) : activeMedicationCount === 0 ? (
             <button
               type="button"
-              onClick={() => void loadHomeMedication()}
-              className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+              onClick={() => navigate('/medication')}
+              className="min-h-[52px] w-full px-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
             >
-              다시 시도
+              <span className="block text-xs font-medium text-purple-900/60">복용 중인 약이 없어요.</span>
+              <span className="mt-1 block text-xs font-bold text-purple-700">복약 추가하기</span>
             </button>
-          </div>
-        ) : showLoading ? (
-          <div className="flex min-h-[68px] items-center gap-2" role="status" aria-live="polite">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-100 text-purple-500 animate-pulse">
-              <Pill className="h-4 w-4" strokeWidth={1.8} />
-            </span>
-            <span className="text-xs font-medium text-gray-600">복약 정보를 불러오고 있어요.</span>
-          </div>
-        ) : activeMedicationCount === 0 ? (
-          <button
-            type="button"
-            onClick={() => navigate('/medication')}
-            className="min-h-[68px] w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
-          >
-            <span className="block text-xs font-medium text-gray-600">복용 중인 약이 없어요.</span>
-            <span className="mt-1 block text-xs font-bold text-purple-700">복약 추가하기</span>
-          </button>
-        ) : summary.total === 0 ? (
-          <div className="flex min-h-[68px] items-center text-xs font-medium text-gray-600">
-            등록된 복약 시간이 없어요.
-          </div>
-        ) : (
-          doseItems.slice(0, 3).map((item, index) => {
-            const isPending = loggingKeys.includes(item.key);
-            const isRecorded = item.status !== 'PENDING';
+          ) : totalDoses === 0 ? (
+            <div className="flex min-h-[52px] items-center px-4 text-xs font-medium text-purple-900/60">
+              등록된 복약 시간이 없어요.
+            </div>
+          ) : (
+            doseItems.slice(0, 3).map((item) => {
+              const isPending = loggingKeys.includes(item.key);
+              const isRecorded = item.status !== 'PENDING';
 
-            return (
-              <div
-                key={item.key}
-                className={`py-3 ${
-                  index > 0 ? 'border-t border-gray-100' : ''
-                }`}
-              >
-                <div className="flex min-h-9 items-center gap-3">
-                  <div className="w-11 shrink-0 text-xs font-bold text-gray-700">{item.time}</div>
-                  <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                      isRecorded ? 'bg-gray-100 text-gray-600' : 'bg-purple-100 text-purple-700'
-                    }`}
-                  >
-                    {isRecorded ? (
-                      <Check className="h-4 w-4" strokeWidth={2.6} />
-                    ) : (
-                      <Pill className="h-4 w-4" strokeWidth={2} />
-                    )}
-                  </span>
+              return (
+                <div
+                  key={item.key}
+                  className="flex min-h-[52px] items-center gap-2 px-4"
+                >
+                  <div className="w-10 shrink-0 text-xs font-extrabold text-purple-900/70">{item.time}</div>
                   <div className="min-w-0 grow">
                     <div
-                      className={`truncate text-xs font-bold ${
-                        isRecorded ? 'text-gray-600' : 'text-gray-900'
+                      className={`truncate text-xs font-extrabold ${
+                        isRecorded ? 'text-purple-900/40 line-through' : 'text-gray-900'
                       }`}
                     >
                       {item.medicationName}
                     </div>
                   </div>
                   {isRecorded ? (
-                    <span className="shrink-0 text-xs font-bold text-gray-600">
+                    <span className="shrink-0 text-xs font-bold text-purple-900/40">
                       {item.status === 'TAKEN' ? '복용 완료' : '건너뜀'}
                     </span>
-                  ) : null}
+                  ) : (
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => void handleLog(item, 'SKIPPED')}
+                        className="min-h-11 rounded-lg px-1.5 text-[11px] font-medium text-purple-900/30 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                      >
+                        건너뛰기
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => void handleLog(item, 'TAKEN')}
+                        className="min-h-11 min-w-[68px] rounded-xl bg-purple-600 px-2 text-[11px] font-extrabold text-white disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                      >
+                        {isPending ? '기록 중' : '복용하기'}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {!isRecorded ? (
-                  <div className="mt-2 flex justify-end gap-2 pl-[5.5rem]">
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => void handleLog(item, 'SKIPPED')}
-                      className="min-h-11 min-w-[76px] rounded-xl border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
-                    >
-                      {isPending ? '기록 중' : '건너뛰기'}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => void handleLog(item, 'TAKEN')}
-                      className="min-h-11 min-w-[84px] rounded-xl bg-purple-700 px-3 text-xs font-bold text-white disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
-                    >
-                      {isPending ? '기록 중' : '복용하기'}
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })
+          )}
 
-      {!isLoading && !error && summary.total > 0 ? (
-        <p className="mt-2 px-1 text-xs font-medium text-gray-600">
-          오늘 {summary.recorded}/{summary.total}회 기록 · 복용 {summary.taken}회
-          {summary.skipped > 0 ? ` · 건너뜀 ${summary.skipped}회` : ''}
-          {doseItems.length > 3 ? ` · 외 ${doseItems.length - 3}회` : ''}
-        </p>
-      ) : null}
+          {!isLoading && !error && doseItems.length > 3 ? (
+            <p className="px-4 py-2 text-xs font-medium text-purple-900/50">
+              외 {doseItems.length - 3}회는 전체 관리에서 확인할 수 있어요.
+            </p>
+          ) : null}
+        </div>
+      </div>
     </section>
   );
 }
