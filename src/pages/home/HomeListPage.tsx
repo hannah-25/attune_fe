@@ -726,8 +726,11 @@ function sleepQualityLabel(quality: string): string {
 }
 
 function formatConsultationDate(dateString: string): string {
-  const [y, m, d] = dateString.split('-').map(Number);
+  const parts = dateString.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return dateString;
+  const [y, m, d] = parts;
   const date = new Date(y, m - 1, d);
+  if (isNaN(date.getTime())) return dateString;
   const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
   return `${m}월 ${d}일 (${weekDays[date.getDay()] ?? ''})`;
 }

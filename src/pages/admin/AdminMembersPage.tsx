@@ -881,7 +881,9 @@ function MemberActionDialog({
 
 function formatDate(value: string | null) {
   if (!value) return '—';
-  return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(value));
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '—';
+  return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
 }
 
 function formatProvider(provider: AdminMemberProvider | null) {
@@ -890,6 +892,8 @@ function formatProvider(provider: AdminMemberProvider | null) {
 
 function formatDateTime(value: string | null) {
   if (!value) return '—';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '—';
   return new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric',
     month: '2-digit',
@@ -897,11 +901,13 @@ function formatDateTime(value: string | null) {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).format(new Date(value));
+  }).format(d);
 }
 
 function formatRelative(value: string) {
-  const diff = Date.now() - new Date(value).getTime();
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '—';
+  const diff = Date.now() - d.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));
   if (hours < 1) return '방금 전';
   if (hours < 24) return `${hours}시간 전`;
