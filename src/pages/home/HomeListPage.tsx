@@ -302,15 +302,16 @@ export default function HomeListPage() {
           </span>
           {todayJournal ? (() => {
             const { percent, isComplete } = calcJournalCompletion(todayJournal);
+            const checked = todayJournal.checked;
             const contentPreview = (
               <div className="mt-2 space-y-1.5">
-                {todayJournal.checked.sleep ? (
+                {checked?.sleep ? (
                   <p className="text-xs text-gray-700">
-                    수면 {todayJournal.checked.sleep.sleepHour}h · {sleepQualityLabel(todayJournal.checked.sleep.sleepQuality)}
+                    수면 {checked.sleep.sleepHour}h · {sleepQualityLabel(checked.sleep.sleepQuality)}
                   </p>
                 ) : null}
-                {todayJournal.checked.meal ? (() => {
-                  const { ateBreakfast, ateLunch, ateDinner } = todayJournal.checked.meal!;
+                {checked?.meal ? (() => {
+                  const { ateBreakfast, ateLunch, ateDinner } = checked.meal;
                   const eaten = [ateBreakfast && '아침', ateLunch && '점심', ateDinner && '저녁'].filter(Boolean) as string[];
                   return eaten.length > 0 ? (
                     <p className="text-xs text-gray-700">{eaten.join(' · ')}</p>
@@ -318,9 +319,9 @@ export default function HomeListPage() {
                 })() : null}
                 {(() => {
                   const tags = [
-                    ...todayJournal.checked.conditions.map((t) => t.condition),
-                    ...todayJournal.checked.sideEffects.map((t) => t.sideEffect),
-                    ...todayJournal.checked.troubles.map((t) => t.trouble),
+                    ...(checked?.conditions?.map((t) => t.condition) ?? []),
+                    ...(checked?.sideEffects?.map((t) => t.sideEffect) ?? []),
+                    ...(checked?.troubles?.map((t) => t.trouble) ?? []),
                   ];
                   return tags.length > 0 ? (
                     <div className="flex flex-wrap gap-1 pt-0.5">

@@ -86,6 +86,8 @@ export default function AdminNoticesPage() {
         title: notice.title,
         content: notice.content,
         isPinned: notice.isPinned,
+        sendNotification: false,
+        sendEmail: false,
       });
     } catch (loadError) {
       setError(toErrorMessage(loadError, '공지 상세를 불러오지 못했습니다.'));

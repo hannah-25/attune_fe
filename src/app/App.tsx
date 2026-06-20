@@ -116,7 +116,9 @@ function ProtectedRoute() {
 }
 
 function AdminRoute() {
-  const usesMockAdminApi = (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
+  const usesMockAdminApi =
+    !import.meta.env.PROD
+    && (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
 
   if (!usesMockAdminApi && (!getAccessToken() || isGuestMode())) {
     return <Navigate to="/login" replace />;

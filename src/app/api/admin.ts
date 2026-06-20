@@ -66,7 +66,9 @@ export type AdminAuditLogListParams = {
 
 export type AdminAuditLogListResponse = AdminAuditLog[];
 
-export const adminUsesMockApi = (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
+export const adminUsesMockApi =
+  !import.meta.env.PROD
+  && (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
 let members = mockAdminMembers.map((member) => ({ ...member }));
 let auditLogs = mockAdminAuditLogs.map((log) => ({ ...log }));
 
@@ -219,6 +221,18 @@ export async function changeAdminMemberStatus(
   if (!member) throw new Error('회원을 찾을 수 없습니다.');
   const updated: AdminMember = { ...member, status: payload.status };
   members = members.map((item) => (item.id === memberUuid ? updated : item));
+  auditLogs = [
+    {
+      id: `audit-${Date.now()}`,
+      action: 'STATUS_CHANGED',
+      targetReference: `member_${memberUuid}`,
+      targetLabel: member.nickname,
+      administrator: 'admin@atune.app',
+      reason: payload.reason,
+      createdAt: new Date().toISOString(),
+    },
+    ...auditLogs,
+  ];
   return updated;
 }
 

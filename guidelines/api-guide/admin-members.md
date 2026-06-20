@@ -81,6 +81,26 @@ Query:
 `withdrawalScheduledAt`은 서버가 보존 기간 정책을 적용해 계산하며 프론트에서 직접
 계산하지 않는다. 페이지 범위가 잘못되면 `400 Bad Request`를 반환한다.
 
+## 회원 상태 변경
+
+`POST /v1/admin/members/{memberUuid}/status`
+
+```json
+{
+  "status": "SUSPENDED",
+  "reason": "운영 정책 위반 확인"
+}
+```
+
+성공: `200 OK`와 상태가 변경된 회원 객체.
+
+- `status`: `ACTIVE | SUSPENDED`
+- 처리 사유는 trim 후 5자 이상이어야 한다.
+- 회원 없음: `404`
+- 다른 요청으로 상태가 변경됨: `409`
+- 관리자 본인 계정에 대한 상태 변경은 서버에서 거부한다.
+- 성공한 변경은 `STATUS_CHANGED` 관리자 작업 이력으로 기록한다.
+
 ## 탈퇴 요청 취소
 
 `POST /v1/admin/members/{memberUuid}/withdrawal/cancel`
@@ -149,6 +169,7 @@ Query:
 
 - `WITHDRAWAL_CANCELLED`
 - `MEMBER_DELETED`
+- `STATUS_CHANGED`
 
 영구 삭제 로그에는 이메일과 닉네임을 저장하지 않는다. `targetReference`는 서버
 비밀키 기반 HMAC-SHA256으로 생성한다.
