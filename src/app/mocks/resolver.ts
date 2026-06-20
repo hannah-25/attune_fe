@@ -750,11 +750,15 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   const medicationMatch = p.match(/^\/v1\/user-medications\/(\d+)$/);
   if (medicationMatch && m === 'PATCH') {
     const id = Number(medicationMatch[1]);
-    let updatedMedication: (typeof mockMedications)[number] | null = null;
+    const medications = guestRead<typeof mockMedications>('medications') ?? mockMedications;
+    const currentMedication = medications.find((medication) => medication.userMedicationId === id);
+    const updatedMedication = currentMedication
+      ? { ...currentMedication, ...(body as object) }
+      : null;
+
     guestWrite<typeof mockMedications>('medications', (prev) =>
       (prev ?? mockMedications).map((m) => {
-        if (m.userMedicationId !== id) return m;
-        updatedMedication = { ...m, ...(body as object) };
+        if (m.userMedicationId !== id || !updatedMedication) return m;
         return updatedMedication;
       }),
     );
