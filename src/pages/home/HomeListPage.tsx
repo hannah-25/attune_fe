@@ -19,7 +19,8 @@ import { TabBar } from '@/components/TabBar';
 import { getTodosByDate } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { getSummary, type SummaryStats } from '@/api/medicationAnalysis';
-import { getJournal, getJournalDates } from '@/api/journal';
+import { getJournal, getJournalDates, type JournalDetail } from '@/api/journal';
+import { getConsultations, type ConsultationDetail } from '@/api/consultation';
 import { getMyProfile } from '@/api/user';
 import HomeMedicationSection from './HomeMedicationSection';
 
@@ -65,6 +66,8 @@ export default function HomeListPage() {
   const [schedulesLoadError, setSchedulesLoadError] = useState('');
   const [weeklyStatsLoading, setWeeklyStatsLoading] = useState(true);
   const [weeklyStatsLoadError, setWeeklyStatsLoadError] = useState('');
+  const [todayJournal, setTodayJournal] = useState<JournalDetail | null>(null);
+  const [upcomingConsultation, setUpcomingConsultation] = useState<ConsultationDetail | null>(null);
   const loadTodos = useCallback(async () => {
     const requestId = todoRequestIdRef.current + 1;
     todoRequestIdRef.current = requestId;
@@ -132,6 +135,36 @@ export default function HomeListPage() {
       if (mountedRef.current && requestId === scheduleRequestIdRef.current) {
         setSchedulesLoading(false);
       }
+    }
+  }, []);
+
+  const loadTodayJournal = useCallback(async () => {
+    try {
+      const result = await getJournal(toDateKey(new Date()));
+      if (!mountedRef.current) return;
+      setTodayJournal(result ?? null);
+    } catch {
+      // 실패 시 CTA 유지
+    }
+  }, []);
+
+  const loadUpcomingConsultation = useCallback(async () => {
+    try {
+      const today = new Date();
+      const result = await getConsultations({
+        startDate: toDateKey(today),
+        endDate: toDateKey(addDays(today, 90)),
+      }) as ConsultationDetail[];
+      if (!mountedRef.current) return;
+      const next = Array.isArray(result)
+        ? [...result].sort(
+            (a, b) =>
+              new Date(a.consultationDate).getTime() - new Date(b.consultationDate).getTime(),
+          )[0] ?? null
+        : null;
+      setUpcomingConsultation(next);
+    } catch {
+      // 실패 시 카드 미표시
     }
   }, []);
 
@@ -203,17 +236,22 @@ export default function HomeListPage() {
     void loadWeeklyStats();
     void loadTodos();
     void loadSchedules();
+    void loadTodayJournal();
+    void loadUpcomingConsultation();
 
     return () => {
       mountedRef.current = false;
     };
-  }, [loadSchedules, loadTodos, loadWeeklyStats]);
+  }, [loadSchedules, loadTodos, loadWeeklyStats, loadTodayJournal, loadUpcomingConsultation]);
 
   const nextConsultation = scheduleItems.find((item) =>
     /(병원|진료|상담|의원)/.test(item.title),
   ) ?? null;
   const consultationDday =
     nextConsultation !== null ? calcDday(nextConsultation.startTime) : null;
+
+  const upcomingConsultationDday =
+    upcomingConsultation !== null ? calcDday(upcomingConsultation.consultationDate) : null;
 
   return (
     <div
@@ -251,24 +289,117 @@ export default function HomeListPage() {
           className="relative min-h-[108px] w-full overflow-hidden rounded-[1.75rem] bg-purple-100 p-4 text-left shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
         >
           <span
-            className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-purple-200/65"
+            className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-purple-200/65"
             aria-hidden="true"
           />
-          <span className="relative z-[1] block max-w-[200px] pr-10 text-base font-extrabold text-gray-900">
-            오늘 일지 작성하기
-          </span>
-          <span className="relative z-[1] mt-1.5 block max-w-[220px] truncate pr-10 text-xs font-medium text-gray-700">
-            감정 · 증상 · 수면 · 목표를 기록해 보세요
-          </span>
           <span
-            className="absolute bottom-4 right-4 flex h-10 w-10 rotate-6 items-center justify-center rounded-[0.875rem] bg-purple-200 text-purple-700"
+            className="absolute bottom-4 right-4 flex h-8 w-8 rotate-6 items-center justify-center rounded-[0.75rem] bg-purple-200 text-purple-700"
             aria-hidden="true"
           >
-            <NotebookPen className="h-5 w-5" strokeWidth={1.8} />
+            <NotebookPen className="h-4 w-4" strokeWidth={1.8} />
           </span>
+          {todayJournal ? (() => {
+            const { percent, isComplete } = calcJournalCompletion(todayJournal);
+            const contentPreview = (
+              <div className="mt-2 space-y-1.5">
+                {todayJournal.checked.sleep ? (
+                  <p className="text-xs text-gray-700">
+                    수면 {todayJournal.checked.sleep.sleepHour}h · {sleepQualityLabel(todayJournal.checked.sleep.sleepQuality)}
+                  </p>
+                ) : null}
+                {todayJournal.checked.meal ? (() => {
+                  const { ateBreakfast, ateLunch, ateDinner } = todayJournal.checked.meal!;
+                  const eaten = [ateBreakfast && '아침', ateLunch && '점심', ateDinner && '저녁'].filter(Boolean) as string[];
+                  return eaten.length > 0 ? (
+                    <p className="text-xs text-gray-700">{eaten.join(' · ')}</p>
+                  ) : null;
+                })() : null}
+                {(() => {
+                  const tags = [
+                    ...todayJournal.checked.conditions.map((t) => t.condition),
+                    ...todayJournal.checked.sideEffects.map((t) => t.sideEffect),
+                    ...todayJournal.checked.troubles.map((t) => t.trouble),
+                  ];
+                  return tags.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {tags.slice(0, 3).map((tag, i) => (
+                        <span key={i} className="rounded-full bg-purple-200/70 px-2 py-0.5 text-[10px] font-semibold text-purple-800">
+                          {tag}
+                        </span>
+                      ))}
+                      {tags.length > 3 ? (
+                        <span className="self-center text-[10px] font-medium text-purple-700/60">+{tags.length - 3}</span>
+                      ) : null}
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+            );
+
+            if (isComplete) {
+              return (
+                <div className="relative z-[1] pr-12">
+                  <div className="flex items-center gap-1.5">
+                    <Check className="h-4 w-4 text-purple-700" strokeWidth={2.5} />
+                    <span className="text-sm font-extrabold text-gray-900">오늘 일지 작성 완료</span>
+                  </div>
+                  {contentPreview}
+                </div>
+              );
+            }
+            return (
+              <div className="relative z-[1] pr-12">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-gray-900">오늘 일지</span>
+                  <span className="rounded-full bg-purple-300/60 px-2 py-0.5 text-[10px] font-bold leading-none text-purple-900">
+                    {percent}%
+                  </span>
+                </div>
+                <span className="mt-1 block text-xs font-medium text-gray-700">
+                  감정 · 증상 · 수면 · 목표를 기록해 보세요
+                </span>
+                {contentPreview}
+              </div>
+            );
+          })() : (
+            <div className="relative z-[1] pr-12">
+              <span className="block text-base font-extrabold text-gray-900">오늘 일지 작성하기</span>
+              <span className="mt-1.5 block text-xs font-medium text-gray-700">
+                감정 · 증상 · 수면 · 목표를 기록해 보세요
+              </span>
+            </div>
+          )}
         </button>
 
         <HomeMedicationSection />
+
+        {upcomingConsultation !== null && upcomingConsultationDday !== null ? (
+          <button
+            type="button"
+            onClick={() => navigate('/counseling')}
+            className="w-full overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white p-4 text-left shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-900">다음 상담</p>
+                <p className="mt-1 text-xs text-gray-600">
+                  {formatConsultationDate(upcomingConsultation.consultationDate)}
+                  {upcomingConsultation.place ? ` · ${upcomingConsultation.place}` : ''}
+                </p>
+                {upcomingConsultation.doctorName ? (
+                  <p className="mt-0.5 text-xs text-gray-500">{upcomingConsultation.doctorName}</p>
+                ) : null}
+              </div>
+              <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                upcomingConsultationDday === 0
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-purple-100 text-purple-700'
+              }`}>
+                {upcomingConsultationDday === 0 ? 'D-day' : `D-${upcomingConsultationDday}`}
+              </span>
+            </div>
+          </button>
+        ) : null}
 
         <section>
           <SectionHeader
@@ -280,7 +411,7 @@ export default function HomeListPage() {
             {schedulesLoading || todosLoading ? (
               <StatusRow>계획을 불러오고 있어요.</StatusRow>
             ) : schedulesLoadError || todosLoadError ? (
-              <div className="flex min-h-[56px] flex-col justify-center gap-1" role="alert">
+              <div className="flex min-h-[56px] flex-col justify-center gap-1 px-4" role="alert">
                 {schedulesLoadError ? (
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-xs text-red-700">{schedulesLoadError}</span>
@@ -458,7 +589,7 @@ function SectionHeader({
   title: string;
 }) {
   return (
-    <div className="mb-3 flex items-center justify-between px-1">
+    <div className="mb-3 flex items-center justify-between">
       <h2 className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
         {icon}
         {title}
@@ -488,7 +619,7 @@ function PlanItemRow({ item, onClick }: { item: PlanItem; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[68px] w-full items-center gap-3 border-b border-gray-200 text-left last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
+      className="flex min-h-[68px] w-full items-center gap-3 border-b border-gray-200 px-4 text-left last:border-b-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
     >
       <span className="w-11 shrink-0 text-xs font-extrabold text-gray-700">{timeLabel}</span>
       {item.kind === 'schedule'
@@ -517,7 +648,7 @@ function PlanItemRow({ item, onClick }: { item: PlanItem; onClick: () => void })
 
 function StatusRow({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-[68px] items-center text-xs font-medium text-gray-600" role="status">
+    <div className="flex min-h-[68px] items-center px-4 text-xs font-medium text-gray-600" role="status">
       {children}
     </div>
   );
@@ -584,6 +715,54 @@ function formatTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16) || '--:--';
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function sleepQualityLabel(quality: string): string {
+  if (quality === 'GOOD') return '좋음';
+  if (quality === 'NORMAL') return '보통';
+  return '나쁨';
+}
+
+function formatConsultationDate(dateString: string): string {
+  const [y, m, d] = dateString.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+  return `${m}월 ${d}일 (${weekDays[date.getDay()] ?? ''})`;
+}
+
+function calcJournalCompletion(journal: JournalDetail): { percent: number; isComplete: boolean } {
+  const hasActiveTags =
+    journal.activeTags.conditions.length > 0 ||
+    journal.activeTags.sideEffects.length > 0 ||
+    journal.activeTags.troubles.length > 0;
+  const hasActiveGoals = journal.activeTags.goals.length > 0;
+
+  const sections: boolean[] = [
+    !!journal.checked.sleep,
+    !!journal.checked.meal,
+    ...(hasActiveTags
+      ? [
+          journal.checked.conditions.length > 0 ||
+            journal.checked.sideEffects.length > 0 ||
+            journal.checked.troubles.length > 0,
+        ]
+      : []),
+    ...(hasActiveGoals
+      ? [
+          journal.activeTags.goals.every((g) =>
+            journal.checked.goals.some((cg) => cg.goalId === g.goalId),
+          ),
+        ]
+      : []),
+  ];
+
+  const total = sections.length;
+  if (total === 0) return { percent: 0, isComplete: false };
+  const completed = sections.filter(Boolean).length;
+  return {
+    percent: Math.round((completed / total) * 100),
+    isComplete: completed === total,
+  };
 }
 
 function calcDday(dateString: string): number {

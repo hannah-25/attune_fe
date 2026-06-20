@@ -121,21 +121,21 @@ export default function HomeMedicationSection({ className }: { className?: strin
 
   return (
     <section className={className} aria-busy={isLoading || loggingKeys.length > 0}>
-      <div className="overflow-hidden rounded-[1.75rem] bg-purple-50 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]">
+      <div className="overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]">
         <button
           type="button"
           onClick={() => navigate('/medication')}
           className="relative w-full overflow-hidden px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
         >
           <span
-            className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-purple-200/50"
+            className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-purple-100/50"
             aria-hidden="true"
           />
           <span
-            className="absolute bottom-2 right-4 flex h-9 w-9 rotate-6 items-center justify-center rounded-[0.875rem] bg-purple-100 text-purple-600"
+            className="absolute bottom-2 right-4 flex h-7 w-7 rotate-6 items-center justify-center rounded-[0.625rem] bg-purple-100 text-purple-600"
             aria-hidden="true"
           >
-            <Pill className="h-5 w-5" strokeWidth={1.8} />
+            <Pill className="h-4 w-4" strokeWidth={1.8} />
           </span>
           <h2 className="relative z-[1] text-sm font-bold text-gray-900">오늘 복약</h2>
         </button>
@@ -154,7 +154,7 @@ export default function HomeMedicationSection({ className }: { className?: strin
             </div>
           ) : showLoading ? (
             <div className="flex min-h-[52px] items-center px-4" role="status" aria-live="polite">
-              <span className="text-xs font-medium text-purple-700/60">복약 정보를 불러오고 있어요.</span>
+              <span className="text-xs font-medium text-gray-400">복약 정보를 불러오고 있어요.</span>
             </div>
           ) : activeMedicationCount === 0 ? (
             <button
@@ -162,11 +162,11 @@ export default function HomeMedicationSection({ className }: { className?: strin
               onClick={() => navigate('/medication')}
               className="min-h-[52px] w-full px-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
             >
-              <span className="block text-xs font-medium text-purple-900/60">복용 중인 약이 없어요.</span>
+              <span className="block text-xs font-medium text-gray-500">복용 중인 약이 없어요.</span>
               <span className="mt-1 block text-xs font-bold text-purple-700">복약 추가하기</span>
             </button>
           ) : totalDoses === 0 ? (
-            <div className="flex min-h-[52px] items-center px-4 text-xs font-medium text-purple-900/60">
+            <div className="flex min-h-[52px] items-center px-4 text-xs font-medium text-gray-500">
               등록된 복약 시간이 없어요.
             </div>
           ) : (
@@ -175,31 +175,26 @@ export default function HomeMedicationSection({ className }: { className?: strin
               const isRecorded = item.status !== 'PENDING';
 
               return (
-                <div
-                  key={item.key}
-                  className="flex min-h-[52px] items-center gap-2 px-4"
-                >
-                  <div className="w-10 shrink-0 text-xs font-extrabold text-purple-900/70">{item.time}</div>
-                  <div className="min-w-0 grow">
-                    <div
-                      className={`truncate text-xs font-extrabold ${
-                        isRecorded ? 'text-purple-900/40 line-through' : 'text-gray-900'
-                      }`}
-                    >
-                      {item.medicationName}
-                    </div>
+                <div key={item.key} className="flex min-h-[52px] items-center gap-2 px-4">
+                  <div className="w-10 shrink-0 text-xs font-extrabold text-gray-600">{item.time}</div>
+                  <div
+                    className={`min-w-0 grow truncate text-[13px] font-bold ${
+                      isRecorded ? 'text-gray-400 line-through' : 'text-gray-900'
+                    }`}
+                  >
+                    {item.medicationName}
                   </div>
                   {isRecorded ? (
-                    <span className="shrink-0 text-xs font-bold text-purple-900/40">
+                    <span className="shrink-0 text-xs font-medium text-gray-400">
                       {item.status === 'TAKEN' ? '복용 완료' : '건너뜀'}
                     </span>
                   ) : (
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="flex shrink-0 items-center">
                       <button
                         type="button"
                         disabled={isPending}
                         onClick={() => void handleLog(item, 'SKIPPED')}
-                        className="min-h-11 rounded-lg px-1.5 text-[11px] font-medium text-purple-900/30 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                        className="min-h-11 px-2 text-[10px] font-normal text-gray-300 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
                       >
                         건너뛰기
                       </button>
@@ -207,9 +202,11 @@ export default function HomeMedicationSection({ className }: { className?: strin
                         type="button"
                         disabled={isPending}
                         onClick={() => void handleLog(item, 'TAKEN')}
-                        className="min-h-11 min-w-[68px] rounded-xl bg-purple-600 px-2 text-[11px] font-extrabold text-white disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                        className="flex min-h-11 items-center pl-1 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-1"
                       >
-                        {isPending ? '기록 중' : '복용하기'}
+                        <span className="rounded-full bg-purple-500 px-3 py-1.5 text-[11px] font-bold text-white">
+                          {isPending ? '기록 중' : '복용하기'}
+                        </span>
                       </button>
                     </div>
                   )}
@@ -219,7 +216,7 @@ export default function HomeMedicationSection({ className }: { className?: strin
           )}
 
           {!isLoading && !error && doseItems.length > 3 ? (
-            <p className="px-4 py-2 text-xs font-medium text-purple-900/50">
+            <p className="px-4 py-2 text-xs font-medium text-gray-500">
               외 {doseItems.length - 3}회는 전체 관리에서 확인할 수 있어요.
             </p>
           ) : null}
