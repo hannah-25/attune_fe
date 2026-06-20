@@ -737,25 +737,25 @@ function formatConsultationDate(dateString: string): string {
 
 function calcJournalCompletion(journal: JournalDetail): { percent: number; isComplete: boolean } {
   const hasActiveTags =
-    journal.activeTags.conditions.length > 0 ||
-    journal.activeTags.sideEffects.length > 0 ||
-    journal.activeTags.troubles.length > 0;
-  const hasActiveGoals = journal.activeTags.goals.length > 0;
+    (journal.activeTags?.conditions?.length ?? 0) > 0 ||
+    (journal.activeTags?.sideEffects?.length ?? 0) > 0 ||
+    (journal.activeTags?.troubles?.length ?? 0) > 0;
+  const hasActiveGoals = (journal.activeTags?.goals?.length ?? 0) > 0;
 
   const sections: boolean[] = [
-    !!journal.checked.sleep,
-    !!journal.checked.meal,
+    !!journal.checked?.sleep,
+    !!journal.checked?.meal,
     ...(hasActiveTags
       ? [
-          journal.checked.conditions.length > 0 ||
-            journal.checked.sideEffects.length > 0 ||
-            journal.checked.troubles.length > 0,
+          (journal.checked?.conditions?.length ?? 0) > 0 ||
+            (journal.checked?.sideEffects?.length ?? 0) > 0 ||
+            (journal.checked?.troubles?.length ?? 0) > 0,
         ]
       : []),
     ...(hasActiveGoals
       ? [
-          journal.activeTags.goals.every((g) =>
-            journal.checked.goals.some((cg) => cg.goalId === g.goalId),
+          (journal.activeTags?.goals ?? []).every((g) =>
+            (journal.checked?.goals ?? []).some((cg) => cg.goalId === g.goalId),
           ),
         ]
       : []),

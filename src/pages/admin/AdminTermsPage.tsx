@@ -79,7 +79,18 @@ export default function AdminTermsPage() {
     setError('');
     setMessage('');
     try {
-      const result = await createAdminTerms({ ...form, title, content });
+      const toUtcIso = (localStr: string) => {
+        if (!localStr) return localStr;
+        const d = new Date(localStr);
+        return Number.isNaN(d.getTime()) ? localStr : d.toISOString();
+      };
+      const result = await createAdminTerms({
+        ...form,
+        title,
+        content,
+        createdAt: toUtcIso(form.createdAt),
+        effectiveDate: toUtcIso(form.effectiveDate),
+      });
       setMessage(`${TERM_LABELS[result.type]} v${result.version} 등록을 완료했습니다.`);
       setTermsRefreshing(true);
       setTermsRefreshKey((k) => k + 1);

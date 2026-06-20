@@ -30,7 +30,6 @@ import OnboardingAiResultPage from '../pages/onboarding/OnboardingAiResultPage';
 
 // Home
 import HomeListPage from '../pages/home/HomeListPage';
-import HomePreviewPage from '../pages/home/HomePreviewPage';
 
 // Journal
 import JournalFullPage from '../pages/journal/JournalFullPage';
@@ -176,7 +175,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<RootRoute />} />
         <Route path="/overview" element={<OverviewPage />} />
-        <Route path="/preview/home" element={<HomePreviewPage />} />
         <Route element={<AdminRoute />}>
           <Route
             path="/admin"
