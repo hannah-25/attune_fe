@@ -85,7 +85,7 @@ export function normalizeNoticeListResponse(
     totalPages: extractNumber(
       response,
       'totalPages',
-      content.length === 0 ? 0 : Math.ceil(totalElements / (params.size ?? content.length)),
+      content.length === 0 ? 0 : Math.ceil(totalElements / (params.size || content.length)),
     ),
     totalElements,
     notices: content,
