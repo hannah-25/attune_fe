@@ -192,10 +192,12 @@ export default function HomeListPage() {
 
       journalDetails.forEach((detail) => {
         if (!detail) return;
+        const goals = detail.checked?.goals ?? [];
         const checkedScores = new Map(
-          detail.checked.goals.map((goal) => [goal.goalId, goal.score]),
+          goals.map((goal) => [goal.goalId, goal.score]),
         );
-        detail.activeTags.goals.forEach((goal) => {
+        const activeGoals = detail.activeTags?.goals ?? [];
+        activeGoals.forEach((goal) => {
           goalScoreTotal += checkedScores.get(goal.goalId) ?? 0;
           goalScoreMaximum += 10;
         });
