@@ -8,9 +8,10 @@ type AppViewportProps = {
 export function AppViewport({ children }: AppViewportProps) {
   const { pathname } = useLocation();
   const isOverview = pathname === '/overview';
+  const isAdmin = pathname.startsWith('/admin');
   const isPageScrollable = pathname === '/' || pathname === '/calendar';
 
-  if (isOverview) {
+  if (isOverview || isAdmin) {
     return (
       <div className="fixed inset-0 overflow-auto bg-white">
         {children}

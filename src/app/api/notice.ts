@@ -4,22 +4,63 @@ export type NoticeSummary = {
   noticeId: number;
   title: string;
   createdAt: string;
+  isPinned?: boolean;
 };
 
-export type NoticeDetail = NoticeSummary & {
+export type NoticeListItem = NoticeSummary & {
+  isPinned: boolean;
+};
+
+export type NoticeDetail = Omit<NoticeSummary, 'isPinned'> & {
   content: string;
+  updatedAt: string;
+  isPinned: boolean;
 };
 
-export function getNotices(params: { page?: number; size?: number; q?: string } = {}) {
+export type NoticeListParams = {
+  page?: number;
+  size?: number;
+  q?: string;
+};
+
+export type NoticeListResponse = {
+  content: NoticeListItem[];
+  totalPages: number;
+  totalElements: number;
+  /** @deprecated Use content. */
+  notices: NoticeListItem[];
+  /** @deprecated Use totalElements. */
+  totalCount: number;
+  /** @deprecated Request paging state is not part of the server response. */
+  page: number;
+  /** @deprecated Request paging state is not part of the server response. */
+  size: number;
+};
+
+type NoticeListPayload = {
+  content?: unknown;
+  notices?: unknown;
+  totalPages?: unknown;
+  totalElements?: unknown;
+  totalCount?: unknown;
+  page?: unknown;
+  size?: unknown;
+  data?: unknown;
+};
+
+const noticePinnedById = new Map<number, boolean>();
+
+export function getNotices(params: NoticeListParams = {}): Promise<NoticeListResponse> {
   return apiRequest<unknown>(`/v1/notices?${new URLSearchParams(toStringParams(params))}`, { auth: false })
     .then((payload) => normalizeNoticeListResponse(payload, params));
 }
 
-export function getNotice(noticeId: number) {
-  return apiRequest<NoticeDetail>(`/v1/notices/${noticeId}`, { auth: false });
+export function getNotice(noticeId: number): Promise<NoticeDetail> {
+  return apiRequest<unknown>(`/v1/notices/${noticeId}`, { auth: false })
+    .then((payload) => normalizeNoticeDetail(payload, noticeId));
 }
 
-function toStringParams(params: { page?: number; size?: number; q?: string }) {
+function toStringParams(params: NoticeListParams) {
   return Object.fromEntries(
     Object.entries(params)
       .filter(([, value]) => value !== undefined && value !== '')
@@ -27,37 +68,71 @@ function toStringParams(params: { page?: number; size?: number; q?: string }) {
   );
 }
 
-function normalizeNoticeListResponse(payload: unknown, params: { page?: number; size?: number; q?: string }) {
-  const notices = extractNotices(payload).map(normalizeNoticeSummary);
+export function normalizeNoticeListResponse(
+  payload: unknown,
+  params: NoticeListParams = {},
+): NoticeListResponse {
+  const response = unwrapNoticeListPayload(payload);
+  const content = extractNotices(response).map(normalizeNoticeListItem);
+  content.forEach((notice) => {
+    noticePinnedById.set(notice.noticeId, notice.isPinned);
+  });
+  const totalElements = extractNumber(response, 'totalElements',
+    extractNumber(response, 'totalCount', content.length));
 
   return {
-    notices,
-    totalCount: extractNumber(payload, 'totalCount', notices.length),
-    page: extractNumber(payload, 'page', params.page ?? 0),
-    size: extractNumber(payload, 'size', params.size ?? notices.length),
+    content,
+    totalPages: extractNumber(
+      response,
+      'totalPages',
+      content.length === 0 ? 0 : Math.ceil(totalElements / (params.size ?? content.length)),
+    ),
+    totalElements,
+    notices: content,
+    totalCount: totalElements,
+    page: extractNumber(response, 'page', params.page ?? 0),
+    size: extractNumber(response, 'size', params.size ?? content.length),
   };
 }
 
-function extractNotices(payload: unknown): unknown[] {
-  if (Array.isArray(payload)) return payload;
-  if (!payload || typeof payload !== 'object') return [];
+function normalizeNoticeDetail(payload: unknown, noticeId: number): NoticeDetail {
+  const record = payload && typeof payload === 'object'
+    ? payload as Record<string, unknown>
+    : {};
+  const normalizedId = toNumber(record.noticeId ?? record.id, noticeId);
 
-  const record = payload as Record<string, unknown>;
-  if (Array.isArray(record.notices)) return record.notices;
-  if (Array.isArray(record.content)) return record.content;
+  return {
+    noticeId: normalizedId,
+    title: toString(record.title),
+    content: toString(record.content),
+    createdAt: toString(record.createdAt ?? record.created_at),
+    updatedAt: toString(record.updatedAt ?? record.updated_at),
+    isPinned: record.isPinned !== undefined || record.pinned !== undefined
+      ? toBoolean(record.isPinned ?? record.pinned)
+      : noticePinnedById.get(normalizedId) ?? false,
+  };
+}
 
-  if (record.data && typeof record.data === 'object') {
-    const data = record.data as Record<string, unknown>;
-    if (Array.isArray(data.notices)) return data.notices;
-    if (Array.isArray(data.content)) return data.content;
+function unwrapNoticeListPayload(payload: unknown): NoticeListPayload {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { content: payload };
   }
 
+  const record = payload as NoticeListPayload;
+  return record.data && typeof record.data === 'object' && !Array.isArray(record.data)
+    ? record.data as NoticeListPayload
+    : record;
+}
+
+function extractNotices(payload: NoticeListPayload): unknown[] {
+  if (Array.isArray(payload.content)) return payload.content;
+  if (Array.isArray(payload.notices)) return payload.notices;
   return [];
 }
 
-function normalizeNoticeSummary(item: unknown): NoticeSummary {
+function normalizeNoticeListItem(item: unknown): NoticeListItem {
   if (!item || typeof item !== 'object') {
-    return { noticeId: 0, title: '', createdAt: '' };
+    return { noticeId: 0, title: '', createdAt: '', isPinned: false };
   }
 
   const record = item as Record<string, unknown>;
@@ -65,6 +140,7 @@ function normalizeNoticeSummary(item: unknown): NoticeSummary {
     noticeId: toNumber(record.noticeId ?? record.id),
     title: toString(record.title),
     createdAt: toString(record.createdAt ?? record.created_at ?? record.date),
+    isPinned: toBoolean(record.isPinned ?? record.pinned),
   };
 }
 
@@ -86,4 +162,11 @@ function toString(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value === null || value === undefined) return '';
   return String(value);
+}
+
+function toBoolean(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.toLowerCase() === 'true';
+  if (typeof value === 'number') return value !== 0;
+  return false;
 }

@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navigate, Outlet, Routes, Route } from 'react-router';
 import logoSquare from '@src/assets/logo-square.png';
 import { AppViewport } from './components/AppViewport';
 import GuestBanner from './components/GuestBanner';
-import { getAccessToken } from './api/client';
+import { ApiError, getAccessToken } from './api/client';
 import { isGuestMode } from './guest';
 import { getMyProfile } from './api/user';
 
@@ -84,14 +84,17 @@ import InquiryPage from '../pages/settings/InquiryPage';
 
 import OverviewPage from './pages/OverviewPage';
 
+const AdminMembersPage = lazy(() => import('../pages/admin/AdminMembersPage'));
+const AdminNoticesPage = lazy(() => import('../pages/admin/AdminNoticesPage'));
+const AdminTermsPage = lazy(() => import('../pages/admin/AdminTermsPage'));
+const AdminMarketingPage = lazy(() => import('../pages/admin/AdminMarketingPage'));
+
 function AppLoadingScreen() {
   return (
-    <div
-      className="w-full h-full bg-gray-50 flex items-center justify-center"
-    >
+    <div className="w-full h-full bg-gray-50 flex items-center justify-center" aria-live="polite">
       <img
         src={logoSquare}
-        alt="a.tune"
+        alt="a.tune 불러오는 중"
         className="w-36 h-36 object-contain"
         style={{ animation: 'float 3s ease-in-out infinite' }}
       />
@@ -113,14 +116,25 @@ function ProtectedRoute() {
   );
 }
 
+function AdminRoute() {
+  const usesMockAdminApi = (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
+
+  if (!usesMockAdminApi && (!getAccessToken() || isGuestMode())) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
+}
+
 function RootRoute() {
-  const [destination, setDestination] = useState<string | null>(null);
+  const [destination, setDestination] = useState<string | null>(() => {
+    if (isGuestMode()) return '/home';
+    if (!getAccessToken()) return '/splash';
+    return null;
+  });
 
   useEffect(() => {
-    if (isGuestMode()) {
-      setDestination('/home');
-      return;
-    }
+    if (destination) return;
 
     let ignore = false;
 
@@ -128,19 +142,32 @@ function RootRoute() {
       .then(() => {
         if (!ignore) setDestination('/home');
       })
-      .catch((err) => {
-        console.error('Failed to get profile for routing:', err);
-        if (!ignore) setDestination('/splash');
+      .catch((error: unknown) => {
+        if (ignore) return;
+
+        // A missing profile means onboarding has not been completed. Temporary
+        // network/server failures should not incorrectly reset an existing user.
+        if (error instanceof ApiError && error.status === 404) {
+          setDestination('/splash');
+          return;
+        }
+
+        console.error('Failed to verify profile while routing:', error);
+        setDestination('/home');
       });
 
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [destination]);
 
   if (!destination) return <AppLoadingScreen />;
 
-  return <Navigate to={destination} replace />;
+  if (destination === '/home') {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <Navigate to="/splash" replace />;
 }
 
 export default function App() {
@@ -150,6 +177,40 @@ export default function App() {
         <Route path="/" element={<RootRoute />} />
         <Route path="/overview" element={<OverviewPage />} />
         <Route path="/preview/home" element={<HomePreviewPage />} />
+        <Route element={<AdminRoute />}>
+          <Route
+            path="/admin"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminMembersPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/admin/notices"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminNoticesPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/admin/terms"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminTermsPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/admin/marketing"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminMarketingPage />
+              </Suspense>
+            )}
+          />
+        </Route>
 
         {/* Auth */}
         <Route path="/splash" element={<SplashPage />} />
