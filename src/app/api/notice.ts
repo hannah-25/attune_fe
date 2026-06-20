@@ -48,16 +48,20 @@ type NoticeListPayload = {
   data?: unknown;
 };
 
-const noticePinnedById = new Map<number, boolean>();
-
 export function getNotices(params: NoticeListParams = {}): Promise<NoticeListResponse> {
   return apiRequest<unknown>(`/v1/notices?${new URLSearchParams(toStringParams(params))}`, { auth: false })
     .then((payload) => normalizeNoticeListResponse(payload, params));
 }
 
-export function getNotice(noticeId: number): Promise<NoticeDetail> {
-  return apiRequest<unknown>(`/v1/notices/${noticeId}`, { auth: false })
-    .then((payload) => normalizeNoticeDetail(payload, noticeId));
+export async function getNotice(noticeId: number): Promise<NoticeDetail> {
+  const payload = await apiRequest<unknown>(`/v1/notices/${noticeId}`, { auth: false });
+  const detail = normalizeNoticeDetail(payload, noticeId);
+
+  if (hasPinnedValue(payload)) return detail;
+
+  const response = await getNotices({ q: detail.title, size: 100 });
+  const listItem = response.content.find((notice) => notice.noticeId === detail.noticeId);
+  return { ...detail, isPinned: listItem?.isPinned ?? false };
 }
 
 function toStringParams(params: NoticeListParams) {
@@ -74,9 +78,6 @@ export function normalizeNoticeListResponse(
 ): NoticeListResponse {
   const response = unwrapNoticeListPayload(payload);
   const content = extractNotices(response).map(normalizeNoticeListItem);
-  content.forEach((notice) => {
-    noticePinnedById.set(notice.noticeId, notice.isPinned);
-  });
   const totalElements = extractNumber(response, 'totalElements',
     extractNumber(response, 'totalCount', content.length));
 
@@ -96,9 +97,7 @@ export function normalizeNoticeListResponse(
 }
 
 function normalizeNoticeDetail(payload: unknown, noticeId: number): NoticeDetail {
-  const record = payload && typeof payload === 'object'
-    ? payload as Record<string, unknown>
-    : {};
+  const record = unwrapNoticeDetailPayload(payload);
   const normalizedId = toNumber(record.noticeId ?? record.id, noticeId);
 
   return {
@@ -107,10 +106,22 @@ function normalizeNoticeDetail(payload: unknown, noticeId: number): NoticeDetail
     content: toString(record.content),
     createdAt: toString(record.createdAt ?? record.created_at),
     updatedAt: toString(record.updatedAt ?? record.updated_at),
-    isPinned: record.isPinned !== undefined || record.pinned !== undefined
-      ? toBoolean(record.isPinned ?? record.pinned)
-      : noticePinnedById.get(normalizedId) ?? false,
+    isPinned: toBoolean(record.isPinned ?? record.pinned),
   };
+}
+
+function hasPinnedValue(payload: unknown): boolean {
+  const record = unwrapNoticeDetailPayload(payload);
+  return record.isPinned !== undefined || record.pinned !== undefined;
+}
+
+function unwrapNoticeDetailPayload(payload: unknown): Record<string, unknown> {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return {};
+
+  const record = payload as Record<string, unknown>;
+  return record.data && typeof record.data === 'object' && !Array.isArray(record.data)
+    ? record.data as Record<string, unknown>
+    : record;
 }
 
 function unwrapNoticeListPayload(payload: unknown): NoticeListPayload {

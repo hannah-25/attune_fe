@@ -67,7 +67,7 @@ export type AdminAuditLogListParams = {
 export type AdminAuditLogListResponse = AdminAuditLog[];
 
 export const adminUsesMockApi =
-  !import.meta.env.PROD
+  import.meta.env.DEV
   && (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
 let members = mockAdminMembers.map((member) => ({ ...member }));
 let auditLogs = mockAdminAuditLogs.map((log) => ({ ...log }));

@@ -246,14 +246,14 @@ export default function HomeListPage() {
     };
   }, [loadSchedules, loadTodos, loadWeeklyStats, loadTodayJournal, loadUpcomingConsultation]);
 
-  const nextConsultation = scheduleItems.find((item) =>
-    /(병원|진료|상담|의원)/.test(item.title),
-  ) ?? null;
-  const consultationDday =
-    nextConsultation !== null ? calcDday(nextConsultation.startTime) : null;
-
   const upcomingConsultationDday =
     upcomingConsultation !== null ? calcDday(upcomingConsultation.consultationDate) : null;
+  const consultationDday =
+    upcomingConsultationDday !== null
+    && upcomingConsultationDday >= 0
+    && upcomingConsultationDday <= 7
+      ? upcomingConsultationDday
+      : null;
 
   return (
     <div
@@ -542,11 +542,15 @@ export default function HomeListPage() {
               label="상담 기록"
               onClick={() => navigate('/counseling')}
             />
-            {consultationDday !== null && consultationDday >= 0 ? (
+            {consultationDday !== null ? (
               <ShortcutCircle
                 icon={<CalendarCheck className="h-5 w-5" strokeWidth={1.8} />}
                 label="상담 준비"
-                badge={consultationDday === 0 ? 'D-day' : `D-${consultationDday}`}
+                badge={
+                  consultationDday === 0
+                    ? 'D-day'
+                    : `D-${consultationDday}`
+                }
                 onClick={() => navigate('/counseling/prepare')}
               />
             ) : null}
@@ -772,12 +776,27 @@ function calcJournalCompletion(journal: JournalDetail): { percent: number; isCom
 }
 
 function calcDday(dateString: string): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  if (!match) return null;
+
+  const [, yearString, monthString, dayString] = match;
+  const year = Number(yearString);
+  const month = Number(monthString);
+  const day = Number(dayString);
+  const target = new Date(year, month - 1, day);
+
+  if (
+    target.getFullYear() !== year ||
+    target.getMonth() !== month - 1 ||
+    target.getDate() !== day
+  ) {
+    return null;
+  }
+
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(dateString);
-  if (Number.isNaN(target.getTime())) return null;
-  target.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const targetUtc = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+  return (targetUtc - todayUtc) / (1000 * 60 * 60 * 24);
 }
 
 function ShortcutCircle({
