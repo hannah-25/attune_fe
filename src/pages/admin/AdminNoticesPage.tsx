@@ -51,7 +51,7 @@ export default function AdminNoticesPage() {
     setError('');
     try {
       const response = await getNotices({ page, size: PAGE_SIZE, q: debouncedQuery });
-      setNotices(response.notices);
+      setNotices(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
     } catch (loadError) {
