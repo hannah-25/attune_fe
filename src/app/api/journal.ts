@@ -68,7 +68,13 @@ export function getJournal(date: string) {
 }
 
 export function getJournalDates(params: JournalDateRange) {
-  return apiRequest<{ dates: string[] }>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`);
+  return apiRequest<{ dates: string[] }>(`${JOURNALS_BASE_PATH}/dates?${new URLSearchParams(params)}`);
+}
+
+export type JournalEntry = JournalDetail & { date: string };
+
+export function getJournals(params: JournalDateRange) {
+  return apiRequest<{ journals: JournalEntry[] }>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`);
 }
 
 export function deleteJournal(date: string) {

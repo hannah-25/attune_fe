@@ -54,7 +54,6 @@ const sections: Group[] = [
   {
     group: '캘린더',
     pages: [
-      { path: '/home/calendar', label: '홈 — 캘린더',   desc: '달력 + 타임라인' },
       { path: '/calendar',          label: '캘린더 메인',     desc: '월간 통합뷰 (CAL-001)' },
       { path: '/calendar/event',    label: '일정 상세',        desc: '이벤트 상세 보기' },
       { path: '/calendar/new',      label: '새 일정',          desc: '일정 추가 · 카테고리' },

@@ -18,12 +18,24 @@ export type ConsultationPayload = {
   isFirstVisit: boolean;
 };
 
+type ConsultationListResponse = {
+  consultations: ConsultationDetail[];
+};
+
 export function createConsultation(payload: ConsultationPayload) {
   return apiRequest<void>('/v1/consultations', { method: 'POST', body: payload });
 }
 
-export function getConsultations(params: { startDate: string; endDate: string }) {
-  return apiRequest<unknown>(`/v1/consultations?${new URLSearchParams(params)}`);
+export async function getConsultations(params: {
+  startDate: string;
+  endDate: string;
+}): Promise<ConsultationDetail[]> {
+  const response = await apiRequest<ConsultationDetail[] | ConsultationListResponse>(
+    `/v1/consultations?${new URLSearchParams(params)}`,
+  );
+
+  if (Array.isArray(response)) return response;
+  return Array.isArray(response?.consultations) ? response.consultations : [];
 }
 
 export function getConsultation(consultationId: number) {

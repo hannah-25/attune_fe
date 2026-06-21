@@ -33,7 +33,6 @@ const sections: Group[] = [
     group: '홈',
     pages: [
       { path: '/home',          label: '홈 — 리스트' },
-      { path: '/home/calendar', label: '홈 — 캘린더' },
     ],
   },
   {
