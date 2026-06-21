@@ -104,11 +104,6 @@ function normalizeNoticeDetail(payload: unknown, noticeId: number): NoticeDetail
   };
 }
 
-function hasPinnedValue(payload: unknown): boolean {
-  const record = unwrapNoticeDetailPayload(payload);
-  return record.isPinned !== undefined || record.pinned !== undefined;
-}
-
 function unwrapNoticeDetailPayload(payload: unknown): Record<string, unknown> {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return {};
 

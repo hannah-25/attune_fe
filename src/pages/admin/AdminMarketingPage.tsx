@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { useDialogKeyboard } from '../../app/hooks/useDialogKeyboard';
 import { Megaphone, Send } from 'lucide-react';
 import {
   sendAdminMarketingPush,
@@ -163,9 +164,13 @@ function ConfirmDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogKeyboard(dialogRef, onCancel);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/25 p-4 backdrop-blur-sm">
       <div
+        ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="marketing-confirm-title"

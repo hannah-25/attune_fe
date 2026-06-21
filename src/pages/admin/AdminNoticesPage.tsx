@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDialogKeyboard } from '../../app/hooks/useDialogKeyboard';
 import { BellRing, ChevronLeft, ChevronRight, Megaphone, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import {
   createAdminNotice,
@@ -283,9 +284,12 @@ function NoticeDialog({
   onClose: () => void;
   onSubmit: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogKeyboard(dialogRef, onClose, !submitting);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/25 p-4 backdrop-blur-sm">
-      <div role="dialog" aria-modal="true" aria-labelledby="notice-dialog-title" className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="notice-dialog-title" className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <h2 id="notice-dialog-title" className="text-lg font-extrabold">{form.noticeId ? '공지 수정' : '공지 등록'}</h2>
           <button type="button" onClick={onClose} disabled={submitting} aria-label="닫기" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100">

@@ -74,15 +74,13 @@ export default function AdminMembersPage() {
   }, [query]);
 
   useEffect(() => {
-    const params = { query: debouncedQuery, status, page, refreshKey };
     if (
       lastFetchedRef.current
-      && lastFetchedRef.current.query === params.query
-      && lastFetchedRef.current.status === params.status
-      && lastFetchedRef.current.page === params.page
-      && lastFetchedRef.current.refreshKey === params.refreshKey
+      && lastFetchedRef.current.query === debouncedQuery
+      && lastFetchedRef.current.status === status
+      && lastFetchedRef.current.page === page
+      && lastFetchedRef.current.refreshKey === refreshKey
     ) return;
-    lastFetchedRef.current = params;
 
     const controller = new AbortController();
     setLoading(true);
@@ -97,6 +95,7 @@ export default function AdminMembersPage() {
       signal: controller.signal,
     })
       .then((result) => {
+        lastFetchedRef.current = { query: debouncedQuery, status, page: result.page, refreshKey };
         setMembers(result.members);
         setSummary(result.summary);
         setTotalElements(result.totalElements);
