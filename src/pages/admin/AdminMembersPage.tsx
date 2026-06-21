@@ -124,8 +124,7 @@ export default function AdminMembersPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    getAdminAuditLogs({ signal: controller.signal })
-      .then(setAuditLogs)
+    getAdminAuditLogs({ limit: 6, signal: controller.signal })
       .catch((loadError: unknown) => {
         if (loadError instanceof DOMException && loadError.name === 'AbortError') return;
         console.error('Failed to load admin audit logs:', loadError);
