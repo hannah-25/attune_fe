@@ -136,12 +136,17 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+function buildActiveJournalTags(): GuestJournalDetail['activeTags'] {
+  const activeTags = clone(mockJournalDetail.activeTags);
+  activeTags.conditions = clone(guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags);
+  activeTags.sideEffects = clone(guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags);
+  activeTags.troubles = clone(guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags);
+  return activeTags;
+}
+
 function buildDefaultJournalDetail(date: string): GuestJournalDetail {
   const detail = clone(mockJournalDetail);
-
-  detail.activeTags.conditions = guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags;
-  detail.activeTags.sideEffects = guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags;
-  detail.activeTags.troubles = guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags;
+  detail.activeTags = buildActiveJournalTags();
 
   const memoRecord = guestRead<{ journalDate: string; memo: string }>(`journals/${date}/memo`);
   if (memoRecord) detail.checked.memo = memoRecord.memo;
@@ -235,10 +240,9 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const dates = datesResponse.dates.filter(
       (date) => (!startDate || date >= startDate) && (!endDate || date <= endDate),
     );
-    const activeTags = buildDefaultJournalDetail(endDate || toDateKey(new Date())).activeTags;
 
     return ok({
-      activeTags,
+      activeTags: buildActiveJournalTags(),
       journals: dates.map((date) => ({
         date,
         checked: readJournalDetail(date).checked,
