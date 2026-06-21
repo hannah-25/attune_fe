@@ -321,16 +321,8 @@ function toKstMinutes(value: string): number | null {
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Seoul',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(date);
-  const hours = Number(parts.find((part) => part.type === 'hour')?.value);
-  const minutes = Number(parts.find((part) => part.type === 'minute')?.value);
-  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
-  return hours * 60 + minutes;
+  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  return kstDate.getUTCHours() * 60 + kstDate.getUTCMinutes();
 }
 
 function toMinutes(hhmm: string): number | null {

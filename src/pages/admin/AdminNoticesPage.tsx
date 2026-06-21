@@ -38,6 +38,15 @@ export default function AdminNoticesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const mountedRef = useRef(false);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -48,18 +57,24 @@ export default function AdminNoticesPage() {
   }, [query]);
 
   const loadNotices = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
     setLoading(true);
     setError('');
     try {
       const response = await getNotices({ page, size: PAGE_SIZE, q: debouncedQuery });
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       setNotices(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
     } catch (loadError) {
+      if (!mountedRef.current || requestId !== requestIdRef.current) return;
       setError(toErrorMessage(loadError, '공지 목록을 불러오지 못했습니다.'));
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (mountedRef.current && requestId === requestIdRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, [debouncedQuery, page]);
 
