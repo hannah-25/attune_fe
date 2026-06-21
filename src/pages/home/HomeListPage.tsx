@@ -19,7 +19,7 @@ import { TabBar } from '@/components/TabBar';
 import { getTodosByDate } from '@/api/todo';
 import { getSchedules, type ScheduleSummary } from '@/api/schedule';
 import { getSummary, type SummaryStats } from '@/api/medicationAnalysis';
-import { getJournal, getJournalDates, type JournalDetail } from '@/api/journal';
+import { getJournal, getJournals, type JournalDetail } from '@/api/journal';
 import { getConsultations, type ConsultationDetail } from '@/api/consultation';
 import { getMyProfile } from '@/api/user';
 import HomeMedicationSection from './HomeMedicationSection';
@@ -177,28 +177,21 @@ export default function HomeListPage() {
     try {
       const startDate = toDateKey(addDays(today, -6));
       const endDate = toDateKey(today);
-      const [stats, journalDatesResponse] = await Promise.all([
+      const [stats, journalsResponse] = await Promise.all([
         getSummary(startDate, endDate),
-        getJournalDates({ startDate, endDate }),
+        getJournals({ startDate, endDate }),
       ]);
-      const journalDates = Array.from(
-        new Set(Array.isArray(journalDatesResponse?.dates) ? journalDatesResponse.dates : []),
-      )
-        .filter((date) => date >= startDate && date <= endDate)
-        .slice(0, 7);
-      const journalDetails = await Promise.all(
-        journalDates.map((date) => getJournal(date).catch(() => null)),
-      );
+      const journals = Array.isArray(journalsResponse?.journals) ? journalsResponse.journals : [];
+      let recordedDays = 0;
       let goalScoreTotal = 0;
       let goalScoreMaximum = 0;
 
-      journalDetails.forEach((detail) => {
-        if (!detail) return;
-        const goals = detail.checked?.goals ?? [];
-        const checkedScores = new Map(
-          goals.map((goal) => [goal.goalId, goal.score]),
-        );
-        const activeGoals = detail.activeTags?.goals ?? [];
+      journals.forEach((entry) => {
+        if (!entry.checked) return;
+        recordedDays += 1;
+        const goals = entry.checked.goals ?? [];
+        const checkedScores = new Map(goals.map((goal) => [goal.goalId, goal.score]));
+        const activeGoals = entry.activeTags?.goals ?? [];
         activeGoals.forEach((goal) => {
           goalScoreTotal += checkedScores.get(goal.goalId) ?? 0;
           goalScoreMaximum += 10;
@@ -208,7 +201,7 @@ export default function HomeListPage() {
       if (!mountedRef.current) return;
       setWeeklyStats(stats);
       setWeeklyJournalStats({
-        recordedDays: journalDates.length,
+        recordedDays,
         goalAchievementRate:
           goalScoreMaximum > 0 ? Math.round((goalScoreTotal / goalScoreMaximum) * 100) : null,
       });
