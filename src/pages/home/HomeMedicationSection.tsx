@@ -38,6 +38,7 @@ export default function HomeMedicationSection({ className }: { className?: strin
   const [error, setError] = useState('');
   const [loggingKeys, setLoggingKeys] = useState<string[]>([]);
   const loggingKeysRef = useRef(new Set<string>());
+  const mountedRef = useRef(true);
 
   const loadHomeMedication = useCallback(async () => {
     setIsLoading(true);
@@ -86,7 +87,11 @@ export default function HomeMedicationSection({ className }: { className?: strin
   }, []);
 
   useEffect(() => {
+    mountedRef.current = true;
     void loadHomeMedication();
+    return () => {
+      mountedRef.current = false;
+    };
   }, [loadHomeMedication]);
 
   const totalDoses = useMemo(() => doseItems.length, [doseItems]);
@@ -109,13 +114,16 @@ export default function HomeMedicationSection({ className }: { className?: strin
       });
     } catch (err) {
       console.error('Failed to record dose:', err);
+      if (!mountedRef.current) return;
       setDoseItems((current) =>
         current.map((dose) => (dose.key === item.key ? { ...dose, status: 'PENDING' } : dose))
       );
       setError('복약 상태를 기록하지 못했어요.');
     } finally {
       loggingKeysRef.current.delete(item.key);
-      setLoggingKeys((current) => current.filter((key) => key !== item.key));
+      if (mountedRef.current) {
+        setLoggingKeys((current) => current.filter((key) => key !== item.key));
+      }
     }
   };
 
