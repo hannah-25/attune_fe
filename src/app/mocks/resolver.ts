@@ -237,7 +237,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     const startDate = query.get('startDate') ?? '';
     const endDate = query.get('endDate') ?? '';
     const datesResponse = guestRead<{ dates: string[] }>('journals/dates') ?? mockJournalDates;
-    const dates = datesResponse.dates.filter(
+    const dates = (datesResponse?.dates ?? []).filter(
       (date) => (!startDate || date >= startDate) && (!endDate || date <= endDate),
     );
 
