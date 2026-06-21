@@ -7,7 +7,7 @@ import {
   sendAdminNoticePush,
   updateAdminNotice,
 } from '../../app/api/admin';
-import { getNotice, getNotices, type NoticeSummary } from '../../app/api/notice';
+import { getNotice, getNotices, type NoticeListItem } from '../../app/api/notice';
 import { ApiError } from '../../app/api/client';
 import AdminPageHeader from './AdminPageHeader';
 import AdminSectionNav from './AdminSectionNav';
@@ -25,7 +25,7 @@ const EMPTY_FORM: NoticeForm = { title: '', content: '', isPinned: false, sendNo
 const PAGE_SIZE = 10;
 
 export default function AdminNoticesPage() {
-  const [notices, setNotices] = useState<NoticeSummary[]>([]);
+  const [notices, setNotices] = useState<NoticeListItem[]>([]);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [page, setPage] = useState(0);
@@ -129,7 +129,7 @@ export default function AdminNoticesPage() {
     }
   };
 
-  const removeNotice = async (notice: NoticeSummary) => {
+  const removeNotice = async (notice: NoticeListItem) => {
     if (!window.confirm(`"${notice.title}" 공지를 삭제할까요?`)) return;
     setError('');
     try {
@@ -141,7 +141,7 @@ export default function AdminNoticesPage() {
     }
   };
 
-  const sendPush = async (notice: NoticeSummary) => {
+  const sendPush = async (notice: NoticeListItem) => {
     if (!window.confirm(`"${notice.title}" 공지의 푸시 발송을 접수할까요?`)) return;
     setError('');
     try {

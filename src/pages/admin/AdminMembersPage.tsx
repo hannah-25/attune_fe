@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  RefreshCcw,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -17,7 +16,6 @@ import {
   X,
 } from 'lucide-react';
 import { Link } from 'react-router';
-import logoSquare from '@src/assets/logo-square.png';
 import {
   cancelAdminMemberWithdrawal,
   changeAdminMemberStatus,
@@ -31,6 +29,7 @@ import {
   type AdminMemberSummary,
 } from '../../app/api/admin';
 import { ApiError } from '../../app/api/client';
+import AdminPageHeader from './AdminPageHeader';
 import AdminSectionNav from './AdminSectionNav';
 
 type StatusFilter = AdminMemberStatus | 'all';
@@ -184,31 +183,14 @@ export default function AdminMembersPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
     >
       <main aria-hidden={selectedMember ? true : undefined}>
-        <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur">
-          <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-4 md:px-6">
-            <div className="flex items-center gap-2.5">
-              <img src={logoSquare} alt="" className="h-9 w-9 object-contain" />
-              <div className="hidden sm:block">
-                <div className="text-sm font-extrabold tracking-tight">a.tune</div>
-                <div className="text-[10px] font-bold text-gray-400">관리자 전용</div>
-              </div>
-            </div>
-            <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold">회원 관리</div>
-            <button
-              type="button"
-              onClick={() => {
-                setRefreshing(true);
-                setRefreshKey((current) => current + 1);
-              }}
-              disabled={refreshing}
-              aria-label="회원 목록 새로고침"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50 disabled:opacity-50 md:w-auto md:gap-2 md:rounded-xl md:px-3.5"
-            >
-              <RefreshCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden text-xs font-bold md:inline">새로고침</span>
-            </button>
-          </div>
-        </header>
+        <AdminPageHeader
+          title="회원 관리"
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            setRefreshKey((current) => current + 1);
+          }}
+        />
         <AdminSectionNav />
 
         <div className="mx-auto max-w-[1240px] px-4 py-6 md:px-6 md:py-8">
