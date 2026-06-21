@@ -729,7 +729,7 @@ function MemberActionDialog({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const isDelete = mode === 'delete';
-  const canSubmit = reason.trim().length >= 5 && (!isDelete || confirmation === '즉시 탈퇴') && !submitting;
+  const canSubmit = reason.trim().length >= 5 && (!isDelete || confirmation === '즉시 삭제') && !submitting;
 
   const ACTION_META: Record<ActionMode, { title: string; description: string; label: string; buttonClass: string }> = {
     restore: {
