@@ -295,7 +295,7 @@ function normalizeMedication(medication: MedicationSummary): ActiveMedication | 
 }
 
 function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string) {
-  const intakeMinutes = toMinutes(intakeTime.slice(11, 16));
+  const intakeMinutes = toKstMinutes(intakeTime);
   if (intakeMinutes === null) return null;
   let closest: MedicationScheduleSummary | null = null;
   let minDiff = Infinity;
@@ -306,6 +306,31 @@ function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime:
     if (diff < minDiff) { minDiff = diff; closest = schedule; }
   }
   return minDiff <= 240 ? closest : null;
+}
+
+function toKstMinutes(value: string): number | null {
+  const dateTimeMatch = value.match(
+    /^\d{4}-\d{2}-\d{2}[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})?$/,
+  );
+  if (!dateTimeMatch) return toMinutes(value);
+
+  const timezone = dateTimeMatch[3];
+  if (!timezone) {
+    return toMinutes(`${dateTimeMatch[1]}:${dateTimeMatch[2]}`);
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+  const hours = Number(parts.find((part) => part.type === 'hour')?.value);
+  const minutes = Number(parts.find((part) => part.type === 'minute')?.value);
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
+  return hours * 60 + minutes;
 }
 
 function toMinutes(hhmm: string): number | null {

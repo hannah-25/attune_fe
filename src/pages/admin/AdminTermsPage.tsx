@@ -79,17 +79,18 @@ export default function AdminTermsPage() {
     setError('');
     setMessage('');
     try {
-      const toUtcIso = (localStr: string) => {
-        if (!localStr) return localStr;
-        const d = new Date(localStr);
-        return Number.isNaN(d.getTime()) ? localStr : d.toISOString();
-      };
+      const createdAt = normalizeKstDateTime(form.createdAt);
+      const effectiveDate = normalizeKstDateTime(form.effectiveDate);
+      if (!createdAt || !effectiveDate) {
+        setError('작성일과 시행일을 올바르게 입력해 주세요.');
+        return;
+      }
       const result = await createAdminTerms({
         ...form,
         title,
         content,
-        createdAt: toUtcIso(form.createdAt),
-        effectiveDate: toUtcIso(form.effectiveDate),
+        createdAt,
+        effectiveDate,
       });
       setMessage(`${TERM_LABELS[result.type]} v${result.version} 등록을 완료했습니다.`);
       setTermsRefreshing(true);
@@ -305,6 +306,39 @@ function formatDateTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function normalizeKstDateTime(value: string): string | null {
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/,
+  );
+  if (!match) return null;
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText = '00'] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+  if (
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > lastDay ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59 ||
+    second < 0 ||
+    second > 59
+  ) {
+    return null;
+  }
+
+  return `${yearText}-${monthText}-${dayText}T${hourText}:${minuteText}:${secondText}`;
 }
 
 function toErrorMessage(error: unknown, fallback: string) {

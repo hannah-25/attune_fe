@@ -154,14 +154,13 @@ export default function HomeListPage() {
       const result = await getConsultations({
         startDate: toDateKey(today),
         endDate: toDateKey(addDays(today, 90)),
-      }) as ConsultationDetail[];
+      });
       if (!mountedRef.current) return;
-      const next = Array.isArray(result)
-        ? [...result].sort(
-            (a, b) =>
-              new Date(a.consultationDate).getTime() - new Date(b.consultationDate).getTime(),
-          )[0] ?? null
-        : null;
+      const next =
+        [...result].sort(
+          (a, b) =>
+            new Date(a.consultationDate).getTime() - new Date(b.consultationDate).getTime(),
+        )[0] ?? null;
       setUpcomingConsultation(next);
     } catch {
       // 실패 시 카드 미표시
