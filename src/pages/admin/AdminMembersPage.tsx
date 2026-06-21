@@ -840,7 +840,7 @@ function MemberActionDialog({
         {isDelete ? (
           <label className="mt-4 block">
             <span className="text-xs font-extrabold text-gray-700">
-              확인을 위해 <strong className="text-error-700">즉시 탈퇴</strong>를 입력해 주세요.
+            확인을 위해 <strong className="text-error-700">즉시 삭제</strong>를 입력해 주세요.
             </span>
             <input
               aria-label="즉시 삭제 확인 문구"
