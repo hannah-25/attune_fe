@@ -44,23 +44,27 @@ export type SleepMealPayload = {
   ateDinner?: boolean | null;
 };
 
+export type JournalActiveTags = {
+  conditions: ConditionTag[];
+  sideEffects: SideEffectTag[];
+  troubles: TroubleTag[];
+  goals: JournalGoal[];
+};
+
+export type JournalChecked = {
+  conditions: Array<ConditionTag & { checkedAt: string }>;
+  sideEffects: Array<SideEffectTag & { checkedAt: string }>;
+  troubles: Array<TroubleTag & { checkedAt: string }>;
+  checkedCatalogTagIds?: number[];
+  sleep?: { sleepHour: number; sleepQuality: SleepQuality } | null;
+  meal?: { ateBreakfast: boolean; ateLunch: boolean; ateDinner: boolean } | null;
+  goals: Array<JournalGoal & { score: number }>;
+  memo?: string | null;
+};
+
 export type JournalDetail = {
-  activeTags: {
-    conditions: ConditionTag[];
-    sideEffects: SideEffectTag[];
-    troubles: TroubleTag[];
-    goals: JournalGoal[];
-  };
-  checked: {
-    conditions: Array<ConditionTag & { checkedAt: string }>;
-    sideEffects: Array<SideEffectTag & { checkedAt: string }>;
-    troubles: Array<TroubleTag & { checkedAt: string }>;
-    checkedCatalogTagIds?: number[];
-    sleep?: { sleepHour: number; sleepQuality: SleepQuality } | null;
-    meal?: { ateBreakfast: boolean; ateLunch: boolean; ateDinner: boolean } | null;
-    goals: Array<JournalGoal & { score: number }>;
-    memo?: string | null;
-  };
+  activeTags: JournalActiveTags;
+  checked: JournalChecked;
 };
 
 export function getJournal(date: string) {
@@ -71,10 +75,18 @@ export function getJournalDates(params: JournalDateRange) {
   return apiRequest<{ dates: string[] }>(`${JOURNALS_BASE_PATH}/dates?${new URLSearchParams(params)}`);
 }
 
-export type JournalEntry = JournalDetail & { date: string };
+export type JournalEntry = {
+  date: string;
+  checked: JournalChecked;
+};
+
+export type JournalListResponse = {
+  activeTags: JournalActiveTags;
+  journals: JournalEntry[];
+};
 
 export function getJournals(params: JournalDateRange) {
-  return apiRequest<{ journals: JournalEntry[] }>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`);
+  return apiRequest<JournalListResponse>(`${JOURNALS_BASE_PATH}?${new URLSearchParams(params)}`);
 }
 
 export function deleteJournal(date: string) {
