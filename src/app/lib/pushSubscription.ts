@@ -35,7 +35,7 @@ export async function syncPushSubscription(): Promise<boolean> {
 function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
+  const rawData = atob(base64);
   const bytes = new Uint8Array(rawData.length);
   for (let index = 0; index < rawData.length; index += 1) {
     bytes[index] = rawData.charCodeAt(index);

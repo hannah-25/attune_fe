@@ -181,7 +181,9 @@ export default function HomeListPage() {
         getSummary(startDate, endDate),
         getJournalDates({ startDate, endDate }),
       ]);
-      const journalDates = Array.from(new Set(journalDatesResponse.dates))
+      const journalDates = Array.from(
+        new Set(Array.isArray(journalDatesResponse?.dates) ? journalDatesResponse.dates : []),
+      )
         .filter((date) => date >= startDate && date <= endDate)
         .slice(0, 7);
       const journalDetails = await Promise.all(

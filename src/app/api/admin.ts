@@ -255,7 +255,7 @@ export async function deleteAdminMemberImmediately(memberUuid: string, payload: 
     {
       id: `audit-${Date.now()}`,
       action: 'MEMBER_DELETED',
-      targetReference: `mock-hmac:${crypto.randomUUID()}`,
+      targetReference: `mock-hmac:${globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
       targetLabel: null,
       administrator: 'admin@atune.app',
       reason: payload.reason,

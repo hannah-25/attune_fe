@@ -59,9 +59,13 @@ export async function getNotice(noticeId: number): Promise<NoticeDetail> {
 
   if (hasPinnedValue(payload)) return detail;
 
-  const response = await getNotices({ q: detail.title, size: 100 });
-  const listItem = response.content.find((notice) => notice.noticeId === detail.noticeId);
-  return { ...detail, isPinned: listItem?.isPinned ?? false };
+  try {
+    const response = await getNotices({ q: detail.title, size: 100 });
+    const listItem = response.content.find((notice) => notice.noticeId === detail.noticeId);
+    return { ...detail, isPinned: listItem?.isPinned ?? false };
+  } catch {
+    return detail;
+  }
 }
 
 function toStringParams(params: NoticeListParams) {
