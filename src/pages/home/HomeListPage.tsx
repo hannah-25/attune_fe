@@ -111,7 +111,7 @@ export default function HomeListPage() {
     try {
       const response = await getSchedules({
         startDate: toDateKey(today),
-        endDate: toDateKey(addDays(today, 6)),
+        endDate: toDateKey(today),
       });
       if (!mountedRef.current || requestId !== scheduleRequestIdRef.current) return;
 
