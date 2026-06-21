@@ -223,8 +223,27 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
   if (p === '/v1/users/settings' && m === 'PATCH') return ok({ ...(body as object) });
 
   // ── Journal dates ─────────────────────────────────────────────────────────
-  if (p === '/v1/journals' && m === 'GET') {
+  if (p === '/v1/journals/dates' && m === 'GET') {
     return ok(guestRead('journals/dates') ?? mockJournalDates);
+  }
+
+  if (p === '/v1/journals' && m === 'GET') {
+    const query = new URLSearchParams(path.split('?')[1] ?? '');
+    const startDate = query.get('startDate') ?? '';
+    const endDate = query.get('endDate') ?? '';
+    const datesResponse = guestRead<{ dates: string[] }>('journals/dates') ?? mockJournalDates;
+    const dates = datesResponse.dates.filter(
+      (date) => (!startDate || date >= startDate) && (!endDate || date <= endDate),
+    );
+    const activeTags = buildDefaultJournalDetail(endDate || toDateKey(new Date())).activeTags;
+
+    return ok({
+      activeTags,
+      journals: dates.map((date) => ({
+        date,
+        checked: readJournalDetail(date).checked,
+      })),
+    });
   }
 
   // ── Journal detail ────────────────────────────────────────────────────────

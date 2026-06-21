@@ -181,6 +181,7 @@ export default function HomeListPage() {
         getJournals({ startDate, endDate }),
       ]);
       const journals = Array.isArray(journalsResponse?.journals) ? journalsResponse.journals : [];
+      const activeGoals = journalsResponse?.activeTags?.goals ?? [];
       let recordedDays = 0;
       let goalScoreTotal = 0;
       let goalScoreMaximum = 0;
@@ -190,7 +191,6 @@ export default function HomeListPage() {
         recordedDays += 1;
         const goals = entry.checked.goals ?? [];
         const checkedScores = new Map(goals.map((goal) => [goal.goalId, goal.score]));
-        const activeGoals = entry.activeTags?.goals ?? [];
         activeGoals.forEach((goal) => {
           goalScoreTotal += checkedScores.get(goal.goalId) ?? 0;
           goalScoreMaximum += 10;
