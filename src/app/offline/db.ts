@@ -37,6 +37,8 @@ export interface CachedMedicationLogs {
 
 export interface CachedSchedule {
   scheduleId: number;
+  startTime: string;
+  endTime: string;
   data: ScheduleSummary;
   cachedAt: string;
 }
@@ -110,6 +112,9 @@ class AttuneOfflineDB extends Dexie {
       consultations: 'id',
       consultationDetails: 'consultationId',
       syncQueue: '++id, status',
+    });
+    this.version(2).stores({
+      schedules: 'scheduleId, startTime, endTime',
     });
   }
 }

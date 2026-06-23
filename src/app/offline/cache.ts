@@ -89,7 +89,13 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
       const response = data as { schedules: ScheduleSummary[] };
       if (Array.isArray(response?.schedules)) {
         await db.schedules.bulkPut(
-          response.schedules.map(s => ({ scheduleId: s.scheduleId, data: s, cachedAt: now })),
+          response.schedules.map(s => ({
+            scheduleId: s.scheduleId,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            data: s,
+            cachedAt: now,
+          })),
         );
       }
       return;

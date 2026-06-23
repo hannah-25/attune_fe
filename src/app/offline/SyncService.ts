@@ -93,7 +93,13 @@ async function cacheSchedules() {
     await db.schedules.clear();
     await db.scheduleDetails.clear();
     await db.schedules.bulkPut(
-      schedsResponse.schedules.map(s => ({ scheduleId: s.scheduleId, data: s, cachedAt: now })),
+      schedsResponse.schedules.map(s => ({
+        scheduleId: s.scheduleId,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        data: s,
+        cachedAt: now,
+      })),
     );
   });
 }
