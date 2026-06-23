@@ -37,8 +37,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       const category = params.get('category') as 'CONDITION' | 'SIDE_EFFECT' | 'TROUBLE' | null;
       if (!category) throw new OfflineCacheMissError(path);
       const cached = await db.journalTagsByCategory.get(category);
-      if (!cached) throw new OfflineCacheMissError(path);
-      return cached.data as T;
+      return (cached?.data ?? []) as T;
     }
     await queueWrite('POST', path, body);
     return {} as T;
@@ -136,8 +135,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
 
   if (base === '/v1/user-medications' && method === 'GET') {
     const cached = await db.medications.get('list');
-    if (!cached) throw new OfflineCacheMissError(path);
-    return cached.data as T;
+    return (cached?.data ?? []) as T;
   }
 
   if (base === '/v1/user-medications/logs' && method === 'GET') {
@@ -169,8 +167,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   if (base === '/v1/schedule-categories') {
     if (method === 'GET') {
       const cached = await db.scheduleCategories.get('categories');
-      if (!cached) throw new OfflineCacheMissError(path);
-      return { categories: cached.data } as T;
+      return { categories: cached?.data ?? [] } as T;
     }
     await queueWrite(method as WriteMethod, path, body);
     return {} as T;
@@ -219,8 +216,57 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
 
   if (base === '/v1/medication-analysis/reports' && method === 'GET') {
     const cached = await db.reports.get('list');
-    if (!cached) throw new OfflineCacheMissError(path);
-    return cached.data as T;
+    return (cached?.data ?? []) as T;
+  }
+
+  if (base === '/v1/medication-analysis/summary' && method === 'GET') {
+    return {
+      totalScheduled: 0,
+      takenCount: 0,
+      skippedCount: 0,
+      unrecordedCount: 0,
+      adherenceRate: 0,
+      recordingRate: 0,
+    } as T;
+  }
+
+  if (base === '/v1/medication-analysis/availability' && method === 'GET') {
+    return { available: false, recordedDays: 0, unavailableReasons: ['OFFLINE'] } as T;
+  }
+
+  if (base === '/v1/todos') {
+    if (method === 'GET') {
+      return { todos: [] } as T;
+    }
+    await queueWrite(method as WriteMethod, path, body);
+    return undefined as T;
+  }
+
+  const todoDetailMatch = base.match(/^\/v1\/todos\/(\d+)$/);
+  if (todoDetailMatch && method !== 'GET') {
+    await queueWrite(method as WriteMethod, path, body);
+    return {} as T;
+  }
+
+  if (base === '/v1/users/me/profile' && method === 'GET') {
+    return {
+      nickname: '',
+      profileImageUrl: null,
+      email: '',
+      notifications: { medication: false, report: false, marketing: false },
+    } as T;
+  }
+
+  if (base === '/v1/users/settings' && method === 'GET') {
+    return {
+      medicationNotification: false,
+      reportNotification: false,
+      marketingNotification: false,
+      communityNotification: false,
+      todoNotification: false,
+      takeMedicationOnHoliday: false,
+      theme: 'SYSTEM',
+    } as T;
   }
 
   // ── Consultations ───────────────────────────────────────────────────────
@@ -228,8 +274,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   if (base === '/v1/consultations') {
     if (method === 'GET') {
       const cached = await db.consultations.get('list');
-      if (!cached) throw new OfflineCacheMissError(path);
-      return cached.data as T;
+      return (cached?.data ?? []) as T;
     }
     // POST (createConsultation) 등 쓰기 → 큐
     await queueWrite(method as WriteMethod, path, body);

@@ -2,8 +2,21 @@ import { isGuestMode } from '../guest';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
+const NETWORK_FAILURE_OFFLINE_MS = 15_000;
 let reissueInFlight: Promise<boolean> | null = null;
 let loginRedirectTriggered = false;
+let browserOffline = typeof navigator !== 'undefined' ? !navigator.onLine : false;
+let assumeOfflineUntil = 0;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    browserOffline = false;
+    assumeOfflineUntil = 0;
+  });
+  window.addEventListener('offline', () => {
+    browserOffline = true;
+  });
+}
 
 export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
@@ -37,6 +50,19 @@ function shouldBypassGuestMock(path: string): boolean {
   return path.startsWith('/v1/auth/') || path.startsWith('/v1/account/');
 }
 
+function shouldUseOfflineResolver(path: string): boolean {
+  return !shouldBypassGuestMock(path) && (browserOffline || !navigator.onLine || Date.now() < assumeOfflineUntil);
+}
+
+async function resolveOffline<T>(path: string, options: ApiRequestOptions): Promise<T> {
+  const { resolveOfflineRequest } = await import('../offline/resolver');
+  return resolveOfflineRequest<T>(path, options);
+}
+
+function markNetworkUnavailable(): void {
+  assumeOfflineUntil = Date.now() + NETWORK_FAILURE_OFFLINE_MS;
+}
+
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
@@ -57,13 +83,26 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     return resolveGuestRequest<T>(normalizedPath, options);
   }
 
-  if (!navigator.onLine && !shouldBypassGuestMock(normalizedPath)) {
-    const { resolveOfflineRequest } = await import('../offline/resolver');
-    return resolveOfflineRequest<T>(normalizedPath, options);
+  if (shouldUseOfflineResolver(normalizedPath)) {
+    return resolveOffline<T>(normalizedPath, options);
   }
 
   const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
-  const response = await request(path, { auth, body, headers, ...init });
+  let response: Response;
+  try {
+    response = await request(path, { auth, body, headers, ...init });
+  } catch (err) {
+    if (!shouldBypassGuestMock(normalizedPath)) {
+      markNetworkUnavailable();
+      return resolveOffline<T>(normalizedPath, options);
+    }
+    throw err;
+  }
+
+  if (response.headers.get('X-Attune-Offline-Fallback') === '1' && !shouldBypassGuestMock(normalizedPath)) {
+    markNetworkUnavailable();
+    return resolveOffline<T>(normalizedPath, options);
+  }
 
   if (response.status === 401 && auth && retryOnUnauthorized) {
     const refreshed = await reissueSessionSingleFlight();

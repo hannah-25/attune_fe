@@ -18,6 +18,44 @@ const RUNTIME_CACHE_NAME = 'attune-runtime-v1';
 const precacheUrls = (self.__WB_MANIFEST ?? []).map((entry) => entry.url);
 const precachePathnames = new Set(precacheUrls.map((url) => new URL(url, sw.location.origin).pathname));
 
+function offlineResponse(headers?: HeadersInit): Response {
+  return new Response('', { headers, status: 504, statusText: 'Offline' });
+}
+
+function isApiPath(pathname: string): boolean {
+  return pathname.startsWith('/v1/');
+}
+
+function isAuthOrAccountPath(pathname: string): boolean {
+  return pathname.startsWith('/v1/auth/') || pathname.startsWith('/v1/account/');
+}
+
+async function cachedOrNetwork(request: Request): Promise<Response> {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  try {
+    return await fetch(request);
+  } catch {
+    return offlineResponse();
+  }
+}
+
+async function navigationResponse(request: Request): Promise<Response> {
+  const cached = await caches.match('/index.html', { ignoreSearch: true });
+  if (cached) return cached;
+
+  try {
+    return await fetch(request);
+  } catch {
+    return new Response('<!doctype html><title>Offline</title>', {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      status: 503,
+      statusText: 'Offline',
+    });
+  }
+}
+
 sw.addEventListener('install', (event) => {
   event.waitUntil(sw.skipWaiting());
 
@@ -54,9 +92,17 @@ sw.addEventListener('activate', (event) => {
 });
 
 sw.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  if (isApiPath(url.pathname) && !isAuthOrAccountPath(url.pathname)) {
+    event.respondWith(
+      fetch(event.request).catch(() => offlineResponse({ 'X-Attune-Offline-Fallback': '1' })),
+    );
+    return;
+  }
+
   if (event.request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
   if (url.origin === 'https://storage.googleapis.com') {
     event.respondWith(
       caches.open(RUNTIME_CACHE_NAME).then(async (cache) => {
@@ -69,7 +115,11 @@ sw.addEventListener('fetch', (event) => {
           event.waitUntil(network.catch(() => {}));
           return cached;
         }
-        return network;
+        try {
+          return await network;
+        } catch {
+          return offlineResponse();
+        }
       }),
     );
     return;
@@ -77,17 +127,11 @@ sw.addEventListener('fetch', (event) => {
 
   if (url.origin === sw.location.origin) {
     if (event.request.mode === 'navigate') {
-      event.respondWith(
-        caches.match('/index.html', { ignoreSearch: true }).then((cached) => cached ?? fetch(event.request)),
-      );
+      event.respondWith(navigationResponse(event.request));
       return;
     }
 
-    if (url.pathname.startsWith('/v1/')) return;
-
-    event.respondWith(
-      caches.match(event.request).then((cached) => cached ?? fetch(event.request)),
-    );
+    event.respondWith(cachedOrNetwork(event.request));
   }
 });
 
