@@ -51,7 +51,7 @@ function ScoreSelector({
             onClick={() => setAnswers((prev: Record<number, number>) => ({ ...prev, [questionId]: val }))}
             className={`flex-1 h-11 flex items-center justify-center rounded-xl transition-all select-none active:scale-[0.95] ${
               selected === val
-                ? 'bg-purple-500 text-white shadow-sm'
+                ? 'bg-purple-100 border border-[rgb(185,166,255)] text-purple-800'
                 : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
             }`}
           >

@@ -7,9 +7,9 @@ import { formatDate } from '@/lib/date';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import {
-  getCatalogTags,
-  checkCatalogTag,
-  uncheckCatalogTag,
+  getJournalTags,
+  checkJournalTag,
+  uncheckJournalTag,
   createMemo,
   getJournal,
 } from '@/api/journal';
@@ -48,7 +48,7 @@ const categoryConfig: Record<Category, {
   },
 };
 
-type TagItem = { catalogTagId: number; label: string };
+type TagItem = { tagId: number; label: string };
 
 type TagEntry = {
   id: string;
@@ -67,37 +67,30 @@ type SimpleEntry = {
 };
 
 type TimelineEntry = TagEntry | SimpleEntry;
-type ApiTag = { label: string; catalogTagId: number };
+type ApiTag = { label: string; tagId: number };
 
 function buildTagEntries(
   conditions: Array<{ tagId: number; condition: string; checkedAt: string }>,
   sideEffects: Array<{ tagId: number; sideEffect: string; checkedAt: string }>,
   troubles: Array<{ tagId: number; trouble: string; checkedAt: string }>,
-  conditionMap: Map<number, number>,
-  sideEffectMap: Map<number, number>,
-  troubleMap: Map<number, number>,
 ): TagEntry[] {
   const map = new Map<string, TagEntry>();
 
   const add = (
     category: Category,
-    legacyTagId: number,
+    tagId: number,
     label: string,
     checkedAt: string,
-    catalogMap: Map<number, number>,
   ) => {
     const time = checkedAt.slice(11, 16);
     const key = `${category}|${time}`;
     if (!map.has(key)) map.set(key, { id: key, time, kind: 'tags', category, tags: [] });
-    const catalogTagId = catalogMap.get(legacyTagId);
-    if (catalogTagId != null) {
-      map.get(key)!.tags.push({ catalogTagId, label });
-    }
+    map.get(key)!.tags.push({ tagId, label });
   };
 
-  conditions.forEach((c) => add('감정·증상', c.tagId, c.condition, c.checkedAt, conditionMap));
-  sideEffects.forEach((s) => add('부작용', s.tagId, s.sideEffect, s.checkedAt, sideEffectMap));
-  troubles.forEach((t) => add('업무 실수', t.tagId, t.trouble, t.checkedAt, troubleMap));
+  conditions.forEach((c) => add('감정·증상', c.tagId, c.condition, c.checkedAt));
+  sideEffects.forEach((s) => add('부작용', s.tagId, s.sideEffect, s.checkedAt));
+  troubles.forEach((t) => add('업무 실수', t.tagId, t.trouble, t.checkedAt));
 
   return Array.from(map.values())
     .filter((entry) => entry.tags.length > 0)
@@ -132,39 +125,27 @@ export default function JournalTimelinePage() {
     let ignore = false;
 
     Promise.all([
-      getCatalogTags('CONDITION'),
-      getCatalogTags('SIDE_EFFECT'),
-      getCatalogTags('TROUBLE'),
+      getJournalTags('CONDITION'),
+      getJournalTags('SIDE_EFFECT'),
+      getJournalTags('TROUBLE'),
       getJournal(journalDate).catch((err) => { console.error('Failed to load journal:', err); return null; }),
     ])
       .then(([conditionCatalogTags, sideEffectCatalogTags, troubleCatalogTags, journal]) => {
         if (ignore) return;
         setCategoryTags({
-          '감정·증상': conditionCatalogTags.filter((t) => t.enabled).map((t) => ({ label: t.name, catalogTagId: t.catalogTagId })),
-          '부작용': sideEffectCatalogTags.filter((t) => t.enabled).map((t) => ({ label: t.name, catalogTagId: t.catalogTagId })),
-          '업무 실수': troubleCatalogTags.filter((t) => t.enabled).map((t) => ({ label: t.name, catalogTagId: t.catalogTagId })),
+          '감정·증상': conditionCatalogTags.filter((t) => t.enabled && t.visible).map((t) => ({ label: t.name, tagId: t.tagId })),
+          '부작용': sideEffectCatalogTags.filter((t) => t.enabled && t.visible).map((t) => ({ label: t.name, tagId: t.tagId })),
+          '업무 실수': troubleCatalogTags.filter((t) => t.enabled && t.visible).map((t) => ({ label: t.name, tagId: t.tagId })),
         });
         if (journal) {
           if (journal.checked.memo) {
             setMemo(journal.checked.memo);
             setMemoSaved(true);
           }
-          const conditionMap = new Map(
-            conditionCatalogTags.filter((t) => t.legacyTagId != null).map((t) => [t.legacyTagId!, t.catalogTagId]),
-          );
-          const sideEffectMap = new Map(
-            sideEffectCatalogTags.filter((t) => t.legacyTagId != null).map((t) => [t.legacyTagId!, t.catalogTagId]),
-          );
-          const troubleMap = new Map(
-            troubleCatalogTags.filter((t) => t.legacyTagId != null).map((t) => [t.legacyTagId!, t.catalogTagId]),
-          );
           setEntries(buildTagEntries(
             journal.checked.conditions,
             journal.checked.sideEffects,
             journal.checked.troubles,
-            conditionMap,
-            sideEffectMap,
-            troubleMap,
           ));
         }
       })
@@ -188,12 +169,12 @@ export default function JournalTimelinePage() {
       prev
         .map(entry => {
           if (entry.id !== entryId || entry.kind !== 'tags') return entry;
-          return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.catalogTagId !== tag.catalogTagId) };
+          return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.tagId !== tag.tagId) };
         })
         .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0)
     );
 
-    uncheckCatalogTag(tag.catalogTagId, journalDate).catch((err) => {
+    uncheckJournalTag(tag.tagId, journalDate).catch((err) => {
       console.error('Failed to remove tag:', err);
       setError('태그 삭제에 실패했습니다.');
       setEntries(snapshot);
@@ -224,7 +205,7 @@ export default function JournalTimelinePage() {
     const selectedApiTags = categoryTags[activeCategory].filter((tag) => selectedTags.has(tag.label));
 
     try {
-      await Promise.all(selectedApiTags.map((tag) => checkCatalogTag(tag.catalogTagId)));
+      await Promise.all(selectedApiTags.map((tag) => checkJournalTag(tag.tagId, journalDate)));
     } catch (err) {
       console.error('Failed to record tags:', err);
       setError('태그 기록에 실패했습니다.');
@@ -237,7 +218,7 @@ export default function JournalTimelinePage() {
         time: getNow(),
         kind: 'tags',
         category: activeCategory,
-        tags: selectedApiTags.map(t => ({ catalogTagId: t.catalogTagId, label: t.label })),
+        tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
       },
     ]);
     closeSheet();
@@ -271,7 +252,7 @@ export default function JournalTimelinePage() {
 
         <ScrollArea className="pt-0 pb-[230px]">
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <div className="relative pt-0 pr-0 pb-0 pl-[18px]">
+          <div className="relative pt-0 pr-[18px] pb-0 pl-[18px]">
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 
             {entries.map(entry => {
@@ -283,7 +264,7 @@ export default function JournalTimelinePage() {
                       <div className="font-bold text-gray-600 text-xs">{entry.time}</div>
                       <div className="font-bold text-gray-500 text-xs">· {entry.label}</div>
                     </div>
-                    <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[10px] rounded-[0.875rem]">
+                    <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[10px] rounded-[0.875rem]">
                       <div className={entry.kind === 'medication' ? 'font-bold' : 'font-semibold'}>{entry.content}</div>
                     </div>
                   </div>
@@ -308,11 +289,11 @@ export default function JournalTimelinePage() {
                       {isEditing ? '완료' : '편집'}
                     </button>
                   </div>
-                  <div className={`${cfg.cardBg} shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[10px] rounded-[0.875rem]`}>
+                  <div className={`${cfg.cardBg} shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[10px] rounded-[0.875rem]`}>
                     <div className="flex flex-wrap gap-1">
                       {entry.tags.map(tag => (
                         <div
-                          key={tag.catalogTagId}
+                          key={tag.tagId}
                           className={`items-center flex font-semibold whitespace-nowrap ${cfg.chipClass} text-xs gap-1 tracking-tight pt-[7px] ${isEditing ? 'pr-2' : 'pr-[11px]'} pb-[7px] pl-[11px] rounded-full`}
                         >
                           <span className="block">{tag.label}</span>
@@ -347,7 +328,7 @@ export default function JournalTimelinePage() {
 
         </ScrollArea>
 
-        <div className={`absolute left-4 right-4 bottom-[142px] bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl transition-colors ${memoFocused ? 'border-purple-300' : 'border-transparent'}`}>
+        <div className={`absolute left-4 right-4 bottom-[142px] bg-white border shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-2xl transition-colors ${memoFocused ? 'border-purple-300' : 'border-transparent'}`}>
           {!memoSaved && (
             <div className="flex justify-end mb-2">
               <button
@@ -413,7 +394,7 @@ export default function JournalTimelinePage() {
                 const isSelected = selectedTags.has(tag.label);
                 return (
                   <button
-                    key={tag.catalogTagId}
+                    key={tag.tagId}
                     type="button"
                     onClick={() => toggleTag(tag.label)}
                     className={`flex items-center gap-1.5 font-semibold text-sm whitespace-nowrap border pt-[10px] pb-[10px] pl-[14px] pr-[14px] rounded-full transition-colors ${

@@ -148,7 +148,7 @@ export default function ExternalCalendarPage() {
         />
 
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-[14px] pt-0 pr-4 pb-6 pl-4">
-          <div className="bg-purple-100 border border-purple-50 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.375rem]">
+          <div className="bg-purple-100 border border-purple-50 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-[1.375rem]">
             <div className="font-extrabold text-lg leading-[23.4px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
               Google Calendar 일정을
               <br />
@@ -166,7 +166,7 @@ export default function ExternalCalendarPage() {
             연결된 계정
           </div>
 
-          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
             {googleConnection ? (
               <div className="pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
                 <div className="items-center flex gap-2.5">

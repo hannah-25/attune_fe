@@ -250,9 +250,9 @@ export default function CalendarMainPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="relative flex h-full flex-col min-h-0">
-        <div className="flex items-center justify-between pt-2 pr-3 pb-3 pl-4 shrink-0">
+        <header className="flex min-h-[60px] items-center px-4 py-2 shrink-0">
           <div className="flex flex-col gap-2">
-            <div className="font-extrabold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>{selectedDate.getMonth() + 1}월</div>
+            <div className="font-extrabold text-2xl leading-none" style={{ fontFamily: 'NanumSquare, system-ui' }}>{selectedDate.getMonth() + 1}월</div>
             <div className="flex bg-gray-100 p-[3px] rounded-xl gap-[2px]">
               <button
                 type="button"
@@ -270,27 +270,29 @@ export default function CalendarMainPage() {
               </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="grow" />
+          <div className="flex items-center gap-1">
             {hasConnection ? (
               <button
                 type="button"
                 onClick={handleSync}
                 disabled={syncing}
-                className="flex items-center justify-center w-9 h-9 bg-white shadow-[rgba(60,40,90,0.06)_0px_1px_4px_0px] rounded-[1.125rem] disabled:opacity-45"
+                className="flex h-11 w-11 items-center justify-center rounded-full transition-colors active:bg-gray-100 disabled:opacity-45"
                 aria-label="캘린더 동기화"
               >
-                <RefreshCw className={`h-4 w-4 text-gray-600 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
+                <RefreshCw className={`h-[18px] w-[18px] text-gray-600 ${syncing ? 'animate-spin' : ''}`} strokeWidth={2.25} />
               </button>
             ) : null}
             <button
               type="button"
               onClick={() => setDateMenuDate(selectedDateKey)}
-              className="flex items-center justify-center w-9 h-9 bg-purple-100 rounded-[1.125rem]"
+              className="flex h-11 w-11 items-center justify-center rounded-full transition-colors active:bg-gray-100"
+              aria-label="새 일정 또는 할 일 추가"
             >
-              <Plus className="h-4 w-4 text-purple-600" strokeWidth={3} />
+              <Plus className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.5} />
             </button>
           </div>
-        </div>
+        </header>
         <div className="pr-3 pb-0 pl-3">
           <div className="grid-cols-7 grid mb-[6px] gap-1">
             {WEEKDAYS.map((day, index) => (
@@ -322,7 +324,7 @@ export default function CalendarMainPage() {
               <button
                 type="button"
                 onClick={() => { navigate(`/calendar/new?date=${dateMenuDate}`); setDateMenuDate(null); }}
-                className="flex items-center gap-4 w-full bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl p-5 text-left transition-all active:scale-[0.98]"
+                className="flex items-center gap-4 w-full bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] rounded-2xl p-5 text-left transition-all active:scale-[0.98]"
               >
                 <div className="flex items-center justify-center w-12 h-12 bg-purple-500 rounded-xl flex-shrink-0">
                   <CalendarDays className="w-6 h-6 text-white" strokeWidth={2} />
@@ -335,7 +337,7 @@ export default function CalendarMainPage() {
               <button
                 type="button"
                 onClick={() => { navigate(`/calendar/new-todo?date=${dateMenuDate}`); setDateMenuDate(null); }}
-                className="flex items-center gap-4 w-full bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl p-5 text-left transition-all active:scale-[0.98]"
+                className="flex items-center gap-4 w-full bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] rounded-2xl p-5 text-left transition-all active:scale-[0.98]"
               >
                 <div className="flex items-center justify-center w-12 h-12 bg-purple-500 rounded-xl flex-shrink-0">
                   <CheckSquare className="w-6 h-6 text-white" strokeWidth={2} />
@@ -396,7 +398,7 @@ export default function CalendarMainPage() {
                       void handleToggleTodo(todo);
                     }
                   }}
-                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem] select-none"
+                  className="items-center flex w-full text-left mb-2 bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] gap-2.5 p-[10px] rounded-[0.875rem] select-none"
                 >
                   {todo.isCompleted
                     ? <CheckCircle2 className="w-[18px] h-[18px] text-purple-400 flex-shrink-0" strokeWidth={2.2} />
@@ -441,7 +443,7 @@ export default function CalendarMainPage() {
                         key={event.id}
                         type="button"
                         onClick={() => handleEventClick(event)}
-                        className={`items-center flex w-full text-left mb-2 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] gap-2.5 p-[10px] rounded-[0.875rem] ${
+                        className={`items-center flex w-full text-left mb-2 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] gap-2.5 p-[10px] rounded-[0.875rem] ${
                           event.source === 'EXTERNAL' ? 'bg-white border border-gray-100' : 'bg-purple-100'
                         }`}
                       >

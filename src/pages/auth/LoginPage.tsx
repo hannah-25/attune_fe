@@ -302,7 +302,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleLogin}
               disabled={isSubmitting}
-              className="items-center flex font-bold justify-center w-full h-[46px] mt-4 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 rounded-xl disabled:opacity-60"
+              className="items-center flex font-bold justify-center w-full h-[46px] mt-4 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 rounded-xl disabled:opacity-60"
             >
               <span className="block">{isSubmitting ? '로그인 중...' : '로그인'}</span>
             </button>

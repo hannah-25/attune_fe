@@ -36,7 +36,7 @@ export function AccountRestorePrompt({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="flex h-[50px] w-full items-center justify-center rounded-xl bg-gray-900 text-base font-bold text-white disabled:opacity-60"
+            className="flex h-[50px] w-full items-center justify-center rounded-xl bg-[rgb(31,27,46)] text-base font-bold text-white disabled:opacity-60"
           >
             {isSubmitting ? '계정 복구 중...' : '다시 활성화하기'}
           </button>

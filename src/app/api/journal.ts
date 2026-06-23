@@ -225,14 +225,13 @@ export function createMemo(date: string, memo: string) {
   return apiRequest<MemoRecord>(`${JOURNALS_BASE_PATH}/${date}/memo`, { method: 'POST', body: { memo } });
 }
 
-// ── Catalog tag API ───────────────────────────────────────────────────────────
+// ── Journal tag API ───────────────────────────────────────────────────────────
 
 export type JournalTagCategory = 'CONDITION' | 'SIDE_EFFECT' | 'TROUBLE';
 export type JournalTagScope = 'SYSTEM' | 'USER';
 
-export type CatalogJournalTag = {
-  catalogTagId: number;
-  legacyTagId: number | null;
+export type JournalTag = {
+  tagId: number;
   category: JournalTagCategory;
   name: string;
   tagType: string;
@@ -241,44 +240,50 @@ export type CatalogJournalTag = {
   visible: boolean;
 };
 
-export type CatalogTagCheck = {
-  catalogTagId: number;
+export type JournalTagCheck = {
+  tagId: number;
   category: JournalTagCategory;
+  name: string;
+  tagType: string;
+  journalDate: string;
   checkedAt: string;
 };
 
-export function getCatalogTags(category: JournalTagCategory) {
-  return apiRequest<CatalogJournalTag[]>(`${JOURNALS_BASE_PATH}/catalog-tags?category=${category}`);
+export function getJournalTags(category: JournalTagCategory, options: { manage?: boolean } = {}) {
+  const params = new URLSearchParams({ category });
+  if (options.manage) params.set('manage', 'true');
+  return apiRequest<JournalTag[]>(`${JOURNALS_BASE_PATH}/tags?${params}`);
 }
 
-export function updateCatalogTagPreference(catalogTagId: number, payload: { enabled: boolean; visible: boolean }) {
-  return apiRequest<void>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}/preference`, {
+export function updateJournalTagPreference(tagId: number, payload: { enabled: boolean; visible: boolean }) {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/tags/${tagId}/preference`, {
     method: 'PATCH',
     body: payload,
   });
 }
 
-export function createCatalogTag(payload: { category: JournalTagCategory; name: string; tagType: string; visible: boolean }) {
-  return apiRequest<CatalogJournalTag>(`${JOURNALS_BASE_PATH}/catalog-tags`, {
+export function createJournalTag(payload: { category: JournalTagCategory; name: string; tagType: string; visible: boolean }) {
+  return apiRequest<JournalTag>(`${JOURNALS_BASE_PATH}/tags`, {
     method: 'POST',
     body: payload,
   });
 }
 
-export function checkCatalogTag(catalogTagId: number) {
-  return apiRequest<CatalogTagCheck>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}/checks`, {
+export function checkJournalTag(tagId: number, journalDate: string) {
+  return apiRequest<JournalTagCheck>(`${JOURNALS_BASE_PATH}/tags/${tagId}/checks`, {
     method: 'POST',
+    body: { journalDate },
   });
 }
 
-export function uncheckCatalogTag(catalogTagId: number, date: string) {
-  return apiRequest<void>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}/checks?date=${encodeURIComponent(date)}`, {
+export function uncheckJournalTag(tagId: number, date: string) {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/tags/${tagId}/checks?date=${encodeURIComponent(date)}`, {
     method: 'DELETE',
   });
 }
 
-export function deleteCatalogTag(catalogTagId: number, journalDate: string) {
-  return apiRequest<void>(`${JOURNALS_BASE_PATH}/catalog-tags/${catalogTagId}?journalDate=${encodeURIComponent(journalDate)}`, {
+export function deleteJournalTag(tagId: number) {
+  return apiRequest<void>(`${JOURNALS_BASE_PATH}/tags/${tagId}`, {
     method: 'DELETE',
   });
 }

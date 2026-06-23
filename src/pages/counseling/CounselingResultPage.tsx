@@ -425,7 +425,7 @@ export default function CounselingResultPage() {
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-5 pt-1 pr-4 pb-8 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
 
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
+          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-[1.625rem]">
             <div className="flex items-center gap-4">
               <div className="shrink-0 text-center">
                 <div className="text-xs text-purple-700 font-semibold">
@@ -457,8 +457,8 @@ export default function CounselingResultPage() {
               </EditableBlock>
 
               <div>
-                <div className="font-bold text-gray-800 mb-2">처방 입력</div>
-                <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+                <div className="font-bold text-gray-900 mb-2">처방 입력</div>
+                <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
                   {entries.map((entry, index) => {
                     const status = getEntryStatus(entry);
                     const isLast = index === entries.length - 1;
@@ -656,8 +656,8 @@ export default function CounselingResultPage() {
               </ViewBlock>
 
               <div>
-                <div className="font-bold text-gray-800 mb-2">처방</div>
-                <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+                <div className="font-bold text-gray-900 mb-2">처방</div>
+                <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
                   {savedPrescription.length > 0 ? (
                     savedPrescription.map((item, index) => {
                       const isLast = index === savedPrescription.length - 1;
@@ -707,8 +707,8 @@ function toDateKey(date: Date) {
 function EditableBlock({ children, title }: { children: React.ReactNode; title: string }) {
   return (
     <div>
-      <div className="font-bold text-gray-800 mb-2">{title}</div>
-      <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
+      <div className="font-bold text-gray-900 mb-2">{title}</div>
+      <div className="bg-white border border-gray-200 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-2xl">
         {children}
       </div>
     </div>
@@ -718,8 +718,8 @@ function EditableBlock({ children, title }: { children: React.ReactNode; title: 
 function ViewBlock({ children, title }: { children: React.ReactNode; title: string }) {
   return (
     <div>
-      <div className="font-bold text-gray-800 mb-2">{title}</div>
-      <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
+      <div className="font-bold text-gray-900 mb-2">{title}</div>
+      <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-2xl">
         {children}
       </div>
     </div>

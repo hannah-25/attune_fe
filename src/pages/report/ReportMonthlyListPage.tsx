@@ -7,7 +7,7 @@ import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getReports, type MedicationReport } from '@/api/medicationAnalysis';
 
-const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px]';
+const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
 
 const STATUS_LABEL: Record<string, string> = {
   COMPLETED: '완료',

@@ -283,7 +283,7 @@ export default function SignupPage() {
               type="button"
               onClick={handleSignup}
               disabled={isSubmitting}
-              className="items-center flex font-bold justify-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 mt-4 rounded-xl disabled:opacity-60"
+              className="items-center flex font-bold justify-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 mt-4 rounded-xl disabled:opacity-60"
             >
               <span className="block">{isSubmitting ? '가입 중...' : '회원가입'}</span>
             </button>

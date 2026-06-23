@@ -234,7 +234,7 @@ export default function MedicationListPage() {
         />
         <ScrollArea className="flex flex-col gap-3 pt-1">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
+          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-[1.625rem]">
             {nextDose ? (
               <>
                 <div className="font-bold text-gray-500 text-xs mb-1">다음 복용</div>
@@ -302,7 +302,7 @@ export default function MedicationListPage() {
           {activeMedications.map((medication) => (
             <div
               key={medication.userMedicationId}
-              className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]"
+              className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]"
             >
               <div className="items-center flex gap-2.5">
                 <div className={`items-center flex justify-center w-[38px] h-[38px] ${medication.bg} rounded-xl shrink-0`}>
@@ -344,7 +344,7 @@ export default function MedicationListPage() {
             {pastOpen ? <ChevronUp className="w-4 h-4 text-gray-400" strokeWidth={2.5} /> : <ChevronDown className="w-4 h-4 text-gray-400" strokeWidth={2.5} />}
           </button>
           {pastOpen && pastMedications.map((medication) => (
-            <div key={medication.userMedicationId} className="bg-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+            <div key={medication.userMedicationId} className="bg-gray-100 border border-gray-200 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]">
               <div className="items-center flex gap-2.5 opacity-[0.7]">
                 <div className="items-center flex justify-center w-[38px] h-[38px] bg-[rgb(208,201,189)] rounded-xl">
                   <Pill className="w-[18px] h-[18px] text-white" strokeWidth={2.4} />

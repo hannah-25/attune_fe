@@ -88,7 +88,7 @@ export default function MyPage() {
 
   return (
     <div
-      className="w-full h-full bg-gray-100 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -121,7 +121,7 @@ export default function MyPage() {
                 <button type="button" onClick={() => setIsEditingProfile(false)} className="items-center flex justify-center w-9 h-9 bg-white border border-gray-200 text-gray-500 shadow-[rgba(60,40,90,0.05)_0px_2px_8px_0px] rounded-full" aria-label="프로필 편집 취소">
                   <X className="w-4 h-4" strokeWidth={2.25} />
                 </button>
-                <button type="button" onClick={saveProfile} className="items-center flex justify-center w-9 h-9 bg-purple-500 text-white shadow-[rgba(60,40,90,0.12)_0px_3px_10px_0px] rounded-full" aria-label="프로필 저장">
+                <button type="button" onClick={saveProfile} className="items-center flex justify-center w-9 h-9 bg-[rgb(31,27,46)] text-white shadow-[rgba(60,40,90,0.12)_0px_3px_10px_0px] rounded-full" aria-label="프로필 저장">
                   <Check className="w-4 h-4" strokeWidth={2.5} />
                 </button>
               </div>
@@ -166,8 +166,8 @@ function Chip({ children }: { children: React.ReactNode }) {
 function Section({ children, title }: { children: React.ReactNode; title: string }) {
   return (
     <>
-      <div className="font-bold text-gray-600 text-xs pt-0 pr-1 pb-1.5 pl-1">{title}</div>
-      <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">{children}</div>
+      <div className="font-bold text-gray-900 text-xs pt-0 pr-1 pb-1.5 pl-1">{title}</div>
+      <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">{children}</div>
     </>
   );
 }

@@ -113,7 +113,7 @@ export default function CommunityWritePage() {
           </div>
 
           {/* 제목 */}
-          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl">
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] rounded-2xl">
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -124,7 +124,7 @@ export default function CommunityWritePage() {
           </div>
 
           {/* 본문 */}
-          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] rounded-2xl">
+          <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] rounded-2xl">
             <textarea
               ref={bodyRef}
               value={body}
