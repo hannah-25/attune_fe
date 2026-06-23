@@ -145,7 +145,10 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   const quickLogMatch = base.match(/^\/v1\/user-medications\/(\d+)\/log\/quick$/);
   if (quickLogMatch && method === 'POST') {
     await queueWrite('POST', path, body);
-    return { logId: 0, action: (body as Record<string, unknown>)?.action, recordedAt: new Date().toISOString() } as T;
+    const action = (typeof body === 'object' && body !== null && 'action' in body)
+      ? (body as { action?: unknown }).action
+      : undefined;
+    return { logId: 0, action, recordedAt: new Date().toISOString() } as T;
   }
 
   // /v1/user-medications/:id  (PATCH)

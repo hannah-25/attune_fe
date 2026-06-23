@@ -8,6 +8,8 @@ import { db, type SyncQueueItem } from './db';
 
 export const syncEvents = new EventTarget();
 
+const CACHE_PERIOD_DAYS = 90;
+
 // 서버가 명시적으로 해당 쓰기를 거부한 상태코드 — 재시도해도 의미 없음
 function isPermanentError(status: number): boolean {
   return [400, 404, 409, 410, 422].includes(status);
@@ -16,7 +18,7 @@ function isPermanentError(status: number): boolean {
 function get3MonthRange() {
   const end = new Date();
   const start = new Date();
-  start.setDate(start.getDate() - 90);
+  start.setDate(start.getDate() - CACHE_PERIOD_DAYS);
   return {
     startDate: start.toISOString().slice(0, 10),
     endDate: end.toISOString().slice(0, 10),
@@ -72,9 +74,9 @@ async function cacheMedications() {
 
 async function cacheSchedules() {
   const start = new Date();
-  start.setDate(start.getDate() - 90);
+  start.setDate(start.getDate() - CACHE_PERIOD_DAYS);
   const end = new Date();
-  end.setDate(end.getDate() + 90);
+  end.setDate(end.getDate() + CACHE_PERIOD_DAYS);
   const startDate = start.toISOString().slice(0, 10);
   const endDate = end.toISOString().slice(0, 10);
   const now = new Date().toISOString();
@@ -109,7 +111,7 @@ async function cacheConsultations() {
 
 async function pruneOldCache() {
   const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 90);
+  cutoff.setDate(cutoff.getDate() - CACHE_PERIOD_DAYS);
   const cutoffStr = cutoff.toISOString().slice(0, 10);
   await Promise.all([
     db.journals.where('date').below(cutoffStr).delete(),

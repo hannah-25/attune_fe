@@ -3,6 +3,12 @@ import { syncEvents } from '../offline/SyncService';
 
 type SyncState = 'idle' | 'syncing' | 'complete';
 
+const LABELS = {
+  offline: '오프라인 · 작업이 저장됩니다',
+  syncing: '동기화 중...',
+  complete: '동기화 완료',
+} as const;
+
 export function OfflineIndicator() {
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
   const [syncState, setSyncState] = useState<SyncState>('idle');
@@ -40,39 +46,31 @@ export function OfflineIndicator() {
 
   const bannerClass =
     'fixed top-0 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-b-xl shadow-md transition-all duration-300';
+  const bannerStyle = { fontFamily: 'NanumSquare, sans-serif' };
 
   if (!isOnline) {
     return (
-      <div
-        className={`${bannerClass} bg-gray-800 text-white`}
-        style={{ fontFamily: 'NanumSquare, sans-serif' }}
-      >
+      <div className={`${bannerClass} bg-gray-800 text-white`} style={bannerStyle}>
         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
-        오프라인 · 작업이 저장됩니다
+        {LABELS.offline}
       </div>
     );
   }
 
   if (syncState === 'syncing') {
     return (
-      <div
-        className={`${bannerClass} bg-purple-600 text-white`}
-        style={{ fontFamily: 'NanumSquare, sans-serif' }}
-      >
+      <div className={`${bannerClass} bg-purple-600 text-white`} style={bannerStyle}>
         <span className="w-1.5 h-1.5 rounded-full bg-purple-200 inline-block animate-pulse" />
-        동기화 중...
+        {LABELS.syncing}
       </div>
     );
   }
 
   if (syncState === 'complete') {
     return (
-      <div
-        className={`${bannerClass} bg-green-600 text-white`}
-        style={{ fontFamily: 'NanumSquare, sans-serif' }}
-      >
+      <div className={`${bannerClass} bg-green-600 text-white`} style={bannerStyle}>
         <span className="w-1.5 h-1.5 rounded-full bg-green-200 inline-block" />
-        동기화 완료
+        {LABELS.complete}
       </div>
     );
   }
