@@ -15,13 +15,20 @@ function isPermanentError(status: number): boolean {
   return [400, 404, 409, 410, 422].includes(status);
 }
 
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 function get3MonthRange() {
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - CACHE_PERIOD_DAYS);
   return {
-    startDate: start.toISOString().slice(0, 10),
-    endDate: end.toISOString().slice(0, 10),
+    startDate: toLocalDateString(start),
+    endDate: toLocalDateString(end),
   };
 }
 
@@ -77,8 +84,8 @@ async function cacheSchedules() {
   start.setDate(start.getDate() - CACHE_PERIOD_DAYS);
   const end = new Date();
   end.setDate(end.getDate() + CACHE_PERIOD_DAYS);
-  const startDate = start.toISOString().slice(0, 10);
-  const endDate = end.toISOString().slice(0, 10);
+  const startDate = toLocalDateString(start);
+  const endDate = toLocalDateString(end);
   const now = new Date().toISOString();
 
   const [catsResponse, schedsResponse] = await Promise.all([
@@ -89,9 +96,9 @@ async function cacheSchedules() {
   await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
 
   // 누적 대신 교체: 오래된 일정이 무한히 쌓이지 않도록 매번 초기화
-  await db.transaction('rw', db.schedules, db.scheduleDetails, async () => {
+  // scheduleDetails는 유지 — 사용자가 조회한 상세 캐시를 살려둠
+  await db.transaction('rw', db.schedules, async () => {
     await db.schedules.clear();
-    await db.scheduleDetails.clear();
     await db.schedules.bulkPut(
       schedsResponse.schedules.map(s => ({
         scheduleId: s.scheduleId,
@@ -118,7 +125,7 @@ async function cacheConsultations() {
 async function pruneOldCache() {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - CACHE_PERIOD_DAYS);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const cutoffStr = toLocalDateString(cutoff);
   await Promise.all([
     db.journals.where('date').below(cutoffStr).delete(),
     db.medicationLogs.where('date').below(cutoffStr).delete(),

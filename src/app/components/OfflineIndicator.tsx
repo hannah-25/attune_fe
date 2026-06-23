@@ -30,6 +30,7 @@ export function OfflineIndicator() {
     const handleStart = () => setSyncState('syncing');
     const handleComplete = () => {
       setSyncState('complete');
+      clearTimeout(timer);
       timer = setTimeout(() => setSyncState('idle'), 2000);
     };
 

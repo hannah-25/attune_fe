@@ -174,13 +174,16 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     if (method === 'GET') {
       const startDate = params.get('startDate') ?? '';
       const endDate = params.get('endDate') ?? '';
-      // startTime 인덱스로 endDate 이전 레코드를 먼저 좁힌 뒤, endTime 조건을 메모리에서 처리
-      const filtered = await db.schedules
-        .where('startTime')
-        .belowOrEqual(endDate + 'T23:59:59')
-        .filter(c => c.endTime.slice(0, 10) >= startDate)
-        .toArray();
-      return { schedules: filtered.map(c => c.data) } as T;
+      // startTime, endTime 인덱스를 각각 쿼리하여 교집합으로 날짜 범위 내 일정 조회
+      const [byStart, byEnd] = await Promise.all([
+        db.schedules.where('startTime').belowOrEqual(endDate + 'T23:59:59').primaryKeys(),
+        db.schedules.where('endTime').aboveOrEqual(startDate).primaryKeys(),
+      ]);
+      const startSet = new Set(byStart);
+      const matchIds = byEnd.filter(k => startSet.has(k));
+      const results = (await db.schedules.bulkGet(matchIds))
+        .filter((c): c is NonNullable<typeof c> => c != null);
+      return { schedules: results.map(c => c.data) } as T;
     }
     await queueWrite('POST', path, body);
     return undefined as T;

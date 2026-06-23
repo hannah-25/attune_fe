@@ -30,7 +30,7 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
     const journalDateMatch = base.match(/^\/v1\/journals\/([0-9]{4}-[0-9]{2}-[0-9]{2})$/);
     if (journalDateMatch) {
       const detail = data as JournalDetail;
-      if (detail?.checked) {
+      if (detail && detail.checked !== undefined) {
         await db.journals.put({ date: journalDateMatch[1], checked: detail.checked, cachedAt: now });
       }
       if (detail?.activeTags) {
