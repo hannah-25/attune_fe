@@ -9,7 +9,7 @@ export type DailyGoalType = 'WORK_STUDY' | 'TIME_MANAGEMENT' | 'LIFE_MANAGEMENT'
 export type OnboardingSymptomType = 'INATTENTION' | 'HYPERACTIVITY';
 
 export type AiTagItem = {
-  id: number;
+  tagId: number;
   trouble: string;
   type: string;
   recommended: boolean;

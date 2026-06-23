@@ -614,7 +614,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
         }));
       }
 
-      return created({
+      return ok({
         tagId,
         category: journalTag?.category,
         name: journalTag?.name,
