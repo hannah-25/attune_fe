@@ -7,6 +7,7 @@ import { ApiError, clearAccessToken } from '../../app/api/client';
 import { getMyProfile } from '../../app/api/user';
 import { exitGuestMode, isGuestMode } from '../../app/guest';
 import { clearGuestStore } from '../../app/mocks/guest-store';
+import { SyncService } from '../../app/offline/SyncService';
 import { markPendingRestoreEmail } from '../../app/withdrawal-restore';
 import { NavBackButton } from '../../app/components/NavButtons';
 import { TopBar } from '../../app/components/TopBar';
@@ -83,6 +84,7 @@ export default function WithdrawPage() {
         markPendingRestoreEmail(email);
       }
       clearAccessToken();
+      await SyncService.clearAllCache();
       exitGuestMode();
       clearGuestStore();
       setSubmitted(true);

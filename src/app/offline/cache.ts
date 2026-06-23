@@ -65,6 +65,7 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
       if (!Array.isArray(response?.logs)) return;
       const byDate = new Map<string, typeof response.logs>();
       for (const log of response.logs) {
+        if (typeof log?.intakeTime !== 'string') continue;
         const date = log.intakeTime.slice(0, 10);
         if (!byDate.has(date)) byDate.set(date, []);
         byDate.get(date)!.push(log);

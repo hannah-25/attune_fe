@@ -78,10 +78,16 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const result = await parseResponse<T>(response);
 
   const method = (options.method ?? 'GET').toUpperCase();
-  if (method === 'GET' && !isGuestMode()) {
-    import('../offline/cache').then(m => m.cacheResponse(normalizedPath, result)).catch(err => {
-      if (import.meta.env.DEV) console.warn('[offline/cache] async cache failed:', normalizedPath, err);
-    });
+  const cacheSessionToken = getAccessToken();
+  if (method === 'GET' && !isGuestMode() && cacheSessionToken) {
+    import('../offline/cache')
+      .then(m => {
+        if (getAccessToken() !== cacheSessionToken) return undefined;
+        return m.cacheResponse(normalizedPath, result);
+      })
+      .catch(err => {
+        if (import.meta.env.DEV) console.warn('[offline/cache] async cache failed:', normalizedPath, err);
+      });
   }
 
   return result;
@@ -208,7 +214,14 @@ function redirectToLoginOnce() {
   if (loginRedirectTriggered) return;
   loginRedirectTriggered = true;
   clearAccessToken();
-  window.location.replace('/login');
+  void import('../offline/SyncService')
+    .then(m => m.SyncService.clearAllCache())
+    .catch(err => {
+      if (import.meta.env.DEV) console.warn('[offline/cache] clear on session expiry failed:', err);
+    })
+    .finally(() => {
+      window.location.replace('/login');
+    });
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {

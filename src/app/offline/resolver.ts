@@ -12,6 +12,12 @@ export class OfflineCacheMissError extends Error {
 }
 
 type WriteMethod = SyncQueueItem['method'];
+let temporaryLogIdSeed = 0;
+
+function createTemporaryLogId(): number {
+  temporaryLogIdSeed = (temporaryLogIdSeed + 1) % 1000;
+  return -(Date.now() * 1000 + temporaryLogIdSeed);
+}
 
 // path는 쿼리 스트링 포함 전체 경로를 보존해야 재전송 시 파라미터가 유지됨
 async function queueWrite(method: WriteMethod, path: string, body: unknown): Promise<void> {
@@ -148,7 +154,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     const action = (typeof body === 'object' && body !== null && 'action' in body)
       ? (body as { action?: unknown }).action
       : undefined;
-    return { logId: 0, action, recordedAt: new Date().toISOString() } as T;
+    return { logId: createTemporaryLogId(), action, recordedAt: new Date().toISOString() } as T;
   }
 
   // /v1/user-medications/:id  (PATCH)
