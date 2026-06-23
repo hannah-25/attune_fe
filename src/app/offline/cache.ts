@@ -92,7 +92,7 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
           response.schedules.map(s => ({
             scheduleId: s.scheduleId,
             startTime: s.startTime,
-            endTime: s.endTime,
+            endTime: s.endTime ?? s.startTime,
             data: s,
             cachedAt: now,
           })),

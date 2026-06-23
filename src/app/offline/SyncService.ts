@@ -9,6 +9,7 @@ import { db, type SyncQueueItem } from './db';
 export const syncEvents = new EventTarget();
 
 const CACHE_PERIOD_DAYS = 90;
+let isFlushing = false;
 
 // 서버가 명시적으로 해당 쓰기를 거부한 상태코드 — 재시도해도 의미 없음
 function isPermanentError(status: number): boolean {
@@ -103,7 +104,7 @@ async function cacheSchedules() {
       schedsResponse.schedules.map(s => ({
         scheduleId: s.scheduleId,
         startTime: s.startTime,
-        endTime: s.endTime,
+        endTime: s.endTime ?? s.startTime,
         data: s,
         cachedAt: now,
       })),
@@ -133,6 +134,10 @@ async function pruneOldCache() {
 }
 
 async function flushSyncQueue(): Promise<void> {
+  if (isFlushing) return;
+  isFlushing = true;
+
+  try {
   const pending = await db.syncQueue.where('status').equals('pending').sortBy('id');
   if (pending.length === 0) return;
 
@@ -163,6 +168,9 @@ async function flushSyncQueue(): Promise<void> {
   // 큐가 실제로 모두 처리됐을 때만 complete 발화
   if (allFlushed) {
     syncEvents.dispatchEvent(new Event('sync-complete'));
+  }
+  } finally {
+    isFlushing = false;
   }
 }
 

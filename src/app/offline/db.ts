@@ -105,16 +105,13 @@ class AttuneOfflineDB extends Dexie {
       journalTagsByCategory: 'category',
       medications: 'id',
       medicationLogs: 'date',
-      schedules: 'scheduleId',
+      schedules: 'scheduleId, startTime, endTime',
       scheduleCategories: 'id',
       scheduleDetails: 'scheduleId',
       reports: 'id',
       consultations: 'id',
       consultationDetails: 'consultationId',
       syncQueue: '++id, status',
-    });
-    this.version(2).stores({
-      schedules: 'scheduleId, startTime, endTime',
     });
   }
 }

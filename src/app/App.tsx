@@ -103,6 +103,14 @@ function AppLoadingScreen() {
 }
 
 function ProtectedRoute() {
+  useEffect(() => {
+    if (isGuestMode() || !getAccessToken() || !navigator.onLine) return;
+
+    SyncService.initialize().catch(err => {
+      if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);
+    });
+  }, []);
+
   if (!getAccessToken() && !isGuestMode()) {
     return <Navigate to="/login" replace />;
   }
@@ -175,11 +183,6 @@ function RootRoute() {
 export default function App() {
   useEffect(() => {
     SyncService.startListening();
-    if (!isGuestMode() && getAccessToken() && navigator.onLine) {
-      SyncService.initialize().catch(err => {
-        if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);
-      });
-    }
   }, []);
 
   return (
