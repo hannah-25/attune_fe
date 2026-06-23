@@ -1,5 +1,5 @@
 import { getJournals, getJournalTags } from '../api/journal';
-import { getMedications, getAllMedicationLogs } from '../api/medication';
+import { getMedications, getAllMedicationLogs, type MedicationPeriodLog } from '../api/medication';
 import { getSchedules, getScheduleCategories } from '../api/schedule';
 import { getReports } from '../api/medicationAnalysis';
 import { getConsultations } from '../api/consultation';
@@ -22,6 +22,26 @@ function toLocalDateString(date: Date): string {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+}
+
+function parseLocalDate(value: string): Date | null {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function createEmptyLogsByDate(startDate: string, endDate: string): Map<string, MedicationPeriodLog[]> {
+  const byDate = new Map<string, MedicationPeriodLog[]>();
+  const cursor = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
+  if (!cursor || !end) return byDate;
+
+  while (cursor <= end) {
+    byDate.set(toLocalDateString(cursor), []);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return byDate;
 }
 
 function get3MonthRange() {
@@ -77,16 +97,18 @@ async function cacheMedications(sessionToken: string) {
 
   await db.medications.put({ id: 'list', data: meds, cachedAt: now });
 
-  const byDate = new Map<string, typeof logsResponse.logs>();
-  for (const log of logsResponse.logs) {
-    if (typeof log?.intakeTime !== 'string') continue;
-    const date = log.intakeTime.slice(0, 10);
-    if (!byDate.has(date)) byDate.set(date, []);
-    byDate.get(date)!.push(log);
+  if (Array.isArray(logsResponse?.logs)) {
+    const byDate = createEmptyLogsByDate(startDate, endDate);
+    for (const log of logsResponse.logs) {
+      if (typeof log?.intakeTime !== 'string') continue;
+      const date = log.intakeTime.slice(0, 10);
+      if (!byDate.has(date)) byDate.set(date, []);
+      byDate.get(date)!.push(log);
+    }
+    await db.medicationLogs.bulkPut(
+      [...byDate.entries()].map(([date, data]) => ({ date, data, cachedAt: now })),
+    );
   }
-  await db.medicationLogs.bulkPut(
-    [...byDate.entries()].map(([date, data]) => ({ date, data, cachedAt: now })),
-  );
 }
 
 async function cacheSchedules(sessionToken: string) {
@@ -143,8 +165,8 @@ async function pruneOldCache() {
   await Promise.all([
     db.journals.where('date').below(cutoffStr).delete(),
     db.medicationLogs.where('date').below(cutoffStr).delete(),
-    db.scheduleDetails.filter(x => x.cachedAt < cutoffTimestamp).delete(),
-    db.consultationDetails.filter(x => x.cachedAt < cutoffTimestamp).delete(),
+    db.scheduleDetails.toCollection().filter(x => x.cachedAt < cutoffTimestamp).delete(),
+    db.consultationDetails.toCollection().filter(x => x.cachedAt < cutoffTimestamp).delete(),
   ]);
 }
 

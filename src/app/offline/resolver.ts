@@ -5,6 +5,8 @@ import type { ApiRequestOptions } from '../api/client';
 import type { SyncQueueItem } from './db';
 
 export class OfflineCacheMissError extends Error {
+  status = 503;
+
   constructor(path: string) {
     super(`오프라인 캐시 없음: ${path}`);
     this.name = 'OfflineCacheMissError';
@@ -22,6 +24,15 @@ function createTemporaryLogId(): number {
 // path는 쿼리 스트링 포함 전체 경로를 보존해야 재전송 시 파라미터가 유지됨
 async function queueWrite(method: WriteMethod, path: string, body: unknown): Promise<void> {
   await SyncService.addToQueue({ method, path, body, localTimestamp: new Date().toISOString() });
+}
+
+function isWriteMethod(method: string): method is WriteMethod {
+  return method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
+}
+
+async function queueWriteRequest(method: string, path: string, body: unknown): Promise<void> {
+  if (!isWriteMethod(method)) throw new OfflineCacheMissError(path);
+  await queueWrite(method, path, body);
 }
 
 export async function resolveOfflineRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -46,6 +57,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   // /v1/journals/tags/:tagId/preference  (PATCH)
   const tagPrefMatch = base.match(/^\/v1\/journals\/tags\/(\d+)\/preference$/);
   if (tagPrefMatch) {
+    if (method !== 'PATCH') throw new OfflineCacheMissError(path);
     await queueWrite('PATCH', path, body);
     return undefined as T;
   }
@@ -60,7 +72,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   // /v1/journals/tags/:tagId/checks  (POST / DELETE)
   const tagChecksMatch = base.match(/^\/v1\/journals\/tags\/(\d+)\/checks$/);
   if (tagChecksMatch) {
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return {} as T;
   }
 
@@ -96,14 +108,14 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
 
   // /v1/journals/goals  (POST / PATCH / DELETE)
   if (base === '/v1/journals/goals') {
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return {} as T;
   }
 
   // /v1/journals/goals/:id
   const journalGoalMatch = base.match(/^\/v1\/journals\/goals\/(\d+)$/);
   if (journalGoalMatch) {
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return {} as T;
   }
 
@@ -126,7 +138,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     }
 
     if (method !== 'GET') {
-      await queueWrite(method as WriteMethod, path, body);
+      await queueWriteRequest(method, path, body);
       return {} as T;
     }
   }
@@ -169,7 +181,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       const cached = await db.scheduleCategories.get('categories');
       return { categories: cached?.data ?? [] } as T;
     }
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return {} as T;
   }
 
@@ -179,7 +191,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       const endDate = params.get('endDate') ?? '';
       // startTime, endTime 인덱스를 각각 쿼리하여 교집합으로 날짜 범위 내 일정 조회
       const [byStart, byEnd] = await Promise.all([
-        db.schedules.where('startTime').belowOrEqual(endDate + 'T23:59:59').primaryKeys(),
+        db.schedules.where('startTime').belowOrEqual(endDate + 'T24:00:00').primaryKeys(),
         db.schedules.where('endTime').aboveOrEqual(startDate).primaryKeys(),
       ]);
       const startSet = new Set(byStart);
@@ -195,7 +207,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   // /v1/schedules/:id/alarms
   const scheduleAlarmsMatch = base.match(/^\/v1\/schedules\/(\d+)\/alarms$/);
   if (scheduleAlarmsMatch) {
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return undefined as T;
   }
 
@@ -208,7 +220,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       if (!cached) throw new OfflineCacheMissError(path);
       return cached.data as T;
     }
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return undefined as T;
   }
 
@@ -238,13 +250,13 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     if (method === 'GET') {
       return { todos: [] } as T;
     }
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return undefined as T;
   }
 
   const todoDetailMatch = base.match(/^\/v1\/todos\/(\d+)$/);
   if (todoDetailMatch && method !== 'GET') {
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return {} as T;
   }
 
@@ -277,7 +289,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       return (cached?.data ?? []) as T;
     }
     // POST (createConsultation) 등 쓰기 → 큐
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return undefined as T;
   }
 
@@ -287,14 +299,14 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     if (method === 'GET') {
       throw new OfflineCacheMissError(path);
     }
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return {} as T;
   }
 
   // /v1/consultations/:id/result
   const consultResultMatch = base.match(/^\/v1\/consultations\/(\d+)\/result$/);
   if (consultResultMatch) {
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return undefined as T;
   }
 
@@ -307,7 +319,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       if (!cached) throw new OfflineCacheMissError(path);
       return cached.data as T;
     }
-    await queueWrite(method as WriteMethod, path, body);
+    await queueWriteRequest(method, path, body);
     return undefined as T;
   }
 

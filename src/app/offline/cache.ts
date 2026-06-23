@@ -1,10 +1,39 @@
 import { db } from './db';
 import { cleanPath, searchParams } from './pathUtils';
 import type { JournalDetail, JournalListResponse, JournalTag } from '../api/journal';
-import type { MedicationSummary, MedicationPeriodLogsResponse } from '../api/medication';
+import type { MedicationSummary, MedicationPeriodLog, MedicationPeriodLogsResponse } from '../api/medication';
 import type { ScheduleSummary, ScheduleCategory, ScheduleDetail } from '../api/schedule';
 import type { MedicationReport } from '../api/medicationAnalysis';
 import type { ConsultationDetail } from '../api/consultation';
+
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function parseLocalDate(value: string): Date | null {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function createEmptyLogsByDate(startDate: string | null, endDate: string | null): Map<string, MedicationPeriodLog[]> {
+  const byDate = new Map<string, MedicationPeriodLog[]>();
+  if (!startDate || !endDate) return byDate;
+
+  const cursor = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
+  if (!cursor || !end) return byDate;
+
+  while (cursor <= end) {
+    byDate.set(toLocalDateString(cursor), []);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return byDate;
+}
 
 export async function cacheResponse(path: string, data: unknown): Promise<void> {
   if (data == null) return;
@@ -63,7 +92,8 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
     if (base === '/v1/user-medications/logs') {
       const response = data as MedicationPeriodLogsResponse;
       if (!Array.isArray(response?.logs)) return;
-      const byDate = new Map<string, typeof response.logs>();
+      const params = searchParams(path);
+      const byDate = createEmptyLogsByDate(params.get('startDate'), params.get('endDate'));
       for (const log of response.logs) {
         if (typeof log?.intakeTime !== 'string') continue;
         const date = log.intakeTime.slice(0, 10);
