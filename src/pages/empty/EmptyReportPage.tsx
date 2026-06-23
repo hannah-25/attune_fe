@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, Clock, LineChart, Pill, Target } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { TopBar } from '@/components/TopBar';
 
 export default function EmptyReportPage() {
   return (
@@ -10,15 +11,7 @@ export default function EmptyReportPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="items-center flex justify-between pt-2 pr-5 pb-2 pl-5">
-          <div>
-            <div className="font-semibold text-gray-600 text-xs">이번 주 · 5/12 - 5/18</div>
-            <div className="font-extrabold mt-[2px] text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>주간 리포트</div>
-          </div>
-          <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">
-            <span className="block">D-4</span>
-          </div>
-        </div>
+        <TopBar title="주간 리포트" reserveLeft />
         <ScrollArea className="flex flex-col gap-3 pt-3">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.06)_0px_1px_2px_0px,_rgba(255,255,255,0.6)_0px_1px_0px_0px_inset] p-4 rounded-3xl">
             <div className="items-center flex mb-2 gap-1.5">

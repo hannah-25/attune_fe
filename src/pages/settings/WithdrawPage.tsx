@@ -196,7 +196,7 @@ export default function WithdrawPage() {
           <button
             type="button"
             onClick={handleContinue}
-            className="items-center flex font-bold justify-center w-full h-[50px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]"
+            className="items-center flex font-bold justify-center w-full h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem]"
           >
             <span className="block">계속 사용하기</span>
           </button>

@@ -123,12 +123,12 @@ export default function NotificationSettingsPage() {
   };
 
   return (
-    <div className="w-full h-full bg-gray-100 text-sm flex flex-col">
+    <div className="w-full h-full bg-gray-50 text-sm flex flex-col" style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar left={<NavBackButton />} title="알림 설정" centered />
         <div className="flex flex-col grow min-h-0 overflow-y-auto gap-[14px] px-4 pb-6">
           <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px] p-[14px] rounded-2xl">
-            <div className="font-bold text-gray-600">이 기기에서 알림 받기</div>
+            <div className="font-bold text-gray-900">이 기기에서 알림 받기</div>
             <div className="items-center flex mt-[6px] gap-2.5">
               <div className="grow">
                 <div className="font-extrabold text-lg">{deviceSubscribed ? '연결됨' : '연결 안 됨'}</div>
@@ -147,7 +147,7 @@ export default function NotificationSettingsPage() {
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
 
           <div>
-            <div className="font-bold text-gray-600 text-xs px-1 pb-1.5">카테고리별</div>
+            <div className="font-bold text-gray-900 text-xs px-1 pb-1.5">카테고리별</div>
             <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px] p-1 rounded-2xl">
               {CATEGORIES.map((category, index) => (
                 <div

@@ -80,7 +80,7 @@ export default function CounselingListPage() {
           right={<AddButton onClick={() => navigate('/counseling/add')} />}
         />
         {content}
-        <TabBar />
+        <TabBar active="상담" />
       </div>
     </div>
   );
@@ -132,7 +132,7 @@ export default function CounselingListPage() {
 
   return pageShell(
     <ScrollArea className="flex flex-col gap-3">
-      <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
+      <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-[1.625rem]">
         {nextConsultation ? (
           <>
             <div className="flex items-center gap-4">
@@ -213,7 +213,7 @@ export default function CounselingListPage() {
           key={consultation.consultationId ?? `${consultation.consultationDate}-${consultation.place}`}
           type="button"
           onClick={() => consultation.consultationId && navigate(`/counseling/result?id=${consultation.consultationId}`)}
-          className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem] text-left w-full"
+          className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem] text-left w-full"
         >
           <div className="mb-[6px]">
             <div className="font-bold text-gray-600">{formatConsultationDate(consultation.consultationDate)}</div>

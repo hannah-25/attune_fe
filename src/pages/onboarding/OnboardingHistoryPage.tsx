@@ -38,7 +38,7 @@ export default function OnboardingHistoryPage() {
   const nextCheckDate = latestRecord ? addMonths(new Date(latestRecord.doneAt), 3) : null;
 
   return (
-    <div className="w-full h-full bg-gray-50 text-sm flex flex-col">
+    <div className="w-full h-full bg-gray-50 text-sm flex flex-col" style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title="자가 체크 이력" left={<NavBackButton />} />
         <ScrollArea className="flex flex-col gap-3">

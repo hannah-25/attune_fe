@@ -122,6 +122,7 @@ export default function CommunityFeedPage() {
   return (
     <div
       className="w-full h-full bg-gray-50 text-sm flex flex-col"
+      style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title="경험 공유" />
@@ -220,7 +221,7 @@ export default function CommunityFeedPage() {
                 key={post.postId}
                 type="button"
                 onClick={() => navigate(`/community/post/${post.postId}`)}
-                className="text-left bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.125rem]"
+                className="text-left bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.125rem]"
               >
                 <div className="items-center flex mb-[6px] gap-1.5">
                   <div className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem]">

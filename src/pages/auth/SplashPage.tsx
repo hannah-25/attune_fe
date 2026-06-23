@@ -23,7 +23,7 @@ export default function SplashPage() {
             <button
               type="button"
               onClick={() => navigate('/signup')}
-              className="flex items-center font-semibold justify-center w-full h-[52px] bg-gray-900 text-white text-base rounded-xl select-none transition-all active:scale-[0.97] active:bg-black"
+              className="flex items-center font-semibold justify-center w-full h-[52px] bg-[rgb(31,27,46)] text-white text-base rounded-xl select-none transition-all active:scale-[0.97]"
             >
               시작하기
             </button>

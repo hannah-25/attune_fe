@@ -51,7 +51,7 @@ export default function MedicationInfoPage() {
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-[1.625rem]">
+          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-[1.625rem]">
             <div className="items-center flex gap-3">
               <div className="items-center flex justify-center w-14 h-14 bg-white rounded-[1.125rem]">
                 <Pill className="w-7 h-7 text-purple-500" strokeWidth={2.3} />
@@ -62,7 +62,7 @@ export default function MedicationInfoPage() {
               </div>
             </div>
           </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-[10px] gap-1.5">
               <div className="font-bold">혈중 농도 추이</div>
               <div className="grow basis-[0%]"></div>
@@ -88,7 +88,7 @@ export default function MedicationInfoPage() {
             </div>
           </div>
           <InfoCard title="효능">{medication?.indications ?? '-'}</InfoCard>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-2 gap-1.5">
               <div className="font-bold">흔한 부작용</div>
               <div className="grow basis-[0%]"></div>
@@ -148,7 +148,7 @@ function BloodConcentrationChart() {
 
 function InfoCard({ children, title }: { children: React.ReactNode; title: string }) {
   return (
-    <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+    <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]">
       <div className="font-bold mb-2">{title}</div>
       <div className="text-gray-700 text-sm leading-relaxed">{children}</div>
     </div>

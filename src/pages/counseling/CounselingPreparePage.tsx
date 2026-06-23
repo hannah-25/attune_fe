@@ -113,7 +113,7 @@ export default function CounselingPreparePage() {
           left={<NavBackButton onClick={() => navigate(-1)} />}
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-0 pr-4 pb-6 pl-4">
-          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-[1.375rem]">
+          <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.75rem]">
             <div className="text-[10px] text-purple-700 font-semibold">다음 상담</div>
             <div className="font-extrabold mt-1 text-lg leading-[24.3px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>
               {place ?? '-'}
@@ -124,8 +124,8 @@ export default function CounselingPreparePage() {
           </div>
 
           <div>
-            <div className="font-bold mb-[6px] text-gray-600">의사에게 묻고 싶은 것</div>
-            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
+            <div className="font-bold mb-[6px] text-gray-900">의사에게 묻고 싶은 것</div>
+            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-[1.125rem]">
               {loading ? (
                 <div className="py-6 text-center text-gray-400 text-xs">불러오는 중...</div>
               ) : (

@@ -6,10 +6,9 @@ import { TabBar } from '@/components/TabBar';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import {
-  getCatalogTags,
-  updateCatalogTagPreference,
-  createCatalogTag,
-  type CatalogJournalTag,
+  getJournalTags,
+  updateJournalTagPreference,
+  createJournalTag,
   type JournalTagCategory,
   type JournalTagScope,
   type ConditionType,
@@ -36,7 +35,7 @@ function toCatalogCategory(category: Category): JournalTagCategory {
 
 type Tag = {
   count?: string;
-  catalogTagId: number;
+  tagId: number;
   label: string;
   scope: JournalTagScope;
   enabled: boolean;
@@ -54,8 +53,8 @@ export default function JournalTagsPage() {
   const [newTroubleType, setNewTroubleType] = useState<TroubleType>('COGNITIVE_ERROR');
   const [isSaving, setIsSaving] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const activeTags = tags.filter((tag) => tag.enabled);
-  const inactiveTags = tags.filter((tag) => !tag.enabled);
+  const activeTags = tags.filter((tag) => tag.enabled && tag.visible);
+  const inactiveTags = tags.filter((tag) => !tag.enabled || !tag.visible);
 
   useEffect(() => {
     void loadTags(activeCategory);
@@ -64,10 +63,10 @@ export default function JournalTagsPage() {
   const loadTags = async (category: Category) => {
     setError('');
     try {
-      const response = await getCatalogTags(toCatalogCategory(category));
+      const response = await getJournalTags(toCatalogCategory(category), { manage: true });
       setTags(
         response.map((tag) => ({
-          catalogTagId: tag.catalogTagId,
+          tagId: tag.tagId,
           label: tag.name,
           scope: tag.scope,
           enabled: tag.enabled,
@@ -96,10 +95,10 @@ export default function JournalTagsPage() {
     try {
       const category = toCatalogCategory(activeCategory);
       const tagType =
-        category === 'SIDE_EFFECT' ? 'NONE' :
+        category === 'SIDE_EFFECT' ? 'USER_INPUT' :
         category === 'CONDITION' ? newConditionType :
         newTroubleType;
-      await createCatalogTag({ category, name: trimmedLabel, tagType, visible: true });
+      await createJournalTag({ category, name: trimmedLabel, tagType, visible: true });
       await loadTags(activeCategory);
       setAddSheetOpen(false);
     } catch (err) {
@@ -110,17 +109,26 @@ export default function JournalTagsPage() {
     }
   };
 
-  const toggleTagEnabled = async (tag: Tag) => {
+  const toggleTagVisibility = async (tag: Tag) => {
     setError('');
+    const active = tag.enabled && tag.visible;
+    const nextPreference = active
+      ? { enabled: true, visible: false }
+      : { enabled: true, visible: true };
+
     setTags((currentTags) =>
-      currentTags.map((item) => (item.catalogTagId === tag.catalogTagId ? { ...item, enabled: !item.enabled } : item)),
+      currentTags.map((item) =>
+        item.tagId === tag.tagId ? { ...item, ...nextPreference } : item,
+      ),
     );
     try {
-      await updateCatalogTagPreference(tag.catalogTagId, { enabled: !tag.enabled, visible: tag.visible });
+      await updateJournalTagPreference(tag.tagId, nextPreference);
     } catch (err) {
       console.error('Failed to toggle tag:', err);
       setTags((currentTags) =>
-        currentTags.map((item) => (item.catalogTagId === tag.catalogTagId ? { ...item, enabled: tag.enabled } : item)),
+        currentTags.map((item) =>
+          item.tagId === tag.tagId ? { ...item, enabled: tag.enabled, visible: tag.visible } : item,
+        ),
       );
       setError('태그 활성 상태를 바꾸지 못했습니다.');
     }
@@ -169,8 +177,8 @@ export default function JournalTagsPage() {
             })}
           </div>
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <TagSection title={`활성 (${activeTags.length})`} tags={activeTags} active onToggle={toggleTagEnabled} />
-          <TagSection title={`비활성 (${inactiveTags.length})`} tags={inactiveTags} active={false} onToggle={toggleTagEnabled} />
+          <TagSection title={`활성 (${activeTags.length})`} tags={activeTags} active onToggle={toggleTagVisibility} />
+          <TagSection title={`비활성 (${inactiveTags.length})`} tags={inactiveTags} active={false} onToggle={toggleTagVisibility} />
         </ScrollArea>
         <button
           type="button"
@@ -272,10 +280,10 @@ function TagSection({
       <div className="font-bold text-gray-800 text-xs pt-4 first:pt-1 pr-1 pb-1.5 pl-1">
         {title}
       </div>
-      <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+      <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
         {tags.map((tag, index) => (
           <div
-            key={tag.catalogTagId}
+            key={tag.tagId}
             className={`items-center flex gap-2.5 pt-[11px] pr-3 pb-[11px] pl-3 ${
               !active ? 'opacity-[0.6]' : ''
             } ${index < tags.length - 1 ? 'border-b' : ''}`}

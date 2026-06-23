@@ -58,7 +58,7 @@ export default function OnboardingHistoryDetailPage() {
   }, [id]);
 
   return (
-    <div className="w-full h-full bg-gray-50 text-sm flex flex-col">
+    <div className="w-full h-full bg-gray-50 text-sm flex flex-col" style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar title={title} left={<NavBackButton />} />
         <ScrollArea className="flex flex-col gap-4">

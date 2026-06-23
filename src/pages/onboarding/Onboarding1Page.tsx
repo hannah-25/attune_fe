@@ -42,7 +42,7 @@ export default function Onboarding1Page() {
             <button
               type="button"
               onClick={() => navigate('/onboarding/2')}
-              className="items-center flex font-bold justify-center text-center w-full h-[46px] bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black"
+              className="items-center flex font-bold justify-center text-center w-full h-[46px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97]"
             >
               <span className="block text-center">시작하기</span>
             </button>

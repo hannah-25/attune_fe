@@ -12,7 +12,7 @@ import {
   mockCatalogSideEffectTags,
   mockCatalogTroubleTags,
 } from './journal.mock';
-import type { CatalogJournalTag, JournalTagCategory } from '../api/journal';
+import type { JournalTag, JournalTagCategory } from '../api/journal';
 import {
   mockMedications,
   mockMedicationLogs,
@@ -89,20 +89,20 @@ const SEED_MEDICATION_REPORT = {
   generatedAt: '2026-06-01T10:00:00.000Z',
 };
 
-function getDefaultCatalogTags(category: JournalTagCategory): CatalogJournalTag[] {
+function getDefaultJournalTags(category: JournalTagCategory): JournalTag[] {
   if (category === 'CONDITION') return mockCatalogConditionTags;
   if (category === 'SIDE_EFFECT') return mockCatalogSideEffectTags;
   return mockCatalogTroubleTags;
 }
 
-function getCatalogTagsForCategory(category: JournalTagCategory): CatalogJournalTag[] {
-  return guestRead<CatalogJournalTag[]>(`catalog-tags/${category}`) ?? getDefaultCatalogTags(category);
+function getJournalTagsForCategory(category: JournalTagCategory): JournalTag[] {
+  return guestRead<JournalTag[]>(`journal-tags/${category}`) ?? getDefaultJournalTags(category);
 }
 
-function findCatalogTagById(catalogTagId: number): CatalogJournalTag | undefined {
+function findJournalTagById(tagId: number): JournalTag | undefined {
   const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
   for (const cat of categories) {
-    const found = getCatalogTagsForCategory(cat).find((t) => t.catalogTagId === catalogTagId);
+    const found = getJournalTagsForCategory(cat).find((tag) => tag.tagId === tagId);
     if (found) return found;
   }
   return undefined;
@@ -535,24 +535,34 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return noContent();
   }
 
-  // ── Catalog tags ──────────────────────────────────────────────────────────
-  if (p === '/v1/journals/catalog-tags' && m === 'GET') {
+  // ── Journal tags ──────────────────────────────────────────────────────────
+  if (p === '/v1/journals/tags' && m === 'GET') {
     const query = new URLSearchParams(path.split('?')[1] ?? '');
     const category = query.get('category') as JournalTagCategory | null;
     if (!category) return ok([]);
-    return ok(getCatalogTagsForCategory(category));
+    const tags = getJournalTagsForCategory(category);
+    return ok(query.get('manage') === 'true' ? tags : tags.filter((tag) => tag.enabled && tag.visible));
   }
 
-  if (p === '/v1/journals/catalog-tags' && m === 'POST') {
+  if (p === '/v1/journals/tags' && m === 'POST') {
     const { category, name, tagType, visible } = (body ?? {}) as {
       category: JournalTagCategory;
       name: string;
       tagType: string;
       visible: boolean;
     };
-    const newTag: CatalogJournalTag = {
-      catalogTagId: genId(),
-      legacyTagId: null,
+    const currentTags = getJournalTagsForCategory(category);
+    const inactiveTag = currentTags.find((tag) => tag.name === name && !tag.enabled);
+    if (inactiveTag) {
+      const reactivatedTag = { ...inactiveTag, tagType, enabled: true, visible };
+      guestWrite<JournalTag[]>(`journal-tags/${category}`, () =>
+        currentTags.map((tag) => (tag.tagId === inactiveTag.tagId ? reactivatedTag : tag)),
+      );
+      return ok(reactivatedTag);
+    }
+
+    const newTag: JournalTag = {
+      tagId: genId(),
       category,
       name,
       tagType,
@@ -560,113 +570,91 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
       enabled: true,
       visible,
     };
-    guestWrite<CatalogJournalTag[]>(`catalog-tags/${category}`, (prev) => [
-      ...(prev ?? getDefaultCatalogTags(category)),
+    guestWrite<JournalTag[]>(`journal-tags/${category}`, (prev) => [
+      ...(prev ?? getDefaultJournalTags(category)),
       newTag,
     ]);
     return created(newTag);
   }
 
-  const catalogTagChecksMatch = p.match(/^\/v1\/journals\/catalog-tags\/(\d+)\/checks$/);
-  if (catalogTagChecksMatch) {
-    const catalogTagId = Number(catalogTagChecksMatch[1]);
-    const catalogTag = findCatalogTagById(catalogTagId);
+  const journalTagChecksMatch = p.match(/^\/v1\/journals\/tags\/(\d+)\/checks$/);
+  if (journalTagChecksMatch) {
+    const tagId = Number(journalTagChecksMatch[1]);
+    const journalTag = findJournalTagById(tagId);
 
     if (m === 'POST') {
       const checkedAt = new Date().toISOString();
-      const date = toDateKey(new Date());
+      const date = resolveJournalDate(path, body);
+      const conditionTag = mockConditionTags.find((tag) => tag.tagId === tagId);
+      const sideEffectTag = mockSideEffectTags.find((tag) => tag.tagId === tagId);
+      const troubleTag = mockTroubleTags.find((tag) => tag.tagId === tagId);
 
-      if (catalogTag?.legacyTagId != null) {
-        const { legacyTagId, category } = catalogTag;
-        if (category === 'CONDITION') {
-          const condTags = guestRead<typeof mockConditionTags>('condition-tags') ?? mockConditionTags;
-          const legacyTag = condTags.find((t) => t.tagId === legacyTagId);
-          if (legacyTag) {
-            updateJournalDetail(date, (detail) => ({
-              ...detail,
-              checked: { ...detail.checked, conditions: upsertByTagId(detail.checked.conditions, { ...legacyTag, checkedAt }) },
-            }));
-          }
-        } else if (category === 'SIDE_EFFECT') {
-          const seTags = guestRead<typeof mockSideEffectTags>('side-effect-tags') ?? mockSideEffectTags;
-          const legacyTag = seTags.find((t) => t.tagId === legacyTagId);
-          if (legacyTag) {
-            updateJournalDetail(date, (detail) => ({
-              ...detail,
-              checked: { ...detail.checked, sideEffects: upsertByTagId(detail.checked.sideEffects, { ...legacyTag, checkedAt }) },
-            }));
-          }
-        } else if (category === 'TROUBLE') {
-          const trTags = guestRead<typeof mockTroubleTags>('trouble-tags') ?? mockTroubleTags;
-          const legacyTag = trTags.find((t) => t.tagId === legacyTagId);
-          if (legacyTag) {
-            updateJournalDetail(date, (detail) => ({
-              ...detail,
-              checked: { ...detail.checked, troubles: upsertByTagId(detail.checked.troubles, { ...legacyTag, checkedAt }) },
-            }));
-          }
-        }
+      if (journalTag?.category === 'CONDITION' && conditionTag) {
+        updateJournalDetail(date, (detail) => ({
+          ...detail,
+          checked: { ...detail.checked, conditions: upsertByTagId(detail.checked.conditions, { ...conditionTag, checkedAt }) },
+        }));
+      } else if (journalTag?.category === 'SIDE_EFFECT' && sideEffectTag) {
+        updateJournalDetail(date, (detail) => ({
+          ...detail,
+          checked: { ...detail.checked, sideEffects: upsertByTagId(detail.checked.sideEffects, { ...sideEffectTag, checkedAt }) },
+        }));
+      } else if (journalTag?.category === 'TROUBLE' && troubleTag) {
+        updateJournalDetail(date, (detail) => ({
+          ...detail,
+          checked: { ...detail.checked, troubles: upsertByTagId(detail.checked.troubles, { ...troubleTag, checkedAt }) },
+        }));
       } else {
         updateJournalDetail(date, (detail) => ({
           ...detail,
           checked: {
             ...detail.checked,
-            checkedCatalogTagIds: [...new Set([...(detail.checked.checkedCatalogTagIds ?? []), catalogTagId])],
+            checkedCatalogTagIds: [...new Set([...(detail.checked.checkedCatalogTagIds ?? []), tagId])],
           },
         }));
       }
 
-      return created({ catalogTagId, category: catalogTag?.category, checkedAt });
+      return created({
+        tagId,
+        category: journalTag?.category,
+        name: journalTag?.name,
+        tagType: journalTag?.tagType,
+        journalDate: date,
+        checkedAt,
+      });
     }
 
     if (m === 'DELETE') {
       const query = new URLSearchParams(path.split('?')[1] ?? '');
       const date = query.get('date') ?? toDateKey(new Date());
 
-      if (catalogTag?.legacyTagId != null) {
-        const { legacyTagId, category } = catalogTag;
-        if (category === 'CONDITION') {
-          updateJournalDetail(date, (detail) => ({
-            ...detail,
-            checked: { ...detail.checked, conditions: detail.checked.conditions.filter((c) => c.tagId !== legacyTagId) },
-          }));
-        } else if (category === 'SIDE_EFFECT') {
-          updateJournalDetail(date, (detail) => ({
-            ...detail,
-            checked: { ...detail.checked, sideEffects: detail.checked.sideEffects.filter((s) => s.tagId !== legacyTagId) },
-          }));
-        } else if (category === 'TROUBLE') {
-          updateJournalDetail(date, (detail) => ({
-            ...detail,
-            checked: { ...detail.checked, troubles: detail.checked.troubles.filter((t) => t.tagId !== legacyTagId) },
-          }));
-        }
-      } else {
-        updateJournalDetail(date, (detail) => ({
-          ...detail,
-          checked: {
-            ...detail.checked,
-            checkedCatalogTagIds: (detail.checked.checkedCatalogTagIds ?? []).filter((id) => id !== catalogTagId),
-          },
-        }));
-      }
+      updateJournalDetail(date, (detail) => ({
+        ...detail,
+        checked: {
+          ...detail.checked,
+          conditions: detail.checked.conditions.filter((tag) => tag.tagId !== tagId),
+          sideEffects: detail.checked.sideEffects.filter((tag) => tag.tagId !== tagId),
+          troubles: detail.checked.troubles.filter((tag) => tag.tagId !== tagId),
+          checkedCatalogTagIds: (detail.checked.checkedCatalogTagIds ?? []).filter((id) => id !== tagId),
+        },
+      }));
 
       return noContent();
     }
   }
 
-  const catalogTagPreferenceMatch = p.match(/^\/v1\/journals\/catalog-tags\/(\d+)\/preference$/);
-  if (catalogTagPreferenceMatch && m === 'PATCH') {
-    const catalogTagId = Number(catalogTagPreferenceMatch[1]);
+  const journalTagPreferenceMatch = p.match(/^\/v1\/journals\/tags\/(\d+)\/preference$/);
+  if (journalTagPreferenceMatch && m === 'PATCH') {
+    const tagId = Number(journalTagPreferenceMatch[1]);
     const { enabled, visible } = (body ?? {}) as { enabled: boolean; visible: boolean };
     const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
     for (const cat of categories) {
-      const key = `catalog-tags/${cat}`;
-      const tags = getCatalogTagsForCategory(cat);
-      if (tags.some((t) => t.catalogTagId === catalogTagId)) {
-        guestWrite<CatalogJournalTag[]>(key, (prev) =>
-          (prev ?? getDefaultCatalogTags(cat)).map((t) =>
-            t.catalogTagId === catalogTagId ? { ...t, enabled, visible } : t,
+      const key = `journal-tags/${cat}`;
+      const tags = getJournalTagsForCategory(cat);
+      if (tags.some((tag) => tag.tagId === tagId)) {
+        guestWrite<JournalTag[]>(key, (prev) =>
+          (prev ?? getDefaultJournalTags(cat)).map((tag) =>
+            tag.tagId === tagId ? { ...tag, enabled, visible: enabled ? visible : false } : tag,
           ),
         );
         break;
@@ -675,19 +663,17 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     return noContent();
   }
 
-  const catalogTagDeleteMatch = p.match(/^\/v1\/journals\/catalog-tags\/(\d+)$/);
-  if (catalogTagDeleteMatch && m === 'DELETE') {
-    const catalogTagId = Number(catalogTagDeleteMatch[1]);
+  const journalTagDeleteMatch = p.match(/^\/v1\/journals\/tags\/(\d+)$/);
+  if (journalTagDeleteMatch && m === 'DELETE') {
+    const tagId = Number(journalTagDeleteMatch[1]);
     const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
     for (const cat of categories) {
-      const key = `catalog-tags/${cat}`;
-      const tags = getCatalogTagsForCategory(cat);
-      const tag = tags.find((t) => t.catalogTagId === catalogTagId);
-      if (tag) {
-        guestWrite<CatalogJournalTag[]>(key, (prev) =>
-          (prev ?? getDefaultCatalogTags(cat)).map((t) =>
-            t.catalogTagId === catalogTagId ? { ...t, enabled: false } : t,
-          ),
+      const key = `journal-tags/${cat}`;
+      const tags = getJournalTagsForCategory(cat);
+      const tag = tags.find((item) => item.tagId === tagId);
+      if (tag?.scope === 'USER') {
+        guestWrite<JournalTag[]>(key, (prev) =>
+          (prev ?? getDefaultJournalTags(cat)).filter((item) => item.tagId !== tagId),
         );
         break;
       }

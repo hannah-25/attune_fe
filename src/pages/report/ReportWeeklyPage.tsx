@@ -46,7 +46,7 @@ function formatReportDate(dateStr: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px]';
+const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
 
 export default function ReportWeeklyPage() {
   const navigate = useNavigate();
@@ -118,13 +118,14 @@ export default function ReportWeeklyPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="items-center flex justify-between pt-2 pr-5 pb-2 pl-5">
-          <div>
-            <div className="font-semibold text-gray-600">복약 분석</div>
-            <div className="font-extrabold mt-[2px] text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+        <header className="flex min-h-[60px] items-center px-4 py-2 shrink-0">
+          <div className="flex flex-col">
+            <div className="text-xs font-semibold text-gray-500">복약 분석</div>
+            <div className="font-extrabold text-2xl leading-none" style={{ fontFamily: 'NanumSquare, system-ui' }}>
               리포트
             </div>
           </div>
+          <div className="grow" />
           <div className="flex gap-1.5">
             {([7, 30, 90] as Preset[]).map((days) => (
               <button
@@ -137,7 +138,7 @@ export default function ReportWeeklyPage() {
               </button>
             ))}
           </div>
-        </div>
+        </header>
 
         <ScrollArea className="flex flex-col gap-3 pt-2">
           {/* 기간 표시 */}
@@ -234,7 +235,7 @@ export default function ReportWeeklyPage() {
           {recentReports.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-[6px]">
-                <div className="font-bold text-gray-600">지난 리포트</div>
+                <div className="font-bold text-gray-900">지난 리포트</div>
                 {reports.length > 3 && (
                   <button
                     type="button"
@@ -281,7 +282,7 @@ export default function ReportWeeklyPage() {
 
 function StatCard({ title, value, color }: { title: string; value: string; color: string }) {
   return (
-    <div className={`bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl`}>
+    <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-2xl">
       <div className="font-bold text-gray-600 text-xs">{title}</div>
       <div className="items-baseline flex mt-1 gap-1.5">
         <div className="font-extrabold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui', color }}>

@@ -14,7 +14,7 @@ import {
 
 type RouteState = { reportId?: number } | null;
 
-const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px]';
+const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
 
 const CONFIDENCE_LABEL: Record<AiInsight['confidence'], string> = {
   HIGH: '높음', MEDIUM: '중간', LOW: '낮음',

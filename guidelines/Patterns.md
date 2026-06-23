@@ -41,6 +41,17 @@
 - 좌우 액션이 없더라도 `w-11 h-11` 빈 영역을 유지해 중앙 정렬과 터치 영역을 보정한다.
 - 스플래시와 완료 화면처럼 시작/전환 성격이 강한 화면은 앱 바를 생략한다.
 
+### Dashboard Top Bar
+
+홈처럼 탭 루트이면서 대시보드 성격인 화면의 헤더 패턴이다. Sub-screen Top Bar와 다르다.
+
+- 로고 이미지를 좌측에 둔다 (`h-8 w-8 object-contain`).
+- 우측에 아이콘 버튼(알림 등)과 아바타 버튼을 나란히 배치한다.
+- 아바타: `h-9 w-9 rounded-full bg-purple-200`; 이미지 없으면 닉네임 첫 글자(`text-xs font-bold text-purple-700`) 또는 `UserRound` 아이콘으로 대체한다.
+- 아이콘/아바타 버튼 터치 영역은 `h-11 w-11`을 유지한다.
+- 전체 높이 `min-h-[60px]`, padding `px-4 py-2`.
+- 타이틀 텍스트 없이 로고-스페이서-아이콘 구조를 사용한다.
+
 ### Sub-screen Top Bar
 
 탭 루트 화면에 쓰는 표준 탑바 패턴이다. 대시보드형 탑바와 구분한다.
@@ -93,6 +104,67 @@
 - 부가 옵션은 CTA 바로 위에 작게 두고, CTA는 전체 너비(`w-full`) 검정 버튼으로 마무리한다.
 - CTA는 콘텐츠와 자연스럽게 이어져야 한다. 콘텐츠가 짧을 때 버튼만 화면 최하단에 고정되는 구조는 피한다.
 
+### Hero CTA Card
+
+화면 최상단에서 주요 행동 하나를 강하게 유도하는 배너형 카드 패턴이다. 홈의 일지 작성 버튼이 대표 예시.
+
+- 컨테이너: `rounded-[1.75rem] overflow-hidden bg-purple-100 p-4 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]`
+- 최소 높이 `min-h-[108px]`.
+- 우측 상단 장식 원: `absolute -right-5 -top-5 h-20 w-20 rounded-full bg-purple-200/65`
+- 우측 하단 아이콘 뱃지: `absolute bottom-4 right-4 rotate-6 h-8 w-8 rounded-[0.75rem] bg-purple-200 text-purple-700`
+- 텍스트 영역: `relative z-[1] pr-12`로 장식 요소 위에 배치한다.
+- 상태에 따라 미완성(진행률 뱃지), 완료(체크 아이콘) 텍스트를 교체한다.
+- 진행률 뱃지: `rounded-full bg-purple-300/60 px-2 py-0.5 text-[10px] font-bold text-purple-900`
+- active 피드백: `transition-transform active:scale-[0.98]`
+
+### Section Header
+
+홈 대시보드에서 섹션 제목과 전체보기 링크를 가로로 나열하는 헤더 패턴이다.
+
+- 레이아웃: `mb-3 flex items-center justify-between`
+- 제목: `text-sm font-bold text-gray-900`
+- 액션 버튼: `min-h-11 rounded-lg px-2 text-xs font-semibold text-gray-700`
+- 액션 버튼은 항상 해당 섹션의 전체 화면으로 이동한다.
+
+### Plan List Row
+
+오늘 계획 섹션의 일정·할 일 행 패턴이다.
+
+- 컨테이너: `border-y border-gray-200` (배경 없음, 테두리만으로 영역 구분)
+- 각 행: `min-h-[68px] border-b border-gray-200 px-4 last:border-b-0`
+- 시간 라벨: `w-11 shrink-0 text-xs font-extrabold text-gray-700`; 종일이면 `'종일'` 텍스트
+- 아이콘 구분: 일정 `Calendar text-purple-400`, 할 일 `Square text-gray-400` (`h-3.5 w-3.5`)
+- 완료 상태: 텍스트 `text-gray-400 line-through` + 우측 `h-6 w-6 rounded-full bg-purple-100` 내 보라 체크
+- 미완료 상태: 우측에 `ChevronRight text-gray-600`
+
+### Stat Grid
+
+수치 3개를 가로 나열하는 주간 통계 패턴이다.
+
+- 레이아웃: `grid grid-cols-3 gap-3`
+- 라벨: `text-[11px] font-semibold text-gray-600`
+- 값: `text-xl font-extrabold tracking-[-0.03em] text-gray-900`
+- 프로그레스 바: `h-1.5 rounded-full bg-purple-100` + 내부 bar
+- 프로그레스 바 강도별 색상: `bg-purple-700`(strong), `bg-purple-500`(medium), `bg-purple-300`(soft)
+- 보조 정보: `text-[10px] font-medium text-gray-500`
+
+### Shortcut Circle
+
+하단 단축 바의 원형 아이콘 버튼 패턴이다.
+
+- 원: `h-14 w-14 rounded-full bg-purple-100 text-purple-700`; active 상태에서 `bg-purple-200`
+- 뱃지 (선택): `absolute -right-1 -top-1 rounded-full bg-purple-600 px-1.5 py-0.5 text-[9px] font-bold text-white`
+- 라벨: `text-[10px] font-semibold text-gray-700`
+- 그룹 레이아웃: `flex justify-around`
+
+### Status / Loading / Error Row
+
+리스트 섹션 내 로딩·에러·빈 상태를 인라인으로 표시하는 패턴이다.
+
+- 최소 높이 `min-h-[68px]`로 레이아웃 시프트를 방지한다.
+- 로딩·빈 상태: `text-xs font-medium text-gray-600`, `role="status"`
+- 에러 텍스트: `text-xs text-red-700`; 재시도 버튼 `min-h-11 text-xs font-semibold text-purple-700`, `role="alert"`
+
 ### D-day / 날짜 강조 카드
 
 카운트다운 또는 날짜를 강조하는 정보 카드 패턴이다.
@@ -102,6 +174,12 @@
 - 구분선은 `w-px self-stretch bg-purple-200`.
 - 상세 정보 첫 줄은 `font-bold text-base text-gray-900`, 보조 정보는 `text-sm text-gray-500`, 날짜·시간은 `text-xs text-purple-700 font-semibold`.
 - purple-100 배경 카드 위에서 purple-700 계열 색상이 응집감을 만든다.
+
+**인라인 D-day 뱃지 변형** (정보성 카드 우측에 붙이는 경우):
+
+- `rounded-full px-3 py-1 text-xs font-bold`
+- D-day: `bg-purple-600 text-white`
+- D-1~7: `bg-purple-100 text-purple-700`
 
 ---
 

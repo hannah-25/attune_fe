@@ -175,7 +175,7 @@ export default function MedicationAddPage() {
                 type="button"
                 onClick={saveMedication}
                 disabled={isSaving || !canSave}
-                className="items-center flex font-bold justify-center h-9 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl disabled:opacity-60"
+                className="items-center flex font-bold justify-center h-9 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_3px_0px_0px] text-white text-xs tracking-tight px-3 rounded-xl disabled:opacity-60"
               >
                 {isSaving ? '저장 중' : '저장하기'}
               </button>
@@ -184,7 +184,7 @@ export default function MedicationAddPage() {
         />
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-6 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
 
             {isEditMode ? (
               <>
@@ -352,7 +352,7 @@ export default function MedicationAddPage() {
           </div>
 
           {!isEditMode && (
-            <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+            <div className="bg-purple-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-2xl">
               <div className="text-gray-800 leading-normal">
                 <b className="font-bold">표준 정보</b>를 함께 보여드려요. 효능, 부작용, 혈중 농도 추이까지 확인할 수 있어요.
               </div>

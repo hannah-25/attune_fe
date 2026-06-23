@@ -60,7 +60,7 @@ export default function EventDetailPage() {
   if (externalEvent) {
     return (
       <div
-        className="w-full h-full bg-purple-100 text-sm flex flex-col"
+        className="w-full h-full bg-gray-50 text-sm flex flex-col"
         style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
       >
         <div className="flex flex-col flex-1 min-h-0">
@@ -77,7 +77,7 @@ export default function EventDetailPage() {
             <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
               {externalEvent.title}
             </div>
-            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
               <DetailRow label="언제" value={formatExternalWhen(externalEvent)} onClick={() => undefined} />
               <DetailRow label="어디서" value={externalEvent.location || '위치 없음'} last onClick={() => undefined} />
             </div>
@@ -85,7 +85,7 @@ export default function EventDetailPage() {
               Google Calendar 일정의 제목, 시간, 장소는 에이튠에서 수정할 수 없어요.
             </div>
             <div className="font-bold text-gray-600 pt-4 pr-1 pb-1.5 pl-1">메모</div>
-            <div className="bg-white border border-transparent shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
+            <div className="bg-white border border-transparent shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem]">
               <p className={`text-base whitespace-pre-wrap break-words ${memo.trim() ? 'text-gray-800' : 'text-gray-400'}`}>
                 {memo.trim() || '메모 없음'}
               </p>
@@ -101,7 +101,7 @@ export default function EventDetailPage() {
 
   return (
     <div
-      className="w-full h-full bg-purple-100 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -141,7 +141,7 @@ export default function EventDetailPage() {
           <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
             {eventDetail?.title ?? '일정'}
           </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
             <DetailRow
               label="언제"
               value={eventDetail ? formatWhen(eventDetail) : '-'}
@@ -170,7 +170,7 @@ export default function EventDetailPage() {
           <button
             type="button"
             onClick={() => memoRef.current?.focus()}
-            className={`block w-full text-left bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem] transition-colors ${
+            className={`block w-full text-left bg-white border shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem] transition-colors ${
               memoFocused ? 'border-purple-300' : 'border-transparent'
             }`}
           >

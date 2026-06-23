@@ -86,7 +86,7 @@ export default function MedicationHistoryPage() {
         )}
         <ScrollArea>
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
+          <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem]">
             <div className="flex justify-around">
               <Stat value={stats.rate} label="복용률" />
               <Stat value={stats.taken} label="복용" />
@@ -96,7 +96,7 @@ export default function MedicationHistoryPage() {
           {groups.map((group) => (
             <div key={group.date} className="mb-[14px]">
               <div className="font-bold mb-[6px] text-gray-600 pt-0 pr-1 pb-0 pl-1">{group.date}</div>
-              <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
+              <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-[1.125rem]">
                 {group.items.map((item, index) => (
                   <div
                     key={`${group.date}-${item.text}-${index}`}

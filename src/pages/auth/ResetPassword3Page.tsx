@@ -143,7 +143,7 @@ export default function ResetPassword3Page() {
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting || !isTokenValid}
-            className="items-center flex font-bold justify-center w-full h-[46px] mt-6 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black disabled:opacity-60"
+            className="items-center flex font-bold justify-center w-full h-[46px] mt-6 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] disabled:opacity-60"
           >
             {isSubmitting ? '변경 중...' : '비밀번호 변경하기'}
           </button>

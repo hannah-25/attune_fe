@@ -131,7 +131,7 @@ export default function JournalCalendarPage() {
             const d = new Date(dateKey);
             const records: DotColor[] = ['purple'];
             return (
-              <div key={dateKey} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div key={dateKey} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-2xl">
                 <div className="text-xs text-gray-500">{formatMonthDay(d)}</div>
                 <div className="flex flex-wrap gap-2 mt-[6px]">
                   {records.map((color, i) => (

@@ -258,7 +258,9 @@ export default function HomeListPage() {
       }}
     >
       <header className="flex min-h-[60px] items-center px-4 py-2">
-        <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
+        <div className="flex h-11 w-11 items-center justify-center">
+          <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
+        </div>
         <div className="grow" />
         <HeaderButton label="알림 설정으로 이동" onClick={() => navigate('/settings/notifications')}>
           <Bell className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.25} />

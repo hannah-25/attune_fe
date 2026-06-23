@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { CalendarPlus, RefreshCw } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { TopBar } from '@/components/TopBar';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { getSchedules } from '@/api/schedule';
@@ -54,26 +55,26 @@ export default function EmptyCalendarPage() {
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="items-center flex justify-between pt-2 pr-4 pb-1 pl-4">
-          <div className="font-extrabold text-2xl" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-            {formatDateLabel(selectedDate)}
-          </div>
-          <div className="flex gap-1.5">
-            <IconTile
-              ariaLabel="일정 새로고침"
-              disabled={isRefreshing}
-              onClick={() => setRefreshTrigger((prev) => prev + 1)}
-            >
-              <RefreshCw className={`w-[14px] h-[14px] text-gray-700 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2.4} />
-            </IconTile>
-            <IconTile
-              ariaLabel="새 일정 추가"
-              onClick={() => navigate(`/calendar/new?date=${dateKey}`)}
-            >
-              <CalendarPlus className="w-[14px] h-[14px] text-gray-700" strokeWidth={2.4} />
-            </IconTile>
-          </div>
-        </div>
+        <TopBar
+          title={formatDateLabel(selectedDate)}
+          right={
+            <div className="flex items-center gap-1">
+              <IconTile
+                ariaLabel="일정 새로고침"
+                disabled={isRefreshing}
+                onClick={() => setRefreshTrigger((prev) => prev + 1)}
+              >
+                <RefreshCw className={`w-[14px] h-[14px] text-gray-700 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2.4} />
+              </IconTile>
+              <IconTile
+                ariaLabel="새 일정 추가"
+                onClick={() => navigate(`/calendar/new?date=${dateKey}`)}
+              >
+                <CalendarPlus className="w-[14px] h-[14px] text-gray-700" strokeWidth={2.4} />
+              </IconTile>
+            </div>
+          }
+        />
         <ScrollArea className="items-center flex flex-col justify-center text-center gap-[14px] pt-5 px-6">
           <div className="relative text-center w-[180px] pt-4 pr-[10px] pb-[14px] pl-[10px]">
             {[0, 1, 2].map((i) => (
@@ -85,7 +86,7 @@ export default function EmptyCalendarPage() {
             ))}
             <div
               className="absolute text-center left-0 top-0 right-0 bottom-0"
-              style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(255, 250, 240) 80%)' }}
+              style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgb(249, 250, 251) 80%)' }}
             />
           </div>
           <div className="font-extrabold text-center text-2xl leading-[28.6px]" style={{ fontFamily: 'NanumSquare, system-ui' }}>

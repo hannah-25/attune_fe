@@ -69,7 +69,7 @@ export default function CommunityNoticePage() {
           {highlightedNotices.map((notice) => {
             const cardBgClass = notice.highlightTone === 'peach' ? 'bg-[rgb(255,236,223)]' : 'bg-purple-100';
             return (
-              <div key={notice.noticeId} className={`items-center flex gap-2.5 ${cardBgClass} shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]`}>
+              <div key={notice.noticeId} className={`items-center flex gap-2.5 ${cardBgClass} shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem]`}>
                 <div className="items-center flex justify-center w-[26px] h-[26px] bg-white rounded-[0.8125rem]">
                   {notice.badgeLabel ? (
                     <span className="font-bold text-purple-600 text-[10px]">{notice.badgeLabel}</span>
@@ -91,7 +91,7 @@ export default function CommunityNoticePage() {
             </div>
           ) : null}
           {normalNotices.map((notice) => (
-            <div key={notice.noticeId} className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
+            <div key={notice.noticeId} className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem]">
               <div className="font-semibold">{notice.title}</div>
               <div className="mt-[2px] text-gray-600 text-xs">{formatNoticeDate(notice.createdAt)}</div>
             </div>

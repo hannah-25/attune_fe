@@ -262,7 +262,7 @@ export default function NewEventPage() {
         <div className="flex flex-col grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] gap-3 pt-1 pr-4 pb-4 pl-4">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
 
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-2xl">
             <input
               value={title}
               onChange={(event) => {
@@ -276,7 +276,7 @@ export default function NewEventPage() {
           </div>
 
           <div
-            className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] px-[14px] py-3 rounded-2xl flex items-center gap-3 cursor-text"
+            className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] px-[14px] py-3 rounded-2xl flex items-center gap-3 cursor-text"
             onClick={() => {
               if (!locationEditing) setLocationEditing(true);
             }}
@@ -299,7 +299,7 @@ export default function NewEventPage() {
             )}
           </div>
 
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => {
@@ -345,7 +345,7 @@ export default function NewEventPage() {
             />
           </div>
 
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => setCategoryOpen((open) => !open)}
@@ -412,7 +412,7 @@ export default function NewEventPage() {
             ) : null}
           </div>
 
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
             <button
               type="button"
               onClick={() => setAlarmOpen((open) => !open)}
@@ -538,7 +538,7 @@ export default function NewEventPage() {
           </div>
 
           {memoOpen ? (
-            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl">
+            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-2xl">
               <div className="font-semibold text-gray-600 mb-2">메모</div>
               <textarea
                 ref={memoRef}

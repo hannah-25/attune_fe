@@ -7,10 +7,10 @@ import { formatDate } from '@/lib/date';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton, NavCloseButton } from '@/components/NavButtons';
 import {
-  getCatalogTags,
-  createCatalogTag,
-  checkCatalogTag,
-  uncheckCatalogTag,
+  getJournalTags,
+  createJournalTag,
+  checkJournalTag,
+  uncheckJournalTag,
   createJournalGoal,
   updateJournalGoal,
   createMemo,
@@ -27,7 +27,7 @@ type Tone = 'purple' | 'orange' | 'blue';
 type Tag = {
   label: string;
   selected?: boolean;
-  catalogTagId?: number;
+  tagId?: number;
   category?: JournalTagCategory;
 };
 type Section = {
@@ -309,12 +309,12 @@ export default function JournalFullPage() {
 
       if (ignore) return;
 
-      let catalogTags: Awaited<ReturnType<typeof getCatalogTags>>[] = [[], [], []];
+      let journalTags: Awaited<ReturnType<typeof getJournalTags>>[] = [[], [], []];
       try {
-        catalogTags = await Promise.all([
-          getCatalogTags('CONDITION'),
-          getCatalogTags('SIDE_EFFECT'),
-          getCatalogTags('TROUBLE'),
+        journalTags = await Promise.all([
+          getJournalTags('CONDITION'),
+          getJournalTags('SIDE_EFFECT'),
+          getJournalTags('TROUBLE'),
         ]);
       } catch (err) {
         console.error('Failed to load catalog tags:', err);
@@ -324,44 +324,44 @@ export default function JournalFullPage() {
 
       if (ignore) return;
       const checked = journal?.checked;
-      const [conditionCatalogTags, sideEffectCatalogTags, troubleCatalogTags] = catalogTags;
+      const [conditionJournalTags, sideEffectJournalTags, troubleJournalTags] = journalTags;
 
         const checkedConditionLegacyIds = new Set(checked?.conditions?.map((item) => item.tagId) ?? []);
         const checkedSideEffectLegacyIds = new Set(checked?.sideEffects?.map((item) => item.tagId) ?? []);
         const checkedTroubleLegacyIds = new Set(checked?.troubles?.map((item) => item.tagId) ?? []);
         const checkedCatalogTagIdSet = new Set(checked?.checkedCatalogTagIds ?? []);
 
-        const isSelected = (t: { catalogTagId: number; legacyTagId: number | null }, legacySet: Set<number>) =>
-          t.legacyTagId != null ? legacySet.has(t.legacyTagId) : checkedCatalogTagIdSet.has(t.catalogTagId);
+        const isSelected = (tagId: number, checkedTagIds: Set<number>) =>
+          checkedTagIds.has(tagId) || checkedCatalogTagIdSet.has(tagId);
 
         setSections([
           {
             title: '감정 · 증상',
             tone: 'purple',
-            tags: conditionCatalogTags.filter((t) => t.enabled).map((t) => ({
+            tags: conditionJournalTags.filter((t) => t.enabled && t.visible).map((t) => ({
               label: t.name,
-              selected: isSelected(t, checkedConditionLegacyIds),
-              catalogTagId: t.catalogTagId,
+              selected: isSelected(t.tagId, checkedConditionLegacyIds),
+              tagId: t.tagId,
               category: 'CONDITION' as const,
             })),
           },
           {
             title: '부작용',
             tone: 'orange',
-            tags: sideEffectCatalogTags.filter((t) => t.enabled).map((t) => ({
+            tags: sideEffectJournalTags.filter((t) => t.enabled && t.visible).map((t) => ({
               label: t.name,
-              selected: isSelected(t, checkedSideEffectLegacyIds),
-              catalogTagId: t.catalogTagId,
+              selected: isSelected(t.tagId, checkedSideEffectLegacyIds),
+              tagId: t.tagId,
               category: 'SIDE_EFFECT' as const,
             })),
           },
           {
             title: '업무 실수 · 불편',
             tone: 'blue',
-            tags: troubleCatalogTags.filter((t) => t.enabled).map((t) => ({
+            tags: troubleJournalTags.filter((t) => t.enabled && t.visible).map((t) => ({
               label: t.name,
-              selected: isSelected(t, checkedTroubleLegacyIds),
-              catalogTagId: t.catalogTagId,
+              selected: isSelected(t.tagId, checkedTroubleLegacyIds),
+              tagId: t.tagId,
               category: 'TROUBLE' as const,
             })),
           },
@@ -425,13 +425,13 @@ export default function JournalFullPage() {
       ),
     );
 
-    if (!tag?.catalogTagId) return;
+    if (!tag?.tagId) return;
 
     try {
       if (nextSelected) {
-        await checkCatalogTag(tag.catalogTagId);
+        await checkJournalTag(tag.tagId, journalDate);
       } else {
-        await uncheckCatalogTag(tag.catalogTagId, journalDate);
+        await uncheckJournalTag(tag.tagId, journalDate);
       }
     } catch (err) {
       console.error('Failed to toggle tag:', err);
@@ -457,16 +457,16 @@ export default function JournalFullPage() {
       sectionTitle === '감정 · 증상' ? 'CONDITION' :
       sectionTitle === '부작용' ? 'SIDE_EFFECT' :
       'TROUBLE';
-    const tagType = category === 'SIDE_EFFECT' ? 'NONE' : 'USER_INPUT';
+    const tagType = 'USER_INPUT';
 
     let createdTag: Tag | null = null;
     try {
-      const response = await createCatalogTag({ category, name: label, tagType, visible: true });
-      await checkCatalogTag(response.catalogTagId);
+      const response = await createJournalTag({ category, name: label, tagType, visible: true });
+      await checkJournalTag(response.tagId, journalDate);
       createdTag = {
         label: response.name,
         selected: true,
-        catalogTagId: response.catalogTagId,
+        tagId: response.tagId,
         category,
       };
     } catch (err) {
@@ -483,7 +483,7 @@ export default function JournalFullPage() {
         if (section.title !== sectionTitle) return section;
 
         const existingIndex = section.tags.findIndex(
-          (tag) => tag.catalogTagId === nextTag.catalogTagId || tag.label === nextTag.label,
+          (tag) => tag.tagId === nextTag.tagId || tag.label === nextTag.label,
         );
         if (existingIndex >= 0) {
           return {
@@ -586,7 +586,7 @@ export default function JournalFullPage() {
         <ScrollArea className="flex flex-col gap-10 pt-2">
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
           <section>
-            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3.5 rounded-[1.125rem]">
+            <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3.5 rounded-[1.125rem]">
               {/* 수면 */}
               <div className="flex items-center gap-1 mb-2">
                 <Moon className="w-3.5 h-3.5 text-purple-500" strokeWidth={2.4} />
@@ -684,7 +684,7 @@ export default function JournalFullPage() {
 
           <div className="flex flex-col gap-5">
             <section>
-              <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl">
+              <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-2xl">
                 <div className="flex items-center mb-4">
                   <div className="font-bold text-sm grow">오늘의 목표</div>
                   <button
@@ -762,7 +762,7 @@ export default function JournalFullPage() {
               </div>
             </section>
 
-            <div className={`bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-4 rounded-2xl transition-colors ${memoFocused ? 'border-purple-400' : 'border-gray-100'}`}>
+            <div className={`bg-white border shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-4 rounded-2xl transition-colors ${memoFocused ? 'border-purple-400' : 'border-gray-100'}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="font-semibold text-gray-800">메모</div>
                 {!memoSaved && (
