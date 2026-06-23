@@ -6,6 +6,7 @@ import GuestBanner from './components/GuestBanner';
 import { ApiError, getAccessToken } from './api/client';
 import { isGuestMode } from './guest';
 import { getMyProfile } from './api/user';
+import { SyncService } from './offline/SyncService';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -172,6 +173,15 @@ function RootRoute() {
 }
 
 export default function App() {
+  useEffect(() => {
+    SyncService.startListening();
+    if (!isGuestMode() && getAccessToken() && navigator.onLine) {
+      SyncService.initialize().catch(err => {
+        if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);
+      });
+    }
+  }, []);
+
   return (
     <AppViewport>
       <Routes>

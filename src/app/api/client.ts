@@ -57,6 +57,11 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     return resolveGuestRequest<T>(normalizedPath, options);
   }
 
+  if (!navigator.onLine && !shouldBypassGuestMock(normalizedPath)) {
+    const { resolveOfflineRequest } = await import('../offline/resolver');
+    return resolveOfflineRequest<T>(normalizedPath, options);
+  }
+
   const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
   const response = await request(path, { auth, body, headers, ...init });
 
@@ -70,7 +75,16 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     throw new ApiError(401, null, 'Session expired');
   }
 
-  return parseResponse<T>(response);
+  const result = await parseResponse<T>(response);
+
+  const method = (options.method ?? 'GET').toUpperCase();
+  if (method === 'GET' && !isGuestMode()) {
+    import('../offline/cache').then(m => m.cacheResponse(normalizedPath, result)).catch(err => {
+      if (import.meta.env.DEV) console.warn('[offline/cache] async cache failed:', normalizedPath, err);
+    });
+  }
+
+  return result;
 }
 
 async function request(path: string, options: ApiRequestOptions) {
