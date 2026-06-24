@@ -1,6 +1,4 @@
 import { isGuestMode } from '../guest';
-import { cacheResponse } from '../offline/cache';
-import { resolveOfflineRequest } from '../offline/resolver';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -58,6 +56,7 @@ function shouldUseOfflineResolver(path: string): boolean {
 }
 
 async function resolveOffline<T>(path: string, options: ApiRequestOptions): Promise<T> {
+  const { resolveOfflineRequest } = await import('../offline/resolver');
   return resolveOfflineRequest<T>(path, options);
 }
 
@@ -136,8 +135,9 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const cacheSessionToken = getAccessToken();
   if (method === 'GET' && !isGuestMode() && cacheSessionToken) {
     Promise.resolve()
-      .then(() => {
+      .then(async () => {
         if (getAccessToken() !== cacheSessionToken) return undefined;
+        const { cacheResponse } = await import('../offline/cache');
         return cacheResponse(normalizedPath, result, () => getAccessToken() === cacheSessionToken);
       })
       .catch(err => {

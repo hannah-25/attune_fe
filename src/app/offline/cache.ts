@@ -53,7 +53,13 @@ export async function cacheResponse(
         | null;
       if (category) {
         if (!shouldWrite()) return;
-        await db.journalTagsByCategory.put({ category, data: data as JournalTag[], cachedAt: now });
+        const existing = await db.journalTagsByCategory.get(category);
+        const offlineTags = (existing?.data ?? []).filter(tag => tag.tagId < 0);
+        await db.journalTagsByCategory.put({
+          category,
+          data: [...(data as JournalTag[]), ...offlineTags],
+          cachedAt: now,
+        });
       }
       return;
     }
@@ -94,7 +100,13 @@ export async function cacheResponse(
     // /v1/user-medications
     if (base === '/v1/user-medications') {
       if (!shouldWrite()) return;
-      await db.medications.put({ id: 'list', data: data as MedicationSummary[], cachedAt: now });
+      const existing = await db.medications.get('list');
+      const offlineMeds = (existing?.data ?? []).filter(med => med.userMedicationId < 0);
+      await db.medications.put({
+        id: 'list',
+        data: [...(data as MedicationSummary[]), ...offlineMeds],
+        cachedAt: now,
+      });
       return;
     }
 
@@ -171,7 +183,13 @@ export async function cacheResponse(
     if (base === '/v1/consultations') {
       if (Array.isArray(data)) {
         if (!shouldWrite()) return;
-        await db.consultations.put({ id: 'list', data: data as ConsultationDetail[], cachedAt: now });
+        const existing = await db.consultations.get('list');
+        const offlineConsultations = (existing?.data ?? []).filter(item => item.consultationId < 0);
+        await db.consultations.put({
+          id: 'list',
+          data: [...(data as ConsultationDetail[]), ...offlineConsultations],
+          cachedAt: now,
+        });
       }
       return;
     }
@@ -212,7 +230,13 @@ export async function cacheResponse(
       const response = data as { connections: CalendarConnection[] };
       if (Array.isArray(response?.connections)) {
         if (!shouldWrite()) return;
-        await db.calendarConnections.put({ id: 'list', data: response.connections, cachedAt: now });
+        const existing = await db.calendarConnections.get('list');
+        const offlineConnections = (existing?.data ?? []).filter(item => item.connectionId < 0);
+        await db.calendarConnections.put({
+          id: 'list',
+          data: [...response.connections, ...offlineConnections],
+          cachedAt: now,
+        });
       }
       return;
     }

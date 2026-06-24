@@ -92,6 +92,8 @@ function serverIdKeys(localEntityType: LocalEntityType): string[] {
       return ['goalId'];
     case 'schedule':
       return ['scheduleId'];
+    case 'calendarConnection':
+      return ['connectionId'];
     case 'consultation':
       return ['consultationId'];
     case 'consultationQuestion':
@@ -185,10 +187,18 @@ async function cacheJournalTags(sessionToken: string) {
   await db.transaction('rw', db.journalTagsByCategory, async () => {
     if (!isSameSession(sessionToken)) return;
     const now = new Date().toISOString();
+    const [existingCondition, existingSideEffect, existingTrouble] = await Promise.all([
+      db.journalTagsByCategory.get('CONDITION'),
+      db.journalTagsByCategory.get('SIDE_EFFECT'),
+      db.journalTagsByCategory.get('TROUBLE'),
+    ]);
+    const offlineConditions = (existingCondition?.data ?? []).filter(tag => tag.tagId < 0);
+    const offlineSideEffects = (existingSideEffect?.data ?? []).filter(tag => tag.tagId < 0);
+    const offlineTroubles = (existingTrouble?.data ?? []).filter(tag => tag.tagId < 0);
     await db.journalTagsByCategory.bulkPut([
-      { category: 'CONDITION', data: conditions, cachedAt: now },
-      { category: 'SIDE_EFFECT', data: sideEffects, cachedAt: now },
-      { category: 'TROUBLE', data: troubles, cachedAt: now },
+      { category: 'CONDITION', data: [...conditions, ...offlineConditions], cachedAt: now },
+      { category: 'SIDE_EFFECT', data: [...sideEffects, ...offlineSideEffects], cachedAt: now },
+      { category: 'TROUBLE', data: [...troubles, ...offlineTroubles], cachedAt: now },
     ]);
   });
 }
@@ -203,7 +213,9 @@ async function cacheMedications(sessionToken: string) {
   ]);
   await db.transaction('rw', [db.medications, db.medicationLogs], async () => {
     if (!isSameSession(sessionToken)) return;
-    await db.medications.put({ id: 'list', data: meds, cachedAt: now });
+    const existing = await db.medications.get('list');
+    const offlineMeds = (existing?.data ?? []).filter(med => med.userMedicationId < 0);
+    await db.medications.put({ id: 'list', data: [...meds, ...offlineMeds], cachedAt: now });
 
     if (Array.isArray(logsResponse?.logs)) {
       const byDate = createEmptyLogsByDate(startDate, endDate);
@@ -239,7 +251,7 @@ async function cacheSchedules(sessionToken: string) {
   await db.transaction('rw', [db.scheduleCategories, db.schedules], async () => {
     if (!isSameSession(sessionToken)) return;
     await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
-    await db.schedules.clear();
+    await db.schedules.where('scheduleId').aboveOrEqual(0).delete();
     await db.schedules.bulkPut(
       schedsResponse.schedules.map(s => ({
         scheduleId: s.scheduleId,
@@ -265,7 +277,13 @@ async function cacheConsultations(sessionToken: string) {
   const items = await getConsultations({ startDate, endDate });
   await db.transaction('rw', db.consultations, async () => {
     if (!isSameSession(sessionToken)) return;
-    await db.consultations.put({ id: 'list', data: items, cachedAt: new Date().toISOString() });
+    const existing = await db.consultations.get('list');
+    const offlineConsultations = (existing?.data ?? []).filter(item => item.consultationId < 0);
+    await db.consultations.put({
+      id: 'list',
+      data: [...items, ...offlineConsultations],
+      cachedAt: new Date().toISOString(),
+    });
   });
 }
 
@@ -334,15 +352,17 @@ async function replaySyncQueue(): Promise<void> {
       } catch (err) {
         if (err instanceof ApiError && isPermanentError(err.status)) {
           await db.syncQueue.update(item.id!, { status: 'failed' as const });
-        } else {
+          continue;
+        }
+        if (err instanceof ApiError) {
           const nextRetryCount = item.retryCount + 1;
           await db.syncQueue.update(item.id!, {
             retryCount: nextRetryCount,
             ...(nextRetryCount >= MAX_SYNC_RETRY_COUNT ? { status: 'failed' as const } : {}),
           });
-          allFlushed = false;
-          break;
         }
+        allFlushed = false;
+        break;
       }
     }
 

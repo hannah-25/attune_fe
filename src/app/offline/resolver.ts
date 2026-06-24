@@ -365,7 +365,9 @@ async function addOfflineMedicationLog(userMedicationId: number, body: unknown) 
   const now = new Date().toISOString();
   const date = toLocalDateStringFromTimestamp(now) ?? toLocalDateString(new Date());
   const action = isRecord(body) && typeof body.action === 'string' ? body.action : undefined;
-  const log: MedicationPeriodLog = {
+  const logId = createTemporaryId();
+  const log: MedicationPeriodLog & { logId: number } = {
+    logId,
     userMedicationId,
     name: '',
     intakeTime: now,
@@ -379,7 +381,7 @@ async function addOfflineMedicationLog(userMedicationId: number, body: unknown) 
       cachedAt: now,
     });
   });
-  return { logId: createTemporaryId(), action: (body as MedicationLogRequest | undefined)?.action, recordedAt: now };
+  return { logId, action: (body as MedicationLogRequest | undefined)?.action, recordedAt: now };
 }
 
 async function updateOfflineMedication(userMedicationId: number, body: unknown): Promise<void> {
@@ -650,6 +652,39 @@ async function getOfflineCalendarEvents(startDate: string, endDate: string): Pro
     });
 }
 
+async function createOfflineCalendarConnection(): Promise<CalendarConnection> {
+  const now = new Date().toISOString();
+  const connection: CalendarConnection = {
+    connectionId: createTemporaryId(),
+    provider: 'GOOGLE',
+    accountEmail: null,
+    selectedCalendarIds: [],
+    lastSyncedAt: null,
+    active: true,
+  };
+  await db.transaction('rw', db.calendarConnections, async () => {
+    const cached = await db.calendarConnections.get('list');
+    await db.calendarConnections.put({
+      id: 'list',
+      data: [...(cached?.data ?? []), connection],
+      cachedAt: now,
+    });
+  });
+  return connection;
+}
+
+async function deleteOfflineCalendarConnection(connectionId: number): Promise<void> {
+  await db.transaction('rw', db.calendarConnections, async () => {
+    const cached = await db.calendarConnections.get('list');
+    if (!cached) return;
+    await db.calendarConnections.put({
+      ...cached,
+      data: cached.data.filter(item => item.connectionId !== connectionId),
+      cachedAt: new Date().toISOString(),
+    });
+  });
+}
+
 
 export async function resolveOfflineRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const method = ((options.method as string | undefined) ?? 'GET').toUpperCase();
@@ -700,19 +735,19 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     const tagId = Number(tagDeleteMatch[1]);
     if (isTemporaryId(tagId)) {
       await deletePendingLocalCreate('journalTag', tagId);
-      const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
-      await Promise.all(categories.map(async category => {
-        const cached = await db.journalTagsByCategory.get(category);
-        if (!cached) return;
-        await db.journalTagsByCategory.put({
-          ...cached,
-          data: cached.data.filter(tag => tag.tagId !== tagId),
-          cachedAt: new Date().toISOString(),
-        });
-      }));
-      return undefined as T;
+    } else {
+      await queueWrite('DELETE', path, body);
     }
-    await queueWrite('DELETE', path, body);
+    const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
+    await Promise.all(categories.map(async category => {
+      const cached = await db.journalTagsByCategory.get(category);
+      if (!cached) return;
+      await db.journalTagsByCategory.put({
+        ...cached,
+        data: cached.data.filter(tag => tag.tagId !== tagId),
+        cachedAt: new Date().toISOString(),
+      });
+    }));
     return undefined as T;
   }
 
@@ -909,7 +944,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     if (method !== 'POST') throw new OfflineCacheMissError(path);
     const scheduleId = await createOfflineSchedule(body);
     await queueLocalCreate(path, body, 'schedule', scheduleId);
-    return undefined as T;
+    return { scheduleId } as T;
   }
 
   // /v1/schedules/:id/alarms
@@ -970,15 +1005,17 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       const cached = await db.calendarConnections.get('list');
       return { connections: cached?.data ?? [] } as T;
     }
-    await queueWriteRequest(method, path, body);
-    return {
-      connectionId: createTemporaryId(),
-      provider: 'GOOGLE',
-      accountEmail: null,
-      selectedCalendarIds: [],
-      lastSyncedAt: null,
-      active: true,
-    } as CalendarConnection as T;
+    if (method !== 'POST') throw new OfflineCacheMissError(path);
+    const connection = await createOfflineCalendarConnection();
+    await queueLocalCreate(path, body, 'calendarConnection', connection.connectionId);
+    return connection as T;
+  }
+
+  if (base === '/v1/calendar-connections/google') {
+    if (method !== 'POST') throw new OfflineCacheMissError(path);
+    const connection = await createOfflineCalendarConnection();
+    await queueLocalCreate(path, body, 'calendarConnection', connection.connectionId);
+    return connection as T;
   }
 
   const calendarConnectionSyncMatch = base.match(/^\/v1\/calendar-connections\/(-?\d+)\/sync$/);
@@ -995,14 +1032,13 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     // 연동 해제(DELETE)는 오프라인에서도 즉시 로컬 캐시에서 제거 (Optimistic Update)
     if (method === 'DELETE') {
       const connectionId = Number(calendarConnectionMatch[1]);
-      const cached = await db.calendarConnections.get('list');
-      if (cached) {
-        await db.calendarConnections.put({
-          ...cached,
-          data: cached.data.filter(item => item.connectionId !== connectionId),
-          cachedAt: new Date().toISOString(),
-        });
+      if (isTemporaryId(connectionId)) {
+        await deletePendingLocalCreate('calendarConnection', connectionId);
+      } else {
+        await queueWriteRequest(method, path, body);
       }
+      await deleteOfflineCalendarConnection(connectionId);
+      return undefined as T;
     }
     await queueWriteRequest(method, path, body);
     return undefined as T;
@@ -1123,6 +1159,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
     if (method === 'POST') {
       const consultationId = await createOfflineConsultation(body);
       await queueLocalCreate(path, body, 'consultation', consultationId);
+      return { consultationId } as T;
     } else {
       await queueWriteRequest(method, path, body);
     }

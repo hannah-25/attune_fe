@@ -115,7 +115,14 @@ export interface CachedCommunityPayload {
   cachedAt: string;
 }
 
-export type LocalEntityType = 'journalTag' | 'journalGoal' | 'schedule' | 'consultation' | 'consultationQuestion' | 'medication';
+export type LocalEntityType =
+  | 'journalTag'
+  | 'journalGoal'
+  | 'schedule'
+  | 'calendarConnection'
+  | 'consultation'
+  | 'consultationQuestion'
+  | 'medication';
 
 export interface SyncQueueItem {
   id?: number;
