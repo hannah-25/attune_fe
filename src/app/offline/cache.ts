@@ -30,8 +30,14 @@ function createEmptyLogsByDate(startDate: string | null, endDate: string | null)
   return byDate;
 }
 
-export async function cacheResponse(path: string, data: unknown): Promise<void> {
+export async function cacheResponse(
+  path: string,
+  data: unknown,
+  isSessionValid?: () => boolean,
+): Promise<void> {
   if (data == null) return;
+  // 비동기 캐시 실행 직전 로그아웃됐다면 비운 DB에 개인정보를 다시 쓰지 않는다.
+  if (isSessionValid && !isSessionValid()) return;
 
   const base = cleanPath(path);
   const now = new Date().toISOString();

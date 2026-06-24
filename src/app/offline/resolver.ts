@@ -60,6 +60,17 @@ function isTemporaryId(id: number): boolean {
   return id < 0;
 }
 
+// 동기화 완료 후 목록은 서버 ID로 갱신되지만 상세 캐시는 임시 ID로 남아있다.
+// 서버 ID로 상세 조회가 실패하면 syncEntityMap을 역방향(serverEntityId→localEntityId)으로 조회해 임시 ID를 찾는다.
+async function findLocalEntityId(localEntityType: LocalEntityType, serverEntityId: number): Promise<number | null> {
+  const mapping = await db.syncEntityMap
+    .where('serverEntityId')
+    .equals(serverEntityId)
+    .filter(m => m.localEntityType === localEntityType)
+    .first();
+  return mapping?.localEntityId ?? null;
+}
+
 // path는 쿼리 스트링 포함 전체 경로를 보존해야 재전송 시 파라미터가 유지됨
 async function queueWrite(
   method: WriteMethod,
@@ -205,7 +216,7 @@ async function createOfflineJournalTag(body: unknown): Promise<JournalTag> {
   if (!isRecord(normalizedBody)) throw new OfflineCacheMissError('/v1/journals/tags');
   const category = readString(normalizedBody, 'category') as JournalTagCategory | undefined;
   const name = readString(normalizedBody, 'name');
-  const tagType = category === 'SIDE_EFFECT' ? 'NONE' : readString(body, 'tagType') ?? 'USER_INPUT';
+  const tagType = category === 'SIDE_EFFECT' ? 'NONE' : readString(normalizedBody, 'tagType') ?? 'USER_INPUT';
   const visible = typeof normalizedBody.visible === 'boolean' ? normalizedBody.visible : true;
   if (!category || !name) throw new OfflineCacheMissError('/v1/journals/tags');
 
@@ -446,7 +457,8 @@ async function createOfflineSchedule(body: unknown): Promise<number> {
     db.schedules.put({
       scheduleId,
       startTime: payload.startTime,
-      endTime: payload.endTime,
+      // IndexedDB는 null/undefined를 인덱싱하지 않으므로 endTime이 없으면 startTime으로 대체(범위 쿼리 누락 방지).
+      endTime: payload.endTime ?? payload.startTime,
       data: scheduleSummaryFromPayload(scheduleId, payload),
       cachedAt: now,
     }),
@@ -478,6 +490,7 @@ async function updateOfflineSchedule(scheduleId: number, body: unknown): Promise
       alarms: [],
     }),
     ...patch,
+    alarmEnabled: patch.alarmEnabled ?? detail?.data.alarmEnabled ?? false,
     alarms: patch.alarmedAt ?? detail?.data.alarms ?? [],
   };
   const nextSummary: ScheduleSummary = {
@@ -486,7 +499,8 @@ async function updateOfflineSchedule(scheduleId: number, body: unknown): Promise
     categoryId: nextDetail.categoryId,
     isAllDay: nextDetail.isAllDay,
     startTime: nextDetail.startTime,
-    endTime: nextDetail.endTime,
+    // endTime이 없으면 startTime으로 대체(IndexedDB 인덱스 누락 방지).
+    endTime: nextDetail.endTime ?? nextDetail.startTime,
   };
   await Promise.all([
     db.schedules.put({ scheduleId, startTime: nextSummary.startTime, endTime: nextSummary.endTime, data: nextSummary, cachedAt: now }),
@@ -890,7 +904,11 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   if (scheduleDetailMatch) {
     const scheduleId = parseInt(scheduleDetailMatch[1], 10);
     if (method === 'GET') {
-      const cached = await db.scheduleDetails.get(scheduleId);
+      let cached = await db.scheduleDetails.get(scheduleId);
+      if (!cached) {
+        const localId = await findLocalEntityId('schedule', scheduleId);
+        if (localId != null) cached = await db.scheduleDetails.get(localId);
+      }
       if (!cached) throw new OfflineCacheMissError(path);
       return cached.data as T;
     }
@@ -1147,7 +1165,11 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   if (consultDetailMatch) {
     const consultationId = parseInt(consultDetailMatch[1], 10);
     if (method === 'GET') {
-      const cached = await db.consultationDetails.get(consultationId);
+      let cached = await db.consultationDetails.get(consultationId);
+      if (!cached) {
+        const localId = await findLocalEntityId('consultation', consultationId);
+        if (localId != null) cached = await db.consultationDetails.get(localId);
+      }
       if (!cached) throw new OfflineCacheMissError(path);
       return cached.data as T;
     }

@@ -13,13 +13,17 @@ export const syncEvents = new EventTarget();
 const CACHE_PERIOD_DAYS = 90;
 const MAX_SYNC_RETRY_COUNT = 5;
 let isFlushing = false;
-// replay 도중 clearAllCache 요청이 들어오면(예: 401 만료 → 로그인 리다이렉트)
-// 큐를 한복판에서 지우지 않고 replay 완료 후로 미룬다.
-let clearRequestedDuringFlush = false;
 
-async function clearAllTables(): Promise<void> {
-  await db.transaction('rw', db.tables, async () => {
-    await Promise.all(db.tables.map(table => table.clear()));
+// 큐 보존(preserveQueue) 시 비우지 않을 테이블.
+// syncQueue: 아직 서버에 못 보낸 오프라인 쓰기, syncEntityMap: 그 쓰기의 임시ID→서버ID 의존성 매핑.
+const QUEUE_TABLES = ['syncQueue', 'syncEntityMap'];
+
+async function clearTables(preserveQueue: boolean): Promise<void> {
+  const tables = preserveQueue
+    ? db.tables.filter(table => !QUEUE_TABLES.includes(table.name))
+    : db.tables;
+  await db.transaction('rw', tables, async () => {
+    await Promise.all(tables.map(table => table.clear()));
   });
 }
 
@@ -338,10 +342,6 @@ async function replaySyncQueue(): Promise<void> {
     if (allFlushed) syncEvents.dispatchEvent(new Event('sync-complete'));
   } finally {
     isFlushing = false;
-    if (clearRequestedDuringFlush) {
-      clearRequestedDuringFlush = false;
-      await clearAllTables();
-    }
   }
 }
 
@@ -390,12 +390,10 @@ export const SyncService = {
     return db.syncQueue.where('status').equals('pending').count();
   },
 
-  async clearAllCache(): Promise<void> {
-    // replay 진행 중이면 큐를 한복판에서 비우지 않고 완료 후로 미룬다 (대기 중인 오프라인 쓰기 보호).
-    if (isFlushing) {
-      clearRequestedDuringFlush = true;
-      return;
-    }
-    await clearAllTables();
+  // 개인정보를 즉시 삭제한다(동기화 진행 여부와 무관).
+  // preserveQueue=true(세션 만료 등 같은 사용자 재로그인)일 때만 미전송 오프라인 쓰기 큐를 남긴다.
+  // 명시적 로그아웃/탈퇴는 계정 전환 가능성이 있으므로 큐까지 비워 다른 사용자 계정으로 재전송되는 것을 막는다.
+  async clearAllCache(options: { preserveQueue?: boolean } = {}): Promise<void> {
+    await clearTables(options.preserveQueue ?? false);
   },
 };
