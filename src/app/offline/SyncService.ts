@@ -7,6 +7,7 @@ import { getMyProfile, getUserSettings } from '../api/user';
 import { apiRequest, ApiError, getAccessToken } from '../api/client';
 import { db, type LocalEntityType, type SyncQueueItem } from './db';
 import { toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp } from './pathUtils';
+import { pendingCreateIds } from './syncQueue';
 
 export const syncEvents = new EventTarget();
 
@@ -131,18 +132,6 @@ async function hasPendingCreate(localEntityType: LocalEntityType, localEntityId:
       && item.localEntityId === localEntityId)
     .count();
   return count > 0;
-}
-
-async function pendingCreateIds(localEntityType: LocalEntityType): Promise<Set<number>> {
-  const items = await db.syncQueue
-    .where('status')
-    .equals('pending')
-    .filter(item =>
-      item.method === 'POST'
-      && item.localEntityType === localEntityType
-      && typeof item.localEntityId === 'number')
-    .toArray();
-  return new Set(items.map(item => item.localEntityId!));
 }
 
 async function resolveQueueItem(item: SyncQueueItem): Promise<ResolvedQueueItem> {

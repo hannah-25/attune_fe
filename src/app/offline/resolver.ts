@@ -619,7 +619,7 @@ function createOfflineConsultationQuestion(body: unknown): ConsultationQuestion 
 
 async function getOfflineCalendarEvents(startDate: string, endDate: string): Promise<CalendarEvent[]> {
   const cached = await db.calendarEvents.get(rangeKey(startDate, endDate));
-  if (cached) return cached.data;
+  const externalEvents = (cached?.data ?? []).filter(event => event.source !== 'ATTUNE');
 
   const endExclusive = `${nextLocalDateString(endDate)}T00:00:00`;
   const [byStart, byEnd, categories] = await Promise.all([
@@ -631,7 +631,7 @@ async function getOfflineCalendarEvents(startDate: string, endDate: string): Pro
   const matchIds = byEnd.filter(k => startSet.has(k));
   const categoryById = new Map((categories?.data ?? []).map(category => [category.categoryId, category]));
 
-  return (await db.schedules.bulkGet(matchIds))
+  const attuneEvents = (await db.schedules.bulkGet(matchIds))
     .filter((cachedSchedule): cachedSchedule is NonNullable<typeof cachedSchedule> => cachedSchedule != null)
     .map(({ data }): CalendarEvent => {
       const category = categoryById.get(data.categoryId);
@@ -649,6 +649,7 @@ async function getOfflineCalendarEvents(startDate: string, endDate: string): Pro
         editable: true,
       };
     });
+  return [...externalEvents, ...attuneEvents];
 }
 
 export async function resolveOfflineRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {

@@ -1,5 +1,6 @@
-import { db, type LocalEntityType } from './db';
+import { db } from './db';
 import { cleanPath, searchParams, toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp, nextLocalDateString } from './pathUtils';
+import { pendingCreateIds } from './syncQueue';
 import type { JournalDetail, JournalListResponse, JournalTag } from '../api/journal';
 import type { MedicationSummary, MedicationPeriodLog, MedicationPeriodLogsResponse } from '../api/medication';
 import type { ScheduleSummary, ScheduleCategory, ScheduleDetail } from '../api/schedule';
@@ -12,18 +13,6 @@ import type { TodoItem } from '../api/todo';
 
 function rangeKey(startDate: string | null, endDate: string | null): string {
   return `${startDate ?? ''}:${endDate ?? ''}`;
-}
-
-async function pendingCreateIds(localEntityType: LocalEntityType): Promise<Set<number>> {
-  const items = await db.syncQueue
-    .where('status')
-    .equals('pending')
-    .filter(item =>
-      item.method === 'POST'
-      && item.localEntityType === localEntityType
-      && typeof item.localEntityId === 'number')
-    .toArray();
-  return new Set(items.map(item => item.localEntityId!));
 }
 
 function createEmptyLogsByDate(startDate: string | null, endDate: string | null): Map<string, MedicationPeriodLog[]> {
@@ -244,11 +233,12 @@ export async function cacheResponse(
       const endDate = params.get('endDate') ?? '';
       if (Array.isArray(response?.events)) {
         if (!shouldWrite()) return;
+        const externalEvents = response.events.filter(event => event.source !== 'ATTUNE');
         await db.calendarEvents.put({
           rangeKey: rangeKey(startDate, endDate),
           startDate,
           endDate,
-          data: response.events,
+          data: externalEvents,
           cachedAt: now,
         });
       }
