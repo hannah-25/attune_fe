@@ -105,7 +105,7 @@ async function scoreOfflineGoal(date: string, body: unknown): Promise<{ goalId: 
   await updateCachedJournal(date, checked => ({
     ...checked,
     goals: [
-      ...checked.goals.filter(item => item.goalId !== goalId),
+      ...(checked.goals ?? []).filter(item => item.goalId !== goalId),
       { goalId, content: goal?.content ?? '', score },
     ],
   }));

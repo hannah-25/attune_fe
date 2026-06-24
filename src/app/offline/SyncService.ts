@@ -220,17 +220,21 @@ async function replaySyncQueue(): Promise<void> {
         await apiRequest<unknown>(item.path, { method: item.method, body: item.body, offlineFallback: false });
         await db.syncQueue.delete(item.id!);
       } catch (err) {
+        // 서버가 명시적으로 거부(영구 실패) — terminal 처리 후 다음 독립 항목으로.
         if (err instanceof ApiError && isPermanentError(err.status)) {
           await db.syncQueue.update(item.id!, { status: 'failed' as const });
           continue;
         }
+        // 일시적 서버 에러 — 재시도 횟수 누적. 한도 초과 시 terminal 처리하고 다음 항목으로.
         if (err instanceof ApiError) {
           const nextRetryCount = item.retryCount + 1;
-          await db.syncQueue.update(item.id!, {
-            retryCount: nextRetryCount,
-            ...(nextRetryCount >= MAX_SYNC_RETRY_COUNT ? { status: 'failed' as const } : {}),
-          });
+          if (nextRetryCount >= MAX_SYNC_RETRY_COUNT) {
+            await db.syncQueue.update(item.id!, { retryCount: nextRetryCount, status: 'failed' as const });
+            continue;
+          }
+          await db.syncQueue.update(item.id!, { retryCount: nextRetryCount });
         }
+        // 네트워크 단절(비 ApiError) 또는 재시도 여지가 남은 항목 — retryCount 소모 없이 중단, 다음 온라인 때 재시도.
         allFlushed = false;
         break;
       }
@@ -274,9 +278,9 @@ export const SyncService = {
     if (listeningStarted) return;
     listeningStarted = true;
 
-    window.addEventListener('online', async () => {
-      await replaySyncQueue();
-      await SyncService.initialize();
+    window.addEventListener('online', () => {
+      // initialize()가 내부에서 replaySyncQueue()를 먼저 호출하므로 중복 호출하지 않는다.
+      void SyncService.initialize();
     });
   },
 
