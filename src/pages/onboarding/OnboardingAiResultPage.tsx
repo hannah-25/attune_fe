@@ -42,7 +42,7 @@ export default function OnboardingAiResultPage() {
 
   const [tagVisibility, setTagVisibility] = useState<Record<number, boolean>>(() => {
     if (!aiResult || !Array.isArray(aiResult.tags)) return {};
-    return Object.fromEntries(aiResult.tags.map((t: AiTagItem) => [t.id, t.recommended]));
+    return Object.fromEntries(aiResult.tags.map((t: AiTagItem) => [t.tagId, t.recommended]));
   });
 
   const [goals, setGoals] = useState<AiGoalItem[]>(() => aiResult?.goals ?? FALLBACK_GOALS);
@@ -160,12 +160,12 @@ export default function OnboardingAiResultPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {tags.map((tag: AiTagItem) => {
-                        const visible = tagVisibility[tag.id] ?? false;
+                        const visible = tagVisibility[tag.tagId] ?? false;
                         return (
                           <button
-                            key={tag.id}
+                            key={tag.tagId}
                             type="button"
-                            onClick={() => toggleTag(tag.id)}
+                            onClick={() => toggleTag(tag.tagId)}
                             aria-pressed={visible}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-[0.96] ${
                               visible
