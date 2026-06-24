@@ -166,28 +166,31 @@ async function resolveQueueItem(item: SyncQueueItem): Promise<ResolvedQueueItem>
 async function cacheJournals(sessionToken: string) {
   const { startDate, endDate } = get3MonthRange();
   const response = await getJournals({ startDate, endDate });
-  if (!isSameSession(sessionToken)) return;
-  const now = new Date().toISOString();
-
-  await db.activeTags.put({ id: 'tags', data: response.activeTags, cachedAt: now });
-  await db.journals.bulkPut(
-    response.journals.map(j => ({ date: j.date, checked: j.checked, cachedAt: now })),
-  );
+  await db.transaction('rw', [db.activeTags, db.journals], async () => {
+    if (!isSameSession(sessionToken)) return;
+    const now = new Date().toISOString();
+    await db.activeTags.put({ id: 'tags', data: response.activeTags, cachedAt: now });
+    await db.journals.bulkPut(
+      response.journals.map(j => ({ date: j.date, checked: j.checked, cachedAt: now })),
+    );
+  });
 }
 
 async function cacheJournalTags(sessionToken: string) {
-  const now = new Date().toISOString();
   const [conditions, sideEffects, troubles] = await Promise.all([
     getJournalTags('CONDITION'),
     getJournalTags('SIDE_EFFECT'),
     getJournalTags('TROUBLE'),
   ]);
-  if (!isSameSession(sessionToken)) return;
-  await db.journalTagsByCategory.bulkPut([
-    { category: 'CONDITION', data: conditions, cachedAt: now },
-    { category: 'SIDE_EFFECT', data: sideEffects, cachedAt: now },
-    { category: 'TROUBLE', data: troubles, cachedAt: now },
-  ]);
+  await db.transaction('rw', db.journalTagsByCategory, async () => {
+    if (!isSameSession(sessionToken)) return;
+    const now = new Date().toISOString();
+    await db.journalTagsByCategory.bulkPut([
+      { category: 'CONDITION', data: conditions, cachedAt: now },
+      { category: 'SIDE_EFFECT', data: sideEffects, cachedAt: now },
+      { category: 'TROUBLE', data: troubles, cachedAt: now },
+    ]);
+  });
 }
 
 async function cacheMedications(sessionToken: string) {
@@ -198,23 +201,24 @@ async function cacheMedications(sessionToken: string) {
     getMedications(),
     getAllMedicationLogs({ startDate, endDate }),
   ]);
-  if (!isSameSession(sessionToken)) return;
+  await db.transaction('rw', [db.medications, db.medicationLogs], async () => {
+    if (!isSameSession(sessionToken)) return;
+    await db.medications.put({ id: 'list', data: meds, cachedAt: now });
 
-  await db.medications.put({ id: 'list', data: meds, cachedAt: now });
-
-  if (Array.isArray(logsResponse?.logs)) {
-    const byDate = createEmptyLogsByDate(startDate, endDate);
-    for (const log of logsResponse.logs) {
-      if (typeof log?.intakeTime !== 'string') continue;
-      const date = toLocalDateStringFromTimestamp(log.intakeTime);
-      if (!date) continue;
-      if (!byDate.has(date)) byDate.set(date, []);
-      byDate.get(date)!.push(log);
+    if (Array.isArray(logsResponse?.logs)) {
+      const byDate = createEmptyLogsByDate(startDate, endDate);
+      for (const log of logsResponse.logs) {
+        if (typeof log?.intakeTime !== 'string') continue;
+        const date = toLocalDateStringFromTimestamp(log.intakeTime);
+        if (!date) continue;
+        if (!byDate.has(date)) byDate.set(date, []);
+        byDate.get(date)!.push(log);
+      }
+      await db.medicationLogs.bulkPut(
+        [...byDate.entries()].map(([date, data]) => ({ date, data, cachedAt: now })),
+      );
     }
-    await db.medicationLogs.bulkPut(
-      [...byDate.entries()].map(([date, data]) => ({ date, data, cachedAt: now })),
-    );
-  }
+  });
 }
 
 async function cacheSchedules(sessionToken: string) {
@@ -230,13 +234,11 @@ async function cacheSchedules(sessionToken: string) {
     getScheduleCategories(),
     getSchedules({ startDate, endDate }),
   ]);
-  if (!isSameSession(sessionToken)) return;
-
-  await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
-
   // 동적 일정 교체: 미래의 일정은 무한히 쌓이지 않도록 매번 초기화
   // scheduleDetails는 지우지 않음: 사용자가 조회한 상세 캐시는 살려둠
-  await db.transaction('rw', db.schedules, async () => {
+  await db.transaction('rw', [db.scheduleCategories, db.schedules], async () => {
+    if (!isSameSession(sessionToken)) return;
+    await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
     await db.schedules.clear();
     await db.schedules.bulkPut(
       schedsResponse.schedules.map(s => ({
@@ -252,15 +254,19 @@ async function cacheSchedules(sessionToken: string) {
 
 async function cacheReports(sessionToken: string) {
   const reports = await getReports();
-  if (!isSameSession(sessionToken)) return;
-  await db.reports.put({ id: 'list', data: reports, cachedAt: new Date().toISOString() });
+  await db.transaction('rw', db.reports, async () => {
+    if (!isSameSession(sessionToken)) return;
+    await db.reports.put({ id: 'list', data: reports, cachedAt: new Date().toISOString() });
+  });
 }
 
 async function cacheConsultations(sessionToken: string) {
   const { startDate, endDate } = get3MonthRange();
   const items = await getConsultations({ startDate, endDate });
-  if (!isSameSession(sessionToken)) return;
-  await db.consultations.put({ id: 'list', data: items, cachedAt: new Date().toISOString() });
+  await db.transaction('rw', db.consultations, async () => {
+    if (!isSameSession(sessionToken)) return;
+    await db.consultations.put({ id: 'list', data: items, cachedAt: new Date().toISOString() });
+  });
 }
 
 async function cacheUser(sessionToken: string) {
@@ -268,12 +274,14 @@ async function cacheUser(sessionToken: string) {
     getMyProfile(),
     getUserSettings(),
   ]);
-  if (!isSameSession(sessionToken)) return;
-  const now = new Date().toISOString();
-  await Promise.all([
-    db.userProfile.put({ id: 'profile', data: profile, cachedAt: now }),
-    db.userSettings.put({ id: 'settings', data: settings, cachedAt: now }),
-  ]);
+  await db.transaction('rw', [db.userProfile, db.userSettings], async () => {
+    if (!isSameSession(sessionToken)) return;
+    const now = new Date().toISOString();
+    await Promise.all([
+      db.userProfile.put({ id: 'profile', data: profile, cachedAt: now }),
+      db.userSettings.put({ id: 'settings', data: settings, cachedAt: now }),
+    ]);
+  });
 }
 
 async function pruneOldCache() {
@@ -325,7 +333,7 @@ async function replaySyncQueue(): Promise<void> {
         await db.syncQueue.delete(item.id!);
       } catch (err) {
         if (err instanceof ApiError && isPermanentError(err.status)) {
-          await db.syncQueue.delete(item.id!);
+          await db.syncQueue.update(item.id!, { status: 'failed' as const });
         } else {
           const nextRetryCount = item.retryCount + 1;
           await db.syncQueue.update(item.id!, {

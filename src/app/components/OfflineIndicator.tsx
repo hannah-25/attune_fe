@@ -15,7 +15,10 @@ export function OfflineIndicator() {
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => { setIsOnline(false); setSyncState('idle'); };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setSyncState('idle');
+    };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     return () => {
@@ -47,11 +50,10 @@ export function OfflineIndicator() {
 
   const bannerClass =
     'fixed top-0 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-b-xl shadow-md transition-all duration-300';
-  const bannerStyle = { fontFamily: 'NanumSquare, sans-serif' };
 
   if (!isOnline) {
     return (
-      <div className={`${bannerClass} bg-gray-800 text-white`} style={bannerStyle}>
+      <div className={`${bannerClass} bg-gray-800 text-white`}>
         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
         {LABELS.offline}
       </div>
@@ -60,7 +62,7 @@ export function OfflineIndicator() {
 
   if (syncState === 'syncing') {
     return (
-      <div className={`${bannerClass} bg-purple-600 text-white`} style={bannerStyle}>
+      <div className={`${bannerClass} bg-purple-600 text-white`}>
         <span className="w-1.5 h-1.5 rounded-full bg-purple-200 inline-block animate-pulse" />
         {LABELS.syncing}
       </div>
@@ -69,7 +71,7 @@ export function OfflineIndicator() {
 
   if (syncState === 'complete') {
     return (
-      <div className={`${bannerClass} bg-green-600 text-white`} style={bannerStyle}>
+      <div className={`${bannerClass} bg-green-600 text-white`}>
         <span className="w-1.5 h-1.5 rounded-full bg-green-200 inline-block" />
         {LABELS.complete}
       </div>

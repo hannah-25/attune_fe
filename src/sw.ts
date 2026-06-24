@@ -147,6 +147,11 @@ sw.addEventListener('fetch', (event) => {
       return;
     }
 
+    if (url.pathname === '/manifest.json') {
+      event.respondWith(fetch(event.request).catch(() => caches.match(event.request).then(response => response ?? offlineResponse())));
+      return;
+    }
+
     event.respondWith(cachedOrNetwork(event.request, (promise) => event.waitUntil(promise)));
   }
 });

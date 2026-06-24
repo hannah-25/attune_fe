@@ -207,8 +207,10 @@ async function getOrCreateJournal(date: string) {
 }
 
 async function updateCachedJournal(date: string, updater: (checked: JournalChecked) => JournalChecked): Promise<void> {
-  const cached = await getOrCreateJournal(date);
-  await db.journals.put({ date, checked: updater(cached.checked), cachedAt: new Date().toISOString() });
+  await db.transaction('rw', db.journals, async () => {
+    const cached = await getOrCreateJournal(date);
+    await db.journals.put({ date, checked: updater(cached.checked), cachedAt: new Date().toISOString() });
+  });
 }
 
 async function createOfflineJournalTag(body: unknown): Promise<JournalTag> {
@@ -230,11 +232,13 @@ async function createOfflineJournalTag(body: unknown): Promise<JournalTag> {
     enabled: true,
     visible,
   };
-  const cached = await db.journalTagsByCategory.get(category);
-  await db.journalTagsByCategory.put({
-    category,
-    data: [...(cached?.data ?? []), tag],
-    cachedAt: now,
+  await db.transaction('rw', db.journalTagsByCategory, async () => {
+    const cached = await db.journalTagsByCategory.get(category);
+    await db.journalTagsByCategory.put({
+      category,
+      data: [...(cached?.data ?? []), tag],
+      cachedAt: now,
+    });
   });
   return tag;
 }
@@ -253,19 +257,21 @@ async function updateOfflineJournalTagPreference(tagId: number, body: unknown): 
   const visible = typeof body.visible === 'boolean' ? body.visible : undefined;
   const enabled = typeof body.enabled === 'boolean' ? body.enabled : undefined;
   const categories: JournalTagCategory[] = ['CONDITION', 'SIDE_EFFECT', 'TROUBLE'];
-  await Promise.all(categories.map(async category => {
-    const cached = await db.journalTagsByCategory.get(category);
-    if (!cached?.data.some(tag => tag.tagId === tagId)) return;
-    await db.journalTagsByCategory.put({
-      ...cached,
-      data: cached.data.map(tag => tag.tagId === tagId ? {
-        ...tag,
-        visible: visible ?? tag.visible,
-        enabled: enabled ?? tag.enabled,
-      } : tag),
-      cachedAt: new Date().toISOString(),
-    });
-  }));
+  await db.transaction('rw', db.journalTagsByCategory, async () => {
+    await Promise.all(categories.map(async category => {
+      const cached = await db.journalTagsByCategory.get(category);
+      if (!cached?.data.some(tag => tag.tagId === tagId)) return;
+      await db.journalTagsByCategory.put({
+        ...cached,
+        data: cached.data.map(tag => tag.tagId === tagId ? {
+          ...tag,
+          visible: visible ?? tag.visible,
+          enabled: enabled ?? tag.enabled,
+        } : tag),
+        cachedAt: new Date().toISOString(),
+      });
+    }));
+  });
 }
 
 async function createOfflineGoal(body: unknown): Promise<JournalGoal> {
@@ -273,8 +279,10 @@ async function createOfflineGoal(body: unknown): Promise<JournalGoal> {
   const content = readString(body, 'content');
   if (!content) throw new OfflineCacheMissError('/v1/journals/goals');
   const goal = { goalId: createTemporaryId(), content };
-  const activeTags = await getActiveTags();
-  await putActiveTags({ ...activeTags, goals: [...activeTags.goals, goal] }, new Date().toISOString());
+  await db.transaction('rw', db.activeTags, async () => {
+    const activeTags = await getActiveTags();
+    await putActiveTags({ ...activeTags, goals: [...activeTags.goals, goal] }, new Date().toISOString());
+  });
   return goal;
 }
 
@@ -282,16 +290,21 @@ async function updateOfflineGoal(goalId: number, body: unknown): Promise<Journal
   if (!isRecord(body)) throw new OfflineCacheMissError(`/v1/journals/goals/${goalId}`);
   const content = readString(body, 'content');
   if (!content) throw new OfflineCacheMissError(`/v1/journals/goals/${goalId}`);
-  const activeTags = await getActiveTags();
-  const nextGoals = activeTags.goals.map(goal => goal.goalId === goalId ? { ...goal, content } : goal);
-  const goal = nextGoals.find(item => item.goalId === goalId) ?? { goalId, content };
-  await putActiveTags({ ...activeTags, goals: nextGoals.some(item => item.goalId === goalId) ? nextGoals : [...nextGoals, goal] }, new Date().toISOString());
+  let goal: JournalGoal = { goalId, content };
+  await db.transaction('rw', db.activeTags, async () => {
+    const activeTags = await getActiveTags();
+    const nextGoals = activeTags.goals.map(item => item.goalId === goalId ? { ...item, content } : item);
+    goal = nextGoals.find(item => item.goalId === goalId) ?? { goalId, content };
+    await putActiveTags({ ...activeTags, goals: nextGoals.some(item => item.goalId === goalId) ? nextGoals : [...nextGoals, goal] }, new Date().toISOString());
+  });
   return goal;
 }
 
 async function deleteOfflineGoal(goalId: number, journalDate: string | null): Promise<void> {
-  const activeTags = await getActiveTags();
-  await putActiveTags({ ...activeTags, goals: activeTags.goals.filter(goal => goal.goalId !== goalId) }, new Date().toISOString());
+  await db.transaction('rw', db.activeTags, async () => {
+    const activeTags = await getActiveTags();
+    await putActiveTags({ ...activeTags, goals: activeTags.goals.filter(goal => goal.goalId !== goalId) }, new Date().toISOString());
+  });
   if (journalDate) {
     await updateCachedJournal(journalDate, checked => ({
       ...checked,
@@ -358,24 +371,28 @@ async function addOfflineMedicationLog(userMedicationId: number, body: unknown) 
     intakeTime: now,
     taken: action === 'TAKEN',
   };
-  const cached = await db.medicationLogs.get(date);
-  await db.medicationLogs.put({
-    date,
-    data: [...(cached?.data ?? []), log],
-    cachedAt: now,
+  await db.transaction('rw', db.medicationLogs, async () => {
+    const cached = await db.medicationLogs.get(date);
+    await db.medicationLogs.put({
+      date,
+      data: [...(cached?.data ?? []), log],
+      cachedAt: now,
+    });
   });
   return { logId: createTemporaryId(), action: (body as MedicationLogRequest | undefined)?.action, recordedAt: now };
 }
 
 async function updateOfflineMedication(userMedicationId: number, body: unknown): Promise<void> {
   if (!isRecord(body)) return;
-  const cached = await db.medications.get('list');
-  if (!cached) return;
   const patch = body as UpdateMedicationRequest;
-  await db.medications.put({
-    ...cached,
-    data: cached.data.map(item => item.userMedicationId === userMedicationId ? { ...item, ...patch } : item),
-    cachedAt: new Date().toISOString(),
+  await db.transaction('rw', db.medications, async () => {
+    const cached = await db.medications.get('list');
+    if (!cached) return;
+    await db.medications.put({
+      ...cached,
+      data: cached.data.map(item => item.userMedicationId === userMedicationId ? { ...item, ...patch } : item),
+      cachedAt: new Date().toISOString(),
+    });
   });
 }
 
@@ -404,22 +421,26 @@ async function createOfflineMedication(body: unknown): Promise<CreateMedicationR
     alarmActive: true,
     schedules: medicationSchedulesFromPayload(payload),
   };
-  const cached = await db.medications.get('list');
-  await db.medications.put({
-    id: 'list',
-    data: [...(cached?.data ?? []), item],
-    cachedAt: now,
+  await db.transaction('rw', db.medications, async () => {
+    const cached = await db.medications.get('list');
+    await db.medications.put({
+      id: 'list',
+      data: [...(cached?.data ?? []), item],
+      cachedAt: now,
+    });
   });
   return { userMedicationId, name: item.medicationName, isActive: item.isActive };
 }
 
 async function deleteOfflineMedication(userMedicationId: number): Promise<void> {
-  const cached = await db.medications.get('list');
-  if (!cached) return;
-  await db.medications.put({
-    ...cached,
-    data: cached.data.filter(item => item.userMedicationId !== userMedicationId),
-    cachedAt: new Date().toISOString(),
+  await db.transaction('rw', db.medications, async () => {
+    const cached = await db.medications.get('list');
+    if (!cached) return;
+    await db.medications.put({
+      ...cached,
+      data: cached.data.filter(item => item.userMedicationId !== userMedicationId),
+      cachedAt: new Date().toISOString(),
+    });
   });
 }
 
@@ -453,66 +474,70 @@ async function createOfflineSchedule(body: unknown): Promise<number> {
   const payload = body as SchedulePayload;
   const scheduleId = createTemporaryId();
   const now = new Date().toISOString();
-  await Promise.all([
-    db.schedules.put({
+  await db.transaction('rw', [db.schedules, db.scheduleDetails], async () => {
+    await db.schedules.put({
       scheduleId,
       startTime: payload.startTime,
       // IndexedDB는 null/undefined를 인덱싱하지 않으므로 endTime이 없으면 startTime으로 대체(범위 쿼리 누락 방지).
       endTime: payload.endTime ?? payload.startTime,
       data: scheduleSummaryFromPayload(scheduleId, payload),
       cachedAt: now,
-    }),
-    db.scheduleDetails.put({
+    });
+    await db.scheduleDetails.put({
       scheduleId,
       data: scheduleDetailFromPayload(payload),
       cachedAt: now,
-    }),
-  ]);
+    });
+  });
   return scheduleId;
 }
 
 async function updateOfflineSchedule(scheduleId: number, body: unknown): Promise<void> {
   if (!isRecord(body)) return;
   const now = new Date().toISOString();
-  const [summary, detail] = await Promise.all([
-    db.schedules.get(scheduleId),
-    db.scheduleDetails.get(scheduleId),
-  ]);
-  const patch = body as Partial<SchedulePayload>;
-  const nextDetail: ScheduleDetail = {
-    ...(detail?.data ?? summary?.data ?? {
-      title: '',
-      categoryId: 0,
-      isAllDay: false,
-      startTime: '',
-      endTime: '',
-      alarmEnabled: false,
-      alarms: [],
-    }),
-    ...patch,
-    alarmEnabled: patch.alarmEnabled ?? detail?.data.alarmEnabled ?? false,
-    alarms: patch.alarmedAt ?? detail?.data.alarms ?? [],
-  };
-  const nextSummary: ScheduleSummary = {
-    scheduleId,
-    title: nextDetail.title,
-    categoryId: nextDetail.categoryId,
-    isAllDay: nextDetail.isAllDay,
-    startTime: nextDetail.startTime,
+  await db.transaction('rw', [db.schedules, db.scheduleDetails], async () => {
+    const [summary, detail] = await Promise.all([
+      db.schedules.get(scheduleId),
+      db.scheduleDetails.get(scheduleId),
+    ]);
+    const patch = body as Partial<SchedulePayload>;
+    const nextDetail: ScheduleDetail = {
+      ...(detail?.data ?? summary?.data ?? {
+        title: '',
+        categoryId: 0,
+        isAllDay: false,
+        startTime: '',
+        endTime: '',
+        alarmEnabled: false,
+        alarms: [],
+      }),
+      ...patch,
+      alarmEnabled: patch.alarmEnabled ?? detail?.data.alarmEnabled ?? false,
+      alarms: patch.alarmedAt ?? detail?.data.alarms ?? [],
+    };
+    const nextSummary: ScheduleSummary = {
+      scheduleId,
+      title: nextDetail.title,
+      categoryId: nextDetail.categoryId,
+      isAllDay: nextDetail.isAllDay,
+      startTime: nextDetail.startTime,
     // endTime이 없으면 startTime으로 대체(IndexedDB 인덱스 누락 방지).
-    endTime: nextDetail.endTime ?? nextDetail.startTime,
-  };
-  await Promise.all([
-    db.schedules.put({ scheduleId, startTime: nextSummary.startTime, endTime: nextSummary.endTime, data: nextSummary, cachedAt: now }),
-    db.scheduleDetails.put({ scheduleId, data: nextDetail, cachedAt: now }),
-  ]);
+      endTime: nextDetail.endTime ?? nextDetail.startTime,
+    };
+    await Promise.all([
+      db.schedules.put({ scheduleId, startTime: nextSummary.startTime, endTime: nextSummary.endTime, data: nextSummary, cachedAt: now }),
+      db.scheduleDetails.put({ scheduleId, data: nextDetail, cachedAt: now }),
+    ]);
+  });
 }
 
 async function deleteOfflineSchedule(scheduleId: number): Promise<void> {
-  await Promise.all([
-    db.schedules.delete(scheduleId),
-    db.scheduleDetails.delete(scheduleId),
-  ]);
+  await db.transaction('rw', [db.schedules, db.scheduleDetails], async () => {
+    await Promise.all([
+      db.schedules.delete(scheduleId),
+      db.scheduleDetails.delete(scheduleId),
+    ]);
+  });
 }
 
 async function createOfflineConsultation(body: unknown): Promise<number> {
@@ -526,54 +551,62 @@ async function createOfflineConsultation(body: unknown): Promise<number> {
     doctorName: payload.doctorName,
     isFirstVisit: payload.isFirstVisit,
   };
-  const cached = await db.consultations.get('list');
-  await Promise.all([
-    db.consultations.put({ id: 'list', data: [...(cached?.data ?? []), item], cachedAt: now }),
-    db.consultationDetails.put({ consultationId: item.consultationId, data: item, cachedAt: now }),
-  ]);
+  await db.transaction('rw', [db.consultations, db.consultationDetails], async () => {
+    const cached = await db.consultations.get('list');
+    await Promise.all([
+      db.consultations.put({ id: 'list', data: [...(cached?.data ?? []), item], cachedAt: now }),
+      db.consultationDetails.put({ consultationId: item.consultationId, data: item, cachedAt: now }),
+    ]);
+  });
   return item.consultationId;
 }
 
 async function updateOfflineConsultation(consultationId: number, body: unknown): Promise<void> {
   if (!isRecord(body)) return;
   const now = new Date().toISOString();
-  const [list, detail] = await Promise.all([
-    db.consultations.get('list'),
-    db.consultationDetails.get(consultationId),
-  ]);
-  const patch = body as Partial<ConsultationPayload>;
-  const update = (item: ConsultationDetail): ConsultationDetail => ({ ...item, ...patch });
-  await Promise.all([
-    list ? db.consultations.put({ ...list, data: list.data.map(item => item.consultationId === consultationId ? update(item) : item), cachedAt: now }) : Promise.resolve(),
-    detail ? db.consultationDetails.put({ consultationId, data: update(detail.data), cachedAt: now }) : Promise.resolve(),
-  ]);
+  await db.transaction('rw', [db.consultations, db.consultationDetails], async () => {
+    const [list, detail] = await Promise.all([
+      db.consultations.get('list'),
+      db.consultationDetails.get(consultationId),
+    ]);
+    const patch = body as Partial<ConsultationPayload>;
+    const update = (item: ConsultationDetail): ConsultationDetail => ({ ...item, ...patch });
+    await Promise.all([
+      list ? db.consultations.put({ ...list, data: list.data.map(item => item.consultationId === consultationId ? update(item) : item), cachedAt: now }) : Promise.resolve(),
+      detail ? db.consultationDetails.put({ consultationId, data: update(detail.data), cachedAt: now }) : Promise.resolve(),
+    ]);
+  });
 }
 
 async function updateOfflineConsultationResult(consultationId: number, body: unknown): Promise<void> {
   if (!isRecord(body)) return;
   const now = new Date().toISOString();
-  const detail = await db.consultationDetails.get(consultationId);
-  if (!detail) return;
-  const summaryReport = body.doctorAdvice === null ? null : readString(body, 'doctorAdvice') ?? detail.data.summaryReport;
-  const prescriptionNote = body.prescriptionNote === null ? null : readString(body, 'prescriptionNote') ?? detail.data.prescriptionNote;
-  const next: ConsultationDetail = {
-    ...detail.data,
-    summaryReport,
-    prescriptionNote,
-  };
-  await db.consultationDetails.put({ consultationId, data: next, cachedAt: now });
+  await db.transaction('rw', db.consultationDetails, async () => {
+    const detail = await db.consultationDetails.get(consultationId);
+    if (!detail) return;
+    const summaryReport = body.doctorAdvice === null ? null : readString(body, 'doctorAdvice') ?? detail.data.summaryReport;
+    const prescriptionNote = body.prescriptionNote === null ? null : readString(body, 'prescriptionNote') ?? detail.data.prescriptionNote;
+    const next: ConsultationDetail = {
+      ...detail.data,
+      summaryReport,
+      prescriptionNote,
+    };
+    await db.consultationDetails.put({ consultationId, data: next, cachedAt: now });
+  });
 }
 
 async function deleteOfflineConsultation(consultationId: number): Promise<void> {
-  const list = await db.consultations.get('list');
-  await Promise.all([
-    list ? db.consultations.put({
-      ...list,
-      data: list.data.filter(item => item.consultationId !== consultationId),
-      cachedAt: new Date().toISOString(),
-    }) : Promise.resolve(),
-    db.consultationDetails.delete(consultationId),
-  ]);
+  await db.transaction('rw', [db.consultations, db.consultationDetails], async () => {
+    const list = await db.consultations.get('list');
+    await Promise.all([
+      list ? db.consultations.put({
+        ...list,
+        data: list.data.filter(item => item.consultationId !== consultationId),
+        cachedAt: new Date().toISOString(),
+      }) : Promise.resolve(),
+      db.consultationDetails.delete(consultationId),
+    ]);
+  });
 }
 
 function createOfflineConsultationQuestion(body: unknown): ConsultationQuestion {

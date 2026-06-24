@@ -36,6 +36,7 @@ export async function cacheResponse(
   isSessionValid?: () => boolean,
 ): Promise<void> {
   if (data == null) return;
+  const shouldWrite = () => !isSessionValid || isSessionValid();
   // 비동기 캐시 실행 직전 로그아웃됐다면 비운 DB에 개인정보를 다시 쓰지 않는다.
   if (isSessionValid && !isSessionValid()) return;
 
@@ -51,6 +52,7 @@ export async function cacheResponse(
         | 'TROUBLE'
         | null;
       if (category) {
+        if (!shouldWrite()) return;
         await db.journalTagsByCategory.put({ category, data: data as JournalTag[], cachedAt: now });
       }
       return;
@@ -60,31 +62,38 @@ export async function cacheResponse(
     const journalDateMatch = base.match(/^\/v1\/journals\/([0-9]{4}-[0-9]{2}-[0-9]{2})$/);
     if (journalDateMatch) {
       const detail = data as JournalDetail;
-      if (detail && detail.checked !== undefined) {
-        await db.journals.put({ date: journalDateMatch[1], checked: detail.checked, cachedAt: now });
-      }
-      if (detail?.activeTags) {
-        await db.activeTags.put({ id: 'tags', data: detail.activeTags, cachedAt: now });
-      }
+      await db.transaction('rw', [db.journals, db.activeTags], async () => {
+        if (!shouldWrite()) return;
+        if (detail && detail.checked !== undefined) {
+          await db.journals.put({ date: journalDateMatch[1], checked: detail.checked, cachedAt: now });
+        }
+        if (detail?.activeTags) {
+          await db.activeTags.put({ id: 'tags', data: detail.activeTags, cachedAt: now });
+        }
+      });
       return;
     }
 
     // /v1/journals  (bulk)
     if (base === '/v1/journals') {
       const response = data as JournalListResponse;
-      if (response?.activeTags) {
-        await db.activeTags.put({ id: 'tags', data: response.activeTags, cachedAt: now });
-      }
-      if (Array.isArray(response?.journals)) {
-        await db.journals.bulkPut(
-          response.journals.map(j => ({ date: j.date, checked: j.checked, cachedAt: now })),
-        );
-      }
+      await db.transaction('rw', [db.activeTags, db.journals], async () => {
+        if (!shouldWrite()) return;
+        if (response?.activeTags) {
+          await db.activeTags.put({ id: 'tags', data: response.activeTags, cachedAt: now });
+        }
+        if (Array.isArray(response?.journals)) {
+          await db.journals.bulkPut(
+            response.journals.map(j => ({ date: j.date, checked: j.checked, cachedAt: now })),
+          );
+        }
+      });
       return;
     }
 
     // /v1/user-medications
     if (base === '/v1/user-medications') {
+      if (!shouldWrite()) return;
       await db.medications.put({ id: 'list', data: data as MedicationSummary[], cachedAt: now });
       return;
     }
@@ -102,6 +111,7 @@ export async function cacheResponse(
         if (!byDate.has(date)) byDate.set(date, []);
         byDate.get(date)!.push(log);
       }
+      if (!shouldWrite()) return;
       await db.medicationLogs.bulkPut(
         [...byDate.entries()].map(([date, d]) => ({ date, data: d, cachedAt: now })),
       );
@@ -112,6 +122,7 @@ export async function cacheResponse(
     if (base === '/v1/schedule-categories') {
       const response = data as { categories: ScheduleCategory[] };
       if (Array.isArray(response?.categories)) {
+        if (!shouldWrite()) return;
         await db.scheduleCategories.put({ id: 'categories', data: response.categories, cachedAt: now });
       }
       return;
@@ -121,6 +132,7 @@ export async function cacheResponse(
     if (base === '/v1/schedules') {
       const response = data as { schedules: ScheduleSummary[] };
       if (Array.isArray(response?.schedules)) {
+        if (!shouldWrite()) return;
         await db.schedules.bulkPut(
           response.schedules.map(s => ({
             scheduleId: s.scheduleId,
@@ -137,6 +149,7 @@ export async function cacheResponse(
     // /v1/schedules/:id  (detail)
     const scheduleDetailMatch = base.match(/^\/v1\/schedules\/(\d+)$/);
     if (scheduleDetailMatch) {
+      if (!shouldWrite()) return;
       await db.scheduleDetails.put({
         scheduleId: parseInt(scheduleDetailMatch[1], 10),
         data: data as ScheduleDetail,
@@ -148,6 +161,7 @@ export async function cacheResponse(
     // /v1/medication-analysis/reports
     if (base === '/v1/medication-analysis/reports') {
       if (Array.isArray(data)) {
+        if (!shouldWrite()) return;
         await db.reports.put({ id: 'list', data: data as MedicationReport[], cachedAt: now });
       }
       return;
@@ -156,6 +170,7 @@ export async function cacheResponse(
     // /v1/consultations  (list)
     if (base === '/v1/consultations') {
       if (Array.isArray(data)) {
+        if (!shouldWrite()) return;
         await db.consultations.put({ id: 'list', data: data as ConsultationDetail[], cachedAt: now });
       }
       return;
@@ -164,6 +179,7 @@ export async function cacheResponse(
     // /v1/consultations/:id  (detail)
     const consultDetailMatch = base.match(/^\/v1\/consultations\/(\d+)$/);
     if (consultDetailMatch) {
+      if (!shouldWrite()) return;
       await db.consultationDetails.put({
         consultationId: parseInt(consultDetailMatch[1], 10),
         data: data as ConsultationDetail,
@@ -179,6 +195,7 @@ export async function cacheResponse(
       const startDate = params.get('startDate') ?? '';
       const endDate = params.get('endDate') ?? '';
       if (Array.isArray(response?.events)) {
+        if (!shouldWrite()) return;
         await db.calendarEvents.put({
           rangeKey: rangeKey(startDate, endDate),
           startDate,
@@ -194,6 +211,7 @@ export async function cacheResponse(
     if (base === '/v1/calendar-connections') {
       const response = data as { connections: CalendarConnection[] };
       if (Array.isArray(response?.connections)) {
+        if (!shouldWrite()) return;
         await db.calendarConnections.put({ id: 'list', data: response.connections, cachedAt: now });
       }
       return;
@@ -204,6 +222,7 @@ export async function cacheResponse(
       const response = data as { todos: TodoItem[] };
       const date = searchParams(path).get('date');
       if (date && Array.isArray(response?.todos)) {
+        if (!shouldWrite()) return;
         await db.todosByDate.put({ date, data: response.todos, cachedAt: now });
       }
       return;
@@ -211,33 +230,40 @@ export async function cacheResponse(
 
     // /v1/users/me/profile
     if (base === '/v1/users/me/profile') {
+      if (!shouldWrite()) return;
       await db.userProfile.put({ id: 'profile', data: data as UserProfile, cachedAt: now });
       return;
     }
 
     // /v1/users/settings
     if (base === '/v1/users/settings') {
+      if (!shouldWrite()) return;
       await db.userSettings.put({ id: 'settings', data: data as UserSettings, cachedAt: now });
       return;
     }
 
     // /v1/community/posts and related payloads.
     if (base === '/v1/community/posts') {
-      await db.communityPayloads.put({ key: path, data, cachedAt: now });
-      if (!path.includes('?')) {
-        await db.communityPayloads.put({ key: '/v1/community/posts', data, cachedAt: now });
-      }
+      await db.transaction('rw', db.communityPayloads, async () => {
+        if (!shouldWrite()) return;
+        await db.communityPayloads.put({ key: path, data, cachedAt: now });
+        if (!path.includes('?')) {
+          await db.communityPayloads.put({ key: '/v1/community/posts', data, cachedAt: now });
+        }
+      });
       return;
     }
 
     const communityPostMatch = base.match(/^\/v1\/community\/posts\/(-?\d+)$/);
     if (communityPostMatch) {
+      if (!shouldWrite()) return;
       await db.communityPayloads.put({ key: base, data, cachedAt: now });
       return;
     }
 
     const communityCommentsMatch = base.match(/^\/v1\/community\/posts\/(-?\d+)\/comments$/);
     if (communityCommentsMatch) {
+      if (!shouldWrite()) return;
       await db.communityPayloads.put({ key: base, data, cachedAt: now });
     }
   } catch (err) {

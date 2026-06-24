@@ -96,6 +96,9 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   try {
     response = await request(path, { auth, body, headers, ...init });
   } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw err;
+    }
     if (useOfflineFallback && !shouldBypassGuestMock(normalizedPath)) {
       markNetworkUnavailable();
       return resolveOffline<T>(normalizedPath, options);
