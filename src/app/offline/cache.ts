@@ -1,6 +1,5 @@
 import { db } from './db';
 import { cleanPath, searchParams, toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp, nextLocalDateString } from './pathUtils';
-import { pendingCreateIds } from './syncQueue';
 import type { JournalDetail, JournalListResponse, JournalTag } from '../api/journal';
 import type { MedicationSummary, MedicationPeriodLog, MedicationPeriodLogsResponse } from '../api/medication';
 import type { ScheduleSummary, ScheduleCategory, ScheduleDetail } from '../api/schedule';
@@ -54,12 +53,9 @@ export async function cacheResponse(
         | null;
       if (category) {
         if (!shouldWrite()) return;
-        const pendingTagIds = await pendingCreateIds('journalTag');
-        const existing = await db.journalTagsByCategory.get(category);
-        const offlineTags = (existing?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
         await db.journalTagsByCategory.put({
           category,
-          data: [...(data as JournalTag[]), ...offlineTags],
+          data: data as JournalTag[],
           cachedAt: now,
         });
       }
@@ -102,12 +98,9 @@ export async function cacheResponse(
     // /v1/user-medications
     if (base === '/v1/user-medications') {
       if (!shouldWrite()) return;
-      const pendingMedicationIds = await pendingCreateIds('medication');
-      const existing = await db.medications.get('list');
-      const offlineMeds = (existing?.data ?? []).filter(med => pendingMedicationIds.has(med.userMedicationId));
       await db.medications.put({
         id: 'list',
-        data: [...(data as MedicationSummary[]), ...offlineMeds],
+        data: data as MedicationSummary[],
         cachedAt: now,
       });
       return;
@@ -150,17 +143,13 @@ export async function cacheResponse(
         const params = searchParams(path);
         const startDate = params.get('startDate') ?? '';
         const endDate = params.get('endDate') ?? '';
-        const pendingScheduleIds = await pendingCreateIds('schedule');
         await db.transaction('rw', db.schedules, async () => {
           if (!shouldWrite()) return;
           await db.schedules
             .toCollection()
-            .filter(item => {
-              const inRange = startDate && endDate
-                ? item.startTime < `${nextLocalDateString(endDate)}T00:00:00` && item.endTime >= startDate
-                : true;
-              return inRange && (item.scheduleId >= 0 || !pendingScheduleIds.has(item.scheduleId));
-            })
+            .filter(item => startDate && endDate
+              ? item.startTime < `${nextLocalDateString(endDate)}T00:00:00` && item.endTime >= startDate
+              : true)
             .delete();
           await db.schedules.bulkPut(
             response.schedules.map(s => ({
@@ -201,12 +190,9 @@ export async function cacheResponse(
     if (base === '/v1/consultations') {
       if (Array.isArray(data)) {
         if (!shouldWrite()) return;
-        const pendingConsultationIds = await pendingCreateIds('consultation');
-        const existing = await db.consultations.get('list');
-        const offlineConsultations = (existing?.data ?? []).filter(item => pendingConsultationIds.has(item.consultationId));
         await db.consultations.put({
           id: 'list',
-          data: [...(data as ConsultationDetail[]), ...offlineConsultations],
+          data: data as ConsultationDetail[],
           cachedAt: now,
         });
       }

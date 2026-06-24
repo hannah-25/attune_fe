@@ -5,19 +5,19 @@ import { getReports } from '../api/medicationAnalysis';
 import { getConsultations } from '../api/consultation';
 import { getMyProfile, getUserSettings } from '../api/user';
 import { apiRequest, ApiError, getAccessToken } from '../api/client';
-import { db, type LocalEntityType, type SyncQueueItem } from './db';
+import { db, type SyncQueueItem } from './db';
 import { toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp } from './pathUtils';
-import { pendingCreateIds } from './syncQueue';
 
 export const syncEvents = new EventTarget();
 
-const CACHE_PERIOD_DAYS = 90;
+// 짧은 오프라인 창(터널·엘리베이터 등)을 가정 — 장기 열람용 캐시는 두지 않는다.
+const CACHE_PERIOD_DAYS = 30;
+const SCHEDULE_FUTURE_DAYS = 14;
 const MAX_SYNC_RETRY_COUNT = 5;
 let isFlushing = false;
 
-// 큐 보존(preserveQueue) 시 비우지 않을 테이블.
-// syncQueue: 아직 서버에 못 보낸 오프라인 쓰기, syncEntityMap: 그 쓰기의 임시ID→서버ID 의존성 매핑.
-const QUEUE_TABLES = ['syncQueue', 'syncEntityMap'];
+// 큐 보존(preserveQueue) 시 비우지 않을 테이블 — 아직 서버에 못 보낸 오프라인 쓰기.
+const QUEUE_TABLES = ['syncQueue'];
 
 async function clearTables(preserveQueue: boolean): Promise<void> {
   const tables = preserveQueue
@@ -47,7 +47,7 @@ function createEmptyLogsByDate(startDate: string, endDate: string): Map<string, 
   return byDate;
 }
 
-function get3MonthRange() {
+function getCacheRange() {
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - CACHE_PERIOD_DAYS);
@@ -61,111 +61,8 @@ function isSameSession(sessionToken: string): boolean {
   return getAccessToken() === sessionToken;
 }
 
-function entityMapKey(localEntityType: LocalEntityType, localEntityId: number): string {
-  return `${localEntityType}:${localEntityId}`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function readNumberFromPayload(payload: unknown, keys: string[]): number | null {
-  if (!isRecord(payload)) return null;
-
-  for (const key of keys) {
-    const value = payload[key];
-    if (typeof value === 'number' && Number.isFinite(value)) return value;
-  }
-
-  for (const nestedKey of ['data', 'result']) {
-    const value = readNumberFromPayload(payload[nestedKey], keys);
-    if (value != null) return value;
-  }
-
-  return null;
-}
-
-function serverIdKeys(localEntityType: LocalEntityType): string[] {
-  switch (localEntityType) {
-    case 'journalTag':
-      return ['tagId'];
-    case 'journalGoal':
-      return ['goalId'];
-    case 'schedule':
-      return ['scheduleId'];
-    case 'consultation':
-      return ['consultationId'];
-    case 'consultationQuestion':
-      return ['questionId'];
-    case 'medication':
-      return ['userMedicationId'];
-  }
-}
-
-async function rememberEntityMap(item: SyncQueueItem, response: unknown): Promise<void> {
-  if (item.method !== 'POST' || !item.localEntityType || item.localEntityId == null) return;
-
-  const serverEntityId = readNumberFromPayload(response, serverIdKeys(item.localEntityType));
-  if (serverEntityId == null) return;
-
-  await db.syncEntityMap.put({
-    key: entityMapKey(item.localEntityType, item.localEntityId),
-    localEntityType: item.localEntityType,
-    localEntityId: item.localEntityId,
-    serverEntityId,
-    createdAt: new Date().toISOString(),
-  });
-}
-
-type ResolvedQueueItem =
-  | { status: 'ready'; path: string; body: unknown }
-  | { status: 'waiting' }
-  | { status: 'missing-dependency' };
-
-async function hasPendingCreate(localEntityType: LocalEntityType, localEntityId: number): Promise<boolean> {
-  const count = await db.syncQueue
-    .where('status')
-    .equals('pending')
-    .filter(item =>
-      item.method === 'POST'
-      && item.localEntityType === localEntityType
-      && item.localEntityId === localEntityId)
-    .count();
-  return count > 0;
-}
-
-async function resolveQueueItem(item: SyncQueueItem): Promise<ResolvedQueueItem> {
-  const localEntityType = item.dependsOnLocalEntityType;
-  const localEntityId = item.dependsOnLocalEntityId;
-  if (!localEntityType || localEntityId == null) {
-    return { status: 'ready', path: item.path, body: item.body };
-  }
-
-  const mapped = await db.syncEntityMap.get(entityMapKey(localEntityType, localEntityId));
-  if (!mapped) {
-    return await hasPendingCreate(localEntityType, localEntityId)
-      ? { status: 'waiting' }
-      : { status: 'missing-dependency' };
-  }
-
-  const path = item.rewritePathTemplate
-    ? item.rewritePathTemplate.replace('{id}', String(mapped.serverEntityId))
-    : item.path.replace(String(localEntityId), String(mapped.serverEntityId));
-
-  if (!isRecord(item.body) || !item.rewriteBodyFields?.length) {
-    return { status: 'ready', path, body: item.body };
-  }
-
-  const body = { ...item.body };
-  for (const field of item.rewriteBodyFields) {
-    body[field] = mapped.serverEntityId;
-  }
-
-  return { status: 'ready', path, body };
-}
-
 async function cacheJournals(sessionToken: string) {
-  const { startDate, endDate } = get3MonthRange();
+  const { startDate, endDate } = getCacheRange();
   const response = await getJournals({ startDate, endDate });
   await db.transaction('rw', [db.activeTags, db.journals], async () => {
     if (!isSameSession(sessionToken)) return;
@@ -183,40 +80,28 @@ async function cacheJournalTags(sessionToken: string) {
     getJournalTags('SIDE_EFFECT'),
     getJournalTags('TROUBLE'),
   ]);
-  const pendingTagIds = await pendingCreateIds('journalTag');
   await db.transaction('rw', db.journalTagsByCategory, async () => {
     if (!isSameSession(sessionToken)) return;
     const now = new Date().toISOString();
-    const [existingCondition, existingSideEffect, existingTrouble] = await Promise.all([
-      db.journalTagsByCategory.get('CONDITION'),
-      db.journalTagsByCategory.get('SIDE_EFFECT'),
-      db.journalTagsByCategory.get('TROUBLE'),
-    ]);
-    const offlineConditions = (existingCondition?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
-    const offlineSideEffects = (existingSideEffect?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
-    const offlineTroubles = (existingTrouble?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
     await db.journalTagsByCategory.bulkPut([
-      { category: 'CONDITION', data: [...conditions, ...offlineConditions], cachedAt: now },
-      { category: 'SIDE_EFFECT', data: [...sideEffects, ...offlineSideEffects], cachedAt: now },
-      { category: 'TROUBLE', data: [...troubles, ...offlineTroubles], cachedAt: now },
+      { category: 'CONDITION', data: conditions, cachedAt: now },
+      { category: 'SIDE_EFFECT', data: sideEffects, cachedAt: now },
+      { category: 'TROUBLE', data: troubles, cachedAt: now },
     ]);
   });
 }
 
 async function cacheMedications(sessionToken: string) {
-  const { startDate, endDate } = get3MonthRange();
+  const { startDate, endDate } = getCacheRange();
   const now = new Date().toISOString();
 
   const [meds, logsResponse] = await Promise.all([
     getMedications(),
     getAllMedicationLogs({ startDate, endDate }),
   ]);
-  const pendingMedicationIds = await pendingCreateIds('medication');
   await db.transaction('rw', [db.medications, db.medicationLogs], async () => {
     if (!isSameSession(sessionToken)) return;
-    const existing = await db.medications.get('list');
-    const offlineMeds = (existing?.data ?? []).filter(med => pendingMedicationIds.has(med.userMedicationId));
-    await db.medications.put({ id: 'list', data: [...meds, ...offlineMeds], cachedAt: now });
+    await db.medications.put({ id: 'list', data: meds, cachedAt: now });
 
     if (Array.isArray(logsResponse?.logs)) {
       const byDate = createEmptyLogsByDate(startDate, endDate);
@@ -238,7 +123,7 @@ async function cacheSchedules(sessionToken: string) {
   const start = new Date();
   start.setDate(start.getDate() - CACHE_PERIOD_DAYS);
   const end = new Date();
-  end.setDate(end.getDate() + CACHE_PERIOD_DAYS);
+  end.setDate(end.getDate() + SCHEDULE_FUTURE_DAYS);
   const startDate = toLocalDateString(start);
   const endDate = toLocalDateString(end);
   const now = new Date().toISOString();
@@ -247,16 +132,11 @@ async function cacheSchedules(sessionToken: string) {
     getScheduleCategories(),
     getSchedules({ startDate, endDate }),
   ]);
-  const pendingScheduleIds = await pendingCreateIds('schedule');
-  // 동적 일정 교체: 미래의 일정은 무한히 쌓이지 않도록 매번 초기화
-  // scheduleDetails는 지우지 않음: 사용자가 조회한 상세 캐시는 살려둠
+  // 일정은 무한히 쌓이지 않도록 매번 초기화 후 재적재. scheduleDetails는 조회 캐시이므로 유지.
   await db.transaction('rw', [db.scheduleCategories, db.schedules], async () => {
     if (!isSameSession(sessionToken)) return;
     await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
-    await db.schedules
-      .toCollection()
-      .filter(item => item.scheduleId >= 0 || !pendingScheduleIds.has(item.scheduleId))
-      .delete();
+    await db.schedules.clear();
     await db.schedules.bulkPut(
       schedsResponse.schedules.map(s => ({
         scheduleId: s.scheduleId,
@@ -278,16 +158,13 @@ async function cacheReports(sessionToken: string) {
 }
 
 async function cacheConsultations(sessionToken: string) {
-  const { startDate, endDate } = get3MonthRange();
+  const { startDate, endDate } = getCacheRange();
   const items = await getConsultations({ startDate, endDate });
-  const pendingConsultationIds = await pendingCreateIds('consultation');
   await db.transaction('rw', db.consultations, async () => {
     if (!isSameSession(sessionToken)) return;
-    const existing = await db.consultations.get('list');
-    const offlineConsultations = (existing?.data ?? []).filter(item => pendingConsultationIds.has(item.consultationId));
     await db.consultations.put({
       id: 'list',
-      data: [...items, ...offlineConsultations],
+      data: items,
       cachedAt: new Date().toISOString(),
     });
   });
@@ -318,11 +195,11 @@ async function pruneOldCache() {
     db.medicationLogs.where('date').below(cutoffStr).delete(),
     db.scheduleDetails.toCollection().filter(x => x.cachedAt < cutoffTimestamp).delete(),
     db.consultationDetails.toCollection().filter(x => x.cachedAt < cutoffTimestamp).delete(),
-    // 동기화 완료된 임시→서버 ID 매핑은 무한 증가 + ID 재활용 오염을 막기 위해 만료 정리
-    db.syncEntityMap.toCollection().filter(x => x.createdAt < cutoffTimestamp).delete(),
   ]);
 }
 
+// 오프라인에서 쌓인 쓰기 큐를 입력 순서(FIFO)대로 서버에 재전송한다.
+// 각 항목은 서로 독립적이므로 의존성 해소·ID 재작성이 필요 없다.
 async function replaySyncQueue(): Promise<void> {
   if (isFlushing) return;
   isFlushing = true;
@@ -340,20 +217,7 @@ async function replaySyncQueue(): Promise<void> {
       if (!item) break;
 
       try {
-        const resolved = await resolveQueueItem(item);
-        if (resolved.status === 'waiting') {
-          allFlushed = false;
-          break;
-        }
-        if (resolved.status === 'missing-dependency') {
-          // 의존 대상이 영구 실패한 항목 — terminal('failed')로 종결.
-          // 다시 시도되지 않으므로 allFlushed를 막지 않는다(나머지 큐는 정상 완료 가능).
-          await db.syncQueue.update(item.id!, { status: 'failed' as const });
-          continue;
-        }
-
-        const response = await apiRequest<unknown>(resolved.path, { method: item.method, body: resolved.body, offlineFallback: false });
-        await rememberEntityMap(item, response);
+        await apiRequest<unknown>(item.path, { method: item.method, body: item.body, offlineFallback: false });
         await db.syncQueue.delete(item.id!);
       } catch (err) {
         if (err instanceof ApiError && isPermanentError(err.status)) {

@@ -115,36 +115,14 @@ export interface CachedCommunityPayload {
   cachedAt: string;
 }
 
-export type LocalEntityType =
-  | 'journalTag'
-  | 'journalGoal'
-  | 'schedule'
-  | 'consultation'
-  | 'consultationQuestion'
-  | 'medication';
-
 export interface SyncQueueItem {
   id?: number;
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   body?: unknown;
   localTimestamp: string;
-  localEntityType?: LocalEntityType;
-  localEntityId?: number;
-  dependsOnLocalEntityType?: LocalEntityType;
-  dependsOnLocalEntityId?: number;
-  rewritePathTemplate?: string;
-  rewriteBodyFields?: string[];
   retryCount: number;
   status: 'pending' | 'failed';
-}
-
-export interface SyncEntityMap {
-  key: string;
-  localEntityType: LocalEntityType;
-  localEntityId: number;
-  serverEntityId: number;
-  createdAt: string;
 }
 
 class AttuneOfflineDB extends Dexie {
@@ -166,7 +144,6 @@ class AttuneOfflineDB extends Dexie {
   userSettings!: Table<CachedUserSettings, 'settings'>;
   communityPayloads!: Table<CachedCommunityPayload, string>;
   syncQueue!: Table<SyncQueueItem, number>;
-  syncEntityMap!: Table<SyncEntityMap, string>;
 
   constructor() {
     super('attune-offline-db');
@@ -237,6 +214,28 @@ class AttuneOfflineDB extends Dexie {
       communityPayloads: 'key',
       syncQueue: '++id, status',
       syncEntityMap: 'key, localEntityType, localEntityId, serverEntityId',
+    });
+    // 오프라인 쓰기를 "기존 항목에 대한 기록"으로 한정 → 임시ID↔서버ID 매핑 테이블 제거.
+    this.version(5).stores({
+      journals: 'date',
+      activeTags: 'id',
+      journalTagsByCategory: 'category',
+      medications: 'id',
+      medicationLogs: 'date',
+      schedules: 'scheduleId, startTime, endTime',
+      scheduleCategories: 'id',
+      scheduleDetails: 'scheduleId',
+      calendarEvents: 'rangeKey, startDate, endDate',
+      calendarConnections: 'id',
+      todosByDate: 'date',
+      reports: 'id',
+      consultations: 'id',
+      consultationDetails: 'consultationId',
+      userProfile: 'id',
+      userSettings: 'id',
+      communityPayloads: 'key',
+      syncQueue: '++id, status',
+      syncEntityMap: null,
     });
   }
 }
