@@ -18,21 +18,75 @@ const RUNTIME_CACHE_NAME = 'attune-runtime-v1';
 const precacheUrls = (self.__WB_MANIFEST ?? []).map((entry) => entry.url);
 const precachePathnames = new Set(precacheUrls.map((url) => new URL(url, sw.location.origin).pathname));
 
-sw.addEventListener('install', (event) => {
-  event.waitUntil(sw.skipWaiting());
+function offlineResponse(headers?: HeadersInit): Response {
+  return new Response('', { headers, status: 504, statusText: 'Offline' });
+}
 
-  void (async () => {
-    try {
-      const cache = await caches.open(PRECACHE_NAME);
-      const results = await Promise.allSettled(precacheUrls.map((url) => cache.add(url)));
-      const failedUrls = results.flatMap((result, index) => result.status === 'rejected' ? [precacheUrls[index]] : []);
-      if (failedUrls.length > 0) {
-        console.warn('[service-worker] precache failed for:', failedUrls);
-      }
-    } catch (err) {
-      console.warn('[service-worker] precache error:', err);
+function isApiPath(pathname: string): boolean {
+  return pathname.startsWith('/v1/');
+}
+
+function isAuthOrAccountPath(pathname: string): boolean {
+  return pathname.startsWith('/v1/auth/') || pathname.startsWith('/v1/account/');
+}
+
+async function cachedOrNetwork(
+  request: Request,
+  extendLifetime: (promise: Promise<unknown>) => void,
+): Promise<Response> {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response.status === 200) {
+      // 캐시 저장은 응답 반환과 분리하되(저장 실패가 응답을 망치지 않도록),
+      // event.waitUntil로 SW 수명을 연장해 저장이 잘리지 않게 한다.
+      extendLifetime(
+        caches.open(RUNTIME_CACHE_NAME)
+          .then(cache => cache.put(request, response.clone()))
+          .catch(() => {}),
+      );
     }
-  })();
+    return response;
+  } catch {
+    return offlineResponse();
+  }
+}
+
+async function navigationResponse(request: Request): Promise<Response> {
+  const cached = await caches.match('/index.html', { ignoreSearch: true });
+  if (cached) return cached;
+
+  try {
+    return await fetch(request);
+  } catch {
+    return new Response('<!doctype html><title>Offline</title>', {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      status: 503,
+      statusText: 'Offline',
+    });
+  }
+}
+
+sw.addEventListener('install', (event) => {
+  event.waitUntil(
+    Promise.all([
+      sw.skipWaiting(),
+      (async () => {
+        try {
+          const cache = await caches.open(PRECACHE_NAME);
+          const results = await Promise.allSettled(precacheUrls.map((url) => cache.add(url)));
+          const failedUrls = results.flatMap((result, index) => result.status === 'rejected' ? [precacheUrls[index]] : []);
+          if (failedUrls.length > 0) {
+            console.warn('[service-worker] precache failed for:', failedUrls);
+          }
+        } catch (err) {
+          console.warn('[service-worker] precache error:', err);
+        }
+      })(),
+    ]),
+  );
 });
 
 sw.addEventListener('activate', (event) => {
@@ -54,9 +108,17 @@ sw.addEventListener('activate', (event) => {
 });
 
 sw.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  if (isApiPath(url.pathname) && !isAuthOrAccountPath(url.pathname)) {
+    event.respondWith(
+      fetch(event.request).catch(() => offlineResponse({ 'X-Attune-Offline-Fallback': '1' })),
+    );
+    return;
+  }
+
   if (event.request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
   if (url.origin === 'https://storage.googleapis.com') {
     event.respondWith(
       caches.open(RUNTIME_CACHE_NAME).then(async (cache) => {
@@ -69,7 +131,11 @@ sw.addEventListener('fetch', (event) => {
           event.waitUntil(network.catch(() => {}));
           return cached;
         }
-        return network;
+        try {
+          return await network;
+        } catch {
+          return offlineResponse();
+        }
       }),
     );
     return;
@@ -77,17 +143,16 @@ sw.addEventListener('fetch', (event) => {
 
   if (url.origin === sw.location.origin) {
     if (event.request.mode === 'navigate') {
-      event.respondWith(
-        caches.match('/index.html', { ignoreSearch: true }).then((cached) => cached ?? fetch(event.request)),
-      );
+      event.respondWith(navigationResponse(event.request));
       return;
     }
 
-    if (url.pathname.startsWith('/v1/')) return;
+    if (url.pathname === '/manifest.json') {
+      event.respondWith(fetch(event.request).catch(() => caches.match(event.request).then(response => response ?? offlineResponse())));
+      return;
+    }
 
-    event.respondWith(
-      caches.match(event.request).then((cached) => cached ?? fetch(event.request)),
-    );
+    event.respondWith(cachedOrNetwork(event.request, (promise) => event.waitUntil(promise)));
   }
 });
 

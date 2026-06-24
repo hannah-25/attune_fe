@@ -6,6 +6,8 @@ import GuestBanner from './components/GuestBanner';
 import { ApiError, getAccessToken } from './api/client';
 import { isGuestMode } from './guest';
 import { getMyProfile } from './api/user';
+import { SyncService } from './offline/SyncService';
+import { preloadOfflineAssets } from './offline/preloadAssets';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -102,6 +104,14 @@ function AppLoadingScreen() {
 }
 
 function ProtectedRoute() {
+  useEffect(() => {
+    if (isGuestMode() || !getAccessToken() || !navigator.onLine) return;
+
+    SyncService.initialize().catch(err => {
+      if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);
+    });
+  }, []);
+
   if (!getAccessToken() && !isGuestMode()) {
     return <Navigate to="/login" replace />;
   }
@@ -172,6 +182,11 @@ function RootRoute() {
 }
 
 export default function App() {
+  useEffect(() => {
+    SyncService.startListening();
+    preloadOfflineAssets();
+  }, []);
+
   return (
     <AppViewport>
       <Routes>

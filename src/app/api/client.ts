@@ -2,13 +2,27 @@ import { isGuestMode } from '../guest';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
+const NETWORK_FAILURE_OFFLINE_MS = 15_000;
 let reissueInFlight: Promise<boolean> | null = null;
 let loginRedirectTriggered = false;
+let browserOffline = typeof navigator !== 'undefined' ? !navigator.onLine : false;
+let assumeOfflineUntil = 0;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    browserOffline = false;
+    assumeOfflineUntil = 0;
+  });
+  window.addEventListener('offline', () => {
+    browserOffline = true;
+  });
+}
 
 export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
   auth?: boolean;
   retryOnUnauthorized?: boolean;
+  offlineFallback?: boolean;
 };
 
 export class ApiError extends Error {
@@ -37,6 +51,19 @@ function shouldBypassGuestMock(path: string): boolean {
   return path.startsWith('/v1/auth/') || path.startsWith('/v1/account/');
 }
 
+function shouldUseOfflineResolver(path: string): boolean {
+  return !shouldBypassGuestMock(path) && (browserOffline || !navigator.onLine || Date.now() < assumeOfflineUntil);
+}
+
+async function resolveOffline<T>(path: string, options: ApiRequestOptions): Promise<T> {
+  const { resolveOfflineRequest } = await import('../offline/resolver');
+  return resolveOfflineRequest<T>(path, options);
+}
+
+function markNetworkUnavailable(): void {
+  assumeOfflineUntil = Date.now() + NETWORK_FAILURE_OFFLINE_MS;
+}
+
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY);
 }
@@ -57,8 +84,40 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     return resolveGuestRequest<T>(normalizedPath, options);
   }
 
-  const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
-  const response = await request(path, { auth, body, headers, ...init });
+  const useOfflineFallback = options.offlineFallback !== false;
+
+  if (useOfflineFallback && shouldUseOfflineResolver(normalizedPath)) {
+    return resolveOffline<T>(normalizedPath, options);
+  }
+
+  const { auth = true, body, headers, retryOnUnauthorized = true, offlineFallback: _offlineFallback, ...init } = options;
+  let response: Response;
+  try {
+    response = await request(path, { auth, body, headers, ...init });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw err;
+    }
+    if (useOfflineFallback && !shouldBypassGuestMock(normalizedPath)) {
+      markNetworkUnavailable();
+      return resolveOffline<T>(normalizedPath, options);
+    }
+    throw err;
+  }
+
+  if (useOfflineFallback && !shouldBypassGuestMock(normalizedPath)) {
+    // 실제 네트워크 단절: Service Worker가 fetch 실패를 감지해 폴백 헤더를 세움.
+    const networkDown = response.headers.get('X-Attune-Offline-Fallback') === '1';
+    // 서버 다운(502/503/504): 네트워크는 정상. 쓰기는 504 시 이미 반영됐을 수 있어 큐 중복 위험이 있으므로 GET만 폴백.
+    const serverDown = (options.method ?? 'GET').toUpperCase() === 'GET'
+      && [502, 503, 504].includes(response.status);
+    if (networkDown || serverDown) {
+      // 전역 오프라인 가정(assumeOfflineUntil)은 실제 네트워크 단절일 때만 둔다.
+      // 서버 5xx는 네트워크가 살아있으므로 이 요청만 캐시로 폴백하고, 후속 요청·쓰기는 정상적으로 서버를 친다.
+      if (networkDown) markNetworkUnavailable();
+      return resolveOffline<T>(normalizedPath, options);
+    }
+  }
 
   if (response.status === 401 && auth && retryOnUnauthorized) {
     const refreshed = await reissueSessionSingleFlight();
@@ -70,7 +129,23 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     throw new ApiError(401, null, 'Session expired');
   }
 
-  return parseResponse<T>(response);
+  const result = await parseResponse<T>(response);
+
+  const method = (options.method ?? 'GET').toUpperCase();
+  const cacheSessionToken = getAccessToken();
+  if (method === 'GET' && !isGuestMode() && cacheSessionToken) {
+    Promise.resolve()
+      .then(async () => {
+        if (getAccessToken() !== cacheSessionToken) return undefined;
+        const { cacheResponse } = await import('../offline/cache');
+        return cacheResponse(normalizedPath, result, () => getAccessToken() === cacheSessionToken);
+      })
+      .catch(err => {
+        if (import.meta.env.DEV) console.warn('[offline/cache] async cache failed:', normalizedPath, err);
+      });
+  }
+
+  return result;
 }
 
 async function request(path: string, options: ApiRequestOptions) {
@@ -194,7 +269,15 @@ function redirectToLoginOnce() {
   if (loginRedirectTriggered) return;
   loginRedirectTriggered = true;
   clearAccessToken();
-  window.location.replace('/login');
+  void import('../offline/SyncService')
+    // 세션 만료는 같은 사용자의 재로그인이 대부분이므로 미전송 오프라인 쓰기 큐는 보존한다.
+    .then(m => m.SyncService.clearAllCache({ preserveQueue: true }))
+    .catch(err => {
+      if (import.meta.env.DEV) console.warn('[offline/cache] clear on session expiry failed:', err);
+    })
+    .finally(() => {
+      window.location.replace('/login');
+    });
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {

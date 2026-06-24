@@ -1,4 +1,5 @@
 import { apiRequest, clearAccessToken } from './client';
+import { SyncService } from '../offline/SyncService';
 
 export type LoginRequest = {
   email: string;
@@ -33,13 +34,21 @@ export async function login(payload: LoginRequest) {
 }
 
 export async function logout() {
-  await apiRequest<void>('/v1/auth/logout', {
-    method: 'POST',
-  });
-  clearAccessToken();
-  if ('caches' in window) {
-    const keys = await caches.keys();
-    await Promise.all(keys.map((key) => caches.delete(key)));
+  try {
+    await apiRequest<void>('/v1/auth/logout', {
+      method: 'POST',
+    });
+  } finally {
+    clearAccessToken();
+    try {
+      await SyncService.clearAllCache();
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('[offline/cache] clear on logout failed:', err);
+    }
   }
 }
 
