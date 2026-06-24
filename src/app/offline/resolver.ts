@@ -22,7 +22,6 @@ import type {
 } from '../api/medication';
 import type { ScheduleDetail, SchedulePayload, ScheduleSummary } from '../api/schedule';
 import type { ConsultationDetail, ConsultationPayload, ConsultationQuestion } from '../api/consultation';
-import type { CalendarConnection } from '../api/calendarConnection';
 import type { CalendarEvent } from '../api/calendarEvents';
 
 
@@ -652,40 +651,6 @@ async function getOfflineCalendarEvents(startDate: string, endDate: string): Pro
     });
 }
 
-async function createOfflineCalendarConnection(): Promise<CalendarConnection> {
-  const now = new Date().toISOString();
-  const connection: CalendarConnection = {
-    connectionId: createTemporaryId(),
-    provider: 'GOOGLE',
-    accountEmail: null,
-    selectedCalendarIds: [],
-    lastSyncedAt: null,
-    active: true,
-  };
-  await db.transaction('rw', db.calendarConnections, async () => {
-    const cached = await db.calendarConnections.get('list');
-    await db.calendarConnections.put({
-      id: 'list',
-      data: [...(cached?.data ?? []), connection],
-      cachedAt: now,
-    });
-  });
-  return connection;
-}
-
-async function deleteOfflineCalendarConnection(connectionId: number): Promise<void> {
-  await db.transaction('rw', db.calendarConnections, async () => {
-    const cached = await db.calendarConnections.get('list');
-    if (!cached) return;
-    await db.calendarConnections.put({
-      ...cached,
-      data: cached.data.filter(item => item.connectionId !== connectionId),
-      cachedAt: new Date().toISOString(),
-    });
-  });
-}
-
-
 export async function resolveOfflineRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const method = ((options.method as string | undefined) ?? 'GET').toUpperCase();
   const base = cleanPath(path);
@@ -1005,43 +970,21 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       const cached = await db.calendarConnections.get('list');
       return { connections: cached?.data ?? [] } as T;
     }
-    if (method !== 'POST') throw new OfflineCacheMissError(path);
-    const connection = await createOfflineCalendarConnection();
-    await queueLocalCreate(path, body, 'calendarConnection', connection.connectionId);
-    return connection as T;
+    throw new OfflineCacheMissError(path);
   }
 
   if (base === '/v1/calendar-connections/google') {
-    if (method !== 'POST') throw new OfflineCacheMissError(path);
-    const connection = await createOfflineCalendarConnection();
-    await queueLocalCreate(path, body, 'calendarConnection', connection.connectionId);
-    return connection as T;
+    throw new OfflineCacheMissError(path);
   }
 
   const calendarConnectionSyncMatch = base.match(/^\/v1\/calendar-connections\/(-?\d+)\/sync$/);
   if (calendarConnectionSyncMatch && method === 'POST') {
-    return {
-      connectionId: Number(calendarConnectionSyncMatch[1]),
-      lastSyncedAt: new Date().toISOString(),
-      syncedCount: 0,
-    } as T;
+    throw new OfflineCacheMissError(path);
   }
 
   const calendarConnectionMatch = base.match(/^\/v1\/calendar-connections\/(-?\d+)$/);
   if (calendarConnectionMatch && method !== 'GET') {
-    // 연동 해제(DELETE)는 오프라인에서도 즉시 로컬 캐시에서 제거 (Optimistic Update)
-    if (method === 'DELETE') {
-      const connectionId = Number(calendarConnectionMatch[1]);
-      if (isTemporaryId(connectionId)) {
-        await deletePendingLocalCreate('calendarConnection', connectionId);
-      } else {
-        await queueWriteRequest(method, path, body);
-      }
-      await deleteOfflineCalendarConnection(connectionId);
-      return undefined as T;
-    }
-    await queueWriteRequest(method, path, body);
-    return undefined as T;
+    throw new OfflineCacheMissError(path);
   }
 
   if (base === '/v1/medication-analysis/reports' && method === 'GET') {

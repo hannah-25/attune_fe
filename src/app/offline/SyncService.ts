@@ -92,8 +92,6 @@ function serverIdKeys(localEntityType: LocalEntityType): string[] {
       return ['goalId'];
     case 'schedule':
       return ['scheduleId'];
-    case 'calendarConnection':
-      return ['connectionId'];
     case 'consultation':
       return ['consultationId'];
     case 'consultationQuestion':
@@ -133,6 +131,18 @@ async function hasPendingCreate(localEntityType: LocalEntityType, localEntityId:
       && item.localEntityId === localEntityId)
     .count();
   return count > 0;
+}
+
+async function pendingCreateIds(localEntityType: LocalEntityType): Promise<Set<number>> {
+  const items = await db.syncQueue
+    .where('status')
+    .equals('pending')
+    .filter(item =>
+      item.method === 'POST'
+      && item.localEntityType === localEntityType
+      && typeof item.localEntityId === 'number')
+    .toArray();
+  return new Set(items.map(item => item.localEntityId!));
 }
 
 async function resolveQueueItem(item: SyncQueueItem): Promise<ResolvedQueueItem> {
@@ -184,6 +194,7 @@ async function cacheJournalTags(sessionToken: string) {
     getJournalTags('SIDE_EFFECT'),
     getJournalTags('TROUBLE'),
   ]);
+  const pendingTagIds = await pendingCreateIds('journalTag');
   await db.transaction('rw', db.journalTagsByCategory, async () => {
     if (!isSameSession(sessionToken)) return;
     const now = new Date().toISOString();
@@ -192,9 +203,9 @@ async function cacheJournalTags(sessionToken: string) {
       db.journalTagsByCategory.get('SIDE_EFFECT'),
       db.journalTagsByCategory.get('TROUBLE'),
     ]);
-    const offlineConditions = (existingCondition?.data ?? []).filter(tag => tag.tagId < 0);
-    const offlineSideEffects = (existingSideEffect?.data ?? []).filter(tag => tag.tagId < 0);
-    const offlineTroubles = (existingTrouble?.data ?? []).filter(tag => tag.tagId < 0);
+    const offlineConditions = (existingCondition?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
+    const offlineSideEffects = (existingSideEffect?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
+    const offlineTroubles = (existingTrouble?.data ?? []).filter(tag => pendingTagIds.has(tag.tagId));
     await db.journalTagsByCategory.bulkPut([
       { category: 'CONDITION', data: [...conditions, ...offlineConditions], cachedAt: now },
       { category: 'SIDE_EFFECT', data: [...sideEffects, ...offlineSideEffects], cachedAt: now },
@@ -211,10 +222,11 @@ async function cacheMedications(sessionToken: string) {
     getMedications(),
     getAllMedicationLogs({ startDate, endDate }),
   ]);
+  const pendingMedicationIds = await pendingCreateIds('medication');
   await db.transaction('rw', [db.medications, db.medicationLogs], async () => {
     if (!isSameSession(sessionToken)) return;
     const existing = await db.medications.get('list');
-    const offlineMeds = (existing?.data ?? []).filter(med => med.userMedicationId < 0);
+    const offlineMeds = (existing?.data ?? []).filter(med => pendingMedicationIds.has(med.userMedicationId));
     await db.medications.put({ id: 'list', data: [...meds, ...offlineMeds], cachedAt: now });
 
     if (Array.isArray(logsResponse?.logs)) {
@@ -246,12 +258,16 @@ async function cacheSchedules(sessionToken: string) {
     getScheduleCategories(),
     getSchedules({ startDate, endDate }),
   ]);
+  const pendingScheduleIds = await pendingCreateIds('schedule');
   // 동적 일정 교체: 미래의 일정은 무한히 쌓이지 않도록 매번 초기화
   // scheduleDetails는 지우지 않음: 사용자가 조회한 상세 캐시는 살려둠
   await db.transaction('rw', [db.scheduleCategories, db.schedules], async () => {
     if (!isSameSession(sessionToken)) return;
     await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
-    await db.schedules.where('scheduleId').aboveOrEqual(0).delete();
+    await db.schedules
+      .toCollection()
+      .filter(item => item.scheduleId >= 0 || !pendingScheduleIds.has(item.scheduleId))
+      .delete();
     await db.schedules.bulkPut(
       schedsResponse.schedules.map(s => ({
         scheduleId: s.scheduleId,
@@ -275,10 +291,11 @@ async function cacheReports(sessionToken: string) {
 async function cacheConsultations(sessionToken: string) {
   const { startDate, endDate } = get3MonthRange();
   const items = await getConsultations({ startDate, endDate });
+  const pendingConsultationIds = await pendingCreateIds('consultation');
   await db.transaction('rw', db.consultations, async () => {
     if (!isSameSession(sessionToken)) return;
     const existing = await db.consultations.get('list');
-    const offlineConsultations = (existing?.data ?? []).filter(item => item.consultationId < 0);
+    const offlineConsultations = (existing?.data ?? []).filter(item => pendingConsultationIds.has(item.consultationId));
     await db.consultations.put({
       id: 'list',
       data: [...items, ...offlineConsultations],

@@ -119,7 +119,6 @@ export type LocalEntityType =
   | 'journalTag'
   | 'journalGoal'
   | 'schedule'
-  | 'calendarConnection'
   | 'consultation'
   | 'consultationQuestion'
   | 'medication';
