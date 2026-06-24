@@ -3,16 +3,26 @@ import { getMedications, getAllMedicationLogs, type MedicationPeriodLog } from '
 import { getSchedules, getScheduleCategories } from '../api/schedule';
 import { getReports } from '../api/medicationAnalysis';
 import { getConsultations } from '../api/consultation';
+import { getMyProfile, getUserSettings } from '../api/user';
 import { apiRequest, ApiError, getAccessToken } from '../api/client';
-import { db, type SyncQueueItem } from './db';
+import { db, type LocalEntityType, type SyncQueueItem } from './db';
 
 export const syncEvents = new EventTarget();
 
 const CACHE_PERIOD_DAYS = 90;
 const MAX_SYNC_RETRY_COUNT = 5;
 let isFlushing = false;
+// replay 도중 clearAllCache 요청이 들어오면(예: 401 만료 → 로그인 리다이렉트)
+// 큐를 한복판에서 지우지 않고 replay 완료 후로 미룬다.
+let clearRequestedDuringFlush = false;
 
-// 서버가 명시적으로 해당 쓰기를 거부한 상태코드 — 재시도해도 의미 없음
+async function clearAllTables(): Promise<void> {
+  await db.transaction('rw', db.tables, async () => {
+    await Promise.all(db.tables.map(table => table.clear()));
+  });
+}
+
+// ?�버가 명시?�으�??�당 ?�기�?거�????�태코드 ???�시?�해???��? ?�음
 function isPermanentError(status: number): boolean {
   return [400, 403, 404, 409, 410, 422].includes(status);
 }
@@ -44,6 +54,12 @@ function createEmptyLogsByDate(startDate: string, endDate: string): Map<string, 
   return byDate;
 }
 
+function toLocalDateStringFromTimestamp(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return toLocalDateString(date);
+}
+
 function get3MonthRange() {
   const end = new Date();
   const start = new Date();
@@ -56,6 +72,109 @@ function get3MonthRange() {
 
 function isSameSession(sessionToken: string): boolean {
   return getAccessToken() === sessionToken;
+}
+
+function entityMapKey(localEntityType: LocalEntityType, localEntityId: number): string {
+  return `${localEntityType}:${localEntityId}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function readNumberFromPayload(payload: unknown, keys: string[]): number | null {
+  if (!isRecord(payload)) return null;
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+  }
+
+  for (const nestedKey of ['data', 'result']) {
+    const value = readNumberFromPayload(payload[nestedKey], keys);
+    if (value != null) return value;
+  }
+
+  return null;
+}
+
+function serverIdKeys(localEntityType: LocalEntityType): string[] {
+  switch (localEntityType) {
+    case 'journalTag':
+      return ['tagId'];
+    case 'journalGoal':
+      return ['goalId'];
+    case 'schedule':
+      return ['scheduleId'];
+    case 'consultation':
+      return ['consultationId'];
+    case 'consultationQuestion':
+      return ['questionId'];
+    case 'medication':
+      return ['userMedicationId'];
+  }
+}
+
+async function rememberEntityMap(item: SyncQueueItem, response: unknown): Promise<void> {
+  if (item.method !== 'POST' || !item.localEntityType || item.localEntityId == null) return;
+
+  const serverEntityId = readNumberFromPayload(response, serverIdKeys(item.localEntityType));
+  if (serverEntityId == null) return;
+
+  await db.syncEntityMap.put({
+    key: entityMapKey(item.localEntityType, item.localEntityId),
+    localEntityType: item.localEntityType,
+    localEntityId: item.localEntityId,
+    serverEntityId,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+type ResolvedQueueItem =
+  | { status: 'ready'; path: string; body: unknown }
+  | { status: 'waiting' }
+  | { status: 'missing-dependency' };
+
+async function hasPendingCreate(localEntityType: LocalEntityType, localEntityId: number): Promise<boolean> {
+  const count = await db.syncQueue
+    .where('status')
+    .equals('pending')
+    .filter(item =>
+      item.method === 'POST'
+      && item.localEntityType === localEntityType
+      && item.localEntityId === localEntityId)
+    .count();
+  return count > 0;
+}
+
+async function resolveQueueItem(item: SyncQueueItem): Promise<ResolvedQueueItem> {
+  const localEntityType = item.dependsOnLocalEntityType;
+  const localEntityId = item.dependsOnLocalEntityId;
+  if (!localEntityType || localEntityId == null) {
+    return { status: 'ready', path: item.path, body: item.body };
+  }
+
+  const mapped = await db.syncEntityMap.get(entityMapKey(localEntityType, localEntityId));
+  if (!mapped) {
+    return await hasPendingCreate(localEntityType, localEntityId)
+      ? { status: 'waiting' }
+      : { status: 'missing-dependency' };
+  }
+
+  const path = item.rewritePathTemplate
+    ? item.rewritePathTemplate.replace('{id}', String(mapped.serverEntityId))
+    : item.path.replace(String(localEntityId), String(mapped.serverEntityId));
+
+  if (!isRecord(item.body) || !item.rewriteBodyFields?.length) {
+    return { status: 'ready', path, body: item.body };
+  }
+
+  const body = { ...item.body };
+  for (const field of item.rewriteBodyFields) {
+    body[field] = mapped.serverEntityId;
+  }
+
+  return { status: 'ready', path, body };
 }
 
 async function cacheJournals(sessionToken: string) {
@@ -101,7 +220,8 @@ async function cacheMedications(sessionToken: string) {
     const byDate = createEmptyLogsByDate(startDate, endDate);
     for (const log of logsResponse.logs) {
       if (typeof log?.intakeTime !== 'string') continue;
-      const date = log.intakeTime.slice(0, 10);
+      const date = toLocalDateStringFromTimestamp(log.intakeTime);
+      if (!date) continue;
       if (!byDate.has(date)) byDate.set(date, []);
       byDate.get(date)!.push(log);
     }
@@ -128,8 +248,8 @@ async function cacheSchedules(sessionToken: string) {
 
   await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
 
-  // 누적 대신 교체: 오래된 일정이 무한히 쌓이지 않도록 매번 초기화
-  // scheduleDetails는 유지 — 사용자가 조회한 상세 캐시를 살려둠
+  // ?�적 ?�??교체: ?�래???�정??무한???�이지 ?�도�?매번 초기??
+  // scheduleDetails???��? ???�용?��? 조회???�세 캐시�??�려??
   await db.transaction('rw', db.schedules, async () => {
     await db.schedules.clear();
     await db.schedules.bulkPut(
@@ -157,6 +277,19 @@ async function cacheConsultations(sessionToken: string) {
   await db.consultations.put({ id: 'list', data: items, cachedAt: new Date().toISOString() });
 }
 
+async function cacheUser(sessionToken: string) {
+  const [profile, settings] = await Promise.all([
+    getMyProfile(),
+    getUserSettings(),
+  ]);
+  if (!isSameSession(sessionToken)) return;
+  const now = new Date().toISOString();
+  await Promise.all([
+    db.userProfile.put({ id: 'profile', data: profile, cachedAt: now }),
+    db.userSettings.put({ id: 'settings', data: settings, cachedAt: now }),
+  ]);
+}
+
 async function pruneOldCache() {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - CACHE_PERIOD_DAYS);
@@ -167,51 +300,66 @@ async function pruneOldCache() {
     db.medicationLogs.where('date').below(cutoffStr).delete(),
     db.scheduleDetails.toCollection().filter(x => x.cachedAt < cutoffTimestamp).delete(),
     db.consultationDetails.toCollection().filter(x => x.cachedAt < cutoffTimestamp).delete(),
+    // 동기화 완료된 임시→서버 ID 매핑은 무한 증가 + ID 재활용 오염을 막기 위해 만료 정리
+    db.syncEntityMap.toCollection().filter(x => x.createdAt < cutoffTimestamp).delete(),
   ]);
 }
 
-async function flushSyncQueue(): Promise<void> {
+async function replaySyncQueue(): Promise<void> {
   if (isFlushing) return;
   isFlushing = true;
 
   try {
-  const pending = await db.syncQueue.where('status').equals('pending').sortBy('id');
-  if (pending.length === 0) return;
+    const initialPending = await db.syncQueue.where('status').equals('pending').count();
+    if (initialPending === 0) return;
 
-  syncEvents.dispatchEvent(new Event('sync-start'));
+    syncEvents.dispatchEvent(new Event('sync-start'));
 
-  let allFlushed = true;
+    let allFlushed = true;
 
-  for (const item of pending) {
-    if (!navigator.onLine) { allFlushed = false; break; }
+    while (navigator.onLine) {
+      const [item] = await db.syncQueue.where('status').equals('pending').sortBy('id');
+      if (!item) break;
 
-    try {
-      // apiRequest 사용으로 401 시 토큰 자동 갱신 + 재시도가 보장됨
-      await apiRequest(item.path, { method: item.method, body: item.body });
-      await db.syncQueue.delete(item.id!);
-    } catch (err) {
-      if (err instanceof ApiError && isPermanentError(err.status)) {
-        // 서버가 명확히 거부한 요청 (404, 409, 422 등) — 더 이상 재시도 불필요
+      try {
+        const resolved = await resolveQueueItem(item);
+        if (resolved.status === 'waiting') {
+          allFlushed = false;
+          break;
+        }
+        if (resolved.status === 'missing-dependency') {
+          // 의존 대상이 영구 실패한 항목 — terminal('failed')로 종결.
+          // 다시 시도되지 않으므로 allFlushed를 막지 않는다(나머지 큐는 정상 완료 가능).
+          await db.syncQueue.update(item.id!, { status: 'failed' as const });
+          continue;
+        }
+
+        const response = await apiRequest<unknown>(resolved.path, { method: item.method, body: resolved.body, offlineFallback: false });
+        await rememberEntityMap(item, response);
         await db.syncQueue.delete(item.id!);
-      } else {
-        // 429, 5xx, 네트워크 오류, 401(토큰 재발급도 실패) — 보존 후 중단
-        const nextRetryCount = item.retryCount + 1;
-        await db.syncQueue.update(item.id!, {
-          retryCount: nextRetryCount,
-          ...(nextRetryCount >= MAX_SYNC_RETRY_COUNT ? { status: 'failed' as const } : {}),
-        });
-        allFlushed = false;
-        break;
+      } catch (err) {
+        if (err instanceof ApiError && isPermanentError(err.status)) {
+          await db.syncQueue.delete(item.id!);
+        } else {
+          const nextRetryCount = item.retryCount + 1;
+          await db.syncQueue.update(item.id!, {
+            retryCount: nextRetryCount,
+            ...(nextRetryCount >= MAX_SYNC_RETRY_COUNT ? { status: 'failed' as const } : {}),
+          });
+          allFlushed = false;
+          break;
+        }
       }
     }
-  }
 
-  // 큐가 실제로 모두 처리됐을 때만 complete 발화
-  if (allFlushed) {
-    syncEvents.dispatchEvent(new Event('sync-complete'));
-  }
+    if (!navigator.onLine) allFlushed = false;
+    if (allFlushed) syncEvents.dispatchEvent(new Event('sync-complete'));
   } finally {
     isFlushing = false;
+    if (clearRequestedDuringFlush) {
+      clearRequestedDuringFlush = false;
+      await clearAllTables();
+    }
   }
 }
 
@@ -225,6 +373,7 @@ export const SyncService = {
     isInitializing = true;
 
     try {
+      await replaySyncQueue();
       await Promise.allSettled([
         cacheJournals(sessionToken),
         cacheJournalTags(sessionToken),
@@ -232,6 +381,7 @@ export const SyncService = {
         cacheSchedules(sessionToken),
         cacheReports(sessionToken),
         cacheConsultations(sessionToken),
+        cacheUser(sessionToken),
       ]);
       if (!isSameSession(sessionToken)) return;
       await pruneOldCache();
@@ -245,7 +395,7 @@ export const SyncService = {
     listeningStarted = true;
 
     window.addEventListener('online', async () => {
-      await flushSyncQueue();
+      await replaySyncQueue();
       await SyncService.initialize();
     });
   },
@@ -259,8 +409,11 @@ export const SyncService = {
   },
 
   async clearAllCache(): Promise<void> {
-    await db.transaction('rw', db.tables, async () => {
-      await Promise.all(db.tables.map(table => table.clear()));
-    });
+    // replay 진행 중이면 큐를 한복판에서 비우지 않고 완료 후로 미룬다 (대기 중인 오프라인 쓰기 보호).
+    if (isFlushing) {
+      clearRequestedDuringFlush = true;
+      return;
+    }
+    await clearAllTables();
   },
 };

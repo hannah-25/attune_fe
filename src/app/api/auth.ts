@@ -40,10 +40,14 @@ export async function logout() {
     });
   } finally {
     clearAccessToken();
-    await SyncService.clearAllCache();
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((key) => caches.delete(key)));
+    try {
+      await SyncService.clearAllCache();
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('[offline/cache] clear on logout failed:', err);
     }
   }
 }

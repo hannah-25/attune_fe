@@ -262,10 +262,24 @@ export function updateJournalTagPreference(tagId: number, payload: { enabled: bo
   });
 }
 
-export function createJournalTag(payload: { category: JournalTagCategory; name: string; tagType: string; visible: boolean }) {
+export type CreateJournalTagPayload = {
+  category: JournalTagCategory;
+  name: string;
+  tagType: string;
+  visible: boolean;
+};
+
+function normalizeJournalTagPayload(payload: CreateJournalTagPayload): CreateJournalTagPayload {
+  return {
+    ...payload,
+    tagType: payload.category === 'SIDE_EFFECT' ? 'NONE' : payload.tagType,
+  };
+}
+
+export function createJournalTag(payload: CreateJournalTagPayload) {
   return apiRequest<JournalTag>(`${JOURNALS_BASE_PATH}/tags`, {
     method: 'POST',
-    body: payload,
+    body: normalizeJournalTagPayload(payload),
   });
 }
 

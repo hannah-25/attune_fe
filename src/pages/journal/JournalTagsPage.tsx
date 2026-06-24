@@ -95,7 +95,7 @@ export default function JournalTagsPage() {
     try {
       const category = toCatalogCategory(activeCategory);
       const tagType =
-        category === 'SIDE_EFFECT' ? 'USER_INPUT' :
+        category === 'SIDE_EFFECT' ? 'NONE' :
         category === 'CONDITION' ? newConditionType :
         newTroubleType;
       await createJournalTag({ category, name: trimmedLabel, tagType, visible: true });

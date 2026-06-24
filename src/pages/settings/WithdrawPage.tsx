@@ -84,7 +84,11 @@ export default function WithdrawPage() {
         markPendingRestoreEmail(email);
       }
       clearAccessToken();
-      await SyncService.clearAllCache();
+      try {
+        await SyncService.clearAllCache();
+      } catch (cacheErr) {
+        if (import.meta.env.DEV) console.warn('[offline/cache] clear on withdrawal failed:', cacheErr);
+      }
       exitGuestMode();
       clearGuestStore();
       setSubmitted(true);

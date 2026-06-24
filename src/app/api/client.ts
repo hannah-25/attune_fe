@@ -1,4 +1,6 @@
 import { isGuestMode } from '../guest';
+import { cacheResponse } from '../offline/cache';
+import { resolveOfflineRequest } from '../offline/resolver';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -22,6 +24,7 @@ export type ApiRequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown;
   auth?: boolean;
   retryOnUnauthorized?: boolean;
+  offlineFallback?: boolean;
 };
 
 export class ApiError extends Error {
@@ -55,7 +58,6 @@ function shouldUseOfflineResolver(path: string): boolean {
 }
 
 async function resolveOffline<T>(path: string, options: ApiRequestOptions): Promise<T> {
-  const { resolveOfflineRequest } = await import('../offline/resolver');
   return resolveOfflineRequest<T>(path, options);
 }
 
@@ -83,23 +85,25 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     return resolveGuestRequest<T>(normalizedPath, options);
   }
 
-  if (shouldUseOfflineResolver(normalizedPath)) {
+  const useOfflineFallback = options.offlineFallback !== false;
+
+  if (useOfflineFallback && shouldUseOfflineResolver(normalizedPath)) {
     return resolveOffline<T>(normalizedPath, options);
   }
 
-  const { auth = true, body, headers, retryOnUnauthorized = true, ...init } = options;
+  const { auth = true, body, headers, retryOnUnauthorized = true, offlineFallback: _offlineFallback, ...init } = options;
   let response: Response;
   try {
     response = await request(path, { auth, body, headers, ...init });
   } catch (err) {
-    if (!shouldBypassGuestMock(normalizedPath)) {
+    if (useOfflineFallback && !shouldBypassGuestMock(normalizedPath)) {
       markNetworkUnavailable();
       return resolveOffline<T>(normalizedPath, options);
     }
     throw err;
   }
 
-  if (response.headers.get('X-Attune-Offline-Fallback') === '1' && !shouldBypassGuestMock(normalizedPath)) {
+  if (useOfflineFallback && response.headers.get('X-Attune-Offline-Fallback') === '1' && !shouldBypassGuestMock(normalizedPath)) {
     markNetworkUnavailable();
     return resolveOffline<T>(normalizedPath, options);
   }
@@ -119,10 +123,10 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const method = (options.method ?? 'GET').toUpperCase();
   const cacheSessionToken = getAccessToken();
   if (method === 'GET' && !isGuestMode() && cacheSessionToken) {
-    import('../offline/cache')
-      .then(m => {
+    Promise.resolve()
+      .then(() => {
         if (getAccessToken() !== cacheSessionToken) return undefined;
-        return m.cacheResponse(normalizedPath, result);
+        return cacheResponse(normalizedPath, result);
       })
       .catch(err => {
         if (import.meta.env.DEV) console.warn('[offline/cache] async cache failed:', normalizedPath, err);

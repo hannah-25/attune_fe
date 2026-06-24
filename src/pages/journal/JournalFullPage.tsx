@@ -457,7 +457,7 @@ export default function JournalFullPage() {
       sectionTitle === '감정 · 증상' ? 'CONDITION' :
       sectionTitle === '부작용' ? 'SIDE_EFFECT' :
       'TROUBLE';
-    const tagType = 'USER_INPUT';
+    const tagType = category === 'SIDE_EFFECT' ? 'NONE' : 'USER_INPUT';
 
     let createdTag: Tag | null = null;
     try {

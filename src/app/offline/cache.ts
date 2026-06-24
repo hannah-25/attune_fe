@@ -5,6 +5,14 @@ import type { MedicationSummary, MedicationPeriodLog, MedicationPeriodLogsRespon
 import type { ScheduleSummary, ScheduleCategory, ScheduleDetail } from '../api/schedule';
 import type { MedicationReport } from '../api/medicationAnalysis';
 import type { ConsultationDetail } from '../api/consultation';
+import type { UserProfile, UserSettings } from '../api/user';
+import type { CalendarConnection } from '../api/calendarConnection';
+import type { CalendarEvent } from '../api/calendarEvents';
+import type { TodoItem } from '../api/todo';
+
+function rangeKey(startDate: string | null, endDate: string | null): string {
+  return `${startDate ?? ''}:${endDate ?? ''}`;
+}
 
 function toLocalDateString(date: Date): string {
   const y = date.getFullYear();
@@ -33,6 +41,12 @@ function createEmptyLogsByDate(startDate: string | null, endDate: string | null)
   }
 
   return byDate;
+}
+
+function toLocalDateStringFromTimestamp(value: string): string | null {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return toLocalDateString(date);
 }
 
 export async function cacheResponse(path: string, data: unknown): Promise<void> {
@@ -96,7 +110,8 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
       const byDate = createEmptyLogsByDate(params.get('startDate'), params.get('endDate'));
       for (const log of response.logs) {
         if (typeof log?.intakeTime !== 'string') continue;
-        const date = log.intakeTime.slice(0, 10);
+        const date = toLocalDateStringFromTimestamp(log.intakeTime);
+        if (!date) continue;
         if (!byDate.has(date)) byDate.set(date, []);
         byDate.get(date)!.push(log);
       }
@@ -168,6 +183,75 @@ export async function cacheResponse(path: string, data: unknown): Promise<void> 
         cachedAt: now,
       });
       return;
+    }
+
+    // /v1/calendar/events
+    if (base === '/v1/calendar/events') {
+      const response = data as { events: CalendarEvent[] };
+      const params = searchParams(path);
+      const startDate = params.get('startDate') ?? '';
+      const endDate = params.get('endDate') ?? '';
+      if (Array.isArray(response?.events)) {
+        await db.calendarEvents.put({
+          rangeKey: rangeKey(startDate, endDate),
+          startDate,
+          endDate,
+          data: response.events,
+          cachedAt: now,
+        });
+      }
+      return;
+    }
+
+    // /v1/calendar-connections
+    if (base === '/v1/calendar-connections') {
+      const response = data as { connections: CalendarConnection[] };
+      if (Array.isArray(response?.connections)) {
+        await db.calendarConnections.put({ id: 'list', data: response.connections, cachedAt: now });
+      }
+      return;
+    }
+
+    // /v1/todos
+    if (base === '/v1/todos') {
+      const response = data as { todos: TodoItem[] };
+      const date = searchParams(path).get('date');
+      if (date && Array.isArray(response?.todos)) {
+        await db.todosByDate.put({ date, data: response.todos, cachedAt: now });
+      }
+      return;
+    }
+
+    // /v1/users/me/profile
+    if (base === '/v1/users/me/profile') {
+      await db.userProfile.put({ id: 'profile', data: data as UserProfile, cachedAt: now });
+      return;
+    }
+
+    // /v1/users/settings
+    if (base === '/v1/users/settings') {
+      await db.userSettings.put({ id: 'settings', data: data as UserSettings, cachedAt: now });
+      return;
+    }
+
+    // /v1/community/posts and related payloads.
+    if (base === '/v1/community/posts') {
+      await db.communityPayloads.put({ key: path, data, cachedAt: now });
+      if (!path.includes('?')) {
+        await db.communityPayloads.put({ key: '/v1/community/posts', data, cachedAt: now });
+      }
+      return;
+    }
+
+    const communityPostMatch = base.match(/^\/v1\/community\/posts\/(-?\d+)$/);
+    if (communityPostMatch) {
+      await db.communityPayloads.put({ key: base, data, cachedAt: now });
+      return;
+    }
+
+    const communityCommentsMatch = base.match(/^\/v1\/community\/posts\/(-?\d+)\/comments$/);
+    if (communityCommentsMatch) {
+      await db.communityPayloads.put({ key: base, data, cachedAt: now });
     }
   } catch (err) {
     if (import.meta.env.DEV) console.warn('[offline/cache] cacheResponse failed:', path, err);

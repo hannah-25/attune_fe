@@ -41,6 +41,10 @@ export type ScheduleDetail = {
   alarms: string[];
 };
 
+export type CreateScheduleResponse = {
+  scheduleId: number;
+};
+
 export function getScheduleCategories() {
   return apiRequest<{ categories: ScheduleCategory[] }>('/v1/schedule-categories');
 }
@@ -58,7 +62,7 @@ export function deleteScheduleCategory(categoryId: number) {
 }
 
 export function createSchedule(payload: SchedulePayload) {
-  return apiRequest<void>('/v1/schedules', { method: 'POST', body: payload });
+  return apiRequest<CreateScheduleResponse>('/v1/schedules', { method: 'POST', body: payload });
 }
 
 export function getSchedules(params: { startDate: string; endDate: string; source?: ScheduleSource }) {

@@ -30,12 +30,25 @@ function isAuthOrAccountPath(pathname: string): boolean {
   return pathname.startsWith('/v1/auth/') || pathname.startsWith('/v1/account/');
 }
 
-async function cachedOrNetwork(request: Request): Promise<Response> {
+async function cachedOrNetwork(
+  request: Request,
+  extendLifetime: (promise: Promise<unknown>) => void,
+): Promise<Response> {
   const cached = await caches.match(request);
   if (cached) return cached;
 
   try {
-    return await fetch(request);
+    const response = await fetch(request);
+    if (response.status === 200) {
+      // 캐시 저장은 응답 반환과 분리하되(저장 실패가 응답을 망치지 않도록),
+      // event.waitUntil로 SW 수명을 연장해 저장이 잘리지 않게 한다.
+      extendLifetime(
+        caches.open(RUNTIME_CACHE_NAME)
+          .then(cache => cache.put(request, response.clone()))
+          .catch(() => {}),
+      );
+    }
+    return response;
   } catch {
     return offlineResponse();
   }
@@ -57,20 +70,23 @@ async function navigationResponse(request: Request): Promise<Response> {
 }
 
 sw.addEventListener('install', (event) => {
-  event.waitUntil(sw.skipWaiting());
-
-  void (async () => {
-    try {
-      const cache = await caches.open(PRECACHE_NAME);
-      const results = await Promise.allSettled(precacheUrls.map((url) => cache.add(url)));
-      const failedUrls = results.flatMap((result, index) => result.status === 'rejected' ? [precacheUrls[index]] : []);
-      if (failedUrls.length > 0) {
-        console.warn('[service-worker] precache failed for:', failedUrls);
-      }
-    } catch (err) {
-      console.warn('[service-worker] precache error:', err);
-    }
-  })();
+  event.waitUntil(
+    Promise.all([
+      sw.skipWaiting(),
+      (async () => {
+        try {
+          const cache = await caches.open(PRECACHE_NAME);
+          const results = await Promise.allSettled(precacheUrls.map((url) => cache.add(url)));
+          const failedUrls = results.flatMap((result, index) => result.status === 'rejected' ? [precacheUrls[index]] : []);
+          if (failedUrls.length > 0) {
+            console.warn('[service-worker] precache failed for:', failedUrls);
+          }
+        } catch (err) {
+          console.warn('[service-worker] precache error:', err);
+        }
+      })(),
+    ]),
+  );
 });
 
 sw.addEventListener('activate', (event) => {
@@ -131,7 +147,7 @@ sw.addEventListener('fetch', (event) => {
       return;
     }
 
-    event.respondWith(cachedOrNetwork(event.request));
+    event.respondWith(cachedOrNetwork(event.request, (promise) => event.waitUntil(promise)));
   }
 });
 

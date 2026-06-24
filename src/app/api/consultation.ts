@@ -18,12 +18,16 @@ export type ConsultationPayload = {
   isFirstVisit: boolean;
 };
 
+export type CreateConsultationResponse = {
+  consultationId: number;
+};
+
 type ConsultationListResponse = {
   consultations: ConsultationDetail[];
 };
 
 export function createConsultation(payload: ConsultationPayload) {
-  return apiRequest<void>('/v1/consultations', { method: 'POST', body: payload });
+  return apiRequest<CreateConsultationResponse>('/v1/consultations', { method: 'POST', body: payload });
 }
 
 export async function getConsultations(params: {
