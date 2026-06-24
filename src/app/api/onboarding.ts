@@ -15,6 +15,13 @@ export type AiTagItem = {
   recommended: boolean;
 };
 
+export type AiConditionTagItem = {
+  tagId: number;
+  name: string;
+  type: string;
+  recommended: boolean;
+};
+
 export type AiGoalItem = {
   goal: string;
   type: DailyGoalType;
@@ -22,6 +29,7 @@ export type AiGoalItem = {
 
 export type AiRecommendationResponse = {
   tags: AiTagItem[];
+  conditionTags: AiConditionTagItem[];
   goals: AiGoalItem[];
 };
 
@@ -112,12 +120,14 @@ export function getAiRecommendations() {
 export function submitOnboardingGoals(payload: {
   goals: { goal: string; type: DailyGoalType }[];
   visibleTagIds: number[];
+  visibleConditionTagIds: number[];
 }) {
   return apiRequest<void>('/v1/onboarding/goals', {
     method: 'POST',
     body: {
       goals: payload.goals.map(({ goal, type }) => ({ title: goal, type })),
       visibleTagIds: payload.visibleTagIds,
+      visibleConditionTagIds: payload.visibleConditionTagIds,
     },
   });
 }

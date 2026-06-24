@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { X, Plus, Pencil, Check } from 'lucide-react';
 import { OnboardingTopBar } from '../../app/components/OnboardingTopBar';
-import { submitOnboardingGoals, AiRecommendationResponse, AiTagItem, AiGoalItem, DailyGoalType } from '@/api/onboarding';
+import { submitOnboardingGoals, AiRecommendationResponse, AiTagItem, AiConditionTagItem, AiGoalItem, DailyGoalType } from '@/api/onboarding';
 
 const GOAL_TYPE_LABELS: Record<DailyGoalType, string> = {
   WORK_STUDY: '업무/학업',
@@ -26,6 +26,15 @@ const TAG_TYPE_LABELS: Record<string, string> = {
   DAILY_SELF: '일상·자기관리',
 };
 
+const CONDITION_TYPE_LABELS: Record<string, string> = {
+  UP: '활력',
+  DOWN: '무기력',
+  TIGHT: '과긴장',
+  FOGGY: '멍함',
+  CALM: '평온',
+  USER_INPUT: '직접 입력',
+};
+
 const FALLBACK_GOALS: AiGoalItem[] = [
   { goal: '한 가지 일을 20분 이상 이어가기', type: 'WORK_STUDY' },
   { goal: '해야 할 일을 10분 안에 시작하기', type: 'TIME_MANAGEMENT' },
@@ -43,6 +52,11 @@ export default function OnboardingAiResultPage() {
   const [tagVisibility, setTagVisibility] = useState<Record<number, boolean>>(() => {
     if (!aiResult || !Array.isArray(aiResult.tags)) return {};
     return Object.fromEntries(aiResult.tags.map((t: AiTagItem) => [t.tagId, t.recommended]));
+  });
+
+  const [conditionTagVisibility, setConditionTagVisibility] = useState<Record<number, boolean>>(() => {
+    if (!aiResult || !Array.isArray(aiResult.conditionTags)) return {};
+    return Object.fromEntries(aiResult.conditionTags.map((t: AiConditionTagItem) => [t.tagId, t.recommended]));
   });
 
   const [goals, setGoals] = useState<AiGoalItem[]>(() => aiResult?.goals ?? FALLBACK_GOALS);
@@ -65,8 +79,22 @@ export default function OnboardingAiResultPage() {
     return groups;
   }, [aiResult]);
 
+  const groupedConditionTags = React.useMemo(() => {
+    if (!aiResult || !Array.isArray(aiResult.conditionTags)) return {} as Record<string, AiConditionTagItem[]>;
+    const groups: Record<string, AiConditionTagItem[]> = {};
+    for (const tag of aiResult.conditionTags) {
+      if (!groups[tag.type]) groups[tag.type] = [];
+      groups[tag.type].push(tag);
+    }
+    return groups;
+  }, [aiResult]);
+
   const toggleTag = (id: number) => {
     setTagVisibility((prev: Record<number, boolean>) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleConditionTag = (id: number) => {
+    setConditionTagVisibility((prev: Record<number, boolean>) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const startEdit = (index: number) => {
@@ -119,7 +147,10 @@ export default function OnboardingAiResultPage() {
       const visibleTagIds = Object.entries(tagVisibility)
         .filter(([, visible]) => visible)
         .map(([id]) => Number(id));
-      await submitOnboardingGoals({ goals, visibleTagIds });
+      const visibleConditionTagIds = Object.entries(conditionTagVisibility)
+        .filter(([, visible]) => visible)
+        .map(([id]) => Number(id));
+      await submitOnboardingGoals({ goals, visibleTagIds, visibleConditionTagIds });
       navigate('/onboarding/5');
     } catch (err) {
       console.error('Failed to save goals:', err);
@@ -174,6 +205,46 @@ export default function OnboardingAiResultPage() {
                             }`}
                           >
                             {tag.trouble}
+                            {visible
+                              ? <Check className="w-3 h-3" strokeWidth={3} />
+                              : <Plus className="w-3 h-3 text-gray-400" strokeWidth={2.5} />
+                            }
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {aiResult && Array.isArray(aiResult.conditionTags) && aiResult.conditionTags.length > 0 && (
+            <div>
+              <div className="font-bold text-gray-800 text-sm mb-1">나의 감정·컨디션 태그</div>
+              <div className="text-gray-400 text-xs mb-3">AI가 관련 있다고 판단한 감정·컨디션이에요. 켜두면 일지 작성 시 표시돼요.</div>
+              <div className="flex flex-col gap-3">
+                {(Object.entries(groupedConditionTags) as [string, AiConditionTagItem[]][]).map(([type, tags]) => (
+                  <div key={type}>
+                    <div className="text-gray-500 text-[11px] font-semibold mb-1.5">
+                      {CONDITION_TYPE_LABELS[type] ?? type}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag: AiConditionTagItem) => {
+                        const visible = conditionTagVisibility[tag.tagId] ?? false;
+                        return (
+                          <button
+                            key={tag.tagId}
+                            type="button"
+                            onClick={() => toggleConditionTag(tag.tagId)}
+                            aria-pressed={visible}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-[0.96] ${
+                              visible
+                                ? 'bg-purple-500 text-white border-purple-500 shadow-sm'
+                                : 'bg-white text-gray-500 border-gray-300'
+                            }`}
+                          >
+                            {tag.name}
                             {visible
                               ? <Check className="w-3 h-3" strokeWidth={3} />
                               : <Plus className="w-3 h-3 text-gray-400" strokeWidth={2.5} />
