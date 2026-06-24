@@ -1,6 +1,6 @@
 import { db } from './db';
 import { SyncService } from './SyncService';
-import { cleanPath, searchParams } from './pathUtils';
+import { cleanPath, searchParams, toLocalDateString, toLocalDateStringFromTimestamp, nextLocalDateString } from './pathUtils';
 import type { ApiRequestOptions } from '../api/client';
 import type { LocalEntityType, SyncQueueItem } from './db';
 import type {
@@ -166,26 +166,6 @@ function normalizeJournalTagBody(body: unknown): unknown {
 
 function rangeKey(startDate: string | null, endDate: string | null): string {
   return `${startDate ?? ''}:${endDate ?? ''}`;
-}
-
-function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function toLocalDateStringFromTimestamp(value: string): string | null {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return toLocalDateString(date);
-}
-
-function nextLocalDateString(value: string): string {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return value;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + 1);
-  return toLocalDateString(date);
 }
 
 function emptyActiveTags(): JournalActiveTags {
@@ -389,6 +369,7 @@ async function updateOfflineMedication(userMedicationId: number, body: unknown):
 }
 
 function medicationSchedulesFromPayload(payload: CreateMedicationRequest): MedicationScheduleSummary[] {
+  if (!Array.isArray(payload.schedules)) return [];
   return payload.schedules.map(schedule => ({
     scheduleId: createTemporaryId(),
     doseTime: schedule.doseTime,
@@ -452,7 +433,7 @@ function scheduleDetailFromPayload(payload: SchedulePayload): ScheduleDetail {
     startTime: payload.startTime,
     endTime: payload.endTime,
     alarmEnabled: payload.alarmEnabled,
-    alarms: payload.alarmedAt,
+    alarms: payload.alarmedAt ?? [],
   };
 }
 
@@ -960,6 +941,18 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
 
   const calendarConnectionMatch = base.match(/^\/v1\/calendar-connections\/(-?\d+)$/);
   if (calendarConnectionMatch && method !== 'GET') {
+    // 연동 해제(DELETE)는 오프라인에서도 즉시 로컬 캐시에서 제거 (Optimistic Update)
+    if (method === 'DELETE') {
+      const connectionId = Number(calendarConnectionMatch[1]);
+      const cached = await db.calendarConnections.get('list');
+      if (cached) {
+        await db.calendarConnections.put({
+          ...cached,
+          data: cached.data.filter(item => item.connectionId !== connectionId),
+          cachedAt: new Date().toISOString(),
+        });
+      }
+    }
     await queueWriteRequest(method, path, body);
     return undefined as T;
   }
@@ -1094,9 +1087,14 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
 
     // 특정 질문에 대한 쓰기 (DELETE 등)
     if (questionId != null) {
-      // 오프라인에서 만든 임시 질문 삭제 → 대기 중인 생성 요청 자체를 취소 (서버 미반영)
+      // 오프라인에서 만든 임시 질문에 대한 쓰기는 서버에 미반영된 생성 큐를 직접 조작한다.
+      // DELETE → 대기 중인 생성 요청 자체를 취소, PATCH/PUT → 생성 본문에 수정 내용을 병합.
       if (isTemporaryId(questionId)) {
-        await deletePendingLocalCreate('consultationQuestion', questionId);
+        if (method === 'DELETE') {
+          await deletePendingLocalCreate('consultationQuestion', questionId);
+        } else if ((method === 'PATCH' || method === 'PUT') && isRecord(body)) {
+          await mergePendingLocalCreateBody('consultationQuestion', questionId, body);
+        }
         return {} as T;
       }
       if (isTemporaryId(consultationId)) {

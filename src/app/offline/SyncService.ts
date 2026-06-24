@@ -6,6 +6,7 @@ import { getConsultations } from '../api/consultation';
 import { getMyProfile, getUserSettings } from '../api/user';
 import { apiRequest, ApiError, getAccessToken } from '../api/client';
 import { db, type LocalEntityType, type SyncQueueItem } from './db';
+import { toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp } from './pathUtils';
 
 export const syncEvents = new EventTarget();
 
@@ -22,22 +23,9 @@ async function clearAllTables(): Promise<void> {
   });
 }
 
-// ?�버가 명시?�으�??�당 ?�기�?거�????�태코드 ???�시?�해???��? ?�음
+// 서버가 명시적으로 해당 쓰기를 거부한 상태코드 (재시도하지 않음)
 function isPermanentError(status: number): boolean {
   return [400, 403, 404, 409, 410, 422].includes(status);
-}
-
-function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function parseLocalDate(value: string): Date | null {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return null;
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
 function createEmptyLogsByDate(startDate: string, endDate: string): Map<string, MedicationPeriodLog[]> {
@@ -52,12 +40,6 @@ function createEmptyLogsByDate(startDate: string, endDate: string): Map<string, 
   }
 
   return byDate;
-}
-
-function toLocalDateStringFromTimestamp(value: string): string | null {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return toLocalDateString(date);
 }
 
 function get3MonthRange() {
@@ -248,8 +230,8 @@ async function cacheSchedules(sessionToken: string) {
 
   await db.scheduleCategories.put({ id: 'categories', data: catsResponse.categories, cachedAt: now });
 
-  // ?�적 ?�??교체: ?�래???�정??무한???�이지 ?�도�?매번 초기??
-  // scheduleDetails???��? ???�용?��? 조회???�세 캐시�??�려??
+  // 동적 일정 교체: 미래의 일정은 무한히 쌓이지 않도록 매번 초기화
+  // scheduleDetails는 지우지 않음: 사용자가 조회한 상세 캐시는 살려둠
   await db.transaction('rw', db.schedules, async () => {
     await db.schedules.clear();
     await db.schedules.bulkPut(

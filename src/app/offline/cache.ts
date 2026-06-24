@@ -1,5 +1,5 @@
 import { db } from './db';
-import { cleanPath, searchParams } from './pathUtils';
+import { cleanPath, searchParams, toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp } from './pathUtils';
 import type { JournalDetail, JournalListResponse, JournalTag } from '../api/journal';
 import type { MedicationSummary, MedicationPeriodLog, MedicationPeriodLogsResponse } from '../api/medication';
 import type { ScheduleSummary, ScheduleCategory, ScheduleDetail } from '../api/schedule';
@@ -12,19 +12,6 @@ import type { TodoItem } from '../api/todo';
 
 function rangeKey(startDate: string | null, endDate: string | null): string {
   return `${startDate ?? ''}:${endDate ?? ''}`;
-}
-
-function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function parseLocalDate(value: string): Date | null {
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!match) return null;
-  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
 function createEmptyLogsByDate(startDate: string | null, endDate: string | null): Map<string, MedicationPeriodLog[]> {
@@ -41,12 +28,6 @@ function createEmptyLogsByDate(startDate: string | null, endDate: string | null)
   }
 
   return byDate;
-}
-
-function toLocalDateStringFromTimestamp(value: string): string | null {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return toLocalDateString(date);
 }
 
 export async function cacheResponse(path: string, data: unknown): Promise<void> {
