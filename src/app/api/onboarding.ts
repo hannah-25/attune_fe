@@ -15,6 +15,13 @@ export type AiTagItem = {
   recommended: boolean;
 };
 
+export type AiConditionTagItem = {
+  tagId: number;
+  name: string;
+  type: string;
+  recommended: boolean;
+};
+
 export type AiGoalItem = {
   goal: string;
   type: DailyGoalType;
@@ -22,6 +29,7 @@ export type AiGoalItem = {
 
 export type AiRecommendationResponse = {
   tags: AiTagItem[];
+  conditionTags: AiConditionTagItem[];
   goals: AiGoalItem[];
 };
 
@@ -112,12 +120,18 @@ export function getAiRecommendations() {
 export function submitOnboardingGoals(payload: {
   goals: { goal: string; type: DailyGoalType }[];
   visibleTagIds: number[];
+  visibleConditionTagIds?: number[];
 }) {
   return apiRequest<void>('/v1/onboarding/goals', {
     method: 'POST',
     body: {
       goals: payload.goals.map(({ goal, type }) => ({ title: goal, type })),
       visibleTagIds: payload.visibleTagIds,
+      // undefined면 필드를 생략 → 백엔드가 condition 가시성을 변경하지 않음.
+      // []는 "전체 숨김"을 의미하므로 기본값으로 채우지 않는다.
+      ...(payload.visibleConditionTagIds !== undefined
+        ? { visibleConditionTagIds: payload.visibleConditionTagIds }
+        : {}),
     },
   });
 }
