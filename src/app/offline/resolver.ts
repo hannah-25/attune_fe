@@ -7,7 +7,7 @@ import type {
   JournalChecked,
   SleepMealPayload,
 } from '../api/journal';
-import type { MedicationLogRequest, MedicationPeriodLog } from '../api/medication';
+import type { MedicationPeriodLog } from '../api/medication';
 import type { CalendarEvent } from '../api/calendarEvents';
 
 
@@ -163,7 +163,7 @@ async function addOfflineMedicationLog(userMedicationId: number, body: unknown) 
       cachedAt: now,
     });
   });
-  return { logId, action: (body as MedicationLogRequest | undefined)?.action, recordedAt: now };
+  return { logId, action, recordedAt: now };
 }
 
 async function getOfflineCalendarEvents(startDate: string, endDate: string): Promise<CalendarEvent[]> {
@@ -171,17 +171,17 @@ async function getOfflineCalendarEvents(startDate: string, endDate: string): Pro
   const externalEvents = (cached?.data ?? []).filter(event => event.source !== 'ATTUNE');
 
   const endExclusive = `${nextLocalDateString(endDate)}T00:00:00`;
-  const [byStart, byEnd, categories] = await Promise.all([
-    db.schedules.where('startTime').below(endExclusive).primaryKeys(),
-    db.schedules.where('endTime').aboveOrEqual(startDate).primaryKeys(),
+  const [schedules, categories] = await Promise.all([
+    db.schedules
+      .where('startTime')
+      .below(endExclusive)
+      .and(item => item.endTime >= startDate)
+      .toArray(),
     db.scheduleCategories.get('categories'),
   ]);
-  const startSet = new Set(byStart);
-  const matchIds = byEnd.filter(k => startSet.has(k));
   const categoryById = new Map((categories?.data ?? []).map(category => [category.categoryId, category]));
 
-  const attuneEvents = (await db.schedules.bulkGet(matchIds))
-    .filter((cachedSchedule): cachedSchedule is NonNullable<typeof cachedSchedule> => cachedSchedule != null)
+  const attuneEvents = schedules
     .map(({ data }): CalendarEvent => {
       const category = categoryById.get(data.categoryId);
       return {
@@ -320,16 +320,13 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   if (base === '/v1/schedules' && method === 'GET') {
     const startDate = params.get('startDate') ?? '';
     const endDate = params.get('endDate') ?? '';
-    // startTime, endTime 인덱스를 각각 쿼리하여 교집합으로 날짜 범위 내 일정 조회
+    // startTime 인덱스로 범위를 좁힌 뒤 endTime 으로 필터링하여 날짜 범위 내 일정 조회
     const endExclusive = `${nextLocalDateString(endDate)}T00:00:00`;
-    const [byStart, byEnd] = await Promise.all([
-      db.schedules.where('startTime').below(endExclusive).primaryKeys(),
-      db.schedules.where('endTime').aboveOrEqual(startDate).primaryKeys(),
-    ]);
-    const startSet = new Set(byStart);
-    const matchIds = byEnd.filter(k => startSet.has(k));
-    const results = (await db.schedules.bulkGet(matchIds))
-      .filter((c): c is NonNullable<typeof c> => c != null);
+    const results = await db.schedules
+      .where('startTime')
+      .below(endExclusive)
+      .and(item => item.endTime >= startDate)
+      .toArray();
     return { schedules: results.map(c => c.data) } as T;
   }
 

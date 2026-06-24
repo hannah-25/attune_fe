@@ -145,12 +145,15 @@ export async function cacheResponse(
         const endDate = params.get('endDate') ?? '';
         await db.transaction('rw', db.schedules, async () => {
           if (!shouldWrite()) return;
-          await db.schedules
-            .toCollection()
-            .filter(item => startDate && endDate
-              ? item.startTime < `${nextLocalDateString(endDate)}T00:00:00` && item.endTime >= startDate
-              : true)
-            .delete();
+          if (startDate && endDate) {
+            await db.schedules
+              .where('startTime')
+              .below(`${nextLocalDateString(endDate)}T00:00:00`)
+              .and(item => item.endTime >= startDate)
+              .delete();
+          } else {
+            await db.schedules.clear();
+          }
           await db.schedules.bulkPut(
             response.schedules.map(s => ({
               scheduleId: s.scheduleId,
