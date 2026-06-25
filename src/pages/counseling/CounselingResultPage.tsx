@@ -507,7 +507,7 @@ export default function CounselingResultPage() {
                                 className={`w-3.5 h-3.5 shrink-0 transition-transform ${entry.expanded ? 'rotate-180 text-purple-500' : 'text-gray-300'}`}
                                 strokeWidth={2.5}
                               />
-                              <span className={`font-semibold truncate ${entry.stopped ? 'text-gray-400 line-through' : ''}`}>
+                              <span className={`font-semibold truncate ${entry.stopped ? 'text-gray-400 line-through' : entry.expired ? 'text-gray-400' : ''}`}>
                                 {entry.name}{entry.currentAmount ? ` ${entry.currentAmount}mg` : ''}
                               </span>
                               {hasChange && (
