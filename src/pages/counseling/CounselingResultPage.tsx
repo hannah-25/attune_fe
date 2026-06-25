@@ -59,7 +59,7 @@ const STATUS_COLOR: Record<string, string> = {
 // (MedicationListPage.isEndedMedication 의 `parsed < today` 와 동일한 포함 기준)
 function isEndAtPassed(endAt?: string | null): boolean {
   if (!endAt) return false;
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(endAt);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(endAt);
   const end = match
     ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
     : new Date(endAt);
