@@ -318,7 +318,7 @@ export default function MedicationListPage() {
                   <Pill className="w-[18px] h-[18px] text-white" strokeWidth={2.4} />
                 </div>
                 <button type="button" onClick={() => openMedicationInfo(medication)} className="grow basis-[0%] text-left">
-                  <div className="font-bold text-sm">{medication.name}</div>
+                  <div className={`font-bold text-sm ${medication.expired ? 'text-gray-500 italic' : ''}`}>{medication.name}</div>
                   <div className="text-gray-600 text-xs">{medication.detail}</div>
                 </button>
                 <button

@@ -189,7 +189,7 @@ export default function HomeMedicationSection({ className }: { className?: strin
                   <div className="min-w-0 grow">
                     <div
                       className={`truncate text-[13px] font-bold ${
-                        isRecorded ? 'text-gray-400 line-through' : 'text-gray-900'
+                        isRecorded ? 'text-gray-400 line-through' : item.expired ? 'text-gray-500 italic' : 'text-gray-900'
                       }`}
                     >
                       {item.medicationName}
