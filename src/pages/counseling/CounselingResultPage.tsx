@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarDays, ChevronDown, Plus, Search, X } from 'lucide-react';
+import { AlertCircle, CalendarDays, ChevronDown, Plus, Search, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
@@ -36,6 +36,7 @@ type PrescriptionEntry = {
   isNew: boolean;
   expanded: boolean;
   scheduleTime: string;
+  expired?: boolean;
   processed?: boolean;
 };
 
@@ -53,6 +54,20 @@ const STATUS_COLOR: Record<string, string> = {
   중단: 'bg-red-50 text-red-600',
   추가: 'bg-green-100 text-green-700',
 };
+
+// 복용 종료일(endAt)이 오늘보다 이전이면 '종료일 지남'. 종료일 당일은 아직 복용일이므로 지나지 않은 것으로 본다.
+// (MedicationListPage.isEndedMedication 의 `parsed < today` 와 동일한 포함 기준)
+function isEndAtPassed(endAt?: string | null): boolean {
+  if (!endAt) return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(endAt);
+  const end = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    : new Date(endAt);
+  if (Number.isNaN(end.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return end < today;
+}
 
 function getEntryStatus(entry: PrescriptionEntry): string {
   if (entry.stopped) return '중단';
@@ -158,6 +173,7 @@ export default function CounselingResultPage() {
                 isNew: false,
                 expanded: false,
                 scheduleTime: rawTime.slice(0, 5),
+                expired: isEndAtPassed(m.endAt),
               };
             });
           setEntries(built);
@@ -472,6 +488,14 @@ export default function CounselingResultPage() {
                         className={`px-4 py-3 ${showBorder ? 'border-b' : ''}`}
                         style={showBorder ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
                       >
+                        {entry.expired && (
+                          <div className="flex items-center gap-1 mb-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" strokeWidth={2.5} />
+                            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                              종료일 지남
+                            </span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between gap-2">
                           {!entry.isNew ? (
                             <button
