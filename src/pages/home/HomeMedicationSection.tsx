@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pill } from 'lucide-react';
+import { AlertCircle, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -27,6 +27,7 @@ type HomeDoseItem = {
   medicationName: string;
   time: string;
   status: 'PENDING' | 'TAKEN' | 'SKIPPED';
+  expired: boolean;
 };
 
 export default function HomeMedicationSection({ className }: { className?: string }) {
@@ -185,12 +186,22 @@ export default function HomeMedicationSection({ className }: { className?: strin
               return (
                 <div key={item.key} className="flex min-h-[52px] items-center gap-2 px-4">
                   <div className="w-10 shrink-0 text-xs font-extrabold text-gray-600">{item.time}</div>
-                  <div
-                    className={`min-w-0 grow truncate text-[13px] font-bold ${
-                      isRecorded ? 'text-gray-400 line-through' : 'text-gray-900'
-                    }`}
-                  >
-                    {item.medicationName}
+                  <div className="min-w-0 grow">
+                    <div
+                      className={`truncate text-[13px] font-bold ${
+                        isRecorded ? 'text-gray-400 line-through' : 'text-gray-900'
+                      }`}
+                    >
+                      {item.medicationName}
+                    </div>
+                    {item.expired ? (
+                      <div className="mt-0.5 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 shrink-0 text-amber-500" strokeWidth={2.5} />
+                        <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">
+                          종료일 지남
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                   {isRecorded ? (
                     <span className="shrink-0 text-xs font-medium text-gray-400">
@@ -253,6 +264,7 @@ function buildDoseItems(
             medicationName: medication.name,
             time: toTimeLabel(schedule.doseTime),
             status: scheduleStatuses.get(key) ?? 'PENDING',
+            expired: isEndAtPassed(medication.endAt),
           } satisfies HomeDoseItem;
         })
     )
@@ -263,17 +275,20 @@ function buildDoseKey(userMedicationId: number, scheduleId: number) {
   return `${userMedicationId}-${scheduleId}`;
 }
 
+// 활성(isActive) 약은 종료일이 지났어도 '복용 중'으로 노출한다(남은 약을 계속
+// 복용 중일 수 있음). 종료일 경과는 숨김이 아니라 '종료일 지남' 라벨로 표시한다.
 function pickActiveMedications(medications: ActiveMedication[]) {
+  return medications.filter((medication) => medication.isActive);
+}
+
+// 복용 종료일(endAt)이 오늘보다 이전이면 '종료일 지남'. 종료일 당일은 미경과.
+function isEndAtPassed(endAt?: string | null) {
+  if (!endAt) return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  return medications.filter((medication) => {
-    if (!medication.isActive) return false;
-    if (!medication.endAt) return true;
-    const parsedEndDate = parseDateValue(medication.endAt);
-    if (Number.isNaN(parsedEndDate.getTime())) return true;
-    return parsedEndDate >= today;
-  });
+  const parsed = parseDateValue(endAt);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return parsed < today;
 }
 
 function normalizeMedicationList(response: MedicationListResponse): ActiveMedication[] {

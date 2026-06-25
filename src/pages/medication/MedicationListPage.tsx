@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Bell, BellOff, ChevronDown, ChevronUp, Clock, History, MoreVertical, Pencil, Pill, Plus } from 'lucide-react';
+import { AlertCircle, Bell, BellOff, ChevronDown, ChevronUp, Clock, History, MoreVertical, Pencil, Pill, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -30,6 +30,7 @@ type MedicationCard = {
   startedAt?: string;
   endAt?: string | null;
   schedules: MedicationScheduleSummary[];
+  expired: boolean;
   bg: string;
 };
 
@@ -304,6 +305,14 @@ export default function MedicationListPage() {
               key={medication.userMedicationId}
               className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]"
             >
+              {medication.expired ? (
+                <div className="flex items-center gap-1 mb-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" strokeWidth={2.5} />
+                  <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                    종료일 지남
+                  </span>
+                </div>
+              ) : null}
               <div className="items-center flex gap-2.5">
                 <div className={`items-center flex justify-center w-[38px] h-[38px] ${medication.bg} rounded-xl shrink-0`}>
                   <Pill className="w-[18px] h-[18px] text-white" strokeWidth={2.4} />
@@ -452,6 +461,7 @@ function normalizeMedication(medication: MedicationSummary, index: number): Medi
     startedAt: medication.startedAt,
     endAt: medication.endAt,
     schedules,
+    expired: isEndAtPassed(medication.endAt),
     bg: CARD_BACKGROUNDS[index % CARD_BACKGROUNDS.length],
   };
 }
@@ -472,15 +482,15 @@ function buildScheduleLabel(schedules: MedicationScheduleSummary[]) {
   return `하루 ${times.length}회 · ${times.join(', ')}`;
 }
 
+// 활성(active) 약은 종료일이 지났어도 '복용 중'에 유지한다(남은 약을 계속
+// 복용 중일 수 있음). 종료일 경과는 '복용 중'에서 빼지 않고 '종료일 지남' 라벨로 표시한다.
+// '지난 약'에는 명시적으로 복용 중단(active=false)된 약만 들어간다.
 function splitMedicationGroups(medications: MedicationCard[]) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   const active: MedicationCard[] = [];
   const past: MedicationCard[] = [];
 
   medications.forEach((medication) => {
-    if (medication.active && !isEndedMedication(medication.endAt, today)) {
+    if (medication.active) {
       active.push(medication);
       return;
     }
@@ -490,8 +500,11 @@ function splitMedicationGroups(medications: MedicationCard[]) {
   return { active, past };
 }
 
-function isEndedMedication(endAt: string | null | undefined, today: Date) {
+// 복용 종료일(endAt)이 오늘보다 이전이면 '종료일 지남'. 종료일 당일은 미경과.
+function isEndAtPassed(endAt: string | null | undefined) {
   if (!endAt) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const parsed = parseDateValue(endAt);
   if (Number.isNaN(parsed.getTime())) return false;
   return parsed < today;
