@@ -519,7 +519,9 @@ function resolveMedicationEndAt(active: boolean, endAt: string): string | null {
 function resolveMedicationIsActive(active: boolean, endAt: string | null): boolean {
   if (!active) return false;
   if (!endAt) return true;
-  return endAt > toDateKey(new Date());
+  // 종료일은 포함(inclusive) — 종료일 당일까지는 복용하므로 활성 유지.
+  // MedicationListPage 의 isEndedMedication(parsed < today) 분류와 일치시킨다.
+  return endAt >= toDateKey(new Date());
 }
 
 function formatDateDot(value: string) {
