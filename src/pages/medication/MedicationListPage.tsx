@@ -73,6 +73,7 @@ export default function MedicationListPage() {
         name: medication.name,
         detail: medication.detail,
         schedule: medication.schedule,
+        doseTime: medication.schedules[0]?.doseTime,
         startedAt: medication.startedAt,
         endAt: medication.endAt,
         active: medication.active,
