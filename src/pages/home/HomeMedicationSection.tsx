@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pill } from 'lucide-react';
+import { AlertCircle, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import {
   createQuickMedicationLog,
@@ -10,6 +10,7 @@ import {
   type MedicationScheduleSummary,
   type MedicationSummary,
 } from '@/api/medication';
+import { isEndAtPassed } from '@/lib/date';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 type ActiveMedication = {
@@ -27,6 +28,7 @@ type HomeDoseItem = {
   medicationName: string;
   time: string;
   status: 'PENDING' | 'TAKEN' | 'SKIPPED';
+  expired: boolean;
 };
 
 export default function HomeMedicationSection({ className }: { className?: string }) {
@@ -185,12 +187,22 @@ export default function HomeMedicationSection({ className }: { className?: strin
               return (
                 <div key={item.key} className="flex min-h-[52px] items-center gap-2 px-4">
                   <div className="w-10 shrink-0 text-xs font-extrabold text-gray-600">{item.time}</div>
-                  <div
-                    className={`min-w-0 grow truncate text-[13px] font-bold ${
-                      isRecorded ? 'text-gray-400 line-through' : 'text-gray-900'
-                    }`}
-                  >
-                    {item.medicationName}
+                  <div className="min-w-0 grow">
+                    <div
+                      className={`truncate text-[13px] font-bold ${
+                        isRecorded ? 'text-gray-400 line-through' : item.expired ? 'text-gray-500 italic' : 'text-gray-900'
+                      }`}
+                    >
+                      {item.medicationName}
+                    </div>
+                    {item.expired ? (
+                      <div className="mt-0.5 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 shrink-0 text-amber-500" strokeWidth={2.5} />
+                        <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">
+                          종료일 지남
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                   {isRecorded ? (
                     <span className="shrink-0 text-xs font-medium text-gray-400">
@@ -253,6 +265,7 @@ function buildDoseItems(
             medicationName: medication.name,
             time: toTimeLabel(schedule.doseTime),
             status: scheduleStatuses.get(key) ?? 'PENDING',
+            expired: isEndAtPassed(medication.endAt),
           } satisfies HomeDoseItem;
         })
     )
@@ -263,17 +276,10 @@ function buildDoseKey(userMedicationId: number, scheduleId: number) {
   return `${userMedicationId}-${scheduleId}`;
 }
 
+// 활성(isActive) 약은 종료일이 지났어도 '복용 중'으로 노출한다(남은 약을 계속
+// 복용 중일 수 있음). 종료일 경과는 숨김이 아니라 '종료일 지남' 라벨로 표시한다.
 function pickActiveMedications(medications: ActiveMedication[]) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return medications.filter((medication) => {
-    if (!medication.isActive) return false;
-    if (!medication.endAt) return true;
-    const parsedEndDate = parseDateValue(medication.endAt);
-    if (Number.isNaN(parsedEndDate.getTime())) return true;
-    return parsedEndDate >= today;
-  });
+  return medications.filter((medication) => medication.isActive);
 }
 
 function normalizeMedicationList(response: MedicationListResponse): ActiveMedication[] {
@@ -328,19 +334,6 @@ function toKstMinutes(value: string): number | null {
 function toMinutes(hhmm: string): number | null {
   const parsed = parseTime(hhmm);
   return parsed ? parsed.hours * 60 + parsed.minutes : null;
-}
-
-function parseDateValue(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [yearText, monthText, dayText] = value.split('-');
-    const year = Number(yearText);
-    const month = Number(monthText);
-    const day = Number(dayText);
-
-    return new Date(year, month - 1, day);
-  }
-
-  return new Date(value);
 }
 
 function parseTime(value?: string) {

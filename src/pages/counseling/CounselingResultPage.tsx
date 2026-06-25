@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CalendarDays, ChevronDown, Plus, Search, X } from 'lucide-react';
+import { AlertCircle, CalendarDays, ChevronDown, Plus, Search, X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
@@ -13,6 +13,7 @@ import {
   type MedicationDosageOption,
   type MedicationSearchResult,
 } from '@/api/medication';
+import { isEndAtPassed } from '@/lib/date';
 
 type ConsultationDetail = {
   consultationDate: string;
@@ -36,6 +37,7 @@ type PrescriptionEntry = {
   isNew: boolean;
   expanded: boolean;
   scheduleTime: string;
+  expired?: boolean;
   processed?: boolean;
 };
 
@@ -158,6 +160,7 @@ export default function CounselingResultPage() {
                 isNew: false,
                 expanded: false,
                 scheduleTime: rawTime.slice(0, 5),
+                expired: isEndAtPassed(m.endAt),
               };
             });
           setEntries(built);
@@ -301,6 +304,7 @@ export default function CounselingResultPage() {
             medicationDosageId: entry.selectedDosageId,
             consultationId,
             startedAt: today,
+            endAt: nextDateRaw || undefined,
             schedules,
           });
           const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
@@ -320,6 +324,7 @@ export default function CounselingResultPage() {
               medicationDosageId: entry.selectedDosageId,
               consultationId,
               startedAt: today,
+              endAt: nextDateRaw || undefined,
               schedules,
             });
           } catch (createErr) {
@@ -333,6 +338,17 @@ export default function CounselingResultPage() {
             userMedicationId: result.userMedicationId,
             currentAmount: selectedOption?.amount ?? e.currentAmount,
           } : e);
+        }
+        // '유지'(용량 변경 없음): 처방 기간을 다음 진료일까지로 갱신한다.
+        // 같은 레코드의 endAt 만 바꾸므로(새 레코드 X) 과거 복용 로그가 그대로 보존된다.
+        // - 다음 진료일이 있으면 모든 유지 약의 endAt 을 그 날짜로 설정.
+        // - 다음 진료일이 없으면, 종료일 지난 약만 무기한(null) 연장해 '종료일 지남'에 고착되지 않게 한다.
+        if (status === '유지' && entry.userMedicationId) {
+          if (entry.processed) return null;
+          if (!nextDateRaw && !entry.expired) return null;
+          const extendedEndAt = nextDateRaw || null;
+          await updateMedication(entry.userMedicationId, { endAt: extendedEndAt, isActive: true });
+          return (prev) => prev.map(e => e.key === entry.key ? { ...e, expired: false, processed: true } : e);
         }
         return null;
       };
@@ -472,6 +488,14 @@ export default function CounselingResultPage() {
                         className={`px-4 py-3 ${showBorder ? 'border-b' : ''}`}
                         style={showBorder ? { borderBottomColor: 'rgb(233, 228, 220)' } : undefined}
                       >
+                        {entry.expired && (
+                          <div className="flex items-center gap-1 mb-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" strokeWidth={2.5} />
+                            <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                              종료일 지남
+                            </span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between gap-2">
                           {!entry.isNew ? (
                             <button
@@ -483,7 +507,7 @@ export default function CounselingResultPage() {
                                 className={`w-3.5 h-3.5 shrink-0 transition-transform ${entry.expanded ? 'rotate-180 text-purple-500' : 'text-gray-300'}`}
                                 strokeWidth={2.5}
                               />
-                              <span className={`font-semibold truncate ${entry.stopped ? 'text-gray-400 line-through' : ''}`}>
+                              <span className={`font-semibold truncate ${entry.stopped ? 'text-gray-400 line-through' : entry.expired ? 'text-gray-500 italic' : ''}`}>
                                 {entry.name}{entry.currentAmount ? ` ${entry.currentAmount}mg` : ''}
                               </span>
                               {hasChange && (
