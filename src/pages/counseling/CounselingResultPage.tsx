@@ -350,6 +350,17 @@ export default function CounselingResultPage() {
             currentAmount: selectedOption?.amount ?? e.currentAmount,
           } : e);
         }
+        // '유지'(용량 변경 없음): 처방 기간을 다음 진료일까지로 갱신한다.
+        // 같은 레코드의 endAt 만 바꾸므로(새 레코드 X) 과거 복용 로그가 그대로 보존된다.
+        // - 다음 진료일이 있으면 모든 유지 약의 endAt 을 그 날짜로 설정.
+        // - 다음 진료일이 없으면, 종료일 지난 약만 무기한(null) 연장해 '종료일 지남'에 고착되지 않게 한다.
+        if (status === '유지' && entry.userMedicationId) {
+          if (entry.processed) return null;
+          if (!nextDateRaw && !entry.expired) return null;
+          const extendedEndAt = nextDateRaw || null;
+          await updateMedication(entry.userMedicationId, { endAt: extendedEndAt, isActive: true });
+          return (prev) => prev.map(e => e.key === entry.key ? { ...e, expired: false, processed: true } : e);
+        }
         return null;
       };
 
