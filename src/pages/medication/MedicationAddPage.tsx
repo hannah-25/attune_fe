@@ -19,6 +19,7 @@ type EditMedicationState = {
   name: string;
   detail: string;
   schedule: string;
+  doseTime?: string;
   startedAt?: string;
   endAt?: string | null;
   active: boolean;
@@ -41,7 +42,7 @@ export default function MedicationAddPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [startedAt, setStartedAt] = useState(editState?.startedAt ?? toDateKey(new Date()));
   const [endAt, setEndAt] = useState(editState?.endAt ?? '');
-  const [doseTime, setDoseTime] = useState('08:00');
+  const [doseTime, setDoseTime] = useState(toTimeInputValue(editState?.doseTime) ?? '08:00');
   const [isMedicationActive, setIsMedicationActive] = useState(editState?.active ?? true);
   const [error, setError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -86,11 +87,22 @@ export default function MedicationAddPage() {
 
   const saveMedication = async () => {
     if (isEditMode) {
+      const parsedDoseTime = toDoseTime(doseTime);
+      if (!parsedDoseTime) {
+        setError('복용 시간을 설정해 주세요.');
+        return;
+      }
+      const schedules = [{ doseTime: parsedDoseTime, label: '복용' }];
+      const nextEndAt = resolveMedicationEndAt(isMedicationActive, endAt);
+      const nextIsActive = resolveMedicationIsActive(isMedicationActive, nextEndAt);
+
       setError('');
       setIsSaving(true);
       try {
         await updateMedication(editState.userMedicationId, {
-          endAt: endAt || null,
+          isActive: nextIsActive,
+          endAt: nextEndAt,
+          schedules,
         });
         navigate('/medication');
       } catch (err) {
@@ -115,6 +127,8 @@ export default function MedicationAddPage() {
       return;
     }
     const schedules = [{ doseTime: parsedDoseTime, label: '복용' }];
+    const nextEndAt = resolveMedicationEndAt(isMedicationActive, endAt);
+    const nextIsActive = resolveMedicationIsActive(isMedicationActive, nextEndAt);
 
     setError('');
     setIsSaving(true);
@@ -122,13 +136,13 @@ export default function MedicationAddPage() {
       const created = await createMedication({
         medicationDosageId: selectedDosageId,
         startedAt,
-        endAt: endAt || undefined,
+        endAt: nextEndAt ?? undefined,
         schedules,
       });
       if (typeof created?.userMedicationId === 'number') {
         await updateMedication(created.userMedicationId, {
-          isActive: isMedicationActive,
-          endAt: isMedicationActive ? undefined : (endAt || toDateKey(new Date())),
+          isActive: nextIsActive,
+          endAt: nextEndAt,
         });
       }
       navigate('/medication');
@@ -227,8 +241,16 @@ export default function MedicationAddPage() {
                   />
                 </div>
 
-                {/* 복용 시간 읽기 전용 */}
-                <StaticRow label="복용 시간" value={editState.schedule} last />
+                <MedicationStatusRow
+                  active={isMedicationActive}
+                  onToggle={() => setIsMedicationActive((v) => !v)}
+                />
+
+                <MedicationTimeRow
+                  value={doseTime}
+                  onChange={setDoseTime}
+                  last
+                />
               </>
             ) : (
               <>
@@ -315,37 +337,16 @@ export default function MedicationAddPage() {
                   />
                 </div>
 
-                <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
-                  <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
-                  <div className="grow basis-[0%] flex items-center justify-between">
-                    <span className={`text-sm font-semibold ${isMedicationActive ? 'text-purple-700' : 'text-gray-500'}`}>
-                      {isMedicationActive ? '복용 중' : '복용 중단'}
-                    </span>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={isMedicationActive}
-                      onClick={() => setIsMedicationActive((v) => !v)}
-                    >
-                      <ToggleSwitch active={isMedicationActive} />
-                    </button>
-                  </div>
-                </div>
+                <MedicationStatusRow
+                  active={isMedicationActive}
+                  onToggle={() => setIsMedicationActive((v) => !v)}
+                />
 
-                <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px]">
-                  <div className="font-semibold w-[84px] text-gray-600">복용 시간</div>
-                  <div className="grow basis-[0%]">
-                    <label className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
-                      <input
-                        type="time"
-                        value={doseTime}
-                        onChange={(e) => setDoseTime(e.target.value)}
-                        className="w-full bg-transparent text-sm text-gray-700 outline-none"
-                        aria-label="복용 시간"
-                      />
-                    </label>
-                  </div>
-                </div>
+                <MedicationTimeRow
+                  value={doseTime}
+                  onChange={setDoseTime}
+                  last
+                />
               </>
             )}
 
@@ -424,6 +425,49 @@ function DosageChip({ dosage, selected, onSelect }: { dosage: MedicationDosageOp
   );
 }
 
+function MedicationStatusRow({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+  return (
+    <div className="items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] border-b" style={{ borderBottomColor: 'rgb(233, 228, 220)' }}>
+      <div className="font-semibold w-[84px] text-gray-600">복용 상태</div>
+      <div className="grow basis-[0%] flex items-center justify-between">
+        <span className={`text-sm font-semibold ${active ? 'text-purple-700' : 'text-gray-500'}`}>
+          {active ? '복용 중' : '복용 중단'}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={active}
+          onClick={onToggle}
+        >
+          <ToggleSwitch active={active} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MedicationTimeRow({ last, onChange, value }: { last?: boolean; onChange: (value: string) => void; value: string }) {
+  const cls = `items-center flex w-full pt-[13px] pr-[14px] pb-[13px] pl-[14px] ${last ? '' : 'border-b'}`;
+  const style = last ? undefined : { borderBottomColor: 'rgb(233, 228, 220)' };
+
+  return (
+    <div className={cls} style={style}>
+      <div className="font-semibold w-[84px] text-gray-600">복용 시간</div>
+      <div className="grow basis-[0%]">
+        <label className="flex items-center bg-gray-50 border border-gray-200 rounded-xl px-2 py-[7px]">
+          <input
+            type="time"
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            className="w-full bg-transparent text-sm text-gray-700 outline-none"
+            aria-label="복용 시간"
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 function StaticRow({ icon, label, last, onClick, value }: {
   icon?: React.ReactNode;
   label: string;
@@ -467,9 +511,33 @@ function toDateKey(date: Date) {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
+function resolveMedicationEndAt(active: boolean, endAt: string): string | null {
+  if (active) return endAt || null;
+  return endAt || toDateKey(new Date());
+}
+
+function resolveMedicationIsActive(active: boolean, endAt: string | null): boolean {
+  if (!active) return false;
+  if (!endAt) return true;
+  return endAt > toDateKey(new Date());
+}
+
 function formatDateDot(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   return value.replace(/-/g, '.');
+}
+
+function toTimeInputValue(value?: string) {
+  if (typeof value !== 'string') return null;
+  const match = value.match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
 function toDoseTime(value: string) {

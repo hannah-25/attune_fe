@@ -174,11 +174,21 @@
   4. 복약 정보 수정
 
   PATCH /v1/user-medications/{userMedicationId}
-  // Request (변경할 필드만)                                                                                                                                            
+  // Request (변경할 필드만): endAt, isActive, alarmActive, schedules
   { "endAt": "2026-12-31", "isActive": false }
+
+  // 복용 시간(스케줄) 수정 — schedules 는 POST 와 동일한 형태(doseTime, label)
+  { "schedules": [ { "doseTime": "09:30", "label": "복용" } ] }
 
   // Response                                                                                                                                                           
   { "userMedicationId": 1, "isActive": false, "updatedAt": "2026-06-02T10:00:00" }
+
+  // schedules 동작/주의
+  // - 보낸 목록으로 전체 교체(full replace). 일부만 보내면 나머지는 사라짐 → 항상 변경된 전체 일정을 통째로 전송.
+  // - 생략 시 일정은 그대로, endAt/isActive/alarmActive 만 수정(기존 동일).
+  // - 빈 배열 [] 또는 doseTime 중복은 400 (최소 1개, 시간 중복 금지). doseTime 포맷 "HH:mm".
+  // - 과거 복용 로그는 시간을 바꿔도 보존(목록·알림에는 현재 일정만 노출).
+  // - 응답에는 교체된 schedules 가 포함되지 않음 → 갱신 일정이 필요하면 GET /v1/user-medications 재조회.
 
   ---
   5. 특정 복약의 로그 조회

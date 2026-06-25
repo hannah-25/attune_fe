@@ -70,6 +70,7 @@ export type UpdateMedicationRequest = {
   endAt?: string | null;
   isActive?: boolean;
   alarmActive?: boolean;
+  schedules?: MedicationSchedule[];
 };
 
 export type MedicationLogRequest = {
