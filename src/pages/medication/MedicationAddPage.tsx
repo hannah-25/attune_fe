@@ -512,7 +512,12 @@ function toDateKey(date: Date) {
 }
 
 function resolveMedicationEndAt(active: boolean, endAt: string): string | null {
-  if (active) return endAt || null;
+  if (active) {
+    // '복용 중'으로 설정했는데 기존 종료일이 과거면 무효화해 활성 상태를 유지한다.
+    // (MedicationListPage 의 '재개' 동작과 동일하게 종료일을 비운다.)
+    if (endAt && endAt < toDateKey(new Date())) return null;
+    return endAt || null;
+  }
   return endAt || toDateKey(new Date());
 }
 
