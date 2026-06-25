@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
+import { isEndAtPassed, parseDateValue } from '@/lib/date';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 const CARD_BACKGROUNDS = ['bg-purple-300', 'bg-purple-500', 'bg-purple-400', 'bg-purple-600'];
@@ -500,16 +501,6 @@ function splitMedicationGroups(medications: MedicationCard[]) {
   return { active, past };
 }
 
-// 복용 종료일(endAt)이 오늘보다 이전이면 '종료일 지남'. 종료일 당일은 미경과.
-function isEndAtPassed(endAt: string | null | undefined) {
-  if (!endAt) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const parsed = parseDateValue(endAt);
-  if (Number.isNaN(parsed.getTime())) return false;
-  return parsed < today;
-}
-
 function buildLoggedScheduleKeys(medications: MedicationCard[], logs: MedicationPeriodLog[]) {
   return buildScheduleKeysFromLogs(medications, logs);
 }
@@ -673,13 +664,3 @@ function formatDateLabel(value: string) {
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-function parseDateValue(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [yearText, monthText, dayText] = value.split('-');
-    const year = Number(yearText);
-    const month = Number(monthText);
-    const day = Number(dayText);
-    return new Date(year, month - 1, day);
-  }
-  return new Date(value);
-}

@@ -81,6 +81,29 @@ export function toTimeInputValue(date: Date): string {
   return `${hours}:${minutes}`;
 }
 
+export function parseDateValue(value: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [yearText, monthText, dayText] = value.split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    return new Date(year, month - 1, day);
+  }
+
+  return new Date(value);
+}
+
+export function isEndAtPassed(endAt?: string | null): boolean {
+  if (!endAt) return false;
+
+  const end = parseDateValue(endAt);
+  if (Number.isNaN(end.getTime())) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return end < today;
+}
+
 export function toDateInputValueFromDateTime(value: string): string {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   const date = new Date(value);

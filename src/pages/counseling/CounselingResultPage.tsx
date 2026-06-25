@@ -13,6 +13,7 @@ import {
   type MedicationDosageOption,
   type MedicationSearchResult,
 } from '@/api/medication';
+import { isEndAtPassed } from '@/lib/date';
 
 type ConsultationDetail = {
   consultationDate: string;
@@ -54,20 +55,6 @@ const STATUS_COLOR: Record<string, string> = {
   중단: 'bg-red-50 text-red-600',
   추가: 'bg-green-100 text-green-700',
 };
-
-// 복용 종료일(endAt)이 오늘보다 이전이면 '종료일 지남'. 종료일 당일은 아직 복용일이므로 지나지 않은 것으로 본다.
-// (MedicationListPage.isEndedMedication 의 `parsed < today` 와 동일한 포함 기준)
-function isEndAtPassed(endAt?: string | null): boolean {
-  if (!endAt) return false;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(endAt);
-  const end = match
-    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
-    : new Date(endAt);
-  if (Number.isNaN(end.getTime())) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return end < today;
-}
 
 function getEntryStatus(entry: PrescriptionEntry): string {
   if (entry.stopped) return '중단';

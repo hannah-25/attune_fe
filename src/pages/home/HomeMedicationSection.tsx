@@ -10,6 +10,7 @@ import {
   type MedicationScheduleSummary,
   type MedicationSummary,
 } from '@/api/medication';
+import { isEndAtPassed } from '@/lib/date';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 type ActiveMedication = {
@@ -281,16 +282,6 @@ function pickActiveMedications(medications: ActiveMedication[]) {
   return medications.filter((medication) => medication.isActive);
 }
 
-// 복용 종료일(endAt)이 오늘보다 이전이면 '종료일 지남'. 종료일 당일은 미경과.
-function isEndAtPassed(endAt?: string | null) {
-  if (!endAt) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const parsed = parseDateValue(endAt);
-  if (Number.isNaN(parsed.getTime())) return false;
-  return parsed < today;
-}
-
 function normalizeMedicationList(response: MedicationListResponse): ActiveMedication[] {
   return response
     .map((item) => normalizeMedication(item))
@@ -343,19 +334,6 @@ function toKstMinutes(value: string): number | null {
 function toMinutes(hhmm: string): number | null {
   const parsed = parseTime(hhmm);
   return parsed ? parsed.hours * 60 + parsed.minutes : null;
-}
-
-function parseDateValue(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [yearText, monthText, dayText] = value.split('-');
-    const year = Number(yearText);
-    const month = Number(monthText);
-    const day = Number(dayText);
-
-    return new Date(year, month - 1, day);
-  }
-
-  return new Date(value);
 }
 
 function parseTime(value?: string) {
