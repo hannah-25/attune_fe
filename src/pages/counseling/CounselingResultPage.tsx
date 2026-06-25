@@ -317,6 +317,7 @@ export default function CounselingResultPage() {
             medicationDosageId: entry.selectedDosageId,
             consultationId,
             startedAt: today,
+            endAt: nextDateRaw || undefined,
             schedules,
           });
           const selectedOption = entry.dosageOptions.find(d => getDosageId(d) === entry.selectedDosageId);
@@ -336,6 +337,7 @@ export default function CounselingResultPage() {
               medicationDosageId: entry.selectedDosageId,
               consultationId,
               startedAt: today,
+              endAt: nextDateRaw || undefined,
               schedules,
             });
           } catch (createErr) {
