@@ -11,7 +11,8 @@
 ## Secret / 환경 변수
 
 - `VITE_*`는 번들에 노출 → 공개 식별자만. 진짜 secret은 CI Secrets/서버.
-- `.env.example` 외 실제 값 커밋 금지. 커밋된 `.env.*`에 민감값이 없는지 주기 점검(부채 #7).
+- 확인됨(2026-06-25): 커밋된 `.env.development/.staging/.production`은 모두 `VITE_*` 공개 식별자(API URL, OAuth client ID, Kakao JS key, VAPID **public** key, 플래그)만 포함. 서버 secret/AWS 키/private key 없음. `.env.development.local`은 gitignore로 미커밋.
+- 신규 `VITE_*` 추가 시 "브라우저 노출 가능 값인가?"를 반드시 점검. private key/secret은 절대 `VITE_`로 두지 않는다.
 
 ## 주요 위험 점검
 

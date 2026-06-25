@@ -54,5 +54,6 @@ API 클라이언트 계층 (src/app/api/*.ts)
 
 ## 알려진 드리프트 / 주의
 
-- 페이지가 `src/pages/`(도메인 화면)와 `src/app/pages/`(개발용 IndexPage/OverviewPage) 두 곳에 존재. ASSUMPTION: 전자가 정식, 후자는 개발 보조.
+- 페이지 위치: `src/pages/`(실제 도메인 화면, 12개 도메인)가 정식. `src/app/pages/`의 `IndexPage`/`OverviewPage`는 모든 라우트로 가는 **개발용 링크 목록 화면**(기능 화면 아님). 코드로 확인됨(2026-06-25).
+- 경미한 중복: `IndexPage`와 `OverviewPage`가 둘 다 전체 링크 목록 역할 → 추후 통합 여지(부채 #4).
 - 테스트·린트·의존성 그래프 검사 미도입 → 규칙 다수가 아직 **soft rule**(문서로만 강제). 계획: [tech-debt-tracker](docs/exec-plans/tech-debt-tracker.md).
