@@ -1,0 +1,45 @@
+name: CI (Quality Gate)
+
+# PR 품질 게이트. 배포 워크플로우(deploy-*.yml)와 분리되어 있으며 배포는 하지 않는다.
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.30.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # --- Blocking gates: 실패 시 PR 머지 차단 ---
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build --mode staging
+        env:
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+
+      # --- Non-blocking: 깨진 문서 링크는 경고만 (점진 도입, 부채 #6) ---
+      - name: Check docs links (non-blocking)
+        run: pnpm check-docs
+        continue-on-error: true
+
+      # TODO(tech-debt #1,#2,#3): lint / test / dependency-check 단계 추가 예정

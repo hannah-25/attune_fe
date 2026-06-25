@@ -5,7 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite --host"
+    "dev": "vite --host",
+    "typecheck": "tsc --noEmit",
+    "verify": "node scripts/agent/verify.mjs",
+    "check-docs": "node scripts/agent/check-docs.mjs",
+    "generate:project-map": "node scripts/agent/generate-project-map.mjs",
+    "generate:api-index": "node scripts/agent/generate-api-index.mjs",
+    "generate:all": "pnpm generate:project-map && pnpm generate:api-index"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
