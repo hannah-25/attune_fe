@@ -491,7 +491,7 @@ export default function CounselingResultPage() {
                         {entry.expired && (
                           <div className="flex items-center gap-1 mb-1.5">
                             <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" strokeWidth={2.5} />
-                            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full">
+                            <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-full">
                               종료일 지남
                             </span>
                           </div>
