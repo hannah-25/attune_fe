@@ -37,6 +37,11 @@ for (const file of files) {
   const full = path.join(API_DIR, file);
   const text = fs.readFileSync(full, 'utf8');
 
+  // 파일마다 전역 정규식 상태 초기화(방어)
+  EXPORT_FN.lastIndex = 0;
+  EXPORT_CONST_FN.lastIndex = 0;
+  PATH_RE.lastIndex = 0;
+
   const fns = new Set();
   let m;
   while ((m = EXPORT_FN.exec(text))) fns.add(m[1]);

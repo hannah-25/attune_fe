@@ -25,6 +25,7 @@ let checked = 0;
 
 for (const file of mdFiles) {
   const text = fs.readFileSync(file, 'utf8');
+  LINK_RE.lastIndex = 0; // 파일마다 전역 정규식 상태 초기화(방어)
   let m;
   while ((m = LINK_RE.exec(text))) {
     let target = m[1].trim();
@@ -33,7 +34,10 @@ for (const file of mdFiles) {
     target = target.split('#')[0].split('?')[0]; // 앵커/쿼리 제거
     if (!target) continue;
     checked++;
-    const resolved = path.resolve(path.dirname(file), target);
+    // GitHub 마크다운은 리포 루트 기준 절대경로(/docs/...)를 허용 → ROOT 기준 해석.
+    const resolved = target.startsWith('/')
+      ? path.join(ROOT, target)
+      : path.resolve(path.dirname(file), target);
     if (!fs.existsSync(resolved)) {
       broken.push(`${rel(file)} → ${m[1]}`);
     }
