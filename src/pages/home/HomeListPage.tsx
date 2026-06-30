@@ -251,13 +251,14 @@ export default function HomeListPage() {
 
   return (
     <div
-      className="relative mx-auto flex h-full w-full max-w-[480px] flex-col bg-gray-50 text-sm"
+      className="flex h-full w-full flex-col bg-gray-50 text-sm"
       style={{
         fontFamily:
           "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
-      <header className="flex min-h-[60px] items-center px-4 py-2">
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <header className="flex min-h-[60px] items-center px-4 py-2">
         <div className="flex h-11 w-11 items-center justify-center">
           <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
         </div>
@@ -554,7 +555,8 @@ export default function HomeListPage() {
         </section>
       </ScrollArea>
 
-      <TabBar active="홈" />
+        <TabBar active="홈" />
+      </div>
     </div>
   );
 }
