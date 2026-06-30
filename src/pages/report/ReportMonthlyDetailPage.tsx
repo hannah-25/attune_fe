@@ -11,6 +11,7 @@ import {
   type AiResult,
   type AiInsight,
 } from '@/api/medicationAnalysis';
+import ReportConcentrationCard from '@/components/pk/ReportConcentrationCard';
 
 type RouteState = { reportId?: number } | null;
 
@@ -202,6 +203,9 @@ export default function ReportMonthlyDetailPage() {
               </div>
             </div>
           )}
+
+          {/* 약효 시간대 × 부작용 (PK 곡선 오버레이) */}
+          <ReportConcentrationCard snapshot={snapshot} />
 
           {/* 부작용 */}
           {sideEffects.length > 0 && (

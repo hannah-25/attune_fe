@@ -13,6 +13,7 @@ import {
   createMemo,
   getJournal,
 } from '@/api/journal';
+import PersonalResponseCard from '@/components/pk/PersonalResponseCard';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
 
@@ -252,6 +253,9 @@ export default function JournalTimelinePage() {
 
         <ScrollArea className="pt-0 pb-[230px]">
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
+          <div className="px-[18px] pb-1">
+            <PersonalResponseCard date={journalDate} />
+          </div>
           <div className="relative pt-0 pr-[18px] pb-0 pl-[18px]">
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 

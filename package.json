@@ -7,6 +7,7 @@
     "build": "vite build",
     "dev": "vite --host",
     "typecheck": "tsc --noEmit",
+    "test:pk": "node scripts/test-pk.mjs",
     "verify": "node scripts/agent/verify.mjs",
     "check-docs": "node scripts/agent/check-docs.mjs",
     "generate:project-map": "node scripts/agent/generate-project-map.mjs",

@@ -7,7 +7,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   base: '/',
   server: {
+    host: '0.0.0.0',
     port: 3000,
+    strictPort: true,
   },
   plugins: [
     react(),
@@ -55,7 +57,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
       },
     }),

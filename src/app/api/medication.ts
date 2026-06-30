@@ -1,4 +1,5 @@
 import { apiRequest } from './client';
+import type { PkProfile } from '@/lib/pk';
 
 export type MedicationLogStatus = 'TAKEN' | 'SKIPPED' | 'MISSED';
 export type QuickMedicationLogAction = 'TAKEN' | 'POSTPONE' | 'SKIPPED';
@@ -27,7 +28,14 @@ export type MedicationStandard = {
   indications: string;
   sideEffects: string;
   description: string;
-  bloodConcentrationGraph: string;
+  /**
+   * @deprecated 정적 이미지(또는 빈 값) 혈중 농도 그래프. PK 모델 기반 동적 곡선
+   * (`pkProfile` → `MedicationConcentrationCard`)으로 대체됨. BE가 더 이상 내려주지
+   * 않게 되면 제거. 신규 코드에서 사용 금지.
+   */
+  bloodConcentrationGraph?: string;
+  /** PK 모델 프로필. BE 미지원 시 약물 이름으로 fallback 해석(@/lib/pk resolveProfile). */
+  pkProfile?: PkProfile;
   imageUrl?: string;
   sourceUrl?: string;
   dosageOptions?: MedicationDosageOption[];
