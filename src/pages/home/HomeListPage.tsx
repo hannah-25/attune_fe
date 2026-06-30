@@ -259,301 +259,301 @@ export default function HomeListPage() {
     >
       <div className="relative flex min-h-0 flex-1 flex-col">
         <header className="flex min-h-[60px] items-center px-4 py-2">
-        <div className="flex h-11 w-11 items-center justify-center">
-          <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
-        </div>
-        <div className="grow" />
-        <HeaderButton label="알림 설정으로 이동" onClick={() => navigate('/settings/notifications')}>
-          <Bell className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.25} />
-        </HeaderButton>
-        <HeaderButton label="마이페이지로 이동" onClick={() => navigate('/settings')}>
-          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-purple-200">
-            {profile?.profileImageUrl ? (
-              <img src={profile.profileImageUrl} alt="" className="h-full w-full object-cover" />
-            ) : profile?.nickname.trim() ? (
-              <span className="text-xs font-bold text-purple-700">
-                {Array.from(profile.nickname.trim())[0]}
-              </span>
-            ) : (
-              <UserRound className="h-4 w-4 text-purple-700" strokeWidth={2.25} />
-            )}
-          </span>
-        </HeaderButton>
-      </header>
+          <div className="flex h-11 w-11 items-center justify-center">
+            <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
+          </div>
+          <div className="grow" />
+          <HeaderButton label="알림 설정으로 이동" onClick={() => navigate('/settings/notifications')}>
+            <Bell className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.25} />
+          </HeaderButton>
+          <HeaderButton label="마이페이지로 이동" onClick={() => navigate('/settings')}>
+            <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-purple-200">
+              {profile?.profileImageUrl ? (
+                <img src={profile.profileImageUrl} alt="" className="h-full w-full object-cover" />
+              ) : profile?.nickname.trim() ? (
+                <span className="text-xs font-bold text-purple-700">
+                  {Array.from(profile.nickname.trim())[0]}
+                </span>
+              ) : (
+                <UserRound className="h-4 w-4 text-purple-700" strokeWidth={2.25} />
+              )}
+            </span>
+          </HeaderButton>
+        </header>
 
-      <ScrollArea className="flex flex-col gap-6 pt-4">
-        <button
-          type="button"
-          onClick={() => navigate('/journal')}
-          className="relative min-h-[108px] w-full overflow-hidden rounded-[1.75rem] bg-purple-100 p-4 text-left shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
-        >
-          <span
-            className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-purple-200/65"
-            aria-hidden="true"
-          />
-          <span
-            className="absolute bottom-4 right-4 flex h-8 w-8 rotate-6 items-center justify-center rounded-[0.75rem] bg-purple-200 text-purple-700"
-            aria-hidden="true"
+        <ScrollArea className="flex flex-col gap-6 pt-4">
+          <button
+            type="button"
+            onClick={() => navigate('/journal')}
+            className="relative min-h-[108px] w-full overflow-hidden rounded-[1.75rem] bg-purple-100 p-4 text-left shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
           >
-            <NotebookPen className="h-4 w-4" strokeWidth={1.8} />
-          </span>
-          {todayJournal ? (() => {
-            const { percent, isComplete } = calcJournalCompletion(todayJournal);
-            const checked = todayJournal.checked;
-            const contentPreview = (
-              <div className="mt-2 space-y-1.5">
-                {checked?.sleep ? (
-                  <p className="text-xs text-gray-700">
-                    수면 {checked.sleep.sleepHour}h · {sleepQualityLabel(checked.sleep.sleepQuality)}
-                  </p>
-                ) : null}
-                {checked?.meal ? (() => {
-                  const { ateBreakfast, ateLunch, ateDinner } = checked.meal;
-                  const eaten = [ateBreakfast && '아침', ateLunch && '점심', ateDinner && '저녁'].filter(Boolean) as string[];
-                  return eaten.length > 0 ? (
-                    <p className="text-xs text-gray-700">{eaten.join(' · ')}</p>
-                  ) : null;
-                })() : null}
-                {(() => {
-                  const tags = [
-                    ...(checked?.conditions?.map((t) => t.condition) ?? []),
-                    ...(checked?.sideEffects?.map((t) => t.sideEffect) ?? []),
-                    ...(checked?.troubles?.map((t) => t.trouble) ?? []),
-                  ];
-                  return tags.length > 0 ? (
-                    <div className="flex flex-wrap gap-1 pt-0.5">
-                      {tags.slice(0, 3).map((tag, i) => (
-                        <span key={i} className="rounded-full bg-purple-200/70 px-2 py-0.5 text-[10px] font-semibold text-purple-800">
-                          {tag}
-                        </span>
-                      ))}
-                      {tags.length > 3 ? (
-                        <span className="self-center text-[10px] font-medium text-purple-700/60">+{tags.length - 3}</span>
-                      ) : null}
-                    </div>
-                  ) : null;
-                })()}
-              </div>
-            );
+            <span
+              className="absolute -right-5 -top-5 h-20 w-20 rounded-full bg-purple-200/65"
+              aria-hidden="true"
+            />
+            <span
+              className="absolute bottom-4 right-4 flex h-8 w-8 rotate-6 items-center justify-center rounded-[0.75rem] bg-purple-200 text-purple-700"
+              aria-hidden="true"
+            >
+              <NotebookPen className="h-4 w-4" strokeWidth={1.8} />
+            </span>
+            {todayJournal ? (() => {
+              const { percent, isComplete } = calcJournalCompletion(todayJournal);
+              const checked = todayJournal.checked;
+              const contentPreview = (
+                <div className="mt-2 space-y-1.5">
+                  {checked?.sleep ? (
+                    <p className="text-xs text-gray-700">
+                      수면 {checked.sleep.sleepHour}h · {sleepQualityLabel(checked.sleep.sleepQuality)}
+                    </p>
+                  ) : null}
+                  {checked?.meal ? (() => {
+                    const { ateBreakfast, ateLunch, ateDinner } = checked.meal;
+                    const eaten = [ateBreakfast && '아침', ateLunch && '점심', ateDinner && '저녁'].filter(Boolean) as string[];
+                    return eaten.length > 0 ? (
+                      <p className="text-xs text-gray-700">{eaten.join(' · ')}</p>
+                    ) : null;
+                  })() : null}
+                  {(() => {
+                    const tags = [
+                      ...(checked?.conditions?.map((t) => t.condition) ?? []),
+                      ...(checked?.sideEffects?.map((t) => t.sideEffect) ?? []),
+                      ...(checked?.troubles?.map((t) => t.trouble) ?? []),
+                    ];
+                    return tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {tags.slice(0, 3).map((tag, i) => (
+                          <span key={i} className="rounded-full bg-purple-200/70 px-2 py-0.5 text-[10px] font-semibold text-purple-800">
+                            {tag}
+                          </span>
+                        ))}
+                        {tags.length > 3 ? (
+                          <span className="self-center text-[10px] font-medium text-purple-700/60">+{tags.length - 3}</span>
+                        ) : null}
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              );
 
-            if (isComplete) {
+              if (isComplete) {
+                return (
+                  <div className="relative z-[1] pr-12">
+                    <div className="flex items-center gap-1.5">
+                      <Check className="h-4 w-4 text-purple-700" strokeWidth={2.5} />
+                      <span className="text-sm font-extrabold text-gray-900">오늘 일지 작성 완료</span>
+                    </div>
+                    {contentPreview}
+                  </div>
+                );
+              }
               return (
                 <div className="relative z-[1] pr-12">
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-4 w-4 text-purple-700" strokeWidth={2.5} />
-                    <span className="text-sm font-extrabold text-gray-900">오늘 일지 작성 완료</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-extrabold text-gray-900">오늘 일지</span>
+                    <span className="rounded-full bg-purple-300/60 px-2 py-0.5 text-[10px] font-bold leading-none text-purple-900">
+                      {percent}%
+                    </span>
                   </div>
+                  <span className="mt-1 block text-xs font-medium text-gray-700">
+                    감정 · 증상 · 수면 · 목표를 기록해 보세요
+                  </span>
                   {contentPreview}
                 </div>
               );
-            }
-            return (
+            })() : (
               <div className="relative z-[1] pr-12">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-extrabold text-gray-900">오늘 일지</span>
-                  <span className="rounded-full bg-purple-300/60 px-2 py-0.5 text-[10px] font-bold leading-none text-purple-900">
-                    {percent}%
-                  </span>
-                </div>
-                <span className="mt-1 block text-xs font-medium text-gray-700">
+                <span className="block text-base font-extrabold text-gray-900">오늘 일지 작성하기</span>
+                <span className="mt-1.5 block text-xs font-medium text-gray-700">
                   감정 · 증상 · 수면 · 목표를 기록해 보세요
                 </span>
-                {contentPreview}
               </div>
-            );
-          })() : (
-            <div className="relative z-[1] pr-12">
-              <span className="block text-base font-extrabold text-gray-900">오늘 일지 작성하기</span>
-              <span className="mt-1.5 block text-xs font-medium text-gray-700">
-                감정 · 증상 · 수면 · 목표를 기록해 보세요
-              </span>
-            </div>
-          )}
-        </button>
-
-        <HomeMedicationSection />
-
-        {upcomingConsultation !== null && upcomingConsultationDday !== null ? (
-          <button
-            type="button"
-            onClick={() => navigate('/counseling')}
-            className="w-full overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white p-4 text-left shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-gray-900">다음 상담</p>
-                <p className="mt-1 text-xs text-gray-600">
-                  {formatConsultationDate(upcomingConsultation.consultationDate)}
-                  {upcomingConsultation.place ? ` · ${upcomingConsultation.place}` : ''}
-                </p>
-                {upcomingConsultation.doctorName ? (
-                  <p className="mt-0.5 text-xs text-gray-500">{upcomingConsultation.doctorName}</p>
-                ) : null}
-              </div>
-              <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
-                upcomingConsultationDday === 0
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-purple-100 text-purple-700'
-              }`}>
-                {upcomingConsultationDday === 0 ? 'D-day' : `D-${upcomingConsultationDday}`}
-              </span>
-            </div>
-          </button>
-        ) : null}
-
-        <section>
-          <SectionHeader
-            title="오늘 계획"
-            action="캘린더 보기"
-            onAction={() => navigate('/calendar')}
-          />
-          <div className="border-y border-gray-200">
-            {schedulesLoading || todosLoading ? (
-              <StatusRow>계획을 불러오고 있어요.</StatusRow>
-            ) : schedulesLoadError || todosLoadError ? (
-              <div className="flex min-h-[56px] flex-col justify-center gap-1 px-4" role="alert">
-                {schedulesLoadError ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-red-700">{schedulesLoadError}</span>
-                    <button
-                      type="button"
-                      onClick={() => void loadSchedules()}
-                      className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
-                    >
-                      다시 시도
-                    </button>
-                  </div>
-                ) : null}
-                {todosLoadError ? (
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs text-red-700">{todosLoadError}</span>
-                    <button
-                      type="button"
-                      onClick={() => void loadTodos()}
-                      className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
-                    >
-                      다시 시도
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            ) : (() => {
-              const planItems: PlanItem[] = [
-                ...scheduleItems.map((item) => ({
-                  ...item,
-                  kind: 'schedule' as const,
-                  sortKey: item.isAllDay ? Number.NEGATIVE_INFINITY : toTimestamp(item.startTime),
-                })),
-                ...todos.map((todo) => ({
-                  ...todo,
-                  kind: 'todo' as const,
-                  sortKey: todo.isAllDay ? Number.NEGATIVE_INFINITY : toTimestamp(todo.dueAt),
-                })),
-              ].sort((a, b) => a.sortKey - b.sortKey);
-
-              return planItems.length === 0 ? (
-                <StatusRow>오늘 예정된 계획이 없어요.</StatusRow>
-              ) : (
-                planItems.slice(0, 5).map((item) => (
-                  <PlanItemRow
-                    key={item.kind === 'schedule' ? `s-${item.scheduleId}` : `t-${item.id}`}
-                    item={item}
-                    onClick={() => navigate('/calendar')}
-                  />
-                ))
-              );
-            })()}
-          </div>
-        </section>
-
-        <section>
-          <SectionHeader
-            title="이번 주"
-            action="전체 기록"
-            onAction={() => navigate('/report')}
-          />
-          <div>
-            {weeklyStatsLoading ? (
-              <StatusRow>주간 요약을 불러오고 있어요.</StatusRow>
-            ) : weeklyStatsLoadError ? (
-              <div className="flex min-h-[56px] items-center justify-between gap-3" role="alert">
-                <span className="text-xs text-red-700">{weeklyStatsLoadError}</span>
-                <button
-                  type="button"
-                  onClick={() => void loadWeeklyStats()}
-                  className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
-                >
-                  다시 시도
-                </button>
-              </div>
-            ) : weeklyStats ? (
-              <div className="grid grid-cols-3 gap-3">
-                <StatItem
-                  label="복약률"
-                  value={`${Math.round(weeklyStats.adherenceRate)}%`}
-                  detail={`${weeklyStats.takenCount}/${weeklyStats.totalScheduled}회`}
-                  progress={weeklyStats.adherenceRate}
-                  tone="strong"
-                />
-                <StatItem
-                  label="기록률"
-                  value={`${Math.round(((weeklyJournalStats?.recordedDays ?? 0) / 7) * 100)}%`}
-                  detail={`${weeklyJournalStats?.recordedDays ?? 0}/7일`}
-                  progress={((weeklyJournalStats?.recordedDays ?? 0) / 7) * 100}
-                  tone="medium"
-                />
-                <StatItem
-                  label="목표 달성률"
-                  value={
-                    weeklyJournalStats?.goalAchievementRate == null
-                      ? '–'
-                      : `${weeklyJournalStats.goalAchievementRate}%`
-                  }
-                  detail={
-                    weeklyJournalStats?.goalAchievementRate == null ? '기록 없음' : '목표 점수'
-                  }
-                  progress={weeklyJournalStats?.goalAchievementRate ?? 0}
-                  tone="soft"
-                />
-              </div>
-            ) : (
-              <StatusRow>표시할 주간 통계가 없어요.</StatusRow>
             )}
-          </div>
-        </section>
+          </button>
 
-        <section className="py-1">
-          <div className="flex justify-around">
-            <ShortcutCircle
-              icon={<BookOpen className="h-5 w-5" strokeWidth={1.8} />}
-              label="자가체크 이력"
-              onClick={() => navigate('/onboarding/history')}
-            />
-            <ShortcutCircle
-              icon={<BarChart2 className="h-5 w-5" strokeWidth={1.8} />}
-              label="리포트 이력"
-              onClick={() => navigate('/report/monthly')}
-            />
-            <ShortcutCircle
-              icon={<ClipboardList className="h-5 w-5" strokeWidth={1.8} />}
-              label="상담 기록"
+          <HomeMedicationSection />
+
+          {upcomingConsultation !== null && upcomingConsultationDday !== null ? (
+            <button
+              type="button"
               onClick={() => navigate('/counseling')}
+              className="w-full overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white p-4 text-left shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] transition-transform active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900">다음 상담</p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    {formatConsultationDate(upcomingConsultation.consultationDate)}
+                    {upcomingConsultation.place ? ` · ${upcomingConsultation.place}` : ''}
+                  </p>
+                  {upcomingConsultation.doctorName ? (
+                    <p className="mt-0.5 text-xs text-gray-500">{upcomingConsultation.doctorName}</p>
+                  ) : null}
+                </div>
+                <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                  upcomingConsultationDday === 0
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-purple-100 text-purple-700'
+                }`}>
+                  {upcomingConsultationDday === 0 ? 'D-day' : `D-${upcomingConsultationDday}`}
+                </span>
+              </div>
+            </button>
+          ) : null}
+
+          <section>
+            <SectionHeader
+              title="오늘 계획"
+              action="캘린더 보기"
+              onAction={() => navigate('/calendar')}
             />
-            {consultationDday !== null ? (
+            <div className="border-y border-gray-200">
+              {schedulesLoading || todosLoading ? (
+                <StatusRow>계획을 불러오고 있어요.</StatusRow>
+              ) : schedulesLoadError || todosLoadError ? (
+                <div className="flex min-h-[56px] flex-col justify-center gap-1 px-4" role="alert">
+                  {schedulesLoadError ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-red-700">{schedulesLoadError}</span>
+                      <button
+                        type="button"
+                        onClick={() => void loadSchedules()}
+                        className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  ) : null}
+                  {todosLoadError ? (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-red-700">{todosLoadError}</span>
+                      <button
+                        type="button"
+                        onClick={() => void loadTodos()}
+                        className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (() => {
+                const planItems: PlanItem[] = [
+                  ...scheduleItems.map((item) => ({
+                    ...item,
+                    kind: 'schedule' as const,
+                    sortKey: item.isAllDay ? Number.NEGATIVE_INFINITY : toTimestamp(item.startTime),
+                  })),
+                  ...todos.map((todo) => ({
+                    ...todo,
+                    kind: 'todo' as const,
+                    sortKey: todo.isAllDay ? Number.NEGATIVE_INFINITY : toTimestamp(todo.dueAt),
+                  })),
+                ].sort((a, b) => a.sortKey - b.sortKey);
+
+                return planItems.length === 0 ? (
+                  <StatusRow>오늘 예정된 계획이 없어요.</StatusRow>
+                ) : (
+                  planItems.slice(0, 5).map((item) => (
+                    <PlanItemRow
+                      key={item.kind === 'schedule' ? `s-${item.scheduleId}` : `t-${item.id}`}
+                      item={item}
+                      onClick={() => navigate('/calendar')}
+                    />
+                  ))
+                );
+              })()}
+            </div>
+          </section>
+
+          <section>
+            <SectionHeader
+              title="이번 주"
+              action="전체 기록"
+              onAction={() => navigate('/report')}
+            />
+            <div>
+              {weeklyStatsLoading ? (
+                <StatusRow>주간 요약을 불러오고 있어요.</StatusRow>
+              ) : weeklyStatsLoadError ? (
+                <div className="flex min-h-[56px] items-center justify-between gap-3" role="alert">
+                  <span className="text-xs text-red-700">{weeklyStatsLoadError}</span>
+                  <button
+                    type="button"
+                    onClick={() => void loadWeeklyStats()}
+                    className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              ) : weeklyStats ? (
+                <div className="grid grid-cols-3 gap-3">
+                  <StatItem
+                    label="복약률"
+                    value={`${Math.round(weeklyStats.adherenceRate)}%`}
+                    detail={`${weeklyStats.takenCount}/${weeklyStats.totalScheduled}회`}
+                    progress={weeklyStats.adherenceRate}
+                    tone="strong"
+                  />
+                  <StatItem
+                    label="기록률"
+                    value={`${Math.round(((weeklyJournalStats?.recordedDays ?? 0) / 7) * 100)}%`}
+                    detail={`${weeklyJournalStats?.recordedDays ?? 0}/7일`}
+                    progress={((weeklyJournalStats?.recordedDays ?? 0) / 7) * 100}
+                    tone="medium"
+                  />
+                  <StatItem
+                    label="목표 달성률"
+                    value={
+                      weeklyJournalStats?.goalAchievementRate == null
+                        ? '–'
+                        : `${weeklyJournalStats.goalAchievementRate}%`
+                    }
+                    detail={
+                      weeklyJournalStats?.goalAchievementRate == null ? '기록 없음' : '목표 점수'
+                    }
+                    progress={weeklyJournalStats?.goalAchievementRate ?? 0}
+                    tone="soft"
+                  />
+                </div>
+              ) : (
+                <StatusRow>표시할 주간 통계가 없어요.</StatusRow>
+              )}
+            </div>
+          </section>
+
+          <section className="py-1">
+            <div className="flex justify-around">
               <ShortcutCircle
-                icon={<CalendarCheck className="h-5 w-5" strokeWidth={1.8} />}
-                label="상담 준비"
-                badge={
-                  consultationDday === 0
-                    ? 'D-day'
-                    : `D-${consultationDday}`
-                }
-                onClick={() => navigate('/counseling/prepare')}
+                icon={<BookOpen className="h-5 w-5" strokeWidth={1.8} />}
+                label="자가체크 이력"
+                onClick={() => navigate('/onboarding/history')}
               />
-            ) : null}
-          </div>
-        </section>
-      </ScrollArea>
+              <ShortcutCircle
+                icon={<BarChart2 className="h-5 w-5" strokeWidth={1.8} />}
+                label="리포트 이력"
+                onClick={() => navigate('/report/monthly')}
+              />
+              <ShortcutCircle
+                icon={<ClipboardList className="h-5 w-5" strokeWidth={1.8} />}
+                label="상담 기록"
+                onClick={() => navigate('/counseling')}
+              />
+              {consultationDday !== null ? (
+                <ShortcutCircle
+                  icon={<CalendarCheck className="h-5 w-5" strokeWidth={1.8} />}
+                  label="상담 준비"
+                  badge={
+                    consultationDday === 0
+                      ? 'D-day'
+                      : `D-${consultationDday}`
+                  }
+                  onClick={() => navigate('/counseling/prepare')}
+                />
+              ) : null}
+            </div>
+          </section>
+        </ScrollArea>
 
         <TabBar active="홈" />
       </div>
