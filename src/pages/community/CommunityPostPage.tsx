@@ -11,6 +11,8 @@ import {
 
 function formatRelativeTime(isoString: string): string {
   const parsed = parseServerDateTime(isoString);
+  if (Number.isNaN(parsed.getTime())) return isoString || '-';
+
   const diff = Date.now() - parsed.getTime();
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return '방금';

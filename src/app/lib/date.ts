@@ -94,12 +94,17 @@ export function toTimeInputValue(date: Date): string {
  *    Date로 변환하지 않고 시/분 문자열로 다뤄야 한다.
  */
 export function parseServerDateTime(value: string): Date {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    const [yearText, monthText, dayText] = value.split('-');
+  if (typeof value !== 'string' || !value.trim()) {
+    return new Date(NaN);
+  }
+
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [yearText, monthText, dayText] = trimmed.split('-');
     return new Date(Number(yearText), Number(monthText) - 1, Number(dayText));
   }
 
-  return new Date(value);
+  return new Date(trimmed);
 }
 
 export function parseDateValue(value: string): Date {
