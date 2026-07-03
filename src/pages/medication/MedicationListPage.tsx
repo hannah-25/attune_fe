@@ -16,6 +16,7 @@ import { TabBar } from '@/components/TabBar';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { isEndAtPassed, parseDateValue } from '@/lib/date';
+import { parseMedicationTime, resolveMedicationLogScheduleId } from '@/lib/medication';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 const CARD_BACKGROUNDS = ['bg-purple-300', 'bg-purple-500', 'bg-purple-400', 'bg-purple-600'];
@@ -517,9 +518,9 @@ function buildScheduleKeysFromLogs(medications: MedicationCard[], logs: Medicati
     const medication = medications.find((item) => item.userMedicationId === log.userMedicationId);
     if (!medication) return;
 
-    const matchedSchedule = findClosestSchedule(medication.schedules, log.intakeTime);
-    if (matchedSchedule) {
-      scheduleKeys.add(buildDoseKey(log.userMedicationId, matchedSchedule.scheduleId));
+    const scheduleId = resolveMedicationLogScheduleId(log, medication.schedules);
+    if (scheduleId !== null) {
+      scheduleKeys.add(buildDoseKey(log.userMedicationId, scheduleId));
     }
   });
 
@@ -575,34 +576,12 @@ function findNextDose(medications: MedicationCard[], takenScheduleKeys: Set<stri
   return candidate;
 }
 
-function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string): MedicationScheduleSummary | null {
-  const date = new Date(intakeTime);
-  if (Number.isNaN(date.getTime())) return null;
-  const intakeMinutes = date.getHours() * 60 + date.getMinutes();
-
-  let closest: MedicationScheduleSummary | null = null;
-  let minDiff = Infinity;
-
-  schedules.forEach((schedule) => {
-    const scheduleMinutes = toMinutes(schedule.doseTime);
-    if (scheduleMinutes === null) return;
-
-    const diff = Math.abs(intakeMinutes - scheduleMinutes);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closest = schedule;
-    }
-  });
-
-  return minDiff <= 240 ? closest : null;
-}
-
 function buildDoseKey(userMedicationId: number, scheduleId: number) {
   return `${userMedicationId}-${scheduleId}`;
 }
 
 function getNextOccurrence(doseTime: string, baseDate: Date) {
-  const time = parseTime(doseTime);
+  const time = parseMedicationTime(doseTime);
   if (!time) return null;
 
   const dueAt = new Date(baseDate);
@@ -615,26 +594,8 @@ function getNextOccurrence(doseTime: string, baseDate: Date) {
   return dueAt;
 }
 
-function parseTime(value?: string) {
-  if (typeof value !== 'string') return null;
-  const match = value.match(/(\d{1,2}):(\d{2})/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return { hours, minutes };
-}
-
-function toMinutes(value: string) {
-  const parsed = parseTime(value);
-  return parsed ? parsed.hours * 60 + parsed.minutes : null;
-}
-
 function toTimeLabel(value: string) {
-  const parsed = parseTime(value);
+  const parsed = parseMedicationTime(value);
   if (!parsed) return '';
   return `${String(parsed.hours).padStart(2, '0')}:${String(parsed.minutes).padStart(2, '0')}`;
 }

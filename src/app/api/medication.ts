@@ -86,6 +86,9 @@ export type MedicationProfileLog = {
 
 export type MedicationPeriodLog = {
   userMedicationId: number;
+  // 로그가 어떤 복용 스케줄에 대한 기록인지. medication.schedules[].scheduleId 와
+  // 동일한 값이다. 구버전 응답에는 없을 수 있어 optional.
+  scheduleId?: number;
   name: string;
   intakeTime: string;
   taken: boolean;

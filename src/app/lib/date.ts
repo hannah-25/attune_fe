@@ -81,16 +81,29 @@ export function toTimeInputValue(date: Date): string {
   return `${hours}:${minutes}`;
 }
 
-export function parseDateValue(value: string): Date {
+/**
+ * 서버 응답의 date/datetime 문자열을 Date로 파싱한다.
+ *
+ * 시간 처리 가이드 기준(응답 datetime = Instant / UTC 'Z' 표기):
+ * - datetime(Z 또는 offset 포함, 예: '2026-07-01T05:00:00Z'): `new Date`로 그대로
+ *   파싱하면 기기 로컬 시간으로 표시된다. 수동 +09:00 부착이나 "KST로 간주"는 불필요.
+ * - 'yyyy-MM-dd' (date): 달력 날짜 → 로컬 자정. `new Date('yyyy-MM-dd')`가 UTC 자정으로
+ *   파싱해 UTC 이전 지역에서 하루 밀리는 것을 방지하려고 로컬 자정으로 만든다.
+ *
+ * ⚠️ 벽시계 값(doseTime 'HH:mm:ss')에는 쓰지 말 것 — 매일 그 시각을 의미하므로
+ *    Date로 변환하지 않고 시/분 문자열로 다뤄야 한다.
+ */
+export function parseServerDateTime(value: string): Date {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     const [yearText, monthText, dayText] = value.split('-');
-    const year = Number(yearText);
-    const month = Number(monthText);
-    const day = Number(dayText);
-    return new Date(year, month - 1, day);
+    return new Date(Number(yearText), Number(monthText) - 1, Number(dayText));
   }
 
   return new Date(value);
+}
+
+export function parseDateValue(value: string): Date {
+  return parseServerDateTime(value);
 }
 
 export function isEndAtPassed(endAt?: string | null): boolean {

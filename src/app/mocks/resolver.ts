@@ -223,6 +223,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
       todoNotification: true,
       takeMedicationOnHoliday: false,
       theme: 'SYSTEM',
+      timezone: 'Asia/Seoul',
     });
   }
   if (p === '/v1/users/settings' && m === 'PATCH') return ok({ ...(body as object) });
@@ -804,6 +805,7 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
         if (!medication) return [];
         return [{
           userMedicationId: log.userMedicationId,
+          scheduleId: log.scheduleId,
           name: medication.medicationName,
           intakeTime: log.takenAt,
           taken: log.status === 'TAKEN',

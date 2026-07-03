@@ -5,6 +5,7 @@ import { NavBackButton } from '@/components/NavButtons';
 import { TabBar } from '@/components/TabBar';
 import { getNotices } from '@/api/notice';
 import { MockNotice, mockNotices } from '@/mocks/community.mock';
+import { parseServerDateTime } from '@/lib/date';
 
 export default function CommunityNoticePage() {
   const forceMockNotice = import.meta.env.VITE_USE_NOTICE_MOCK === 'true';
@@ -104,7 +105,7 @@ export default function CommunityNoticePage() {
 }
 
 function formatNoticeDate(createdAt: string) {
-  const date = new Date(createdAt);
+  const date = parseServerDateTime(createdAt);
   if (Number.isNaN(date.getTime())) return createdAt;
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }

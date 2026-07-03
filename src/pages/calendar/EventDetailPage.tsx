@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { deleteSchedule, getSchedule, getScheduleCategories, ScheduleCategory, ScheduleDetail } from '@/api/schedule';
+import { parseServerDateTime } from '@/lib/date';
 import type { CalendarEvent } from '@/api/calendarEvents';
 
 export default function EventDetailPage() {
@@ -225,13 +226,13 @@ function formatWhen(eventDetail: ScheduleDetail) {
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(0, 10);
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
 function formatTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16);
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

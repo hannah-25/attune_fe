@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
 import { TopBar } from '@/components/TopBar';
 import { getConsultations } from '@/api/consultation';
+import { parseServerDateTime } from '@/lib/date';
 
 type ConsultationListItem = {
   consultationId?: number;
@@ -30,14 +31,15 @@ export default function CounselingListPage() {
   const [error, setError] = useState('');
   const [pastExpanded, setPastExpanded] = useState(true);
   const [retryKey, setRetryKey] = useState(0);
-  const now = new Date();
+  const now = useMemo(() => new Date(), [consultations]);
 
   useEffect(() => {
     let ignore = false;
+    const current = new Date();
     setLoading(true);
     setError('');
-    const start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-    const end = new Date(now.getFullYear(), now.getMonth() + 6, now.getDate());
+    const start = new Date(current.getFullYear(), current.getMonth() - 6, current.getDate());
+    const end = new Date(current.getFullYear(), current.getMonth() + 6, current.getDate());
 
     getConsultations({ startDate: toDateKey(start), endDate: toDateKey(end) })
       .then((response) => {
@@ -60,12 +62,12 @@ export default function CounselingListPage() {
   }, [retryKey]);
 
   const nextConsultation = useMemo(
-    () => consultations.filter((item) => new Date(item.consultationDate) >= now).sort((a, b) => a.consultationDate.localeCompare(b.consultationDate))[0],
-    [consultations],
+    () => consultations.filter((item) => parseServerDateTime(item.consultationDate) >= now).sort((a, b) => a.consultationDate.localeCompare(b.consultationDate))[0],
+    [consultations, now],
   );
   const pastConsultations = useMemo(
-    () => consultations.filter((item) => new Date(item.consultationDate) < now).sort((a, b) => b.consultationDate.localeCompare(a.consultationDate)),
-    [consultations],
+    () => consultations.filter((item) => parseServerDateTime(item.consultationDate) < now).sort((a, b) => b.consultationDate.localeCompare(a.consultationDate)),
+    [consultations, now],
   );
 
   const pageShell = (content: React.ReactNode) => (
@@ -235,7 +237,7 @@ function extractConsultations(response: unknown): ConsultationListItem[] {
 }
 
 function getDDay(value: string) {
-  const target = new Date(value);
+  const target = parseServerDateTime(value);
   const today = new Date();
   const targetDate = new Date(target.getFullYear(), target.getMonth(), target.getDate());
   const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -243,7 +245,7 @@ function getDDay(value: string) {
 }
 
 function formatConsultationDate(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value;
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   return `${date.getMonth() + 1}월 ${date.getDate()}일 ${weekdays[date.getDay()]} · ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;

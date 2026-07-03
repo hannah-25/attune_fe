@@ -6,7 +6,7 @@ import { getOnboardingHistoryDetail, OnboardingHistoryDetail } from '@/api/onboa
 import { NavBackButton } from '@/components/NavButtons';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TopBar } from '@/components/TopBar';
-import { formatLongDate } from '@/lib/date';
+import { formatLongDate, parseServerDateTime } from '@/lib/date';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 const TYPE_LABELS: Record<string, string> = {
@@ -24,7 +24,7 @@ export default function OnboardingHistoryDetailPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const showLoading = useDelayedLoading(isLoading);
-  const parsedDoneAt = detail?.doneAt ? new Date(detail.doneAt) : null;
+  const parsedDoneAt = detail?.doneAt ? parseServerDateTime(detail.doneAt) : null;
   const title = parsedDoneAt && !isNaN(parsedDoneAt.getTime())
     ? formatLongDate(parsedDoneAt)
     : '자가 체크 상세';

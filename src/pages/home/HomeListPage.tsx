@@ -23,6 +23,7 @@ import { getJournal, getJournals, type JournalDetail } from '@/api/journal';
 import { getConsultations, type ConsultationDetail } from '@/api/consultation';
 import { getMyProfile } from '@/api/user';
 import HomeMedicationSection from './HomeMedicationSection';
+import { parseServerDateTime } from '@/lib/date';
 
 type HomeTodo = {
   id: number;
@@ -159,7 +160,7 @@ export default function HomeListPage() {
       const next =
         [...result].sort(
           (a, b) =>
-            new Date(a.consultationDate).getTime() - new Date(b.consultationDate).getTime(),
+            parseServerDateTime(a.consultationDate).getTime() - parseServerDateTime(b.consultationDate).getTime(),
         )[0] ?? null;
       setUpcomingConsultation(next);
     } catch {
@@ -711,13 +712,13 @@ function toDateKey(date: Date) {
 }
 
 function toTimestamp(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return Number.POSITIVE_INFINITY;
   return date.getTime();
 }
 
 function formatTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16) || '--:--';
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

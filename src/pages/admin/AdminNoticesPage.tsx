@@ -9,6 +9,7 @@ import {
 } from '../../app/api/admin';
 import { getNotice, getNotices, type NoticeListItem } from '../../app/api/notice';
 import { ApiError } from '../../app/api/client';
+import { parseServerDateTime } from '../../app/lib/date';
 import AdminPageHeader from './AdminPageHeader';
 import AdminSectionNav from './AdminSectionNav';
 
@@ -404,7 +405,7 @@ function ActionButton({
 }
 
 function formatDateTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 }
