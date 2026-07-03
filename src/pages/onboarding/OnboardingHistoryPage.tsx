@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ScrollArea';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getOnboardingHistory, OnboardingHistoryRecord } from '@/api/onboarding';
-import { formatLongDate } from '@/lib/date';
+import { formatLongDate, parseServerDateTime } from '@/lib/date';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 export default function OnboardingHistoryPage() {
@@ -35,7 +35,7 @@ export default function OnboardingHistoryPage() {
   }, []);
 
   const latestRecord = records[0];
-  const nextCheckDate = latestRecord ? addMonths(new Date(latestRecord.doneAt), 3) : null;
+  const nextCheckDate = latestRecord ? addMonths(parseServerDateTime(latestRecord.doneAt), 3) : null;
 
   return (
     <div className="w-full h-full bg-gray-50 text-sm flex flex-col" style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
@@ -94,7 +94,7 @@ export default function OnboardingHistoryPage() {
                     <div className="grow min-w-0">
                       <div className="font-semibold text-xs text-gray-800">
                         {(() => {
-                          const date = new Date(record.doneAt);
+                          const date = parseServerDateTime(record.doneAt);
                           return !isNaN(date.getTime()) ? formatLongDate(date) : '-';
                         })()}
                       </div>

@@ -13,7 +13,7 @@ import {
   type MedicationDosageOption,
   type MedicationSearchResult,
 } from '@/api/medication';
-import { isEndAtPassed } from '@/lib/date';
+import { isEndAtPassed, parseServerDateTime } from '@/lib/date';
 
 type ConsultationDetail = {
   consultationDate: string;
@@ -445,10 +445,10 @@ export default function CounselingResultPage() {
             <div className="flex items-center gap-4">
               <div className="shrink-0 text-center">
                 <div className="text-xs text-purple-700 font-semibold">
-                  {consultation ? new Date(consultation.consultationDate).getMonth() + 1 : '-'}월
+                  {consultation ? parseServerDateTime(consultation.consultationDate).getMonth() + 1 : '-'}월
                 </div>
                 <div className="font-extrabold text-3xl leading-none text-gray-700 mt-0.5" style={{ fontFamily: 'NanumSquare, system-ui' }}>
-                  {consultation ? new Date(consultation.consultationDate).getDate() : '-'}
+                  {consultation ? parseServerDateTime(consultation.consultationDate).getDate() : '-'}
                 </div>
               </div>
               <div className="w-px self-stretch bg-purple-200" />

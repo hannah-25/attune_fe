@@ -6,6 +6,7 @@ import GuestBanner from './components/GuestBanner';
 import { ApiError, getAccessToken } from './api/client';
 import { isGuestMode } from './guest';
 import { getMyProfile } from './api/user';
+import { syncUserTimezone } from './lib/timezone';
 import { SyncService } from './offline/SyncService';
 import { preloadOfflineAssets } from './offline/preloadAssets';
 
@@ -106,6 +107,9 @@ function AppLoadingScreen() {
 function ProtectedRoute() {
   useEffect(() => {
     if (isGuestMode() || !getAccessToken() || !navigator.onLine) return;
+
+    // 앱 실행/로그인 후 인증 상태로 보호 라우트 진입 시 timezone을 서버와 동기화한다.
+    void syncUserTimezone();
 
     SyncService.initialize().catch(err => {
       if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);

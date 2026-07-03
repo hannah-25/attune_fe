@@ -3,6 +3,7 @@ import { BarChart3, ChevronRight, Info } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
+import { parseServerDateTime } from '@/lib/date';
 import {
   getAvailability,
   getSummary,
@@ -41,7 +42,7 @@ function formatPeriodLabel(start: string, end: string) {
 }
 
 function formatReportDate(dateStr: string) {
-  const d = new Date(dateStr);
+  const d = parseServerDateTime(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }

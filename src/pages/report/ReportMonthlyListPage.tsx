@@ -6,6 +6,7 @@ import { TabBar } from '@/components/TabBar';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getReports, type MedicationReport } from '@/api/medicationAnalysis';
+import { parseServerDateTime } from '@/lib/date';
 
 const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
 
@@ -17,7 +18,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function formatDate(dateStr: string) {
-  const d = new Date(dateStr);
+  const d = parseServerDateTime(dateStr);
   if (Number.isNaN(d.getTime())) return dateStr;
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }

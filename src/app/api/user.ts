@@ -19,6 +19,8 @@ export type UserSettings = {
   todoNotification: boolean;
   takeMedicationOnHoliday: boolean;
   theme: 'DARK' | 'LIGHT' | 'SYSTEM';
+  // IANA timezone (예: 'Asia/Seoul'). 서버가 값을 아직 안 내려줄 수 있어 optional.
+  timezone?: string;
 };
 
 export type UpdateUserSettingsRequest = Partial<UserSettings>;

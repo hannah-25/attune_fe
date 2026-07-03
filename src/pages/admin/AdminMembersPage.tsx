@@ -29,6 +29,7 @@ import {
   type AdminMemberSummary,
 } from '../../app/api/admin';
 import { ApiError } from '../../app/api/client';
+import { parseServerDateTime } from '../../app/lib/date';
 import AdminPageHeader from './AdminPageHeader';
 import AdminSectionNav from './AdminSectionNav';
 
@@ -873,7 +874,7 @@ function MemberActionDialog({
 
 function formatDate(value: string | null) {
   if (!value) return '—';
-  const d = new Date(value);
+  const d = parseServerDateTime(value);
   if (isNaN(d.getTime())) return '—';
   return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
 }
@@ -884,7 +885,7 @@ function formatProvider(provider: AdminMemberProvider | null) {
 
 function formatDateTime(value: string | null) {
   if (!value) return '—';
-  const d = new Date(value);
+  const d = parseServerDateTime(value);
   if (isNaN(d.getTime())) return '—';
   return new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric',
@@ -897,7 +898,7 @@ function formatDateTime(value: string | null) {
 }
 
 function formatRelative(value: string) {
-  const d = new Date(value);
+  const d = parseServerDateTime(value);
   if (isNaN(d.getTime())) return '—';
   const diff = Date.now() - d.getTime();
   const hours = Math.floor(diff / (1000 * 60 * 60));

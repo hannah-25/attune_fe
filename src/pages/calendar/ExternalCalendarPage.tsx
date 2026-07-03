@@ -3,6 +3,7 @@ import { Check, Link2, RefreshCw, Unplug } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
+import { parseServerDateTime } from '@/lib/date';
 import {
   CalendarConnection,
   connectGoogleCalendar,
@@ -242,7 +243,7 @@ export default function ExternalCalendarPage() {
 function formatLastSynced(value: string | null) {
   if (!value) return '아직 동기화 전';
 
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value;
 
   return `${date.getMonth() + 1}월 ${date.getDate()}일 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;

@@ -5,6 +5,7 @@ import { TabBar } from '@/components/TabBar';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getAllMedicationLogs, type MedicationPeriodLog } from '@/api/medication';
+import { parseServerDateTime } from '@/lib/date';
 
 type HistoryPeriod = '1주' | '1개월' | '3개월' | '직접';
 const PERIODS: HistoryPeriod[] = ['1주', '1개월', '3개월', '직접'];
@@ -220,13 +221,13 @@ function groupLogs(logs: MedicationPeriodLog[]) {
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(0, 10);
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
 function formatTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16);
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

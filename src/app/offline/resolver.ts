@@ -2,6 +2,7 @@ import { db } from './db';
 import { SyncService } from './SyncService';
 import { cleanPath, searchParams, toLocalDateString, toLocalDateStringFromTimestamp, nextLocalDateString } from './pathUtils';
 import type { ApiRequestOptions } from '../api/client';
+import { getBrowserTimezone } from '../lib/timezone';
 import type {
   JournalActiveTags,
   JournalChecked,
@@ -147,10 +148,12 @@ async function addOfflineMedicationLog(userMedicationId: number, body: unknown) 
   const now = new Date().toISOString();
   const date = toLocalDateStringFromTimestamp(now) ?? toLocalDateString(new Date());
   const action = isRecord(body) && typeof body.action === 'string' ? body.action : undefined;
+  const scheduleId = isRecord(body) && typeof body.scheduleId === 'number' ? body.scheduleId : undefined;
   const logId = createLocalLogId();
   const log: MedicationPeriodLog & { logId: number } = {
     logId,
     userMedicationId,
+    scheduleId,
     name: '',
     intakeTime: now,
     taken: action === 'TAKEN',
@@ -407,6 +410,7 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
       todoNotification: false,
       takeMedicationOnHoliday: false,
       theme: 'SYSTEM',
+      timezone: getBrowserTimezone() ?? 'Asia/Seoul',
     } as T;
   }
 

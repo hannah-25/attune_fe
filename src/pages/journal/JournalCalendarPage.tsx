@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TabBar } from '@/components/TabBar';
-import { formatMonthDay } from '@/lib/date';
+import { formatMonthDay, parseServerDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getJournalDates } from '@/api/journal';
@@ -128,7 +128,7 @@ export default function JournalCalendarPage() {
           <div className="font-bold mb-2 text-gray-900">최근 기록</div>
           {error ? <div className="text-red-500 text-xs mb-2">{error}</div> : null}
           {recentDates.map((dateKey) => {
-            const d = new Date(dateKey);
+            const d = parseServerDateTime(dateKey);
             const records: DotColor[] = ['purple'];
             return (
               <div key={dateKey} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-2xl">

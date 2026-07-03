@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Plus, Trash2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router';
-import { formatUpcomingDateTime } from '@/lib/date';
+import { formatUpcomingDateTime, parseServerDateTime } from '@/lib/date';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import {
@@ -100,7 +100,7 @@ export default function CounselingPreparePage() {
     );
   };
 
-  const appointmentDate = consultationDate ? new Date(consultationDate) : null;
+  const appointmentDate = consultationDate ? parseServerDateTime(consultationDate) : null;
 
   return (
     <div

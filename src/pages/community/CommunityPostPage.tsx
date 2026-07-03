@@ -3,13 +3,17 @@ import { Bookmark, Eye, Flag, Heart, MessageCircle, MoreHorizontal, Pencil, Send
 import { useNavigate, useParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
+import { parseServerDateTime } from '@/lib/date';
 import {
   getPost, getComments, createComment, deletePost,
   POST_CATEGORY_LABEL, PostResponse, CommentResponse,
 } from '@/api/community';
 
 function formatRelativeTime(isoString: string): string {
-  const diff = Date.now() - new Date(isoString).getTime();
+  const parsed = parseServerDateTime(isoString);
+  if (Number.isNaN(parsed.getTime())) return isoString || '-';
+
+  const diff = Date.now() - parsed.getTime();
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return '방금';
   if (minutes < 60) return `${minutes}분 전`;
@@ -17,7 +21,7 @@ function formatRelativeTime(isoString: string): string {
   if (hours < 24) return `${hours}시간 전`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}일 전`;
-  return new Date(isoString).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
+  return parsed.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' });
 }
 
 const AVATAR_COLORS = [

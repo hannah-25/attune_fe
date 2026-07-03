@@ -5,6 +5,7 @@ import { TabBar } from '@/components/TabBar';
 import { getScheduleCategories, ScheduleCategory } from '@/api/schedule';
 import { getTodosByDate, TodoItem, updateTodo } from '@/api/todo';
 import { CalendarEvent, getCalendarEvents } from '@/api/calendarEvents';
+import { parseServerDateTime } from '@/lib/date';
 import { getCalendarConnections, syncCalendarConnection } from '@/api/calendarConnection';
 
 type ViewMode = 'month' | 'week';
@@ -44,7 +45,7 @@ export default function CalendarMainPage() {
   }, [selectedDate, viewMode]);
 
   const visibleEvents = useMemo(
-    () => [...events].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()),
+    () => [...events].sort((a, b) => parseServerDateTime(a.startTime).getTime() - parseServerDateTime(b.startTime).getTime()),
     [events],
   );
 
@@ -535,7 +536,7 @@ function toDateKey(date: Date) {
 function toDateKeyFromDateTime(value: string) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
-  const parsed = new Date(value);
+  const parsed = parseServerDateTime(value);
   if (Number.isNaN(parsed.getTime())) return value.slice(0, 10);
   return toDateKey(parsed);
 }
@@ -566,7 +567,7 @@ function formatScheduleTime(event: CalendarEvent) {
 }
 
 function formatTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16);
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

@@ -11,6 +11,7 @@ import {
   type MedicationSummary,
 } from '@/api/medication';
 import { isEndAtPassed } from '@/lib/date';
+import { parseMedicationTime, resolveMedicationLogScheduleId } from '@/lib/medication';
 import { useDelayedLoading } from '@/lib/useDelayedLoading';
 
 type ActiveMedication = {
@@ -65,10 +66,10 @@ export default function HomeMedicationSection({ className }: { className?: strin
         logsResponse.logs.forEach((log) => {
           const medication = activeMedications.find((m) => m.userMedicationId === log.userMedicationId);
           if (!medication) return;
-          const matched = findClosestSchedule(medication.schedules, log.intakeTime);
-          if (matched) {
+          const scheduleId = resolveMedicationLogScheduleId(log, medication.schedules);
+          if (scheduleId !== null) {
             scheduleStatuses.set(
-              buildDoseKey(log.userMedicationId, matched.scheduleId),
+              buildDoseKey(log.userMedicationId, scheduleId),
               log.taken ? 'TAKEN' : 'SKIPPED',
             );
           }
@@ -300,58 +301,8 @@ function normalizeMedication(medication: MedicationSummary): ActiveMedication | 
   };
 }
 
-function findClosestSchedule(schedules: MedicationScheduleSummary[], intakeTime: string) {
-  const intakeMinutes = toKstMinutes(intakeTime);
-  if (intakeMinutes === null) return null;
-  let closest: MedicationScheduleSummary | null = null;
-  let minDiff = Infinity;
-  for (const schedule of schedules) {
-    const m = toMinutes(schedule.doseTime);
-    if (m === null) continue;
-    const diff = Math.abs(intakeMinutes - m);
-    if (diff < minDiff) { minDiff = diff; closest = schedule; }
-  }
-  return minDiff <= 240 ? closest : null;
-}
-
-function toKstMinutes(value: string): number | null {
-  const dateTimeMatch = value.match(
-    /^\d{4}-\d{2}-\d{2}[T ](\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})?$/,
-  );
-  if (!dateTimeMatch) return toMinutes(value);
-
-  const timezone = dateTimeMatch[3];
-  if (!timezone) {
-    return toMinutes(`${dateTimeMatch[1]}:${dateTimeMatch[2]}`);
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  return kstDate.getUTCHours() * 60 + kstDate.getUTCMinutes();
-}
-
-function toMinutes(hhmm: string): number | null {
-  const parsed = parseTime(hhmm);
-  return parsed ? parsed.hours * 60 + parsed.minutes : null;
-}
-
-function parseTime(value?: string) {
-  if (typeof value !== 'string') return null;
-
-  const match = value.match(/(\d{1,2}):(\d{2})/);
-  if (!match) return null;
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
-
-  return { hours, minutes };
-}
-
 function toTimeLabel(value: string) {
-  const parsed = parseTime(value);
+  const parsed = parseMedicationTime(value);
   if (!parsed) return '--:--';
 
   return `${String(parsed.hours).padStart(2, '0')}:${String(parsed.minutes).padStart(2, '0')}`;
