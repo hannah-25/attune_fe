@@ -313,7 +313,7 @@ function getTreatmentDay(startedAt?: string | null): number | null {
   if (!start) return null;
   const today = new Date();
   const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const diffDays = Math.floor((localToday.getTime() - start.getTime()) / 86_400_000) + 1;
+  const diffDays = Math.round((localToday.getTime() - start.getTime()) / 86_400_000) + 1;
   return diffDays > 0 ? diffDays : null;
 }
 

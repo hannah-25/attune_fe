@@ -23,8 +23,16 @@ function windowToHour(window: string | null | undefined): number | null {
   // 문자열에 숫자(시)가 있으면 우선 사용 (예: "18시", "18:00").
   const digit = w.match(/(\d{1,2})\s*(?:시|:)/);
   if (digit) {
-    const h = Number(digit[1]);
-    if (h >= 0 && h <= 24) return h;
+    let h = Number(digit[1]);
+    if (h >= 0 && h <= 24) {
+      const isPm = w.includes('오후') || w.includes('pm') || w.includes('저녁') || w.includes('밤');
+      if (isPm && h < 12) {
+        h += 12;
+      } else if (!isPm && h === 12) {
+        h = 0;
+      }
+      return h;
+    }
   }
   if (w.includes('아침') || w.includes('오전') || w.includes('morning')) return 8;
   if (w.includes('점심') || w.includes('낮') || w.includes('noon') || w.includes('midday')) return 13;

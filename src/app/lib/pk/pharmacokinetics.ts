@@ -83,6 +83,9 @@ export function singleDoseConcentration(
 
 /** 샘플링 grid 스펙으로부터 균등 간격 시(hour) grid 생성. */
 export function buildHourGrid({ startHour, endHour, stepMinutes }: SamplingGrid): number[] {
+  if (stepMinutes <= 0) {
+    throw new Error('stepMinutes must be greater than 0');
+  }
   const step = stepMinutes / 60;
   const hours: number[] = [];
   for (let h = startHour; h <= endHour + 1e-9; h += step) {

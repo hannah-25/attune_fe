@@ -16,6 +16,7 @@ import {
 import { createDoseEvent, expandSchedule, activeDoseEvents } from './dose-events';
 import { buildConcentrationSeries } from './concentration-series';
 import { effectAccrualFraction, buildEffectAccrualSeries } from './effect-model';
+import { buildHourGrid } from './pharmacokinetics';
 import {
   classifyJournalTag,
   summarizePdObservations,
@@ -41,6 +42,11 @@ test('model runs without DOM and returns chart-ready points', () => {
     assert.equal(typeof p.raw, 'number');
     assert.equal(typeof p.percent, 'number');
   }
+});
+
+test('buildHourGrid rejects non-positive step minutes', () => {
+  assert.throws(() => buildHourGrid({ startHour: 0, endHour: 24, stepMinutes: 0 }));
+  assert.throws(() => buildHourGrid({ startHour: 0, endHour: 24, stepMinutes: -5 }));
 });
 
 test('18 mg single dose reproduces reference Cmax / Tmax / AUC', () => {

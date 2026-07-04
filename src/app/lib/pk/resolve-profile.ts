@@ -33,7 +33,7 @@ export function resolveProfile(drug: DrugIdentity): PkProfile | null {
   for (const [profileId, aliases] of Object.entries(PROFILE_ALIASES)) {
     const hit = aliases.some((alias) => {
       const a = normalize(alias);
-      return (name && name.includes(a)) || (ingredient && ingredient.includes(a));
+      return (name !== '' && name.includes(a)) || (ingredient !== '' && ingredient.includes(a));
     });
     if (hit) return profiles[profileId] ?? null;
   }
