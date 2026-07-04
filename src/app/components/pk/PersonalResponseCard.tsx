@@ -96,6 +96,7 @@ export default function PersonalResponseCard({ date }: { date: string }) {
 
   useEffect(() => {
     let cancelled = false;
+    setLoaded(false);
     Promise.all([
       getJournal(date).catch(() => null),
       getAllMedicationLogs({ startDate: date, endDate: date }).catch(() => ({ logs: [] as MedicationPeriodLog[] })),
@@ -116,6 +117,9 @@ export default function PersonalResponseCard({ date }: { date: string }) {
         }
         const chosen = sameDay ?? accumulation;
         if (!chosen) {
+          setProfile(null);
+          setDoseHours([]);
+          setChecks([]);
           setLoaded(true);
           return;
         }
@@ -157,7 +161,12 @@ export default function PersonalResponseCard({ date }: { date: string }) {
         setLoaded(true);
       })
       .catch(() => {
-        if (!cancelled) setLoaded(true);
+        if (!cancelled) {
+          setProfile(null);
+          setDoseHours([]);
+          setChecks([]);
+          setLoaded(true);
+        }
       });
     return () => {
       cancelled = true;

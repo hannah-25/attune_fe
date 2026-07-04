@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Info } from 'lucide-react';
 import {
   buildConcentrationSeries,
@@ -77,6 +77,11 @@ function SameDayCard({ profile, medication }: { profile: PkProfile; medication: 
   const [doseMg, setDoseMg] = useState<number>(profile.reference.calibrationDoseMg);
   const [showComponents, setShowComponents] = useState(false);
   const hasComponents = profile.releaseProfile === 'oros-dual' || profile.releaseProfile === 'er-capsule';
+
+  useEffect(() => {
+    setDoseMg(profile.reference.calibrationDoseMg);
+    setShowComponents(false);
+  }, [profile.id, profile.reference.calibrationDoseMg]);
 
   const { series, components, stats } = useMemo(
     () =>

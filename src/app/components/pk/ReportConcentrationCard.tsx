@@ -15,7 +15,7 @@ const SIDE_EFFECT_COLOR = 'rgb(248, 113, 113)';
 
 /**
  * 시간대(window) 문자열 → 대표 시각(hour). BE가 내려주는 자유 문자열을 유연하게 매핑.
- * TODO(judyjjj106): 실제 snapshot의 window enum 값을 확인해 매핑을 확정할 것.
+ * TODO(judyjjj106, 2026-07-05, BE peakWindow enum 미확정): 실제 snapshot의 window enum 값을 확인해 매핑을 확정할 것.
  */
 function windowToHour(window: string | null | undefined): number | null {
   if (!window) return null;
