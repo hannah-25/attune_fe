@@ -23,6 +23,7 @@ import {
   PD_SIGNAL,
   type PdObservation,
 } from './pd-calibration';
+import { getTreatmentDay } from './date-utils';
 
 const grid = { startHour: 0, endHour: 30, stepMinutes: 1 };
 
@@ -99,6 +100,39 @@ test('single-dose concentration keeps prior release when grid starts after dose'
     assert.ok(baseline, `missing baseline at ${point.hour}`);
     const baselineRaw = baseline.raw;
     assert.ok(Math.abs(point.raw - baselineRaw) < 1e-6, `mismatch at ${point.hour}: ${point.raw} vs ${baselineRaw}`);
+  }
+});
+
+test('getTreatmentDay normalizes ISO datetimes to the local calendar date', () => {
+  const originalDate = globalThis.Date;
+  const fixedNow = new originalDate(2026, 6, 5, 12, 0, 0);
+  const localLateYesterday = new originalDate(2026, 6, 4, 23, 30, 0).toISOString();
+
+  class FixedDate extends originalDate {
+    constructor();
+    constructor(value: string | number);
+    constructor(year: number, monthIndex: number, date?: number, hours?: number, minutes?: number, seconds?: number, ms?: number);
+    constructor(...args: [] | [string | number] | [number, number, number?, number?, number?, number?, number?]) {
+      if (args.length === 0) {
+        super(fixedNow.getTime());
+      } else if (args.length === 1) {
+        super(args[0]);
+      } else {
+        super(args[0], args[1], args[2] ?? 1, args[3] ?? 0, args[4] ?? 0, args[5] ?? 0, args[6] ?? 0);
+      }
+    }
+
+    static now() {
+      return fixedNow.getTime();
+    }
+  }
+
+  globalThis.Date = FixedDate as DateConstructor;
+  try {
+    assert.equal(getTreatmentDay(localLateYesterday), 2);
+    assert.equal(getTreatmentDay('2026-07-05'), 1);
+  } finally {
+    globalThis.Date = originalDate;
   }
 });
 
