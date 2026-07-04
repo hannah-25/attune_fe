@@ -82,6 +82,26 @@ test('IR + ER components sum to the total series', () => {
   }
 });
 
+test('single-dose concentration keeps prior release when grid starts after dose', () => {
+  const full = buildConcentrationSeries({
+    profile: concertaOros,
+    doseEvents: [createDoseEvent({ medicationId: concertaOros.id, amountMg: 18, takenAtHour: 0 })],
+    grid: { startHour: 0, endHour: 8, stepMinutes: 60 },
+  });
+  const late = buildConcentrationSeries({
+    profile: concertaOros,
+    doseEvents: [createDoseEvent({ medicationId: concertaOros.id, amountMg: 18, takenAtHour: 0 })],
+    grid: { startHour: 2, endHour: 8, stepMinutes: 60 },
+  });
+
+  for (const point of late.series) {
+    const baseline = full.series.find((p) => p.hour === point.hour);
+    assert.ok(baseline, `missing baseline at ${point.hour}`);
+    const baselineRaw = baseline.raw;
+    assert.ok(Math.abs(point.raw - baselineRaw) < 1e-6, `mismatch at ${point.hour}: ${point.raw} vs ${baselineRaw}`);
+  }
+});
+
 test('skipped doses do not contribute; schedule expands to concrete events', () => {
   const events = expandSchedule({
     medicationId: concertaOros.id,

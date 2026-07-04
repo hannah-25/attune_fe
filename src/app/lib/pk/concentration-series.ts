@@ -101,9 +101,36 @@ function singleDoseOnShiftedGrid(
   ke: number,
   scale: number,
 ): number[] {
-  const clamped = shiftedHours.map((h) => (h < 0 ? 0 : h));
-  const conc = singleDoseConcentration(clamped, releaseModel, ke, scale);
-  return shiftedHours.map((h, i) => (h < 0 ? 0 : conc[i]));
+  const positiveHours = shiftedHours.filter((h) => h >= 0);
+  if (positiveHours.length === 0) return shiftedHours.map(() => 0);
+
+  const step = inferStepHours(shiftedHours);
+  const maxHour = Math.max(...positiveHours);
+  const simulationHours = buildSimulationGrid(maxHour, step);
+  const conc = singleDoseConcentration(simulationHours, releaseModel, ke, scale);
+
+  return shiftedHours.map((h) => {
+    if (h < 0) return 0;
+    const index = Math.round(h / step);
+    return conc[Math.min(index, conc.length - 1)] ?? 0;
+  });
+}
+
+function inferStepHours(hours: number[]): number {
+  let step = Infinity;
+  for (let i = 1; i < hours.length; i += 1) {
+    const delta = hours[i] - hours[i - 1];
+    if (delta > 1e-9 && delta < step) step = delta;
+  }
+  return Number.isFinite(step) ? step : 1 / 60;
+}
+
+function buildSimulationGrid(maxHour: number, step: number): number[] {
+  const hours: number[] = [];
+  for (let h = 0; h <= maxHour + 1e-9; h += step) {
+    hours.push(Number(h.toFixed(6)));
+  }
+  return hours;
 }
 
 function addContribution(target: number[], contribution: number[]): void {
