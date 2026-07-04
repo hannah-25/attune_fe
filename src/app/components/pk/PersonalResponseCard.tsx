@@ -262,10 +262,8 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
   if (!loaded) return null;
   if (emptyState) return <ResponseEmptyCard state={emptyState} />;
   if (!built || !profile) return null;
-  // same-day는 저널 점 오버레이가 목적이라 점이 없으면 숨김.
-  // accumulation은 효과 누적 추이 자체가 본 내용이라 점이 없어도 표시.
-  const isAccumulation = profile.modelKind === 'accumulation';
-  if (!isAccumulation && markers.length === 0) return null;
+  // 복용 로그가 있으면 저널 점이 없어도 곡선을 표시한다.
+  // (same-day·accumulation 동일: 로그 없음 → 안내 카드, 로그 있음 → 그래프)
 
   const usedSignals = Array.from(new Set(checks.map((o) => o.signal)));
 
