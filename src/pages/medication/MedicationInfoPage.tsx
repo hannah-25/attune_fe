@@ -3,8 +3,14 @@ import { MoreHorizontal, Pill } from 'lucide-react';
 import { useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-import { getMedicationStandard, type MedicationStandard } from '@/api/medication';
+import {
+  getMedicationStandard,
+  getMedications,
+  type MedicationStandard,
+  type MedicationSummary,
+} from '@/api/medication';
 import MedicationConcentrationCard from '@/components/pk/MedicationConcentrationCard';
+import { resolveProfile } from '@/lib/pk';
 
 type MedicationInfo = MedicationStandard;
 
@@ -12,14 +18,20 @@ export default function MedicationInfoPage() {
   const [searchParams] = useSearchParams();
   const medicationId = Number(searchParams.get('id') ?? 1);
   const [medication, setMedication] = useState<MedicationInfo | null>(null);
+  const [userMedication, setUserMedication] = useState<MedicationSummary | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let ignore = false;
 
-    getMedicationStandard(medicationId)
-      .then((response) => {
-        if (!ignore) setMedication(response);
+    Promise.all([
+      getMedicationStandard(medicationId),
+      getMedications().catch(() => [] as MedicationSummary[]),
+    ])
+      .then(([standard, userMedications]) => {
+        if (ignore) return;
+        setMedication(standard);
+        setUserMedication(findUserMedication(userMedications, medicationId, standard));
       })
       .catch((err) => {
         console.error('Failed to load medication info:', err);
@@ -57,7 +69,7 @@ export default function MedicationInfoPage() {
               </div>
             </div>
           </div>
-          <MedicationConcentrationCard medication={medication} />
+          <MedicationConcentrationCard medication={medication} startedAt={userMedication?.startedAt} />
           <InfoCard title="효능">{medication?.indications ?? '-'}</InfoCard>
           <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-[1.375rem]">
             <div className="items-center flex mb-2 gap-1.5">
@@ -78,6 +90,33 @@ export default function MedicationInfoPage() {
       </div>
     </div>
   );
+}
+
+function findUserMedication(
+  userMedications: MedicationSummary[],
+  medicationId: number,
+  standard: MedicationStandard,
+) {
+  const byId = userMedications.find((medication) => medication.medicationId === medicationId);
+  if (byId) return byId;
+
+  const standardProfileId = resolveProfile({ name: standard.name, ingredient: standard.ingredient })?.id;
+  if (standardProfileId) {
+    const byProfile = userMedications.find((medication) =>
+      resolveProfile({ name: medication.medicationName })?.id === standardProfileId,
+    );
+    if (byProfile) return byProfile;
+  }
+
+  const standardName = normalizeName(standard.name);
+  return userMedications.find((medication) => {
+    const userName = normalizeName(medication.medicationName);
+    return Boolean(standardName && userName && (userName.includes(standardName) || standardName.includes(userName)));
+  }) ?? null;
+}
+
+function normalizeName(value?: string | null) {
+  return (value ?? '').toLowerCase().replace(/\s+/g, '');
 }
 
 function splitSideEffects(sideEffects?: string) {

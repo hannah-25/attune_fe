@@ -17,6 +17,8 @@ import { getAllMedicationLogs, type MedicationPeriodLog } from '@/api/medication
 import ConcentrationChart, { type ConcentrationMarker } from './ConcentrationChart';
 import EffectAccrualChart from './EffectAccrualChart';
 
+const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
+
 // 개인 Tmax→흡수 scale 역산용 정규 그리드(복용 0시, 상대 경과시간 그대로 Tmax).
 const SOLVE_GRID = { startHour: 0, endHour: 24, stepMinutes: 5 };
 // Tmax 슬라이더 스텝(시간).
@@ -52,10 +54,39 @@ type CheckObservation = {
   label: string;
 };
 
+type ResolvedMedication = {
+  profile: PkProfile;
+  doseHours: number[];
+};
+
+type EmptyState = 'no-dose-log' | 'unsupported-medication' | null;
+
 /** ISO datetime → 자정 기준 시(hour, 소수). */
 function clockHour(iso: string): number {
   const d = new Date(iso);
   return d.getHours() + d.getMinutes() / 60;
+}
+
+function resolveFromTakenLogs(takenLogs: MedicationPeriodLog[]): ResolvedMedication | null {
+  let sameDay: PkProfile | null = null;
+  let accumulation: PkProfile | null = null;
+
+  for (const log of takenLogs) {
+    const profile = resolveProfile({ name: log.name });
+    if (!profile) continue;
+    if (profile.modelKind === 'same-day-curve' && !sameDay) sameDay = profile;
+    else if (profile.modelKind === 'accumulation' && !accumulation) accumulation = profile;
+  }
+
+  const profile = sameDay ?? accumulation;
+  if (!profile) return null;
+
+  const doseHours = takenLogs
+    .filter((log) => resolveProfile({ name: log.name })?.id === profile.id)
+    .map((log) => clockHour(log.intakeTime))
+    .sort((a, b) => a - b);
+
+  return { profile, doseHours: doseHours.length ? doseHours : [8] };
 }
 
 /** Date → YYYY-MM-DD(로컬). journalDate와 같은 포맷. */
@@ -72,11 +103,12 @@ function toDateKey(d: Date): string {
  * 가드레일(pk-model-principles.md): 표시는 PK 곡선 + 저널 점 + 서술 요약뿐.
  * 연속 개인반응 곡선(스무딩)·농도 임계 밴드는 그리지 않는다.
  */
-export default function PersonalResponseCard({ date }: { date: string }) {
+export default function PersonalResponseCard({ date, revision = 0 }: { date: string; revision?: number }) {
   const [profile, setProfile] = useState<PkProfile | null>(null);
   const [doseHours, setDoseHours] = useState<number[]>([]);
   const [checks, setChecks] = useState<CheckObservation[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [emptyState, setEmptyState] = useState<EmptyState>(null);
   // 개인 흡수 속도 보정: 사용자가 느끼는 Tmax(복용→피크 시간). null = 집단 기준.
   const [personalTmax, setPersonalTmax] = useState<number | null>(null);
   // 누적형 약물에서 혈중 농도 곡선 접기/펼치기.
@@ -104,30 +136,27 @@ export default function PersonalResponseCard({ date }: { date: string }) {
       .then(([journal, medLogs]) => {
         if (cancelled) return;
 
-        // 그날 복용한(taken) 로그 중 PK 프로필이 해석되는 약물 1종 선택.
-        // same-day(곡선+Tmax)를 우선, 없으면 accumulation(효과 누적)으로 폴백.
         const takenLogs = (medLogs.logs ?? []).filter((l) => l.taken);
-        let sameDay: { profile: PkProfile; name: string } | null = null;
-        let accumulation: { profile: PkProfile; name: string } | null = null;
-        for (const log of takenLogs) {
-          const p = resolveProfile({ name: log.name });
-          if (!p) continue;
-          if (p.modelKind === 'same-day-curve' && !sameDay) sameDay = { profile: p, name: log.name };
-          else if (p.modelKind === 'accumulation' && !accumulation) accumulation = { profile: p, name: log.name };
-        }
-        const chosen = sameDay ?? accumulation;
-        if (!chosen) {
+        if (takenLogs.length === 0) {
           setProfile(null);
           setDoseHours([]);
           setChecks([]);
+          setEmptyState('no-dose-log');
           setLoaded(true);
           return;
         }
 
-        const hours = takenLogs
-          .filter((l) => resolveProfile({ name: l.name })?.id === chosen!.profile.id)
-          .map((l) => clockHour(l.intakeTime))
-          .sort((a, b) => a - b);
+        // 그날 복용한 로그 중 PK 프로필이 해석되는 약물 1종 선택.
+        // same-day(곡선+Tmax)를 우선, 없으면 accumulation(효과 누적)으로 폴백.
+        const chosen = resolveFromTakenLogs(takenLogs);
+        if (!chosen) {
+          setProfile(null);
+          setDoseHours([]);
+          setChecks([]);
+          setEmptyState('unsupported-medication');
+          setLoaded(true);
+          return;
+        }
 
         const obs: CheckObservation[] = [];
         if (journal) {
@@ -156,8 +185,9 @@ export default function PersonalResponseCard({ date }: { date: string }) {
         }
 
         setProfile(chosen.profile);
-        setDoseHours(hours.length ? hours : [8]);
-        setChecks(obs.filter((o) => o.signal !== PD_SIGNAL.CONTEXT));
+        setDoseHours(chosen.doseHours);
+        setChecks(obs);
+        setEmptyState(null);
         setLoaded(true);
       })
       .catch(() => {
@@ -165,13 +195,14 @@ export default function PersonalResponseCard({ date }: { date: string }) {
           setProfile(null);
           setDoseHours([]);
           setChecks([]);
+          setEmptyState(null);
           setLoaded(true);
         }
       });
     return () => {
       cancelled = true;
     };
-  }, [date]);
+  }, [date, revision]);
 
   // 보고 있는 날짜가 오늘일 때만 "지금" 시각(절대 hour). 아니면 undefined.
   const nowHour = toDateKey(now) === date ? now.getHours() + now.getMinutes() / 60 : undefined;
@@ -227,7 +258,9 @@ export default function PersonalResponseCard({ date }: { date: string }) {
       }));
   }, [built, checks]);
 
-  if (!loaded || !built) return null;
+  if (!loaded) return null;
+  if (emptyState) return <ResponseEmptyCard state={emptyState} />;
+  if (!built) return null;
   // same-day는 저널 점 오버레이가 목적이라 점이 없으면 숨김.
   // accumulation은 효과 누적 추이 자체가 본 내용이라 점이 없어도 표시.
   const isAccumulation = profile!.modelKind === 'accumulation';
@@ -300,6 +333,25 @@ export default function PersonalResponseCard({ date }: { date: string }) {
           />
         </>
       )}
+    </div>
+  );
+}
+
+function ResponseEmptyCard({ state }: { state: Exclude<EmptyState, null> }) {
+  const copy = state === 'no-dose-log'
+    ? {
+      title: '오늘 복용 기록이 없습니다',
+      body: '복용을 기록하면 혈중 농도 곡선 위에 오늘의 일지 기록이 점으로 표시됩니다.',
+    }
+    : {
+      title: '그래프 준비 중',
+      body: '오늘 복용한 약물은 아직 혈중 농도 그래프를 지원하지 않습니다.',
+    };
+
+  return (
+    <div className={`mb-2 bg-white ${SHADOW} rounded-[1.375rem] p-4`}>
+      <div className="font-bold text-gray-800 mb-1">{copy.title}</div>
+      <div className="text-xs text-gray-400 leading-relaxed">{copy.body}</div>
     </div>
   );
 }

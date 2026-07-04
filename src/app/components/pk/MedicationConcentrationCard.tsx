@@ -28,7 +28,13 @@ const CONFIDENCE_LABEL: Record<'high' | 'medium' | 'low', string> = {
   low: '낮음',
 };
 
-export default function MedicationConcentrationCard({ medication }: { medication: MedicationStandard | null }) {
+export default function MedicationConcentrationCard({
+  medication,
+  startedAt,
+}: {
+  medication: MedicationStandard | null;
+  startedAt?: string | null;
+}) {
   const profile = useMemo<PkProfile | null>(() => {
     if (!medication) return null;
     return medication.pkProfile ?? resolveProfile({ name: medication.name, ingredient: medication.ingredient });
@@ -59,7 +65,7 @@ export default function MedicationConcentrationCard({ medication }: { medication
   }
 
   if (profile.modelKind === 'accumulation') {
-    return <AccumulationCard profile={profile} />;
+    return <AccumulationCard profile={profile} startedAt={startedAt} />;
   }
 
   return <SameDayCard profile={profile} medication={medication} />;
@@ -163,12 +169,27 @@ function SameDayCard({ profile, medication }: { profile: PkProfile; medication: 
   );
 }
 
-function AccumulationCard({ profile }: { profile: PkProfile }) {
+function AccumulationCard({ profile, startedAt }: { profile: PkProfile; startedAt?: string | null }) {
   const accrual = profile.effectAccrual;
+  const treatmentDay = useMemo(() => getTreatmentDay(startedAt), [startedAt]);
+  const currentWeek = treatmentDay ? (treatmentDay - 1) / 7 : undefined;
+  const currentWeekLabel = treatmentDay ? `${Math.ceil(treatmentDay / 7)}주차 · ${treatmentDay}일째` : undefined;
   const series = useMemo(() => {
     if (!accrual) return [];
-    return buildEffectAccrualSeries({ effectAccrual: accrual, endWeeks: accrual.stabilizeWeeks + 4 });
-  }, [accrual]);
+    return buildEffectAccrualSeries({
+      effectAccrual: accrual,
+      endWeeks: Math.max(accrual.stabilizeWeeks + 4, currentWeek ?? 0),
+    });
+  }, [accrual, currentWeek]);
+  const daily = useMemo(
+    () =>
+      buildConcentrationSeries({
+        profile,
+        doseEvents: [createDoseEvent({ medicationId: profile.id, amountMg: profile.reference.calibrationDoseMg, takenAtHour: DOSE_HOUR })],
+        grid: DAY_GRID,
+      }),
+    [profile],
+  );
   const evidence = profile.evidence[0];
 
   if (!accrual) return null;
@@ -185,11 +206,47 @@ function AccumulationCard({ profile }: { profile: PkProfile }) {
         이 약물은 당일 혈중 농도보다 <span className="font-semibold text-gray-700">효과가 몇 주에 걸쳐 쌓이는</span> 비자극제입니다.
       </div>
 
-      <EffectAccrualChart series={series} onsetWeeks={accrual.onsetWeeks} stabilizeWeeks={accrual.stabilizeWeeks} />
+      <EffectAccrualChart
+        series={series}
+        onsetWeeks={accrual.onsetWeeks}
+        stabilizeWeeks={accrual.stabilizeWeeks}
+        currentWeek={currentWeek}
+        currentLabel="현재"
+      />
+
+      {currentWeekLabel && (
+        <div className="text-[11px] text-gray-500 mt-1.5">
+          현재 복용 기준: <span className="font-bold text-gray-700">{currentWeekLabel}</span>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-1.5 mt-3">
         <Chip label="발현 시작" value={`약 ${accrual.onsetWeeks}주`} />
         <Chip label="효과 안정" value={`약 ${accrual.stabilizeWeeks}주`} />
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-gray-100">
+        <div className="items-center flex mb-1.5 gap-1.5">
+          <div className="font-bold text-sm">당일 혈중 농도 추이</div>
+          <div className="grow" />
+          <div className="text-gray-500 text-xs">{DOSE_HOUR}시 복용 가정</div>
+        </div>
+        <div className="text-[11px] text-gray-400 leading-relaxed mb-2">
+          아토목세틴은 효과가 주 단위로 누적되므로, 이 곡선은 당일 혈중 농도 참고용입니다.
+        </div>
+        <ConcentrationChart
+          series={daily.series}
+          field="percent"
+          peak={{ hour: daily.stats.tmaxHour, value: 100 }}
+          doseHours={[DOSE_HOUR]}
+          xTicks={X_TICKS}
+          xDomain={[DAY_GRID.startHour, DAY_GRID.endHour]}
+          height={150}
+        />
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          <Chip label="혈중 피크" value={`복용 후 ${formatHours(profile.peakTimeHours)}`} />
+          <Chip label="표시 단위" value="피크 대비 %" />
+        </div>
       </div>
 
       {profile.metabolismNote && (
@@ -248,4 +305,24 @@ function EvidenceFooter({
 function formatHours(hours: number): string {
   if (Number.isInteger(hours)) return `${hours}시간`;
   return `${hours.toFixed(1)}시간`;
+}
+
+function getTreatmentDay(startedAt?: string | null): number | null {
+  if (!startedAt) return null;
+  const start = parseLocalDate(startedAt);
+  if (!start) return null;
+  const today = new Date();
+  const localToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diffDays = Math.floor((localToday.getTime() - start.getTime()) / 86_400_000) + 1;
+  return diffDays > 0 ? diffDays : null;
+}
+
+function parseLocalDate(value: string): Date | null {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
