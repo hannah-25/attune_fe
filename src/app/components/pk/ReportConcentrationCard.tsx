@@ -26,9 +26,10 @@ function windowToHour(window: string | null | undefined): number | null {
     let h = Number(digit[1]);
     if (h >= 0 && h <= 24) {
       const isPm = w.includes('오후') || w.includes('pm') || w.includes('저녁') || w.includes('밤');
+      const isAm = w.includes('오전') || w.includes('am');
       if (isPm && h < 12) {
         h += 12;
-      } else if (!isPm && h === 12) {
+      } else if (isAm && h === 12) {
         h = 0;
       }
       return h;

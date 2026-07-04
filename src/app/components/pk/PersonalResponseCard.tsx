@@ -261,26 +261,26 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
 
   if (!loaded) return null;
   if (emptyState) return <ResponseEmptyCard state={emptyState} />;
-  if (!built) return null;
+  if (!built || !profile) return null;
   // same-day는 저널 점 오버레이가 목적이라 점이 없으면 숨김.
   // accumulation은 효과 누적 추이 자체가 본 내용이라 점이 없어도 표시.
-  const isAccumulation = profile!.modelKind === 'accumulation';
+  const isAccumulation = profile.modelKind === 'accumulation';
   if (!isAccumulation && markers.length === 0) return null;
 
   const usedSignals = Array.from(new Set(checks.map((o) => o.signal)));
 
   return (
     <div className="mb-2">
-      {profile!.modelKind === 'accumulation' ? (
+      {profile.modelKind === 'accumulation' ? (
         <>
           {/* 누적형: 효과 누적 추이를 기본으로, 혈중 농도 곡선은 접기. */}
           <EffectAccrualChart
             series={accrualSeries}
-            onsetWeeks={profile!.effectAccrual?.onsetWeeks}
-            stabilizeWeeks={profile!.effectAccrual?.stabilizeWeeks}
+            onsetWeeks={profile.effectAccrual?.onsetWeeks}
+            stabilizeWeeks={profile.effectAccrual?.stabilizeWeeks}
             height={220}
           />
-          <AccumulationNote profile={profile!} />
+          <AccumulationNote profile={profile} />
 
           <button
             type="button"
@@ -297,7 +297,7 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
               <ConcentrationChart
                 series={built.series}
                 field="raw"
-                effectWindow={{ start: built.firstDose + profile!.effectStartHours, end: built.firstDose + profile!.effectEndHours }}
+                effectWindow={{ start: built.firstDose + profile.effectStartHours, end: built.firstDose + profile.effectEndHours }}
                 peak={{ hour: built.stats.tmaxHour, value: built.stats.cmaxRaw }}
                 doseHours={doseHours}
                 nowHour={nowHour}
@@ -315,7 +315,7 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
           <ConcentrationChart
             series={built.series}
             field="raw"
-            effectWindow={{ start: built.firstDose + profile!.effectStartHours, end: built.firstDose + profile!.effectEndHours }}
+            effectWindow={{ start: built.firstDose + profile.effectStartHours, end: built.firstDose + profile.effectEndHours }}
             peak={{ hour: built.stats.tmaxHour, value: built.stats.cmaxRaw }}
             doseHours={doseHours}
             nowHour={nowHour}
@@ -325,8 +325,8 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
             height={220}
           />
           <TmaxControl
-            referenceTmax={profile!.reference.tmaxHours}
-            value={personalTmax ?? profile!.reference.tmaxHours}
+            referenceTmax={profile.reference.tmaxHours}
+            value={personalTmax ?? profile.reference.tmaxHours}
             adjusted={personalTmax !== null}
             onChange={setPersonalTmax}
             onReset={() => setPersonalTmax(null)}

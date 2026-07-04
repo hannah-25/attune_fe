@@ -35,16 +35,14 @@ export default function EffectAccrualChart({
   currentLabel = '현재',
   height = 168,
 }: Props) {
-  const pointAt = (week?: number) =>
-    week == null ? undefined : series.find((s) => Math.abs(s.week - week) < 1e-6);
   const nearestPoint = (week?: number) => {
     if (week == null || series.length === 0) return undefined;
     return series.reduce((nearest, point) =>
       Math.abs(point.week - week) < Math.abs(nearest.week - week) ? point : nearest,
     );
   };
-  const onset = pointAt(onsetWeeks);
-  const stabilize = pointAt(stabilizeWeeks);
+  const onset = nearestPoint(onsetWeeks);
+  const stabilize = nearestPoint(stabilizeWeeks);
   const current = nearestPoint(currentWeek);
 
   return (
