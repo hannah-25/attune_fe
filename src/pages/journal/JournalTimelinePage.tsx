@@ -13,6 +13,7 @@ import {
   createMemo,
   getJournal,
 } from '@/api/journal';
+import PersonalResponseCard from '@/components/pk/PersonalResponseCard';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
 
@@ -120,6 +121,7 @@ export default function JournalTimelinePage() {
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
   const [error, setError] = useState('');
+  const [journalRevision, setJournalRevision] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -174,11 +176,13 @@ export default function JournalTimelinePage() {
         .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0)
     );
 
-    uncheckJournalTag(tag.tagId, journalDate).catch((err) => {
-      console.error('Failed to remove tag:', err);
-      setError('태그 삭제에 실패했습니다.');
-      setEntries(snapshot);
-    });
+    uncheckJournalTag(tag.tagId, journalDate)
+      .then(() => setJournalRevision((revision) => revision + 1))
+      .catch((err) => {
+        console.error('Failed to remove tag:', err);
+        setError('태그 삭제에 실패했습니다.');
+        setEntries(snapshot);
+      });
   };
 
   const openSheet = (category: Category) => {
@@ -206,22 +210,22 @@ export default function JournalTimelinePage() {
 
     try {
       await Promise.all(selectedApiTags.map((tag) => checkJournalTag(tag.tagId, journalDate)));
+      setJournalRevision((revision) => revision + 1);
+      setEntries(prev => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          time: getNow(),
+          kind: 'tags',
+          category: activeCategory,
+          tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
+        },
+      ]);
+      closeSheet();
     } catch (err) {
       console.error('Failed to record tags:', err);
       setError('태그 기록에 실패했습니다.');
     }
-
-    setEntries(prev => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        time: getNow(),
-        kind: 'tags',
-        category: activeCategory,
-        tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
-      },
-    ]);
-    closeSheet();
   };
 
   const saveMemo = async () => {
@@ -252,6 +256,9 @@ export default function JournalTimelinePage() {
 
         <ScrollArea className="pt-0 pb-[230px]">
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
+          <div className="px-[18px] pb-1">
+            <PersonalResponseCard date={journalDate} revision={journalRevision} />
+          </div>
           <div className="relative pt-0 pr-[18px] pb-0 pl-[18px]">
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 
