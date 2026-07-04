@@ -42,6 +42,8 @@ type Props = {
   xTicks?: number[];
   xDomain?: [number, number];
   height?: number;
+  /** y축 눈금 표시 단위(예: 'ng/mL'). 없으면 y축 숨김. */
+  yUnit?: string;
 };
 
 const AREA_STROKE = 'rgb(185, 166, 255)';
@@ -65,6 +67,7 @@ export default function ConcentrationChart({
   xTicks,
   xDomain,
   height = 168,
+  yUnit,
 }: Props) {
   const data = useMemo(
     () =>
@@ -81,7 +84,7 @@ export default function ConcentrationChart({
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={data} margin={{ top: 8, right: 6, bottom: 0, left: 6 }}>
+      <ComposedChart data={data} margin={{ top: 8, right: 6, bottom: 0, left: yUnit ? 0 : 6 }}>
         <CartesianGrid stroke="rgb(233, 228, 220)" strokeDasharray="2 3" vertical={false} />
         <XAxis
           type="number"
@@ -94,7 +97,26 @@ export default function ConcentrationChart({
           axisLine={{ stroke: 'rgb(233, 228, 220)' }}
           allowDecimals={false}
         />
-        <YAxis hide domain={[0, 'dataMax']} />
+        {yUnit ? (
+          <YAxis
+            domain={[0, 'dataMax']}
+            width={46}
+            tick={{ fontSize: 10, fill: 'rgb(156,163,175)' }}
+            tickLine={false}
+            axisLine={{ stroke: 'rgb(233, 228, 220)' }}
+            tickFormatter={(v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(1))}
+            label={{
+              value: yUnit,
+              angle: -90,
+              position: 'insideLeft',
+              fontSize: 10,
+              fill: 'rgb(156,163,175)',
+              style: { textAnchor: 'middle' },
+            }}
+          />
+        ) : (
+          <YAxis hide domain={[0, 'dataMax']} />
+        )}
 
         {effectWindow && (
           <ReferenceArea
