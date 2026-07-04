@@ -211,22 +211,21 @@ export default function JournalTimelinePage() {
     try {
       await Promise.all(selectedApiTags.map((tag) => checkJournalTag(tag.tagId, journalDate)));
       setJournalRevision((revision) => revision + 1);
+      setEntries(prev => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          time: getNow(),
+          kind: 'tags',
+          category: activeCategory,
+          tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
+        },
+      ]);
+      closeSheet();
     } catch (err) {
       console.error('Failed to record tags:', err);
       setError('태그 기록에 실패했습니다.');
     }
-
-    setEntries(prev => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        time: getNow(),
-        kind: 'tags',
-        category: activeCategory,
-        tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
-      },
-    ]);
-    closeSheet();
   };
 
   const saveMemo = async () => {

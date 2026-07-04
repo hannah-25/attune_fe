@@ -64,6 +64,7 @@ type EmptyState = 'no-dose-log' | 'unsupported-medication' | null;
 /** ISO datetime → 자정 기준 시(hour, 소수). */
 function clockHour(iso: string): number {
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return 8;
   return d.getHours() + d.getMinutes() / 60;
 }
 

@@ -30,8 +30,8 @@ export default function MedicationInfoPage() {
     ])
       .then(([standard, userMedications]) => {
         if (ignore) return;
-        setMedication(standard);
-        setUserMedication(findUserMedication(userMedications, medicationId, standard));
+        setMedication(standard ?? null);
+        setUserMedication(standard ? findUserMedication(userMedications, medicationId, standard) : null);
       })
       .catch((err) => {
         console.error('Failed to load medication info:', err);

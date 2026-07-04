@@ -122,7 +122,8 @@ function inferStepHours(hours: number[]): number {
     const delta = hours[i] - hours[i - 1];
     if (delta > 1e-9 && delta < step) step = delta;
   }
-  return Number.isFinite(step) ? step : 1 / 60;
+  const minStep = 1 / 60;
+  return Number.isFinite(step) ? Math.max(step, minStep) : minStep;
 }
 
 function buildSimulationGrid(maxHour: number, step: number): number[] {
