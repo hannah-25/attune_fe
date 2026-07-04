@@ -136,7 +136,7 @@ export default function ConcentrationChart({
 
         {peak && <ReferenceDot x={peak.hour} y={peak.value} r={4} fill={AREA_STROKE} stroke="#fff" strokeWidth={2} ifOverflow="extendDomain" />}
 
-        {doseHours?.map((h) => (
+        {Array.from(new Set(doseHours ?? [])).map((h) => (
           <ReferenceDot key={`dose-${h}`} x={h} y={0} r={4} fill={DOSE_COLOR} stroke="#fff" strokeWidth={1.5} ifOverflow="extendDomain" />
         ))}
 

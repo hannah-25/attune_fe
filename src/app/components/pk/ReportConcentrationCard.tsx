@@ -147,8 +147,8 @@ export default function ReportConcentrationCard({ snapshot }: { snapshot: Report
 
       {markers.length > 0 ? (
         <div className="flex flex-wrap gap-1.5 mt-3">
-          {markers.map((m) => (
-            <div key={`${m.label}-${m.hour}`} className="flex items-center gap-1.5 text-xs">
+          {markers.map((m, idx) => (
+            <div key={`${m.label}-${m.hour}-${idx}`} className="flex items-center gap-1.5 text-xs">
               <span className="w-2 h-2 rounded-full" style={{ background: m.color }} />
               <span className="text-gray-700 font-semibold">{m.label}</span>
               <span className="text-gray-400">· {windowPhase(profile, doseHour, m.hour)}</span>

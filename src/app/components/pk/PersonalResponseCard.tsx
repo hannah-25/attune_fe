@@ -136,7 +136,7 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
       .then(([journal, medLogs]) => {
         if (cancelled) return;
 
-        const takenLogs = (medLogs.logs ?? []).filter((l) => l.taken);
+        const takenLogs = (medLogs?.logs ?? []).filter((l) => l.taken);
         if (takenLogs.length === 0) {
           setProfile(null);
           setDoseHours([]);
@@ -159,8 +159,8 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
         }
 
         const obs: CheckObservation[] = [];
-        if (journal) {
-          const { conditions, sideEffects, troubles } = journal.checked;
+        if (journal?.checked) {
+          const { conditions = [], sideEffects = [], troubles = [] } = journal.checked;
           for (const c of conditions) {
             obs.push({
               clockHour: clockHour(c.checkedAt),
