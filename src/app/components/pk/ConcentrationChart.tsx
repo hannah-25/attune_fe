@@ -21,6 +21,14 @@ export type ConcentrationMarker = {
   label: string;
 };
 
+/** 약별 기여 곡선(합산 곡선 위에 겹쳐 그림). series는 raw 값, 인덱스가 총 series와 정렬. */
+export type BreakdownSeries = {
+  key: string;
+  label: string;
+  color: string;
+  series: ConcentrationComponentPoint[];
+};
+
 type Props = {
   series: ConcentrationPoint[];
   /** y로 그릴 필드. 절대농도(raw, ng/mL) 또는 peak 대비 percent. */
@@ -39,6 +47,8 @@ type Props = {
   nowHour?: number;
   /** 저널 오버레이 점(리포트). */
   markers?: ConcentrationMarker[];
+  /** 약별 기여 곡선(겹쳐 그리기). 있으면 각 약의 곡선을 점선으로 오버레이. */
+  breakdownSeries?: BreakdownSeries[];
   xTicks?: number[];
   xDomain?: [number, number];
   height?: number;
@@ -64,6 +74,7 @@ export default function ConcentrationChart({
   doseHours,
   nowHour,
   markers,
+  breakdownSeries,
   xTicks,
   xDomain,
   height = 168,
@@ -71,13 +82,19 @@ export default function ConcentrationChart({
 }: Props) {
   const data = useMemo(
     () =>
-      series.map((point, i) => ({
-        hour: point.hour,
-        value: field === 'percent' ? point.percent : point.raw,
-        ir: showComponents ? (irSeries?.[i]?.raw ?? null) : null,
-        er: showComponents ? (erSeries?.[i]?.raw ?? null) : null,
-      })),
-    [series, field, irSeries, erSeries, showComponents],
+      series.map((point, i) => {
+        const row: Record<string, number | null> = {
+          hour: point.hour,
+          value: field === 'percent' ? point.percent : point.raw,
+          ir: showComponents ? (irSeries?.[i]?.raw ?? null) : null,
+          er: showComponents ? (erSeries?.[i]?.raw ?? null) : null,
+        };
+        breakdownSeries?.forEach((b) => {
+          row[`bd_${b.key}`] = b.series[i]?.raw ?? null;
+        });
+        return row;
+      }),
+    [series, field, irSeries, erSeries, showComponents, breakdownSeries],
   );
 
   const domain: [number, number] = xDomain ?? [series[0]?.hour ?? 0, series[series.length - 1]?.hour ?? 24];
@@ -144,6 +161,20 @@ export default function ConcentrationChart({
             <Line type="monotone" dataKey="er" stroke="rgb(167, 139, 250)" strokeWidth={1.5} dot={false} isAnimationActive={false} strokeDasharray="4 2" connectNulls />
           </>
         )}
+
+        {breakdownSeries?.map((b) => (
+          <Line
+            key={b.key}
+            type="monotone"
+            dataKey={`bd_${b.key}`}
+            stroke={b.color}
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={false}
+            strokeDasharray="4 3"
+            connectNulls
+          />
+        ))}
 
         {nowHour != null && nowHour >= domain[0] && nowHour <= domain[1] && (
           <ReferenceLine
