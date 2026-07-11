@@ -6,6 +6,8 @@ import { getConsultations } from '../api/consultation';
 import { getMyProfile, getUserSettings } from '../api/user';
 import { apiRequest, ApiError, getAccessToken } from '../api/client';
 import { db, type SyncQueueItem } from './db';
+import { shouldDropQueueItem } from './queuePolicy';
+import { getUserIdFromToken } from '../lib/jwt';
 import { toLocalDateString, parseLocalDate, toLocalDateStringFromTimestamp } from './pathUtils';
 
 export const syncEvents = new EventTarget();
@@ -216,6 +218,14 @@ async function replaySyncQueue(): Promise<void> {
       const [item] = await db.syncQueue.where('status').equals('pending').sortBy('id');
       if (!item) break;
 
+      // 적재한 사용자와 지금 로그인한 사용자가 다르면 전송하지 않고 버린다.
+      // 토큰은 매 요청 새로 읽히므로, 그대로 두면 이전 사용자의 쓰기가 새 계정 토큰으로 나간다.
+      // 세션 만료 중 계정이 바뀌는 경우가 여기서 걸린다(로그인 상태가 아니면 애초에 flush되지 않는다).
+      if (shouldDropQueueItem(item.userId, getUserIdFromToken(getAccessToken()))) {
+        await db.syncQueue.delete(item.id!);
+        continue;
+      }
+
       try {
         await apiRequest<unknown>(item.path, { method: item.method, body: item.body, offlineFallback: false });
         await db.syncQueue.delete(item.id!);
@@ -284,7 +294,10 @@ export const SyncService = {
     });
   },
 
-  async addToQueue(item: Omit<SyncQueueItem, 'id' | 'retryCount' | 'status'>): Promise<void> {
+  // userId는 필수 — 소유자를 모르는 항목은 재전송 시 폐기되므로 적재 단계에서 강제한다.
+  async addToQueue(
+    item: Omit<SyncQueueItem, 'id' | 'retryCount' | 'status' | 'userId'> & { userId: string },
+  ): Promise<void> {
     await db.syncQueue.add({ ...item, retryCount: 0, status: 'pending' });
   },
 
@@ -293,8 +306,11 @@ export const SyncService = {
   },
 
   // 개인정보를 즉시 삭제한다(동기화 진행 여부와 무관).
-  // preserveQueue=true(세션 만료 등 같은 사용자 재로그인)일 때만 미전송 오프라인 쓰기 큐를 남긴다.
-  // 명시적 로그아웃/탈퇴는 계정 전환 가능성이 있으므로 큐까지 비워 다른 사용자 계정으로 재전송되는 것을 막는다.
+  // preserveQueue=true(세션 만료)일 때만 미전송 오프라인 쓰기 큐를 남겨, 같은 사용자가 재로그인하면 이어서 보낸다.
+  // 명시적 로그아웃/탈퇴는 기기에 개인 기록을 남기지 않도록 큐까지 비운다.
+  //
+  // 계정 전환 시 재전송을 막는 것은 이 정책이 아니라 replaySyncQueue의 userId 검사다.
+  // preserveQueue는 프라이버시 정책이고, 사용자 격리는 큐 항목의 소유자로 보장한다.
   async clearAllCache(options: { preserveQueue?: boolean } = {}): Promise<void> {
     await clearTables(options.preserveQueue ?? false);
   },

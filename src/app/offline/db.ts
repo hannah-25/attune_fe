@@ -123,6 +123,10 @@ export interface SyncQueueItem {
   localTimestamp: string;
   retryCount: number;
   status: 'pending' | 'failed';
+  // 적재 당시 access token의 sub. 재전송 직전에 현재 사용자와 대조한다.
+  // 인덱스가 필요 없어(전송 직전 항목마다 확인) 스키마 버전은 올리지 않았다.
+  // 이 필드가 도입되기 전에 쌓인 항목에는 없으며, 소유자 미상이므로 폐기한다.
+  userId?: string;
 }
 
 class AttuneOfflineDB extends Dexie {

@@ -1,8 +1,9 @@
 import { db } from './db';
 import { SyncService } from './SyncService';
 import { cleanPath, searchParams, toLocalDateString, toLocalDateStringFromTimestamp, nextLocalDateString } from './pathUtils';
-import type { ApiRequestOptions } from '../api/client';
+import { getAccessToken, type ApiRequestOptions } from '../api/client';
 import { getBrowserTimezone } from '../lib/timezone';
+import { getUserIdFromToken } from '../lib/jwt';
 import type {
   JournalActiveTags,
   JournalChecked,
@@ -21,6 +22,16 @@ export class OfflineCacheMissError extends Error {
   }
 }
 
+// 소유자를 특정할 수 없는 쓰기는 큐에 넣지 않는다. 나중에 누구의 토큰으로 나갈지 알 수 없기 때문.
+export class OfflineQueueOwnerUnknownError extends Error {
+  status = 401;
+
+  constructor(path: string) {
+    super(`오프라인 쓰기 소유자를 확인할 수 없음: ${path}`);
+    this.name = 'OfflineQueueOwnerUnknownError';
+  }
+}
+
 type WriteMethod = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 // 약 복용 로그의 로컬 표시용 임시 ID. 동기화 후 서버 데이터로 덮어써지며, 다른 곳에서 재참조되지 않는다.
@@ -32,7 +43,11 @@ function createLocalLogId(): number {
 
 // path는 쿼리 스트링 포함 전체 경로를 보존해야 재전송 시 파라미터가 유지됨
 async function queueWrite(method: WriteMethod, path: string, body: unknown): Promise<void> {
-  await SyncService.addToQueue({ method, path, body, localTimestamp: new Date().toISOString() });
+  // 적재 시점의 사용자를 함께 남긴다. 재전송은 이 값이 현재 사용자와 같을 때만 수행한다.
+  const userId = getUserIdFromToken(getAccessToken());
+  if (!userId) throw new OfflineQueueOwnerUnknownError(path);
+
+  await SyncService.addToQueue({ method, path, body, localTimestamp: new Date().toISOString(), userId });
 }
 
 function isWriteMethod(method: string): method is WriteMethod {
@@ -145,7 +160,8 @@ async function updateOfflineMemo(date: string, body: unknown) {
 }
 
 async function addOfflineMedicationLog(userMedicationId: number, body: unknown) {
-  const now = new Date().toISOString();
+  // 큐에 실어 보낸 takenAt과 같은 값을 써야 로컬 표시와 서버 기록의 복용일이 어긋나지 않는다.
+  const now = (isRecord(body) ? readString(body, 'takenAt') : undefined) ?? new Date().toISOString();
   const date = toLocalDateStringFromTimestamp(now) ?? toLocalDateString(new Date());
   const action = isRecord(body) && typeof body.action === 'string' ? body.action : undefined;
   const scheduleId = isRecord(body) && typeof body.scheduleId === 'number' ? body.scheduleId : undefined;
@@ -309,8 +325,12 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
   const quickLogMatch = base.match(/^\/v1\/user-medications\/(\d+)\/log\/quick$/);
   if (quickLogMatch && method === 'POST') {
     const userMedicationId = Number(quickLogMatch[1]);
-    await queueWrite('POST', path, body);
-    return await addOfflineMedicationLog(userMedicationId, body) as T;
+    // 재전송은 나중에(자정을 넘겨서도) 일어난다. 서버가 수신 시각을 복용 시각으로 삼지 않도록
+    // 사용자가 기록한 시각을 body에 함께 실어 보낸다. 낙관적 로컬 로그도 같은 값을 쓴다.
+    const takenAt = new Date().toISOString();
+    const bodyWithTakenAt = isRecord(body) ? { ...body, takenAt } : { takenAt };
+    await queueWrite('POST', path, bodyWithTakenAt);
+    return await addOfflineMedicationLog(userMedicationId, bodyWithTakenAt) as T;
   }
 
   // ── Schedule (읽기 전용) ──────────────────────────────────────────────────

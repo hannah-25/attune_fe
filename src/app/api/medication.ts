@@ -84,6 +84,8 @@ export type UpdateMedicationRequest = {
 export type MedicationLogRequest = {
   action: QuickMedicationLogAction;
   scheduleId: number;
+  // 오프라인 재전송 시 오프라인 resolver가 채운다. 온라인 요청은 생략하고 서버 시각을 쓴다.
+  takenAt?: string;
 };
 
 export type MedicationProfileLog = {
