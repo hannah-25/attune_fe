@@ -826,14 +826,14 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
           ? 'TAKEN'
           : 'MISSED';
     const recordedAt = new Date().toISOString();
-    const doseDate = recordedAt.slice(0, 10);
+    const doseDate = toDateKey(new Date(recordedAt));
 
     // 서버와 같은 절대 upsert 의미. 스케줄당 하루 1건이며, 같은 액션의 재전송은 no-op이다.
     if (scheduleId !== null) {
       guestWrite<typeof mockMedicationLogs>(MEDICATION_LOGS_KEY, (prev) => {
         const logs = prev ?? mockMedicationLogs;
         const others = logs.filter(
-          (log) => !(log.scheduleId === scheduleId && log.takenAt.slice(0, 10) === doseDate),
+          (log) => !(log.scheduleId === scheduleId && toDateKeyFromDateTime(log.takenAt) === doseDate),
         );
         if (payload.action === 'CANCEL') return others;
         return [...others, { userMedicationId, scheduleId, takenAt: recordedAt, status }];
@@ -1122,7 +1122,7 @@ function isLogWithinRange(takenAt: string, startDate?: string, endDate?: string)
 }
 
 function toDateKeyFromDateTime(value: string) {
-  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '';

@@ -221,7 +221,13 @@ async function replaySyncQueue(): Promise<void> {
       // 적재한 사용자와 지금 로그인한 사용자가 다르면 전송하지 않고 버린다.
       // 토큰은 매 요청 새로 읽히므로, 그대로 두면 이전 사용자의 쓰기가 새 계정 토큰으로 나간다.
       // 세션 만료 중 계정이 바뀌는 경우가 여기서 걸린다(로그인 상태가 아니면 애초에 flush되지 않는다).
-      if (shouldDropQueueItem(item.userId, getUserIdFromToken(getAccessToken()))) {
+      const currentUserId = getUserIdFromToken(getAccessToken());
+      if (!currentUserId) {
+        allFlushed = false;
+        break;
+      }
+
+      if (shouldDropQueueItem(item.userId, currentUserId)) {
         await db.syncQueue.delete(item.id!);
         continue;
       }

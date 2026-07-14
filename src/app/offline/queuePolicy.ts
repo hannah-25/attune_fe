@@ -7,11 +7,10 @@
  */
 export function shouldDropQueueItem(
   itemUserId: string | undefined,
-  currentUserId: string | null,
+  currentUserId: string,
 ): boolean {
   // 소유자를 특정할 수 없는 항목(v5 이전 스키마에서 넘어온 레거시)은 전송하지 않는다.
   // 추측해서 보내는 것이 바로 막으려는 동작이다.
   if (!itemUserId) return true;
-  if (!currentUserId) return true;
   return itemUserId !== currentUserId;
 }
