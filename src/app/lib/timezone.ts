@@ -44,7 +44,8 @@ export async function detectTimezoneChange(): Promise<TimezoneChange | null> {
   // 브라우저가 timezone을 주지 않으면 서버 기본값을 유지한다.
   if (!browserTimezone) return null;
 
-  // 이미 적용했거나, 이번 세션에서 보류한 tz면 서버에 묻지 않는다.
+  // 이번 세션에서 이미 적용했거나 보류한 tz면 서버에 묻지 않는다.
+  // (세션 단위라 새 세션에선 다시 확인한다 — 다른 기기가 서버 tz를 바꿨을 수 있음)
   if (getAppliedTimezone() === browserTimezone) return null;
   if (getDeferredTimezone() === browserTimezone) return null;
 
@@ -59,7 +60,7 @@ export async function detectTimezoneChange(): Promise<TimezoneChange | null> {
   }
 
   if (serverTimezone === browserTimezone) {
-    // 서버와 이미 일치 → 다음 감지에서 재조회하지 않도록 기록.
+    // 서버와 이미 일치 → 이번 세션 동안은 재조회하지 않도록 기록.
     setAppliedTimezone(browserTimezone);
     return null;
   }
