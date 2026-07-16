@@ -9,6 +9,7 @@ const FONT_FAMILY = "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI',
  * 기기 timezone이 서버 설정과 다를 때 확인 바텀시트를 띄운다.
  * - 보호 라우트 진입 및 포그라운드 복귀(visibilitychange) 시 재감지.
  * - "현지 시간 적용" → PATCH, "나중에" → 세션 동안 해당 tz 재알림 안 함.
+ * - 서버에 timezone이 없으면(최초 설정) 묻지 않고 조용히 적용한다.
  */
 export default function TimezoneSyncPrompt() {
   const [change, setChange] = useState<TimezoneChange | null>(null);
@@ -21,14 +22,31 @@ export default function TimezoneSyncPrompt() {
     if (isGuestMode() || !getAccessToken() || !navigator.onLine) return;
 
     busyRef.current = true;
-    void detectTimezoneChange().then(result => {
-      if (result) {
+    // 확인창을 띄웠다면 닫힐 때(close) 잠금을 해제하므로 여기서 풀지 않는다.
+    let prompted = false;
+    void detectTimezoneChange()
+      .then(async result => {
+        if (!result) return;
+
+        // 서버에 timezone이 아직 없으면(최초 설정) 바뀐 게 없으므로 "변경되었습니다"를
+        // 묻지 않고 조용히 적용한다. 실패해도 서버 기본값이 유지될 뿐이라 무시한다.
+        if (result.serverTimezone === null) {
+          await applyTimezone(result.browserTimezone).catch(err => {
+            if (import.meta.env.DEV) console.error('[timezone] silent apply failed:', err);
+          });
+          return;
+        }
+
         setChange(result);
-        // 확인창이 뜬 동안에는 잠금을 유지하고, 닫힐 때(close) 해제한다.
-        return;
-      }
-      busyRef.current = false;
-    });
+        prompted = true;
+      })
+      .catch(err => {
+        // 예상 못 한 예외로 잠금이 영구히 걸리지 않도록 반드시 해제한다.
+        if (import.meta.env.DEV) console.error('[timezone] check failed:', err);
+      })
+      .finally(() => {
+        if (!prompted) busyRef.current = false;
+      });
   }, []);
 
   const close = useCallback(() => {
