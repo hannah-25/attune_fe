@@ -1,4 +1,5 @@
 import { isGuestMode } from '../guest';
+import { resetTimezoneSyncState } from '../lib/timezoneState';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080';
 const ACCESS_TOKEN_KEY = 'access_token';
@@ -74,6 +75,8 @@ export function setAccessToken(token: string): void {
 
 export function clearAccessToken(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
+  // 적용·보류 timezone은 계정별 상태이므로 세션과 함께 비운다.
+  resetTimezoneSyncState();
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
