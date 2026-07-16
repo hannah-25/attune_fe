@@ -52,7 +52,7 @@ export async function detectTimezoneChange(): Promise<TimezoneChange | null> {
   let serverTimezone: string | null;
   try {
     const settings = await getUserSettings();
-    serverTimezone = settings.timezone ?? null;
+    serverTimezone = settings.timezone?.trim() || null;
   } catch (err) {
     // 조회 실패 시 서버 기본값을 유지하고 다음 기회에 재시도한다.
     if (import.meta.env.DEV) console.error('[timezone] settings fetch failed:', err);

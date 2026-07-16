@@ -59,8 +59,13 @@ export default function TimezoneSyncPrompt() {
     const onVisibility = () => {
       if (document.visibilityState === 'visible') check();
     };
+    const onOnline = () => check();
     document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    window.addEventListener('online', onOnline);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
+    };
   }, [check]);
 
   if (!change) return null;
@@ -79,6 +84,7 @@ export default function TimezoneSyncPrompt() {
   };
 
   const handleDefer = () => {
+    if (applying) return;
     deferTimezone(change.browserTimezone);
     close();
   };
