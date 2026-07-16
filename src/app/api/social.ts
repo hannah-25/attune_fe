@@ -1,3 +1,5 @@
+import { decodeJwtPayload } from '../lib/jwt';
+
 const GOOGLE_SDK_SRC = 'https://accounts.google.com/gsi/client';
 const KAKAO_SDK_SRC = 'https://developers.kakao.com/sdk/js/kakao.min.js';
 const APPLE_SDK_SRC = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
@@ -129,20 +131,6 @@ function normalizeEmail(email: string | null | undefined): string | null {
   if (!email) return null;
   const normalized = email.trim().toLowerCase();
   return normalized.length > 0 ? normalized : null;
-}
-
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  const parts = token.split('.');
-  if (parts.length < 2) return null;
-
-  try {
-    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
-    const decoded = window.atob(padded);
-    return JSON.parse(decoded) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
 }
 
 export function extractEmailFromIdentityToken(token: string): string | null {
