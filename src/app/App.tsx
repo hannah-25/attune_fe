@@ -9,6 +9,7 @@ import { getMyProfile } from './api/user';
 import TimezoneSyncPrompt from './components/TimezoneSyncPrompt';
 import { SyncService } from './offline/SyncService';
 import { preloadOfflineAssets } from './offline/preloadAssets';
+import { syncPushSubscription } from './lib/pushSubscription';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -111,6 +112,11 @@ function ProtectedRoute() {
     SyncService.initialize().catch(err => {
       if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);
     });
+
+    // 브라우저가 구독을 교체·폐기해도 서버 등록이 낡은 채로 남지 않게 한다.
+    // 로그인 직후에도 여기서 돈다 — /login이 이 라우트 바깥이라 새로 마운트되기 때문.
+    // 실패는 내부에서 흡수하고 로깅하므로 여기서 다루지 않는다.
+    void syncPushSubscription();
   }, []);
 
   if (!getAccessToken() && !isGuestMode()) {
