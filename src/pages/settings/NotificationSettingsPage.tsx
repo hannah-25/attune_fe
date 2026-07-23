@@ -7,6 +7,8 @@ import {
   supportsPush,
   isPushSubscribed,
   disablePushOnThisDevice,
+  getLastSyncStatus,
+  syncPushSubscription,
 } from '../../app/lib/pushSubscription';
 
 type NotificationSettings = Pick<
@@ -46,6 +48,9 @@ export default function NotificationSettingsPage() {
   // 브라우저에 구독이 있는지만 뜻한다 — 서버 등록 성공까지 보장하지 않는다.
   // 배경 재동기화(syncPushSubscription)의 실패는 조용히 로깅될 뿐 여기 반영되지 않는다.
   const [deviceSubscribed, setDeviceSubscribed] = useState(false);
+  // 배경 재동기화(syncPushSubscription)가 시도했지만 서버 등록에 실패한 경우 — 브라우저엔
+  // 구독이 남아있어도(deviceSubscribed=true) 실제로는 알림이 안 갈 수 있다는 신호.
+  const [syncFailed, setSyncFailed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState('');
 
@@ -66,6 +71,14 @@ export default function NotificationSettingsPage() {
       .catch((err) => {
         console.error('[push] initial subscription check failed:', err);
       });
+
+    // getLastSyncStatus()를 바로 읽으면 ProtectedRoute의 앱 시작 sync가 아직 안 끝났을 때
+    // 'unknown'을 읽고 끝나버린다(이 페이지가 새로고침 시 최초 마운트되는 페이지인 경우 흔함).
+    // syncPushSubscription()은 진행 중인 sync가 있으면 그 프로미스에 합류하고, 없으면 새로
+    // 시도한다 — 어느 쪽이든 완료를 기다린 뒤 읽으면 그 시점의 정확한 결과를 얻는다.
+    syncPushSubscription().finally(() => {
+      if (!ignore) setSyncFailed(getLastSyncStatus() === 'failed');
+    });
 
     return () => { ignore = true; };
   }, []);
@@ -88,6 +101,18 @@ export default function NotificationSettingsPage() {
     }
   };
 
+  const retryConnection = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const success = await subscribeToPush();
+      setDeviceSubscribed(success);
+      setSyncFailed(!success);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const toggleDeviceSubscription = async () => {
     if (isUpdating) return;
     setIsUpdating(true);
@@ -96,6 +121,7 @@ export default function NotificationSettingsPage() {
       if (deviceSubscribed) {
         await disablePushOnThisDevice();
         setDeviceSubscribed(false);
+        setSyncFailed(false);
         return;
       }
 
@@ -113,6 +139,7 @@ export default function NotificationSettingsPage() {
         return;
       }
       setDeviceSubscribed(true);
+      setSyncFailed(false);
     } catch (err) {
       console.error('[push] toggleDeviceSubscription failed:', err);
       const msg = err instanceof Error && err.name === 'ServiceWorkerTimeoutError'
@@ -145,6 +172,20 @@ export default function NotificationSettingsPage() {
               />
             </div>
           </div>
+
+          {syncFailed ? (
+            <div className="flex items-center justify-between gap-3 px-1" role="alert">
+              <span className="text-xs text-red-700">연결에 문제가 있어요</span>
+              <button
+                type="button"
+                onClick={retryConnection}
+                disabled={isUpdating}
+                className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-purple-700 disabled:opacity-50"
+              >
+                다시 연결하기
+              </button>
+            </div>
+          ) : null}
 
           {error ? <div className="text-red-500 text-xs px-1">{error}</div> : null}
 
