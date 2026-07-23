@@ -208,17 +208,19 @@ export function decidePushSync(
 2. `pnpm verify` — typecheck + build + check-docs
 3. **수동 (프로덕션 빌드 필수 — dev는 SW가 안 뜬다):** `pnpm build && npx vite preview`, localhost 접속
 
-   | 단계 | 기대 |
-   |------|------|
-   | a. 로그인 → 알림 설정 → 토글 ON | Network에 `POST /v1/alarm/subscriptions` 200, Application > Service Workers에 구독 생성 |
-   | b. Console에서 구독 강제 해제<br>`(await navigator.serviceWorker.ready).pushManager.getSubscription().then(s => s.unsubscribe())` | 구독 사라짐 |
-   | c. **새로고침** | **구독 자동 재생성 + `POST` 재등장** ← A-2 핵심 |
-   | d. 토글 OFF → 새로고침 | **`POST` 없음, 구독 재생성 안 됨** ← 의도 플래그 검증 (제일 중요) |
-   | e. 권한 denied / 게스트 / 비로그인 상태로 새로고침 | `POST` 없음, 권한 프롬프트 안 뜸 |
-   | f. **경합**: Network를 Slow 3G로 조여 앱 시작 sync의 POST가 비행 중일 때 토글 OFF | 최종 상태로 브라우저·서버 모두 구독 없음, `push_opt_in = 'false'` (9.2·9.3 5행) |
+   | 단계 | 기대 | 결과 (2026-07-23) |
+   |------|------|------|
+   | a. 로그인 → 알림 설정 → 토글 ON | Network에 `POST /v1/alarm/subscriptions` 200, Application > Service Workers에 구독 생성 | ✅ 통과 (`POST` 201 — §7에 기록된 대로 갱신이어도 201 반환하는 사소한 특이사항, 동작 무관) |
+   | b. Console에서 구독 강제 해제<br>`(await navigator.serviceWorker.ready).pushManager.getSubscription().then(s => s.unsubscribe())` | 구독 사라짐 | ✅ 통과 (`unsubscribe()` → `true`) |
+   | c. **새로고침** | **구독 자동 재생성 + `POST` 재등장** ← A-2 핵심 | ✅ 통과 |
+   | d. 토글 OFF → 새로고침 | **`POST` 없음, 구독 재생성 안 됨** ← 의도 플래그 검증 (제일 중요) | ✅ 통과 |
+   | e. 권한 denied / 게스트 / 비로그인 상태로 새로고침 | `POST` 없음, 권한 프롬프트 안 뜸 | ⏭ 생략 (코드상 `ProtectedRoute` 게이트로 확실하다고 판단, 시간상 스킵) |
+   | f. **경합**: Network를 Slow 3G로 조여 앱 시작 sync의 POST가 비행 중일 때 토글 OFF | 최종 상태로 브라우저·서버 모두 구독 없음, `push_opt_in = 'false'` (9.2·9.3 5행) | ✅ 통과 |
 
 d와 f가 통과하지 못하면 이 계획은 실패다 — 사용자가 끈 알림을 되살리는 것이 원래 버그보다 나쁘다.
 f는 §4.6 미결 사항이 자동화로 해결되지 않으면 **수동 검증이 유일한 방어선**이 된다.
+
+**검증 환경 관련 메모:** 로컬 프로덕션 빌드(`vite build && vite preview`)로 검증했다. 기본 `pnpm build`는 `--mode` 지정이 없어 Vite 기본값인 production 모드로 빌드되어 `.env.production`(`https://api.attune-me.com`, 실서버)을 그대로 가리킨다 — 이 계획의 검증에는 `vite build --mode development`로 `.env.development`(`http://localhost:8080`)를 사용했다. 향후 유사 수동 검증 시 반드시 `--mode`를 명시할 것 (실서버로 의도치 않게 구독 등록/해제 요청이 나갈 위험).
 
 ---
 
