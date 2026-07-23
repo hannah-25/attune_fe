@@ -45,8 +45,9 @@ const CATEGORIES: Array<{
 
 export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  // 브라우저에 구독이 있는지만 뜻한다 — 서버 등록 성공까지 보장하지 않는다.
-  // 배경 재동기화(syncPushSubscription)의 실패는 조용히 로깅될 뿐 여기 반영되지 않는다.
+  // 브라우저 구독 有 AND 서버에 활성 등록됨 (isPushSubscribed() 참고). 서버 조회 자체가
+  // 실패하면 브라우저 신호로 낙관적 폴백하므로, 배경 재동기화의 실패가 매번 여기 즉시
+  // 반영되진 않는다 — 그건 아래 syncFailed 배너가 별도로 알려준다.
   const [deviceSubscribed, setDeviceSubscribed] = useState(false);
   // 배경 재동기화(syncPushSubscription)가 시도했지만 서버 등록에 실패한 경우 — 브라우저엔
   // 구독이 남아있어도(deviceSubscribed=true) 실제로는 알림이 안 갈 수 있다는 신호.

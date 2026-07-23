@@ -27,3 +27,13 @@ export function unsubscribeAlarm(endpointOrToken: string) {
     method: 'DELETE',
   });
 }
+
+export type AlarmSubscriptionStatus = {
+  enabled: boolean;
+};
+
+export function getAlarmSubscriptionStatus(endpointOrToken: string) {
+  return apiRequest<AlarmSubscriptionStatus>(`/v1/alarm/subscriptions?endpointOrToken=${encodeURIComponent(endpointOrToken)}`, {
+    method: 'GET',
+  });
+}
