@@ -6,7 +6,7 @@ import {
   subscribeToPush,
   supportsPush,
   isPushSubscribed,
-  unsubscribeFromPush,
+  disablePushOnThisDevice,
 } from '../../app/lib/pushSubscription';
 
 type NotificationSettings = Pick<
@@ -43,6 +43,8 @@ const CATEGORIES: Array<{
 
 export default function NotificationSettingsPage() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  // 브라우저에 구독이 있는지만 뜻한다 — 서버 등록 성공까지 보장하지 않는다.
+  // 배경 재동기화(syncPushSubscription)의 실패는 조용히 로깅될 뿐 여기 반영되지 않는다.
   const [deviceSubscribed, setDeviceSubscribed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState('');
@@ -92,7 +94,7 @@ export default function NotificationSettingsPage() {
     setError('');
     try {
       if (deviceSubscribed) {
-        await unsubscribeFromPush();
+        await disablePushOnThisDevice();
         setDeviceSubscribed(false);
         return;
       }
