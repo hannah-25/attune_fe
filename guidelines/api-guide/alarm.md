@@ -52,8 +52,18 @@
 
 `DELETE /v1/alarm/subscriptions?endpointOrToken={value}`
 
+`GET /v1/alarm/subscriptions?endpointOrToken={value}`
+
+```json
+{ "enabled": true }
+```
+
+조회 대상이 없거나 비활성화된 경우에도 404가 아니라 `200 { "enabled": false }`로 응답한다
+(존재 여부와 무관하게 204를 반환하는 `DELETE`와 같은 패턴).
+
 프론트는 알림 설정 화면의 `이 기기에서 알림 받기` 토글에서 구독을 등록하거나
-해제합니다. 로그아웃할 때도 현재 브라우저 구독을 해제합니다.
+해제합니다. 로그아웃할 때도 현재 브라우저 구독을 해제합니다. 화면의 "연결됨" 표시는
+브라우저 구독 존재 여부와 이 `GET` 조회 결과를 함께 확인해 판단합니다.
 
 ## 배포 설정
 

@@ -1,4 +1,4 @@
-import { subscribeAlarm, unsubscribeAlarm } from '../api/alarm';
+import { subscribeAlarm, unsubscribeAlarm, getAlarmSubscriptionStatus } from '../api/alarm';
 import { createMutex } from './mutex';
 import { decidePushSync, type PushOptIn } from './pushPolicy';
 import { isStaleApplicationServerKey, urlBase64ToArrayBuffer } from './webPushKey';
@@ -41,10 +41,23 @@ export function supportsPush(): boolean {
   );
 }
 
+// 브라우저에 구독이 있는 것만으로는 부족하다 — 서버가 그 endpoint를 활성 상태로 들고
+// 있어야 실제로 알림이 온다. `GET /v1/alarm/subscriptions`로 서버 상태까지 확인한다.
 export async function isPushSubscribed(): Promise<boolean> {
   if (!supportsPush() || Notification.permission !== 'granted') return false;
   const registration = await navigator.serviceWorker.getRegistration();
-  return Boolean(await registration?.pushManager?.getSubscription());
+  const subscription = await registration?.pushManager?.getSubscription();
+  if (!subscription) return false;
+
+  try {
+    const { enabled } = await getAlarmSubscriptionStatus(subscription.endpoint);
+    return enabled;
+  } catch (err) {
+    // 조회 자체의 실패(네트워크 등)는 "서버가 비활성이라고 확답"한 것과 다르다 — 매 페이지
+    // 로드마다 일시적 실패로 상태가 깜빡이지 않도록 브라우저 쪽 신호로 낙관적 폴백한다.
+    console.error('[push] status check failed:', err);
+    return true;
+  }
 }
 
 async function resolveRegistration(): Promise<ServiceWorkerRegistration> {
