@@ -13,6 +13,16 @@ const withDeviceLock = createMutex();
 
 let syncInFlight: Promise<boolean> | null = null;
 
+// 설정 화면이 배경 재동기화 성공 여부를 알 수 있도록 마지막 결과를 노출한다.
+// 의도적으로 건너뛴 경우(opt-in false, 레거시+구독없음)는 'ok' — 실제로 시도했지만
+// 실패한 경우만 'failed'로 구분한다.
+export type PushSyncStatus = 'unknown' | 'ok' | 'failed';
+let lastSyncStatus: PushSyncStatus = 'unknown';
+
+export function getLastSyncStatus(): PushSyncStatus {
+  return lastSyncStatus;
+}
+
 function readOptIn(): PushOptIn {
   const value = localStorage.getItem(OPT_IN_KEY);
   return value === 'true' || value === 'false' ? value : null;
@@ -60,10 +70,15 @@ async function resolveRegistration(): Promise<ServiceWorkerRegistration> {
   }
 }
 
+type SubscribeOutcome = 'registered' | 'skipped' | 'failed';
+
 // 권한이 이미 granted라는 전제 — 그래야 subscribe()가 권한 프롬프트를 띄우지 않는다.
 // 호출부는 반드시 락 안에서 부른다.
-async function ensureSubscribedAndRegister(optIn: PushOptIn): Promise<boolean> {
-  if (!VAPID_PUBLIC_KEY) return false;
+async function ensureSubscribedAndRegister(optIn: PushOptIn): Promise<SubscribeOutcome> {
+  if (!VAPID_PUBLIC_KEY) {
+    lastSyncStatus = 'ok';
+    return 'skipped';
+  }
 
   const registration = await resolveRegistration();
   let subscription = await registration.pushManager.getSubscription();
@@ -71,7 +86,10 @@ async function ensureSubscribedAndRegister(optIn: PushOptIn): Promise<boolean> {
   // 판정은 낡은 키를 걷어내기 전에 한다. 걷어낸 뒤에 판정하면 레거시 기기의 낡은 구독이
   // "구독 없음"으로 보여 skip되고, 방금 해제한 구독을 되살리지 못한 채 끝난다.
   const { action, promoteOptIn } = decidePushSync(optIn, Boolean(subscription));
-  if (action === 'skip') return false;
+  if (action === 'skip') {
+    lastSyncStatus = 'ok';
+    return 'skipped';
+  }
 
   const applicationServerKey = urlBase64ToArrayBuffer(VAPID_PUBLIC_KEY);
   if (subscription && isStaleApplicationServerKey(subscription.options.applicationServerKey, applicationServerKey)) {
@@ -86,7 +104,8 @@ async function ensureSubscribedAndRegister(optIn: PushOptIn): Promise<boolean> {
 
   const registered = await registerSubscription(subscription);
   if (registered && promoteOptIn) writeOptIn('true');
-  return registered;
+  lastSyncStatus = registered ? 'ok' : 'failed';
+  return registered ? 'registered' : 'failed';
 }
 
 export async function subscribeToPush(): Promise<boolean> {
@@ -101,11 +120,12 @@ export async function subscribeToPush(): Promise<boolean> {
 
   return withDeviceLock(async () => {
     try {
-      const subscribed = await ensureSubscribedAndRegister('true');
-      if (subscribed) writeOptIn('true');
-      return subscribed;
+      const outcome = await ensureSubscribedAndRegister('true');
+      if (outcome === 'registered') writeOptIn('true');
+      return outcome === 'registered';
     } catch (err) {
       console.error('[push] subscribe failed:', err);
+      lastSyncStatus = 'failed';
       if (err instanceof Error && err.name === 'ServiceWorkerTimeoutError') throw err;
       return false;
     }
@@ -124,15 +144,23 @@ export function syncPushSubscription(): Promise<boolean> {
 
   syncInFlight = withDeviceLock(async () => {
     try {
-      if (!supportsPush() || Notification.permission !== 'granted') return false;
+      if (!supportsPush() || Notification.permission !== 'granted') {
+        lastSyncStatus = 'ok';
+        return false;
+      }
 
       // 락을 기다리는 동안 사용자가 껐을 수 있으므로 여기서 다시 읽는다.
       const optIn = readOptIn();
-      if (optIn === 'false') return false;
+      if (optIn === 'false') {
+        lastSyncStatus = 'ok';
+        return false;
+      }
 
-      return await ensureSubscribedAndRegister(optIn);
+      const outcome = await ensureSubscribedAndRegister(optIn);
+      return outcome === 'registered';
     } catch (err) {
       console.error('[push] subscription sync failed:', err);
+      lastSyncStatus = 'failed';
       return false;
     }
   }).finally(() => {
