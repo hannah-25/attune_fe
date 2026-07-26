@@ -1084,6 +1084,13 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
     if (m === 'DELETE') return noContent();
   }
 
+  // ── Notifications (알림함) ───────────────────────────────────────────────
+  if (p === '/v1/notifications' && m === 'GET') {
+    return ok({ notifications: [], nextCursor: null });
+  }
+  const notificationReadMatch = p.match(/^\/v1\/notifications\/(\d+)\/read$/);
+  if (notificationReadMatch && m === 'PATCH') return noContent();
+
   // ── Notices ───────────────────────────────────────────────────────────────
   if (p === '/v1/notices' && m === 'GET') {
     return ok({ notices: mockNotices, totalCount: mockNotices.length, page: 0, size: mockNotices.length });

@@ -6,7 +6,11 @@ type PushPayload = {
   title?: string;
   body?: string;
   url?: string;
+  deliveryAttemptId?: string;
+  receiptToken?: string;
 };
+
+type DeliveryEvent = 'RECEIVED' | 'DISPLAYED' | 'OPENED';
 
 declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision?: string }>;
@@ -15,8 +19,32 @@ declare const self: ServiceWorkerGlobalScope & {
 const sw = self;
 const PRECACHE_NAME = 'attune-precache-v2';
 const RUNTIME_CACHE_NAME = 'attune-runtime-v1';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? 'http://localhost:8080';
+const RECEIPT_TIMEOUT_MS = 3000;
 const precacheUrls = (self.__WB_MANIFEST ?? []).map((entry) => entry.url);
 const precachePathnames = new Set(precacheUrls.map((url) => new URL(url, sw.location.origin).pathname));
+
+function hasDeliveryReceipt(payload: PushPayload): payload is PushPayload & { deliveryAttemptId: string; receiptToken: string } {
+  return typeof payload.deliveryAttemptId === 'string' && payload.deliveryAttemptId.length > 0
+    && typeof payload.receiptToken === 'string' && payload.receiptToken.length > 0;
+}
+
+// 영수증 전송은 관측용이며 절대 알림 표시·클릭 이동을 막지 않는다(fail-open) — 타임아웃과
+// 네트워크 실패를 여기서 전부 삼킨다. 서버는 성공·중복·토큰 오류·만료 모두 204로 응답한다.
+function sendDeliveryEvent(deliveryAttemptId: string, receiptToken: string, event: DeliveryEvent): Promise<void> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), RECEIPT_TIMEOUT_MS);
+
+  return fetch(`${API_BASE_URL}/v1/notification-delivery-attempts/${deliveryAttemptId}/events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event, receiptToken }),
+    signal: controller.signal,
+  })
+    .then(() => undefined)
+    .catch(() => undefined)
+    .finally(() => clearTimeout(timeoutId));
+}
 
 function offlineResponse(headers?: HeadersInit): Response {
   return new Response('', { headers, status: 504, statusText: 'Offline' });
@@ -168,36 +196,66 @@ sw.addEventListener('push', (event) => {
     payload = {};
   }
 
-  event.waitUntil(sw.registration.showNotification(payload.title ?? 'a.tune 알림', {
-    body: payload.body,
-    icon: '/pwa-v2-192x192.png',
-    badge: '/pwa-v2-192x192.png',
-    data: { url: payload.url ?? '/home' },
-  }));
+  // 구 payload(deliveryAttemptId/receiptToken 없음)는 영수증 전송 없이 기존처럼 표시만 한다.
+  const receipt = hasDeliveryReceipt(payload) ? payload : null;
+
+  event.waitUntil((async () => {
+    const receivedPromise = receipt
+      ? sendDeliveryEvent(receipt.deliveryAttemptId, receipt.receiptToken, 'RECEIVED')
+      : Promise.resolve();
+
+    // showNotification()과 RECEIVED 영수증은 서로 의존하지 않는다 — 둘 다 끝날 때까지만 기다린다.
+    const [showResult] = await Promise.allSettled([
+      sw.registration.showNotification(payload.title ?? 'a.tune 알림', {
+        body: payload.body,
+        icon: '/pwa-v2-192x192.png',
+        badge: '/pwa-v2-192x192.png',
+        data: {
+          url: payload.url ?? '/home',
+          deliveryAttemptId: payload.deliveryAttemptId,
+          receiptToken: payload.receiptToken,
+        },
+      }),
+      receivedPromise,
+    ]);
+
+    // DISPLAYED는 "표시 요청 성공"을 뜻하므로 showNotification()이 실제로 완료됐을 때만 보낸다.
+    if (receipt && showResult.status === 'fulfilled') {
+      await sendDeliveryEvent(receipt.deliveryAttemptId, receipt.receiptToken, 'DISPLAYED');
+    }
+  })());
 });
 
 sw.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = new URL((event.notification.data as { url?: string } | undefined)?.url ?? '/home', sw.location.origin).href;
+  const data = (event.notification.data as PushPayload | undefined) ?? {};
+  const url = new URL(data.url ?? '/home', sw.location.origin).href;
 
   const isSameOrigin = new URL(url).origin === sw.location.origin;
+  const receipt = hasDeliveryReceipt(data) ? data : null;
 
   event.waitUntil(
-    sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
-      if (isSameOrigin) {
-        const exact = clients.find((client) => client.url === url);
-        if (exact && 'focus' in exact) {
-          await exact.focus();
-          return;
+    Promise.allSettled([
+      receipt
+        ? sendDeliveryEvent(receipt.deliveryAttemptId, receipt.receiptToken, 'OPENED')
+        : Promise.resolve(),
+      (async () => {
+        const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        if (isSameOrigin) {
+          const exact = clients.find((client) => client.url === url);
+          if (exact && 'focus' in exact) {
+            await exact.focus();
+            return;
+          }
+          const any = clients.find((client) => 'focus' in client);
+          if (any) {
+            await any.focus();
+            await any.navigate(url);
+            return;
+          }
         }
-        const any = clients.find((client) => 'focus' in client);
-        if (any) {
-          await any.focus();
-          await any.navigate(url);
-          return;
-        }
-      }
-      await sw.clients.openWindow(url);
-    }),
+        await sw.clients.openWindow(url);
+      })(),
+    ]),
   );
 });

@@ -22,6 +22,7 @@ import { getSummary, type SummaryStats } from '@/api/medicationAnalysis';
 import { getJournal, getJournals, type JournalDetail } from '@/api/journal';
 import { getConsultations, type ConsultationDetail } from '@/api/consultation';
 import { getMyProfile } from '@/api/user';
+import { getNotifications } from '@/api/notifications';
 import HomeMedicationSection from './HomeMedicationSection';
 import { parseServerDateTime } from '@/lib/date';
 
@@ -69,6 +70,7 @@ export default function HomeListPage() {
   const [weeklyStatsLoadError, setWeeklyStatsLoadError] = useState('');
   const [todayJournal, setTodayJournal] = useState<JournalDetail | null>(null);
   const [upcomingConsultation, setUpcomingConsultation] = useState<ConsultationDetail | null>(null);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const loadTodos = useCallback(async () => {
     const requestId = todoRequestIdRef.current + 1;
     todoRequestIdRef.current = requestId;
@@ -236,6 +238,15 @@ export default function HomeListPage() {
     void loadTodayJournal();
     void loadUpcomingConsultation();
 
+    getNotifications({ status: 'UNREAD', size: 1 })
+      .then((response) => {
+        if (!mountedRef.current) return;
+        setHasUnreadNotifications(response.notifications.length > 0);
+      })
+      .catch((err) => {
+        console.error('Failed to load unread notifications:', err);
+      });
+
     return () => {
       mountedRef.current = false;
     };
@@ -264,8 +275,13 @@ export default function HomeListPage() {
             <img src={logoImage} alt="attune" className="h-8 w-8 object-contain" />
           </div>
           <div className="grow" />
-          <HeaderButton label="알림 설정으로 이동" onClick={() => navigate('/settings/notifications')}>
-            <Bell className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.25} />
+          <HeaderButton label="알림함으로 이동" onClick={() => navigate('/notifications')}>
+            <span className="relative flex h-[18px] w-[18px] items-center justify-center">
+              <Bell className="h-[18px] w-[18px] text-gray-900" strokeWidth={2.25} />
+              {hasUnreadNotifications && (
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+              )}
+            </span>
           </HeaderButton>
           <HeaderButton label="마이페이지로 이동" onClick={() => navigate('/settings')}>
             <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-purple-200">

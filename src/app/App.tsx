@@ -35,6 +35,9 @@ import OnboardingAiResultPage from '../pages/onboarding/OnboardingAiResultPage';
 // Home
 import HomeListPage from '../pages/home/HomeListPage';
 
+// Notifications
+import NotificationInboxPage from '../pages/notifications/NotificationInboxPage';
+
 // Journal
 import JournalFullPage from '../pages/journal/JournalFullPage';
 import JournalTimelinePage from '../pages/journal/JournalTimelinePage';
@@ -264,6 +267,9 @@ export default function App() {
           {/* Home */}
           <Route path="/home" element={<HomeListPage />} />
           <Route path="/home/calendar" element={<Navigate to="/calendar" replace />} />
+
+          {/* Notifications */}
+          <Route path="/notifications" element={<NotificationInboxPage />} />
 
           {/* Journal */}
           <Route path="/journal" element={<JournalFullPage />} />
