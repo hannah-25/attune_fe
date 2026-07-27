@@ -144,6 +144,7 @@ function SameDayCard({ profile, medication }: { profile: PkProfile; medication: 
         doseHours={[DOSE_HOUR]}
         xTicks={X_TICKS}
         xDomain={[DAY_GRID.startHour, DAY_GRID.endHour]}
+        yUnit="ng/mL"
       />
 
       <div className="flex flex-wrap gap-1.5 mt-3">
@@ -243,6 +244,7 @@ function AccumulationCard({ profile, startedAt }: { profile: PkProfile; startedA
           xTicks={X_TICKS}
           xDomain={[DAY_GRID.startHour, DAY_GRID.endHour]}
           height={150}
+          yUnit="%"
         />
         <div className="flex flex-wrap gap-1.5 mt-3">
           <Chip label="혈중 피크" value={`복용 후 ${formatHours(profile.peakTimeHours)}`} />

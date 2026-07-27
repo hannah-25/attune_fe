@@ -15,6 +15,7 @@ import {
 } from './fallback-profiles';
 import { createDoseEvent, expandSchedule, activeDoseEvents } from './dose-events';
 import { buildConcentrationSeries } from './concentration-series';
+import { buildCombinedConcentrationSeries } from './combined-series';
 import { effectAccrualFraction, buildEffectAccrualSeries } from './effect-model';
 import { buildHourGrid } from './pharmacokinetics';
 import {
@@ -262,4 +263,59 @@ test('summarizePdObservations derives descriptive timing without fitting a curve
   assert.ok(summary.perceivedPeakHour >= 1.3 && summary.perceivedPeakHour <= 2.0);
   assert.ok(summary.sideEffectPeakHour >= 2.5 && summary.sideEffectPeakHour <= 3.5);
   assert.equal(summary.sideEffectBurden, 'high');
+});
+
+test('buildCombinedConcentrationSeries sums same-ingredient contributions point-wise', () => {
+  const g = { startHour: 0, endHour: 24, stepMinutes: 5 };
+  // 콘서타 8시 + 페니드(속방) 13시 부스터 — 둘 다 methylphenidate.
+  const contributions = [
+    {
+      id: concertaOros.id,
+      label: '콘서타',
+      profile: concertaOros,
+      doseEvents: [createDoseEvent({ medicationId: concertaOros.id, amountMg: 18, takenAtHour: 8 })],
+    },
+    {
+      id: methylphenidateIr.id,
+      label: '페니드',
+      profile: methylphenidateIr,
+      doseEvents: [createDoseEvent({ medicationId: methylphenidateIr.id, amountMg: 10, takenAtHour: 13 })],
+    },
+  ];
+  const { series, perMed, stats } = buildCombinedConcentrationSeries({ contributions, grid: g });
+
+  assert.equal(perMed.length, 2);
+  // 합산 곡선 = 약별 기여의 합(각 인덱스).
+  for (let i = 0; i < series.length; i += 1) {
+    const sum = perMed[0].series[i].raw + perMed[1].series[i].raw;
+    assert.ok(Math.abs(sum - series[i].raw) < 0.02, `sum mismatch at ${series[i].hour}`);
+  }
+  // 합산 Cmax는 어떤 단일 약의 Cmax보다 작지 않다.
+  const concertaAlone = buildConcentrationSeries({ profile: concertaOros, doseEvents: contributions[0].doseEvents, grid: g }).stats.cmaxRaw;
+  assert.ok(stats.cmaxRaw >= concertaAlone - 1e-6, `combined cmax ${stats.cmaxRaw} < concerta ${concertaAlone}`);
+});
+
+test('buildCombinedConcentrationSeries collapses repeated doses of one drug (Medikinet twice)', () => {
+  const g = { startHour: 0, endHour: 24, stepMinutes: 5 };
+  const contributions = [
+    {
+      id: medikinetRetard.id,
+      label: '메디키넷',
+      profile: medikinetRetard,
+      doseEvents: [
+        createDoseEvent({ medicationId: medikinetRetard.id, amountMg: 20, takenAtHour: 8 }),
+        createDoseEvent({ medicationId: medikinetRetard.id, amountMg: 10, takenAtHour: 14 }),
+      ],
+    },
+  ];
+  const { series, perMed } = buildCombinedConcentrationSeries({ contributions, grid: g });
+  assert.equal(perMed.length, 1);
+  // 오후 2차 복용(14시) 이후 농도가 단일 복용 대비 더 높아야 한다(중첩).
+  const singleMorning = buildConcentrationSeries({
+    profile: medikinetRetard,
+    doseEvents: [createDoseEvent({ medicationId: medikinetRetard.id, amountMg: 20, takenAtHour: 8 })],
+    grid: g,
+  }).series;
+  const at = (arr: { hour: number; raw: number }[], h: number) => arr.find((p) => Math.abs(p.hour - h) < 1e-6)?.raw ?? 0;
+  assert.ok(at(series, 16) > at(singleMorning, 16), 'second dose should lift the afternoon concentration');
 });

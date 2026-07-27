@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  buildCombinedConcentrationSeries,
   buildConcentrationSeries,
   buildEffectAccrualSeries,
   createDoseEvent,
@@ -8,13 +9,13 @@ import {
   profileForAbsorptionScale,
   solveScaleForTmax,
   PD_SIGNAL,
-  type DoseEvent,
+  type CombinedContribution,
   type PdSignal,
   type PkProfile,
 } from '@/lib/pk';
 import { getJournal } from '@/api/journal';
-import { getAllMedicationLogs, type MedicationPeriodLog } from '@/api/medication';
-import ConcentrationChart, { type ConcentrationMarker } from './ConcentrationChart';
+import { getAllMedicationLogs, getMedications, type MedicationPeriodLog } from '@/api/medication';
+import ConcentrationChart, { type BreakdownSeries, type ConcentrationMarker } from './ConcentrationChart';
 import EffectAccrualChart from './EffectAccrualChart';
 
 const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
@@ -23,6 +24,9 @@ const SHADOW = 'shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]';
 const SOLVE_GRID = { startHour: 0, endHour: 24, stepMinutes: 5 };
 // Tmax 슬라이더 스텝(시간).
 const TMAX_STEP = 0.25;
+
+// 약별 기여 곡선(겹쳐 그리기) 색 — 총 곡선(보라)·신호색과 구분되는 팔레트.
+const MED_COLORS = ['rgb(56, 152, 130)', 'rgb(205, 96, 150)', 'rgb(150, 120, 60)'];
 
 // 신호별 색(타임라인 카테고리 색과 일치). 신호 종류는 색 + 레인 높이로 구분.
 const SIGNAL_COLOR: Record<PdSignal, string> = {
@@ -54,9 +58,12 @@ type CheckObservation = {
   label: string;
 };
 
-type ResolvedMedication = {
+// 같은 약(프로필) 하나의 그날 복용들. 같은 약을 여러 번 먹으면 doses가 여러 개.
+type SameDayContribution = {
+  profileId: string;
+  label: string;
   profile: PkProfile;
-  doseHours: number[];
+  doses: Array<{ takenAtHour: number; amountMg: number }>;
 };
 
 type EmptyState = 'no-dose-log' | 'unsupported-medication' | null;
@@ -68,28 +75,6 @@ function clockHour(iso: string): number {
   return d.getHours() + d.getMinutes() / 60;
 }
 
-function resolveFromTakenLogs(takenLogs: MedicationPeriodLog[]): ResolvedMedication | null {
-  let sameDay: PkProfile | null = null;
-  let accumulation: PkProfile | null = null;
-
-  for (const log of takenLogs) {
-    const profile = resolveProfile({ name: log.name });
-    if (!profile) continue;
-    if (profile.modelKind === 'same-day-curve' && !sameDay) sameDay = profile;
-    else if (profile.modelKind === 'accumulation' && !accumulation) accumulation = profile;
-  }
-
-  const profile = sameDay ?? accumulation;
-  if (!profile) return null;
-
-  const doseHours = takenLogs
-    .filter((log) => resolveProfile({ name: log.name })?.id === profile.id)
-    .map((log) => clockHour(log.intakeTime))
-    .sort((a, b) => a - b);
-
-  return { profile, doseHours: doseHours.length ? doseHours : [8] };
-}
-
 /** Date → YYYY-MM-DD(로컬). journalDate와 같은 포맷. */
 function toDateKey(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -97,21 +82,83 @@ function toDateKey(d: Date): string {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
+/** 그날 taken 로그를 프로필별로 묶는다. 같은날형은 합산 대상, 누적형은 별도(폴백). */
+function buildContributions(
+  takenLogs: MedicationPeriodLog[],
+  mgByUserMed: Map<number, number>,
+): { sameDay: SameDayContribution[]; accumulation: PkProfile | null; accumulationDoseHours: number[] } {
+  const map = new Map<string, SameDayContribution>();
+  let accumulation: PkProfile | null = null;
+  const accumulationDoseHours: number[] = [];
+
+  for (const log of takenLogs) {
+    const profile = resolveProfile({ name: log.name });
+    if (!profile) continue;
+    const hour = clockHour(log.intakeTime);
+
+    if (profile.modelKind === 'accumulation') {
+      if (!accumulation) accumulation = profile;
+      if (profile.id === accumulation.id) accumulationDoseHours.push(hour);
+      continue;
+    }
+
+    const amountMg = mgByUserMed.get(log.userMedicationId) ?? profile.reference.calibrationDoseMg;
+    const existing = map.get(profile.id);
+    if (existing) {
+      existing.doses.push({ takenAtHour: hour, amountMg });
+    } else {
+      map.set(profile.id, {
+        profileId: profile.id,
+        label: profile.brandName ?? profile.displayName,
+        profile,
+        doses: [{ takenAtHour: hour, amountMg }],
+      });
+    }
+  }
+
+  const sameDay = Array.from(map.values());
+  sameDay.forEach((c) => c.doses.sort((a, b) => a.takenAtHour - b.takenAtHour));
+  accumulationDoseHours.sort((a, b) => a - b);
+
+  return { sameDay, accumulation, accumulationDoseHours };
+}
+
+/** 신호 색 점을 신호별 레인 높이(Cmax 대비 비율)에 배치. */
+function overlayMarkers(
+  checks: CheckObservation[],
+  grid: { startHour: number; endHour: number },
+  cmaxRaw: number,
+): ConcentrationMarker[] {
+  const yMax = cmaxRaw || 1;
+  return checks
+    .filter((o) => o.clockHour >= grid.startHour && o.clockHour <= grid.endHour)
+    .map((o) => ({
+      hour: o.clockHour,
+      value: SIGNAL_LANE[o.signal] * yMax,
+      color: SIGNAL_COLOR[o.signal],
+      label: o.label,
+    }));
+}
+
 /**
  * 하루 개인 반응: 집단 PK 곡선 위에 그날 저널 기록을 신호 색별 점으로 오버레이.
- * adhd-med-graph personal-response-demo의 Attune 이식(정밀 hoursAfterDose).
+ * 같은날형 약을 여러 개 복용하면(동일 성분 = methylphenidate) 하나의 농도축에 합산하고,
+ * 약별 기여 곡선을 겹쳐(토글) 그린다. 프로필마다 개인 Tmax 슬라이더를 둔다.
  *
  * 가드레일(pk-model-principles.md): 표시는 PK 곡선 + 저널 점 + 서술 요약뿐.
  * 연속 개인반응 곡선(스무딩)·농도 임계 밴드는 그리지 않는다.
  */
 export default function PersonalResponseCard({ date, revision = 0 }: { date: string; revision?: number }) {
-  const [profile, setProfile] = useState<PkProfile | null>(null);
-  const [doseHours, setDoseHours] = useState<number[]>([]);
+  const [sameDayContribs, setSameDayContribs] = useState<SameDayContribution[]>([]);
+  const [accumulationProfile, setAccumulationProfile] = useState<PkProfile | null>(null);
+  const [accumulationDoseHours, setAccumulationDoseHours] = useState<number[]>([]);
   const [checks, setChecks] = useState<CheckObservation[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [emptyState, setEmptyState] = useState<EmptyState>(null);
-  // 개인 흡수 속도 보정: 사용자가 느끼는 Tmax(복용→피크 시간). null = 집단 기준.
-  const [personalTmax, setPersonalTmax] = useState<number | null>(null);
+  // 개인 흡수 속도 보정: 프로필별 사용자가 느끼는 Tmax(복용→피크 시간). 값 없으면 집단 기준.
+  const [personalTmax, setPersonalTmax] = useState<Record<string, number | null>>({});
+  // 여러 약 합산 시 약별 기여 곡선 겹쳐 보기.
+  const [showBreakdown, setShowBreakdown] = useState(false);
   // 누적형 약물에서 혈중 농도 곡선 접기/펼치기.
   const [showConcentration, setShowConcentration] = useState(false);
   // "지금" 라인용 현재 시각. 1분마다 갱신.
@@ -121,38 +168,36 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
     return () => window.clearInterval(id);
   }, []);
 
-  // 약물이 바뀌면 개인 보정값/접기 상태 초기화.
-  useEffect(() => {
-    setPersonalTmax(null);
-    setShowConcentration(false);
-  }, [profile?.id]);
-
   useEffect(() => {
     let cancelled = false;
     setLoaded(false);
     Promise.all([
       getJournal(date).catch(() => null),
       getAllMedicationLogs({ startDate: date, endDate: date }).catch(() => ({ logs: [] as MedicationPeriodLog[] })),
+      getMedications().catch(() => []),
     ])
-      .then(([journal, medLogs]) => {
+      .then(([journal, medLogs, medications]) => {
         if (cancelled) return;
 
         const takenLogs = (medLogs?.logs ?? []).filter((l) => l.taken);
         if (takenLogs.length === 0) {
-          setProfile(null);
-          setDoseHours([]);
+          setSameDayContribs([]);
+          setAccumulationProfile(null);
           setChecks([]);
           setEmptyState('no-dose-log');
           setLoaded(true);
           return;
         }
 
-        // 그날 복용한 로그 중 PK 프로필이 해석되는 약물 1종 선택.
-        // same-day(곡선+Tmax)를 우선, 없으면 accumulation(효과 누적)으로 폴백.
-        const chosen = resolveFromTakenLogs(takenLogs);
-        if (!chosen) {
-          setProfile(null);
-          setDoseHours([]);
+        const mgByUserMed = new Map<number, number>();
+        for (const m of medications) {
+          if (typeof m.dosageAmount === 'number') mgByUserMed.set(m.userMedicationId, m.dosageAmount);
+        }
+
+        const { sameDay, accumulation, accumulationDoseHours: accHours } = buildContributions(takenLogs, mgByUserMed);
+        if (sameDay.length === 0 && !accumulation) {
+          setSameDayContribs([]);
+          setAccumulationProfile(null);
           setChecks([]);
           setEmptyState('unsupported-medication');
           setLoaded(true);
@@ -185,16 +230,21 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
           }
         }
 
-        setProfile(chosen.profile);
-        setDoseHours(chosen.doseHours);
+        // 같은날형 우선. 있으면 합산 곡선, 없으면 누적형(아토목세틴) 단독 뷰.
+        setSameDayContribs(sameDay);
+        setAccumulationProfile(sameDay.length > 0 ? null : accumulation);
+        setAccumulationDoseHours(accHours.length ? accHours : [8]);
         setChecks(obs);
+        setPersonalTmax({});
+        setShowBreakdown(false);
+        setShowConcentration(false);
         setEmptyState(null);
         setLoaded(true);
       })
       .catch(() => {
         if (!cancelled) {
-          setProfile(null);
-          setDoseHours([]);
+          setSameDayContribs([]);
+          setAccumulationProfile(null);
           setChecks([]);
           setEmptyState(null);
           setLoaded(true);
@@ -210,132 +260,183 @@ export default function PersonalResponseCard({ date, revision = 0 }: { date: str
   // grid 시작 시각용 시(時) 힌트(분 단위로 series가 재계산되지 않도록 정수화).
   const nowStartHint = nowHour != null ? Math.floor(nowHour) : null;
 
-  // 집단 프로필을 개인 Tmax에 맞게 흡수 속도(scale) 보정한 복제본.
-  // 소실 반감기는 건드리지 않고 흡수 타이밍만 옮긴다(absorption.ts).
-  const effectiveProfile = useMemo<PkProfile | null>(() => {
-    if (!profile) return null;
-    const target = personalTmax ?? profile.reference.tmaxHours;
-    if (Math.abs(target - profile.reference.tmaxHours) < 1e-3) return profile;
-    const scale = solveScaleForTmax({
-      profile,
-      doseEvents: [createDoseEvent({ medicationId: profile.id, amountMg: profile.reference.calibrationDoseMg, takenAtHour: 0 })],
-      grid: SOLVE_GRID,
-      targetTmaxHour: target,
+  // 각 프로필을 자기 슬라이더의 Tmax에 맞게 흡수 속도 보정 후 합산 기여로 변환.
+  const contributions = useMemo<CombinedContribution[]>(() => {
+    return sameDayContribs.map((c) => {
+      const target = personalTmax[c.profileId] ?? c.profile.reference.tmaxHours;
+      const eff =
+        Math.abs(target - c.profile.reference.tmaxHours) < 1e-3
+          ? c.profile
+          : profileForAbsorptionScale(
+              c.profile,
+              solveScaleForTmax({
+                profile: c.profile,
+                doseEvents: [
+                  createDoseEvent({ medicationId: c.profile.id, amountMg: c.profile.reference.calibrationDoseMg, takenAtHour: 0 }),
+                ],
+                grid: SOLVE_GRID,
+                targetTmaxHour: target,
+              }),
+            );
+      return {
+        id: c.profileId,
+        label: c.label,
+        profile: eff,
+        doseEvents: c.doses.map((d) => createDoseEvent({ medicationId: eff.id, amountMg: d.amountMg, takenAtHour: d.takenAtHour })),
+      };
     });
-    return profileForAbsorptionScale(profile, scale);
-  }, [profile, personalTmax]);
+  }, [sameDayContribs, personalTmax]);
 
   const built = useMemo(() => {
-    if (!effectiveProfile || doseHours.length === 0) return null;
-    const firstDose = doseHours[0];
+    if (contributions.length === 0) return null;
+    const allDoseHours = sameDayContribs.flatMap((c) => c.doses.map((d) => d.takenAtHour));
+    const firstDose = Math.min(...allDoseHours);
     // 시작 시각은 6시/첫 복용 1시간 전, 그리고 현재 시각보다 앞서도록(지금 라인이 범위 안).
     const startHour = Math.max(0, Math.min(6, firstDose - 1, nowStartHint ?? 6));
     const grid = { startHour, endHour: 24, stepMinutes: 5 };
-    const doseEvents: DoseEvent[] = doseHours.map((h) =>
-      createDoseEvent({ medicationId: effectiveProfile.id, amountMg: effectiveProfile.reference.calibrationDoseMg, takenAtHour: h }),
-    );
-    const { series, stats } = buildConcentrationSeries({ profile: effectiveProfile, doseEvents, grid });
-    return { series, grid, firstDose, stats };
-  }, [effectiveProfile, doseHours, nowStartHint]);
+    const combined = buildCombinedConcentrationSeries({ contributions, grid });
+    return { ...combined, grid, firstDose, doseHours: allDoseHours.slice().sort((a, b) => a - b) };
+  }, [contributions, sameDayContribs, nowStartHint]);
 
-  // 누적형(아토목세틴) 주 단위 효과 누적 곡선.
+  // 누적형(아토목세틴) 주 단위 효과 누적 곡선 + 당일 혈중 농도(접기용) 단일 곡선.
   const accrualSeries = useMemo(() => {
-    const accrual = profile?.effectAccrual;
+    const accrual = accumulationProfile?.effectAccrual;
     if (!accrual) return [];
     return buildEffectAccrualSeries({ effectAccrual: accrual, endWeeks: accrual.stabilizeWeeks + 4 });
-  }, [profile?.effectAccrual]);
+  }, [accumulationProfile]);
 
-  const markers = useMemo<ConcentrationMarker[]>(() => {
-    if (!built) return [];
-    // 점은 곡선이 아니라 신호별 3등분 레인 높이(Cmax 대비 비율)에 찍는다.
-    const yMax = built.stats.cmaxRaw || 1;
-    return checks
-      .filter((o) => o.clockHour >= built.grid.startHour && o.clockHour <= built.grid.endHour)
-      .map((o) => ({
-        hour: o.clockHour,
-        value: SIGNAL_LANE[o.signal] * yMax,
-        color: SIGNAL_COLOR[o.signal],
-        label: o.label,
-      }));
-  }, [built, checks]);
+  const accBuilt = useMemo(() => {
+    if (!accumulationProfile) return null;
+    const firstDose = accumulationDoseHours[0] ?? 8;
+    const startHour = Math.max(0, Math.min(6, firstDose - 1, nowStartHint ?? 6));
+    const grid = { startHour, endHour: 24, stepMinutes: 5 };
+    const doseEvents = accumulationDoseHours.map((h) =>
+      createDoseEvent({ medicationId: accumulationProfile.id, amountMg: accumulationProfile.reference.calibrationDoseMg, takenAtHour: h }),
+    );
+    const { series, stats } = buildConcentrationSeries({ profile: accumulationProfile, doseEvents, grid });
+    return { series, grid, firstDose, stats };
+  }, [accumulationProfile, accumulationDoseHours, nowStartHint]);
+
+  const sameDayMarkers = useMemo<ConcentrationMarker[]>(
+    () => (built ? overlayMarkers(checks, built.grid, built.stats.cmaxRaw) : []),
+    [built, checks],
+  );
+  const accMarkers = useMemo<ConcentrationMarker[]>(
+    () => (accBuilt ? overlayMarkers(checks, accBuilt.grid, accBuilt.stats.cmaxRaw) : []),
+    [accBuilt, checks],
+  );
+
+  const breakdown = useMemo<BreakdownSeries[] | undefined>(() => {
+    if (!built || !showBreakdown || built.perMed.length < 2) return undefined;
+    return built.perMed.map((m, i) => ({ key: m.id, label: m.label, color: MED_COLORS[i % MED_COLORS.length], series: m.series }));
+  }, [built, showBreakdown]);
 
   if (!loaded) return null;
   if (emptyState) return <ResponseEmptyCard state={emptyState} />;
-  if (!built || !profile) return null;
-  // same-day는 저널 점 오버레이가 목적이라 점이 없으면 숨김.
-  // accumulation은 효과 누적 추이 자체가 본 내용이라 점이 없어도 표시.
-  const isAccumulation = profile.modelKind === 'accumulation';
-  if (!isAccumulation && markers.length === 0) return null;
 
   const usedSignals = Array.from(new Set(checks.map((o) => o.signal)));
 
-  return (
-    <div className="mb-2">
-      {profile.modelKind === 'accumulation' ? (
-        <>
-          {/* 누적형: 효과 누적 추이를 기본으로, 혈중 농도 곡선은 접기. */}
-          <EffectAccrualChart
-            series={accrualSeries}
-            onsetWeeks={profile.effectAccrual?.onsetWeeks}
-            stabilizeWeeks={profile.effectAccrual?.stabilizeWeeks}
-            height={220}
-          />
-          <AccumulationNote profile={profile} />
+  // 같은날형(합산) 뷰 — 복용 로그만 있으면 저널 점이 없어도 곡선을 표시.
+  if (sameDayContribs.length > 0) {
+    if (!built) return null;
+    const multi = sameDayContribs.length > 1;
+    const medItems = built.perMed.map((m, i) => ({ label: m.label, color: MED_COLORS[i % MED_COLORS.length] }));
 
-          <button
-            type="button"
-            onClick={() => setShowConcentration((v) => !v)}
-            className="mt-3 text-xs font-semibold text-purple-600"
-          >
-            혈중 농도 추이 {showConcentration ? '숨기기' : '보기'}
-          </button>
-          {showConcentration && (
-            <div className="mt-2">
-              <div className="text-[11px] text-gray-400 mb-1.5">
-                혈중 농도가 높은 시간이 곧 효과가 큰 시간은 아닙니다.
-              </div>
-              <ConcentrationChart
-                series={built.series}
-                field="raw"
-                effectWindow={{ start: built.firstDose + profile.effectStartHours, end: built.firstDose + profile.effectEndHours }}
-                peak={{ hour: built.stats.tmaxHour, value: built.stats.cmaxRaw }}
-                doseHours={doseHours}
-                nowHour={nowHour}
-                markers={markers}
-                xTicks={[6, 9, 12, 15, 18, 21, 24]}
-                xDomain={[built.grid.startHour, built.grid.endHour]}
-                height={200}
-              />
-              <SignalLegend signals={usedSignals} className="mt-2" />
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <ConcentrationChart
-            series={built.series}
-            field="raw"
-            effectWindow={{ start: built.firstDose + profile.effectStartHours, end: built.firstDose + profile.effectEndHours }}
-            peak={{ hour: built.stats.tmaxHour, value: built.stats.cmaxRaw }}
-            doseHours={doseHours}
-            nowHour={nowHour}
-            markers={markers}
-            xTicks={[6, 9, 12, 15, 18, 21, 24]}
-            xDomain={[built.grid.startHour, built.grid.endHour]}
-            height={220}
-          />
+    return (
+      <div className="mb-2">
+        <ConcentrationChart
+          series={built.series}
+          field="raw"
+          effectWindow={
+            multi
+              ? undefined
+              : { start: built.firstDose + sameDayContribs[0].profile.effectStartHours, end: built.firstDose + sameDayContribs[0].profile.effectEndHours }
+          }
+          peak={{ hour: built.stats.tmaxHour, value: built.stats.cmaxRaw }}
+          doseHours={built.doseHours}
+          nowHour={nowHour}
+          markers={sameDayMarkers}
+          breakdownSeries={breakdown}
+          xTicks={[6, 9, 12, 15, 18, 21, 24]}
+          xDomain={[built.grid.startHour, built.grid.endHour]}
+          height={220}
+        />
+
+        {multi && (
+          <div className="mt-2 flex items-center gap-2">
+            <MedLegend items={medItems} className={showBreakdown ? '' : 'opacity-40'} />
+            <div className="grow" />
+            <button
+              type="button"
+              onClick={() => setShowBreakdown((v) => !v)}
+              className="text-xs font-semibold text-purple-600 shrink-0"
+            >
+              약별 보기 {showBreakdown ? '숨기기' : '보기'}
+            </button>
+          </div>
+        )}
+
+        <SignalLegend signals={usedSignals} className="mt-2" />
+
+        {sameDayContribs.map((c) => (
           <TmaxControl
-            referenceTmax={profile.reference.tmaxHours}
-            value={personalTmax ?? profile.reference.tmaxHours}
-            adjusted={personalTmax !== null}
-            onChange={setPersonalTmax}
-            onReset={() => setPersonalTmax(null)}
-            legend={<SignalLegend signals={usedSignals} />}
+            key={c.profileId}
+            medLabel={multi ? c.label : undefined}
+            referenceTmax={c.profile.reference.tmaxHours}
+            value={personalTmax[c.profileId] ?? c.profile.reference.tmaxHours}
+            adjusted={personalTmax[c.profileId] != null}
+            onChange={(next) => setPersonalTmax((prev) => ({ ...prev, [c.profileId]: next }))}
+            onReset={() => setPersonalTmax((prev) => ({ ...prev, [c.profileId]: null }))}
           />
-        </>
-      )}
-    </div>
-  );
+        ))}
+      </div>
+    );
+  }
+
+  // 누적형 단독 뷰(아토목세틴 등).
+  if (accumulationProfile && accBuilt) {
+    return (
+      <div className="mb-2">
+        <EffectAccrualChart
+          series={accrualSeries}
+          onsetWeeks={accumulationProfile.effectAccrual?.onsetWeeks}
+          stabilizeWeeks={accumulationProfile.effectAccrual?.stabilizeWeeks}
+          height={220}
+        />
+        <AccumulationNote profile={accumulationProfile} />
+
+        <button
+          type="button"
+          onClick={() => setShowConcentration((v) => !v)}
+          className="mt-3 text-xs font-semibold text-purple-600"
+        >
+          혈중 농도 추이 {showConcentration ? '숨기기' : '보기'}
+        </button>
+        {showConcentration && (
+          <div className="mt-2">
+            <div className="text-[11px] text-gray-400 mb-1.5">
+              혈중 농도가 높은 시간이 곧 효과가 큰 시간은 아닙니다.
+            </div>
+            <ConcentrationChart
+              series={accBuilt.series}
+              field="raw"
+              effectWindow={{ start: accBuilt.firstDose + accumulationProfile.effectStartHours, end: accBuilt.firstDose + accumulationProfile.effectEndHours }}
+              peak={{ hour: accBuilt.stats.tmaxHour, value: accBuilt.stats.cmaxRaw }}
+              doseHours={accumulationDoseHours}
+              nowHour={nowHour}
+              markers={accMarkers}
+              xTicks={[6, 9, 12, 15, 18, 21, 24]}
+              xDomain={[accBuilt.grid.startHour, accBuilt.grid.endHour]}
+              height={200}
+            />
+            <SignalLegend signals={usedSignals} className="mt-2" />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function ResponseEmptyCard({ state }: { state: Exclude<EmptyState, null> }) {
@@ -360,29 +461,31 @@ function ResponseEmptyCard({ state }: { state: Exclude<EmptyState, null> }) {
 /**
  * 개인 흡수 속도(Tmax) 보정 슬라이더 — what-if 추정이지 측정값이 아니다.
  * 집단 기준 Tmax를 중심으로 ±, 곡선의 피크 시점만 옮긴다.
+ * 여러 약 합산 시 프로필마다 하나씩(medLabel로 약 이름 표시).
  */
 function TmaxControl({
+  medLabel,
   referenceTmax,
   value,
   adjusted,
   onChange,
   onReset,
-  legend,
 }: {
+  medLabel?: string;
   referenceTmax: number;
   value: number;
   adjusted: boolean;
   onChange: (next: number) => void;
   onReset: () => void;
-  legend?: React.ReactNode;
 }) {
   const min = Math.max(0.5, Math.round(referenceTmax * 0.5 * 4) / 4);
   const max = Math.round(referenceTmax * 2 * 4) / 4;
   return (
     <div className="mt-3">
-      {legend && <div className="mb-2">{legend}</div>}
       {/* 슬라이더 라벨(유료 전용) — 제목은 단독 줄, 보조 정보는 아랫줄. */}
-      <div className="text-xs font-semibold text-gray-600 mb-1">개인 보정 : peak time 조절</div>
+      <div className="text-xs font-semibold text-gray-600 mb-1">
+        {medLabel ? `${medLabel} · peak time 조절` : '개인 보정 : peak time 조절'}
+      </div>
       <div className="flex items-center gap-1.5 mb-1.5">
         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700">PRO</span>
         <div className="grow" />
@@ -401,7 +504,7 @@ function TmaxControl({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full accent-purple-500"
-        aria-label="개인 흡수 속도(Tmax) 조절"
+        aria-label={`${medLabel ?? ''} 개인 흡수 속도(Tmax) 조절`.trim()}
       />
       <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
         <span>빠른 흡수</span>
@@ -411,8 +514,23 @@ function TmaxControl({
   );
 }
 
+/** 약별 기여 곡선 색 범례(점선 스와치). */
+function MedLegend({ items, className = '' }: { items: Array<{ label: string; color: string }>; className?: string }) {
+  return (
+    <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
+      {items.map((it) => (
+        <div key={it.label} className="flex items-center gap-1.5 text-xs text-gray-600">
+          <span className="inline-block w-3.5" style={{ borderTop: `2px dashed ${it.color}` }} />
+          {it.label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** 신호 색 범례. 슬라이더 헤더에 인라인하거나 단독으로 쓴다. */
 function SignalLegend({ signals, className = '' }: { signals: PdSignal[]; className?: string }) {
+  if (signals.length === 0) return null;
   return (
     <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
       {signals.map((sig) => (
@@ -443,4 +561,3 @@ function AccumulationNote({ profile }: { profile: PkProfile }) {
     </div>
   );
 }
-

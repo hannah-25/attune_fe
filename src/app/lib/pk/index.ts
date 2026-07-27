@@ -4,6 +4,7 @@ export * from './types';
 export * from './pharmacokinetics';
 export * from './dose-events';
 export * from './concentration-series';
+export * from './combined-series';
 export * from './absorption';
 export * from './effect-model';
 export * from './pd-calibration';

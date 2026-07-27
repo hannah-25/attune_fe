@@ -13,7 +13,8 @@ type DrugIdentity = { name?: string | null; ingredient?: string | null };
 const PROFILE_ALIASES: Record<string, string[]> = {
   'concerta-oros': ['콘서타', 'concerta'],
   'methylphenidate-ir': ['페니드', '페니드정', 'penid', '메디키넷정', '리탈린', 'ritalin'],
-  'methylphenidate-medikinet': ['메디키넷리타드', '메디키넷서방', 'medikinet'],
+  // '메디키넷정'(IR정)은 위 methylphenidate-ir가 먼저 잡으므로, 여기 '메디키넷'은 리타드/서방 계열만 남는다.
+  'methylphenidate-medikinet': ['메디키넷리타드', '메디키넷서방', '메디키넷', 'medikinet'],
   atomoxetine: ['스트라테라', 'strattera', '아토목세틴', 'atomoxetine', '아토목세틴염산염'],
 };
 
