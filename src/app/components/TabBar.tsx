@@ -17,8 +17,8 @@ const icons: Record<Tab, React.ReactNode> = {
   ),
   약: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
-      <rect x="3" y="10" width="18" height="4" rx="2" />
-      <line x1="12" y1="10" x2="12" y2="14" />
+      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+      <path d="m8.5 8.5 7 7" />
     </svg>
   ),
   캘린더: (
@@ -74,8 +74,8 @@ function TabBarItem({ active, onClick, tab }: { active: boolean; onClick: () => 
     <button
       type="button"
       onClick={onClick}
-      className={`items-center flex flex-col grow justify-center basis-[0%] text-xs gap-1 min-h-11 rounded-2xl transition-all active:scale-[0.94] ${
-        active ? 'font-bold text-gray-950' : 'font-medium text-gray-500'
+      className={`items-center flex flex-col grow justify-center basis-[0%] text-xs gap-1 min-h-11 rounded-2xl transition-all active:scale-[0.94] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset ${
+        active ? 'font-bold text-gray-950' : 'font-medium text-gray-600'
       }`}
       aria-current={active ? 'page' : undefined}
       aria-label={`${tab} 탭으로 이동`}
@@ -91,22 +91,28 @@ export function TabBar({ active, variant = 'main', tabs }: TabBarProps) {
   const visibleTabs = tabs ?? TAB_PRESETS[variant];
 
   return (
-    <nav
-      className="items-center flex justify-around absolute h-[62px] left-3 right-3 bottom-[14px] backdrop-blur-[20px] backdrop-saturate-[1.8] bg-white/80 border-white/60 border shadow-[rgba(60,40,90,0.12)_0px_10px_30px_0px,_rgba(255,255,255,0.7)_0px_1px_0px_0px_inset] z-[20] rounded-[1.9375rem]"
-      aria-label="하단 내비게이션"
-    >
-      {visibleTabs.map(tab => (
-        <TabBarItem
-          key={tab}
-          tab={tab}
-          active={active === tab}
-          onClick={() => {
-            if (active !== tab) {
-              navigate(TAB_ROUTES[tab]);
-            }
-          }}
-        />
-      ))}
-    </nav>
+    <>
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[19] h-[calc(6rem+env(safe-area-inset-bottom,0px))] bg-gradient-to-t from-gray-50 via-gray-50/95 to-transparent"
+        aria-hidden="true"
+      />
+      <nav
+        className="items-center flex justify-around absolute h-[62px] left-3 right-3 bottom-[calc(14px+env(safe-area-inset-bottom,0px))] backdrop-blur-[20px] backdrop-saturate-[1.8] bg-white/80 border-white/60 border shadow-[rgba(60,40,90,0.12)_0px_10px_30px_0px,_rgba(255,255,255,0.7)_0px_1px_0px_0px_inset] z-[20] rounded-[1.9375rem]"
+        aria-label="하단 내비게이션"
+      >
+        {visibleTabs.map(tab => (
+          <TabBarItem
+            key={tab}
+            tab={tab}
+            active={active === tab}
+            onClick={() => {
+              if (active !== tab) {
+                navigate(TAB_ROUTES[tab]);
+              }
+            }}
+          />
+        ))}
+      </nav>
+    </>
   );
 }

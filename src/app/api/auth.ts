@@ -1,4 +1,5 @@
-import { apiRequest, clearAccessToken, setAccessToken } from './client';
+import { apiRequest, clearAccessToken } from './client';
+import { SyncService } from '../offline/SyncService';
 
 export type LoginRequest = {
   email: string;
@@ -16,7 +17,7 @@ export type SignupRequest = {
   password: string;
   termsOfService: boolean;
   privacyPolicy: boolean;
-  marketingConsent: boolean;
+  marketingConsent?: boolean;
 };
 
 export type ResetPasswordConfirmRequest = {
@@ -25,24 +26,34 @@ export type ResetPasswordConfirmRequest = {
 };
 
 export async function login(payload: LoginRequest) {
-  const response = await apiRequest<LoginResponse>('/api/auth/login', {
+  return apiRequest<LoginResponse>('/v1/auth/login', {
     auth: false,
     method: 'POST',
     body: payload,
   });
-  setAccessToken(response.accessToken);
-  return response;
 }
 
 export async function logout() {
-  await apiRequest<void>('/api/auth/logout', {
-    method: 'POST',
-  });
-  clearAccessToken();
+  try {
+    await apiRequest<void>('/v1/auth/logout', {
+      method: 'POST',
+    });
+  } finally {
+    clearAccessToken();
+    try {
+      await SyncService.clearAllCache();
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) console.warn('[offline/cache] clear on logout failed:', err);
+    }
+  }
 }
 
 export function signup(payload: SignupRequest) {
-  return apiRequest<{ message: string }>('/api/account/signup', {
+  return apiRequest<{ message: string }>('/v1/account/signup', {
     auth: false,
     method: 'POST',
     body: payload,
@@ -50,14 +61,22 @@ export function signup(payload: SignupRequest) {
 }
 
 export function verifyEmail(token: string) {
-  return apiRequest<void>(`/api/account/verify-email?token=${encodeURIComponent(token)}`, {
+  return apiRequest<void>(`/v1/account/verify-email?token=${encodeURIComponent(token)}`, {
     auth: false,
     method: 'GET',
   });
 }
 
+export function resendVerificationEmail(email: string) {
+  return apiRequest<void>('/v1/account/verify-email/resend', {
+    auth: false,
+    method: 'POST',
+    body: { email },
+  });
+}
+
 export function requestPasswordReset(email: string) {
-  return apiRequest<void>('/api/account/password/reset', {
+  return apiRequest<void>('/v1/account/password/reset', {
     auth: false,
     method: 'POST',
     body: { email },
@@ -65,16 +84,57 @@ export function requestPasswordReset(email: string) {
 }
 
 export function validatePasswordResetToken(token: string) {
-  return apiRequest<void>(`/api/account/password/reset/${encodeURIComponent(token)}`, {
+  return apiRequest<void>(`/v1/account/password/reset/${encodeURIComponent(token)}`, {
     auth: false,
     method: 'GET',
   });
 }
 
 export function confirmPasswordReset(payload: ResetPasswordConfirmRequest) {
-  return apiRequest<void>('/api/account/password/reset/confirm', {
+  return apiRequest<void>('/v1/account/password/reset/confirm', {
     auth: false,
     method: 'POST',
     body: payload,
+  });
+}
+
+export function changePassword(currentPassword: string, newPassword: string) {
+  return apiRequest<void>('/v1/account/password', {
+    method: 'PATCH',
+    body: { currentPassword, newPassword },
+  });
+}
+
+export function restoreAccount(email: string, password: string) {
+  return apiRequest<LoginResponse>('/v1/auth/restore', {
+    auth: false,
+    method: 'POST',
+    body: { email, password },
+  });
+}
+
+export function requestAccountWithdrawal(password?: string) {
+  const trimmedPassword = password?.trim();
+
+  return apiRequest<void>('/v1/account/withdraw', {
+    method: 'POST',
+    body: trimmedPassword ? { password: trimmedPassword } : undefined,
+    retryOnUnauthorized: false,
+  });
+}
+
+export function socialLogin(provider: 'GOOGLE' | 'KAKAO' | 'APPLE', token: string) {
+  return apiRequest<LoginResponse>('/v1/auth/social/login', {
+    auth: false,
+    method: 'POST',
+    body: { provider, token },
+  });
+}
+
+export function restoreSocialAccount(provider: 'GOOGLE' | 'KAKAO' | 'APPLE', token: string) {
+  return apiRequest<LoginResponse>('/v1/auth/social/restore', {
+    auth: false,
+    method: 'POST',
+    body: { provider, token },
   });
 }

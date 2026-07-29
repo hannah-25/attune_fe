@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 
-type PageEntry = { path: string; label: string; desc: string };
+type PageEntry = { path: string; label: string; desc: string; state?: Record<string, unknown> };
 type Group = { group: string; pages: PageEntry[] };
 
 const sections: Group[] = [
@@ -54,7 +54,6 @@ const sections: Group[] = [
   {
     group: '캘린더',
     pages: [
-      { path: '/home/calendar', label: '홈 — 캘린더',   desc: '달력 + 타임라인' },
       { path: '/calendar',          label: '캘린더 메인',     desc: '월간 통합뷰 (CAL-001)' },
       { path: '/calendar/event',    label: '일정 상세',        desc: '이벤트 상세 보기' },
       { path: '/calendar/new',      label: '새 일정',          desc: '일정 추가 · 카테고리' },
@@ -66,7 +65,7 @@ const sections: Group[] = [
     pages: [
       { path: '/report',                label: '주간 리포트',    desc: '주간 대시보드 (ANL-001)' },
       { path: '/report/monthly',        label: '월별 목록',      desc: '리포트 목록 (ANL-003)' },
-      { path: '/report/monthly/detail', label: '월별 상세',      desc: 'AI 인사이트 · 히트맵' },
+      { path: '/report/monthly/detail', label: '월별 상세',      desc: 'AI 인사이트 · 히트맵', state: { reportId: 901 } },
     ],
   },
   {
@@ -128,10 +127,11 @@ export default function IndexPage() {
               {group}
             </div>
             <div className="flex flex-col gap-1">
-              {pages.map(({ path, label, desc }) => (
+              {pages.map(({ path, label, desc, state }) => (
                 <Link
                   key={path}
                   to={path}
+                  state={state}
                   className="flex items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100"
                 >
                   <div>

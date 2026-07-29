@@ -1,19 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { HeaderIconButton, TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { deleteSchedule, getSchedule, getScheduleCategories, ScheduleCategory, ScheduleDetail } from '@/api/schedule';
+import { parseServerDateTime } from '@/lib/date';
+import type { CalendarEvent } from '@/api/calendarEvents';
 
 export default function EventDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const externalEvent = (location.state as { externalEvent?: CalendarEvent } | null)?.externalEvent ?? null;
   const [searchParams] = useSearchParams();
   const scheduleId = Number(searchParams.get('id'));
   const memoRef = useRef<HTMLTextAreaElement>(null);
   const [eventDetail, setEventDetail] = useState<ScheduleDetail | null>(null);
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
-  const [memo, setMemo] = useState('');
+  const [memo, setMemo] = useState(() => externalEvent?.description ?? '');
   const [memoFocused, setMemoFocused] = useState(false);
   const [showActions, setShowActions] = useState(false);
 
@@ -32,7 +36,8 @@ export default function EventDetailPage() {
         setCategories(categoryResponse.categories);
         setMemo(detail.description ?? '');
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load event details:', err);
         if (!ignore) setError('일정을 불러오지 못했습니다.');
       });
 
@@ -47,16 +52,57 @@ export default function EventDetailPage() {
     try {
       await deleteSchedule(scheduleId);
       navigate('/calendar');
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete schedule:', err);
       setError('일정을 삭제하지 못했습니다.');
     }
   };
 
+  if (externalEvent) {
+    return (
+      <div
+        className="w-full h-full bg-gray-50 text-sm flex flex-col"
+        style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
+      >
+        <div className="flex flex-col flex-1 min-h-0">
+          <TopBar left={<NavBackButton onClick={() => navigate(-1)} />} />
+          <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
+            <div className="items-center flex mb-[14px]">
+              <button
+                type="button"
+                className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97]"
+              >
+                <span className="block">Google Calendar</span>
+              </button>
+            </div>
+            <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
+              {externalEvent.title}
+            </div>
+            <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
+              <DetailRow label="언제" value={formatExternalWhen(externalEvent)} onClick={() => undefined} />
+              <DetailRow label="어디서" value={externalEvent.location || '위치 없음'} last onClick={() => undefined} />
+            </div>
+            <div className="text-xs text-gray-400 px-1 mt-2">
+              Google Calendar 일정의 제목, 시간, 장소는 에이튠에서 수정할 수 없어요.
+            </div>
+            <div className="font-bold text-gray-600 pt-4 pr-1 pb-1.5 pl-1">메모</div>
+            <div className="bg-white border border-transparent shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem]">
+              <p className={`text-base whitespace-pre-wrap break-words ${memo.trim() ? 'text-gray-800' : 'text-gray-400'}`}>
+                {memo.trim() || '메모 없음'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const category = categories.find((item) => item.categoryId === eventDetail?.categoryId);
+  const showCounselingPrepare = isAdhdConsultationCategory(category?.categoryName);
 
   return (
     <div
-      className="w-full h-dvh bg-purple-100 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -85,21 +131,18 @@ export default function EventDetailPage() {
         ) : null}
         <div className="grow min-h-0 overflow-y-auto overscroll-contain basis-[0%] pt-0 pr-4 pb-4 pl-4">
           {error ? <div className="text-red-500 text-xs mb-3">{error}</div> : null}
-          <div className="items-center flex mb-[14px] gap-2">
+          <div className="items-center flex mb-[14px]">
             <button
               type="button"
               className="items-center flex font-semibold whitespace-nowrap bg-purple-100 border-black/0 border text-purple-800 text-xs gap-1.5 tracking-tight pt-[7px] pr-[11px] pb-[7px] pl-[11px] rounded-[62.4375rem] transition-all active:scale-[0.97]"
             >
               <span className="block">{category?.categoryName ?? '일정'}</span>
             </button>
-            <div className="text-gray-600 text-xs">
-              직접 등록
-            </div>
           </div>
           <div className="font-extrabold mb-[14px] text-3xl leading-[35px] whitespace-pre-line" style={{ fontFamily: "NanumSquare, system-ui" }}>
             {eventDetail?.title ?? '일정'}
           </div>
-          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-2xl">
+          <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-2xl">
             <DetailRow
               label="언제"
               value={eventDetail ? formatWhen(eventDetail) : '-'}
@@ -128,7 +171,7 @@ export default function EventDetailPage() {
           <button
             type="button"
             onClick={() => memoRef.current?.focus()}
-            className={`block w-full text-left bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem] transition-colors ${
+            className={`block w-full text-left bg-white border shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem] transition-colors ${
               memoFocused ? 'border-purple-300' : 'border-transparent'
             }`}
           >
@@ -151,18 +194,30 @@ export default function EventDetailPage() {
             >
               <span className="block">수정</span>
             </button>
-            <button
-              type="button"
-              onClick={() => navigate('/counseling/prepare')}
-              className="items-center flex grow font-bold justify-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem] transition-all active:scale-[0.97]"
-            >
-              <span className="block">상담 준비</span>
-            </button>
+            {showCounselingPrepare ? (
+              <button
+                type="button"
+                onClick={() => navigate('/counseling/prepare')}
+                className="items-center flex grow font-bold justify-center h-[50px] bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.04)_0px_4px_0px_0px] text-white basis-[0%] text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-[1.5625rem] transition-all active:scale-[0.97]"
+              >
+                <span className="block">상담 준비</span>
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function formatExternalWhen(event: CalendarEvent) {
+  if (event.isAllDay) return `${formatDate(event.startTime)} 종일`;
+  return `${formatDate(event.startTime)} · ${formatTime(event.startTime)} - ${formatTime(event.endTime)}`;
+}
+
+function isAdhdConsultationCategory(categoryName?: string) {
+  if (!categoryName) return false;
+  return /^adhd\s*진료$/i.test(categoryName.trim());
 }
 
 function formatWhen(eventDetail: ScheduleDetail) {
@@ -171,13 +226,13 @@ function formatWhen(eventDetail: ScheduleDetail) {
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(0, 10);
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
 function formatTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16);
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

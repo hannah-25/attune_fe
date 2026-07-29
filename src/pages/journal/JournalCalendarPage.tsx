@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { TabBar } from '@/components/TabBar';
-import { formatMonthDay } from '@/lib/date';
+import { formatMonthDay, parseServerDateTime } from '@/lib/date';
 import { HeaderIconButton, TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import { getJournalDates } from '@/api/journal';
@@ -59,7 +59,8 @@ export default function JournalCalendarPage() {
       .then((response) => {
         if (!ignore) setRecordDates(new Set(response.dates));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load journal record dates:', err);
         if (!ignore) setError('일지 기록을 불러오지 못했습니다.');
       });
 
@@ -75,7 +76,7 @@ export default function JournalCalendarPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -127,10 +128,10 @@ export default function JournalCalendarPage() {
           <div className="font-bold mb-2 text-gray-900">최근 기록</div>
           {error ? <div className="text-red-500 text-xs mb-2">{error}</div> : null}
           {recentDates.map((dateKey) => {
-            const d = new Date(dateKey);
+            const d = parseServerDateTime(dateKey);
             const records: DotColor[] = ['purple'];
             return (
-              <div key={dateKey} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-2xl">
+              <div key={dateKey} className="mb-2 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-2xl">
                 <div className="text-xs text-gray-500">{formatMonthDay(d)}</div>
                 <div className="flex flex-wrap gap-2 mt-[6px]">
                   {records.map((color, i) => (

@@ -1,0 +1,108 @@
+﻿openapi: 3.0.3
+info:
+  title: Todo API
+  version: 1.1.0
+  description: API for creating todos without category.
+
+servers:
+  - url: https://api.example.com
+    description: Production (example)
+
+security:
+  - bearerAuth: []
+
+paths:
+  /v1/todos:
+    post:
+      tags:
+        - Todos
+      summary: Create todo
+      description: Creates a new todo for the authenticated user.
+      operationId: createTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTodoRequest'
+            examples:
+              request:
+                value:
+                  title: 운동하기
+                  dueAt: "2026-05-26T21:00:00"
+                  isAllDay: false
+      responses:
+        '201':
+          description: Created
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateTodoRequest:
+      type: object
+      required:
+        - title
+        - dueAt
+        - isAllDay
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: 운동하기
+        dueAt:
+          type: string
+          description: LocalDateTime string (yyyy-MM-ddTHH:mm:ss)
+          pattern: '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$'
+          example: "2026-05-26T21:00:00"
+        isAllDay:
+          type: boolean
+          example: false
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Invalid request.
+
+  responses:
+    BadRequestError:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: Invalid request body.
+
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: Unauthorized.
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: Internal server error.

@@ -4,7 +4,7 @@ import { Check, Pill } from 'lucide-react';
 export default function MedicationAlarmPage() {
   return (
     <div
-      className="w-full h-dvh bg-gray-950 text-white text-sm flex flex-col"
+      className="w-full h-full bg-gray-950 text-white text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { requestPasswordReset } from '../../app/api/auth';
+import { ApiError } from '../../app/api/client';
 
 export default function ResetPassword1Page() {
   const navigate = useNavigate();
@@ -20,8 +21,8 @@ export default function ResetPassword1Page() {
     try {
       await requestPasswordReset(email.trim());
       navigate(`/reset-password/2?email=${encodeURIComponent(email.trim())}`);
-    } catch {
-      setError('재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '재설정 메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +51,7 @@ export default function ResetPassword1Page() {
             type="button"
             onClick={handleSendResetEmail}
             disabled={isSubmitting}
-            className="items-center flex font-bold justify-center w-full h-[46px] mt-5 bg-gray-900 shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] active:bg-black disabled:opacity-60"
+            className="items-center flex font-bold justify-center w-full h-[46px] mt-5 bg-[rgb(31,27,46)] shadow-[rgba(0,0,0,0.06)_0px_4px_0px_0px] text-white text-base tracking-tight min-h-11 pt-0 pr-5 pb-0 pl-5 rounded-xl select-none transition-all active:scale-[0.97] disabled:opacity-60"
           >
             {isSubmitting ? '발송 중...' : '재설정 링크 보내기'}
           </button>

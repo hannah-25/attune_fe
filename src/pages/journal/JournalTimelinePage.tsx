@@ -7,19 +7,13 @@ import { formatDate } from '@/lib/date';
 import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
 import {
-  checkCondition,
-  checkSideEffect,
-  checkTrouble,
+  getJournalTags,
+  checkJournalTag,
+  uncheckJournalTag,
   createMemo,
-  getMemo,
-  getConditionTags,
   getJournal,
-  getSideEffectTags,
-  getTroubleTags,
-  uncheckCondition,
-  uncheckSideEffect,
-  uncheckTrouble,
 } from '@/api/journal';
+import PersonalResponseCard from '@/components/pk/PersonalResponseCard';
 
 type Category = '감정·증상' | '부작용' | '업무 실수';
 
@@ -83,7 +77,12 @@ function buildTagEntries(
 ): TagEntry[] {
   const map = new Map<string, TagEntry>();
 
-  const add = (category: Category, tagId: number, label: string, checkedAt: string) => {
+  const add = (
+    category: Category,
+    tagId: number,
+    label: string,
+    checkedAt: string,
+  ) => {
     const time = checkedAt.slice(11, 16);
     const key = `${category}|${time}`;
     if (!map.has(key)) map.set(key, { id: key, time, kind: 'tags', category, tags: [] });
@@ -94,7 +93,9 @@ function buildTagEntries(
   sideEffects.forEach((s) => add('부작용', s.tagId, s.sideEffect, s.checkedAt));
   troubles.forEach((t) => add('업무 실수', t.tagId, t.trouble, t.checkedAt));
 
-  return Array.from(map.values()).sort((a, b) => a.time.localeCompare(b.time));
+  return Array.from(map.values())
+    .filter((entry) => entry.tags.length > 0)
+    .sort((a, b) => a.time.localeCompare(b.time));
 }
 
 function getNow(): string {
@@ -112,7 +113,7 @@ export default function JournalTimelinePage() {
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [categoryTags, setCategoryTags] = useState<Record<Category, ApiTag[]>>({
     '감정·증상': [],
-    부작용: [],
+    '부작용': [],
     '업무 실수': [],
   });
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
@@ -120,29 +121,29 @@ export default function JournalTimelinePage() {
   const [memoSaved, setMemoSaved] = useState(true);
   const [memoFocused, setMemoFocused] = useState(false);
   const [error, setError] = useState('');
+  const [journalRevision, setJournalRevision] = useState(0);
 
   useEffect(() => {
     let ignore = false;
 
     Promise.all([
-      getConditionTags(),
-      getSideEffectTags(),
-      getTroubleTags(),
-      getMemo(journalDate).catch(() => undefined),
-      getJournal(journalDate).catch(() => null),
+      getJournalTags('CONDITION'),
+      getJournalTags('SIDE_EFFECT'),
+      getJournalTags('TROUBLE'),
+      getJournal(journalDate).catch((err) => { console.error('Failed to load journal:', err); return null; }),
     ])
-      .then(([conditions, sideEffects, troubles, memoData, journal]) => {
+      .then(([conditionCatalogTags, sideEffectCatalogTags, troubleCatalogTags, journal]) => {
         if (ignore) return;
         setCategoryTags({
-          '감정·증상': conditions.map((tag) => ({ label: tag.condition, tagId: tag.tagId })),
-          부작용: sideEffects.map((tag) => ({ label: tag.sideEffect, tagId: tag.tagId })),
-          '업무 실수': troubles.map((tag) => ({ label: tag.trouble, tagId: tag.tagId })),
+          '감정·증상': conditionCatalogTags.filter((t) => t.enabled && t.visible).map((t) => ({ label: t.name, tagId: t.tagId })),
+          '부작용': sideEffectCatalogTags.filter((t) => t.enabled && t.visible).map((t) => ({ label: t.name, tagId: t.tagId })),
+          '업무 실수': troubleCatalogTags.filter((t) => t.enabled && t.visible).map((t) => ({ label: t.name, tagId: t.tagId })),
         });
-        if (memoData?.memo) {
-          setMemo(memoData.memo);
-          setMemoSaved(true);
-        }
         if (journal) {
+          if (journal.checked.memo) {
+            setMemo(journal.checked.memo);
+            setMemoSaved(true);
+          }
           setEntries(buildTagEntries(
             journal.checked.conditions,
             journal.checked.sideEffects,
@@ -150,7 +151,8 @@ export default function JournalTimelinePage() {
           ));
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load journal tags:', err);
         if (!ignore) setError('일지 태그를 불러오지 못했습니다.');
       });
 
@@ -163,22 +165,24 @@ export default function JournalTimelinePage() {
     setEditingEntryId(prev => prev === entryId ? null : entryId);
   };
 
-  const removeTag = (entryId: string, tagId: number, category: Category) => {
-    const apiCall =
-      category === '감정·증상' ? uncheckCondition(tagId, journalDate) :
-      category === '부작용' ? uncheckSideEffect(tagId, journalDate) :
-      uncheckTrouble(tagId, journalDate);
-
-    apiCall.catch(() => setError('태그 삭제에 실패했습니다.'));
-
+  const removeTag = (entryId: string, tag: TagItem) => {
+    const snapshot = entries;
     setEntries(prev =>
       prev
         .map(entry => {
           if (entry.id !== entryId || entry.kind !== 'tags') return entry;
-          return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.tagId !== tagId) };
+          return { ...entry, tags: (entry as TagEntry).tags.filter(t => t.tagId !== tag.tagId) };
         })
         .filter(entry => entry.kind !== 'tags' || (entry as TagEntry).tags.length > 0)
     );
+
+    uncheckJournalTag(tag.tagId, journalDate)
+      .then(() => setJournalRevision((revision) => revision + 1))
+      .catch((err) => {
+        console.error('Failed to remove tag:', err);
+        setError('태그 삭제에 실패했습니다.');
+        setEntries(snapshot);
+      });
   };
 
   const openSheet = (category: Category) => {
@@ -205,26 +209,23 @@ export default function JournalTimelinePage() {
     const selectedApiTags = categoryTags[activeCategory].filter((tag) => selectedTags.has(tag.label));
 
     try {
-      await Promise.all(selectedApiTags.map((tag) => {
-        if (activeCategory === '감정·증상') return checkCondition(tag.tagId);
-        if (activeCategory === '부작용') return checkSideEffect(tag.tagId);
-        return checkTrouble(tag.tagId);
-      }));
-    } catch {
+      await Promise.all(selectedApiTags.map((tag) => checkJournalTag(tag.tagId, journalDate)));
+      setJournalRevision((revision) => revision + 1);
+      setEntries(prev => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          time: getNow(),
+          kind: 'tags',
+          category: activeCategory,
+          tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
+        },
+      ]);
+      closeSheet();
+    } catch (err) {
+      console.error('Failed to record tags:', err);
       setError('태그 기록에 실패했습니다.');
     }
-
-    setEntries(prev => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        time: getNow(),
-        kind: 'tags',
-        category: activeCategory,
-        tags: selectedApiTags.map(t => ({ tagId: t.tagId, label: t.label })),
-      },
-    ]);
-    closeSheet();
   };
 
   const saveMemo = async () => {
@@ -232,7 +233,8 @@ export default function JournalTimelinePage() {
     try {
       await createMemo(journalDate, memo);
       setMemoSaved(true);
-    } catch {
+    } catch (err) {
+      console.error('Failed to save memo:', err);
       setError('메모 저장에 실패했습니다.');
     }
   };
@@ -242,7 +244,7 @@ export default function JournalTimelinePage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
@@ -254,11 +256,14 @@ export default function JournalTimelinePage() {
 
         <ScrollArea className="pt-0 pb-[230px]">
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <div className="relative pt-0 pr-0 pb-0 pl-[18px]">
+          <div className="px-[18px] pb-1">
+            <PersonalResponseCard date={journalDate} revision={journalRevision} />
+          </div>
+          <div className="relative pt-0 pr-[18px] pb-0 pl-[18px]">
             <div className="absolute w-[2px] left-[6px] top-[6px] bottom-[30px] bg-purple-100"></div>
 
             {entries.map(entry => {
-              if (entry.kind === 'medication' || entry.kind === 'meal') {
+              if (entry.kind !== 'tags') {
                 return (
                   <div key={entry.id} className="relative pt-0 pr-0 pb-3 pl-0">
                     <div className="absolute w-[14px] h-[14px] left-[-18px] top-2 bg-purple-300 border-[rgb(255,_250,_240)] border-[2.22222px] rounded-[0.4375rem]"></div>
@@ -266,7 +271,7 @@ export default function JournalTimelinePage() {
                       <div className="font-bold text-gray-600 text-xs">{entry.time}</div>
                       <div className="font-bold text-gray-500 text-xs">· {entry.label}</div>
                     </div>
-                    <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[10px] rounded-[0.875rem]">
+                    <div className="bg-white border border-gray-100 shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[10px] rounded-[0.875rem]">
                       <div className={entry.kind === 'medication' ? 'font-bold' : 'font-semibold'}>{entry.content}</div>
                     </div>
                   </div>
@@ -291,7 +296,7 @@ export default function JournalTimelinePage() {
                       {isEditing ? '완료' : '편집'}
                     </button>
                   </div>
-                  <div className={`${cfg.cardBg} shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[10px] rounded-[0.875rem]`}>
+                  <div className={`${cfg.cardBg} shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[10px] rounded-[0.875rem]`}>
                     <div className="flex flex-wrap gap-1">
                       {entry.tags.map(tag => (
                         <div
@@ -303,7 +308,7 @@ export default function JournalTimelinePage() {
                             <button
                               type="button"
                               aria-label={`${tag.label} 삭제`}
-                              onClick={() => removeTag(entry.id, tag.tagId, entry.category)}
+                              onClick={() => removeTag(entry.id, tag)}
                               className="flex items-center justify-center w-4 h-4 rounded-full opacity-50"
                             >
                               <X className="w-3 h-3" strokeWidth={2.5} />
@@ -330,7 +335,7 @@ export default function JournalTimelinePage() {
 
         </ScrollArea>
 
-        <div className={`absolute left-4 right-4 bottom-[142px] bg-white border shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-[14px] rounded-2xl transition-colors ${memoFocused ? 'border-purple-300' : 'border-transparent'}`}>
+        <div className={`absolute left-4 right-4 bottom-[142px] bg-white border shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-[14px] rounded-2xl transition-colors ${memoFocused ? 'border-purple-300' : 'border-transparent'}`}>
           {!memoSaved && (
             <div className="flex justify-end mb-2">
               <button

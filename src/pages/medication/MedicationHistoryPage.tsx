@@ -1,24 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, Clock } from 'lucide-react';
+import { Check, Clock } from 'lucide-react';
 import { ScrollArea } from '@/components/ScrollArea';
 import { TabBar } from '@/components/TabBar';
-import { HeaderIconButton, TopBar } from '@/components/TopBar';
+import { TopBar } from '@/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
-import { getAllMedicationLogs, MedicationLogStatus } from '@/api/medication';
+import { getAllMedicationLogs, type MedicationPeriodLog } from '@/api/medication';
+import { parseServerDateTime } from '@/lib/date';
 
 type HistoryPeriod = '1주' | '1개월' | '3개월' | '직접';
 const PERIODS: HistoryPeriod[] = ['1주', '1개월', '3개월', '직접'];
-type MedicationLog = {
-  takenAt: string;
-  status: MedicationLogStatus;
-  scheduleId: number;
-};
 
 export default function MedicationHistoryPage() {
   const [activePeriod, setActivePeriod] = useState<HistoryPeriod>('1개월');
-  const [logs, setLogs] = useState<MedicationLog[]>([]);
+  const [customStart, setCustomStart] = useState(toDateKey((() => { const d = new Date(); d.setDate(d.getDate() - 29); return d; })()));
+  const [customEnd, setCustomEnd] = useState(toDateKey(new Date()));
+  const [logs, setLogs] = useState<MedicationPeriodLog[]>([]);
   const [error, setError] = useState('');
-  const range = useMemo(() => getRange(activePeriod), [activePeriod]);
+  const range = useMemo(
+    () => activePeriod === '직접' ? { startDate: customStart, endDate: customEnd } : getRange(activePeriod),
+    [activePeriod, customStart, customEnd],
+  );
   const stats = useMemo(() => getStats(logs), [logs]);
   const groups = useMemo(() => groupLogs(logs), [logs]);
 
@@ -29,7 +30,8 @@ export default function MedicationHistoryPage() {
       .then((response) => {
         if (!ignore) setLogs(extractLogs(response));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to load medication logs:', err);
         if (!ignore) setError('복용 이력을 불러오지 못했습니다.');
       });
 
@@ -40,14 +42,13 @@ export default function MedicationHistoryPage() {
 
   return (
     <div
-      className="w-full h-dvh bg-gray-50 text-sm flex flex-col"
+      className="w-full h-full bg-gray-50 text-sm flex flex-col"
       style={{ fontFamily: "NanumSquare, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
     >
       <div className="flex flex-col flex-1 min-h-0">
         <TopBar
           title="복용 이력"
           left={<NavBackButton />}
-          right={<HeaderIconButton icon={<CalendarDays className="h-4 w-4 text-gray-700" strokeWidth={2.35} />} />}
         />
         <div className="flex gap-1.5 pt-0 pr-4 pb-3 pl-4">
           {PERIODS.map((period) => {
@@ -57,27 +58,46 @@ export default function MedicationHistoryPage() {
                 key={period}
                 type="button"
                 onClick={() => setActivePeriod(period)}
-                className={`items-center flex grow font-bold justify-center h-[30px] basis-[0%] rounded-[0.9375rem] transition-colors ${selected ? 'bg-[rgb(31,27,46)] text-white' : 'bg-white text-gray-700'}`}
+                className={`items-center flex grow font-bold justify-center h-[30px] basis-[0%] rounded-[0.9375rem] border transition-colors ${selected ? 'bg-purple-100 border-[rgb(185,166,255)] text-purple-800' : 'bg-white border-transparent text-gray-600'}`}
               >
                 {period}
               </button>
             );
           })}
         </div>
+        {activePeriod === '직접' && (
+          <div className="flex items-center gap-2 px-4 pb-3">
+            <input
+              type="date"
+              value={customStart}
+              max={customEnd}
+              onChange={(e) => setCustomStart(e.target.value)}
+              className="grow h-9 bg-white border border-gray-200 rounded-xl px-3 text-sm text-gray-700 outline-none focus:border-purple-400"
+            />
+            <span className="text-gray-400 text-xs shrink-0">~</span>
+            <input
+              type="date"
+              value={customEnd}
+              min={customStart}
+              max={toDateKey(new Date())}
+              onChange={(e) => setCustomEnd(e.target.value)}
+              className="grow h-9 bg-white border border-gray-200 rounded-xl px-3 text-sm text-gray-700 outline-none focus:border-purple-400"
+            />
+          </div>
+        )}
         <ScrollArea>
           {error ? <div className="text-red-500 text-xs px-1 pb-2">{error}</div> : null}
-          <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-3 rounded-[1.125rem]">
+          <div className="mb-3 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-3 rounded-[1.125rem]">
             <div className="flex justify-around">
               <Stat value={stats.rate} label="복용률" />
               <Stat value={stats.taken} label="복용" />
               <Stat value={stats.missed} label="미복용" />
-              <Stat value={stats.delayed} label="미루기" />
             </div>
           </div>
           {groups.map((group) => (
             <div key={group.date} className="mb-[14px]">
               <div className="font-bold mb-[6px] text-gray-600 pt-0 pr-1 pb-0 pl-1">{group.date}</div>
-              <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_4px_14px_0px,_rgba(60,40,90,0.04)_0px_1px_2px_0px] p-1 rounded-[1.125rem]">
+              <div className="bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px] p-1 rounded-[1.125rem]">
                 {group.items.map((item, index) => (
                   <div
                     key={`${group.date}-${item.text}-${index}`}
@@ -118,47 +138,96 @@ function getRange(period: HistoryPeriod) {
   return { startDate: toDateKey(start), endDate: toDateKey(end) };
 }
 
-function extractLogs(response: unknown): MedicationLog[] {
-  if (Array.isArray(response)) return response as MedicationLog[];
-  if (response && typeof response === 'object' && 'logs' in response && Array.isArray((response as { logs: unknown }).logs)) {
-    return (response as { logs: MedicationLog[] }).logs;
+function extractLogs(response: unknown): MedicationPeriodLog[] {
+  if (Array.isArray(response)) {
+    return normalizeLogs(response);
   }
+
+  if (response && typeof response === 'object' && 'logs' in response && Array.isArray((response as { logs: unknown }).logs)) {
+    return normalizeLogs((response as { logs: unknown[] }).logs);
+  }
+
   return [];
 }
 
-function getStats(logs: MedicationLog[]) {
-  const taken = logs.filter((log) => log.status === 'TAKEN').length;
-  const missed = logs.filter((log) => log.status === 'MISSED' || log.status === 'SKIPPED').length;
-  const total = logs.length;
-  const rate = total > 0 ? Math.round((taken / total) * 100) : 0;
-  return { rate: `${rate}%`, taken: String(taken), missed: String(missed), delayed: '0' };
+function normalizeLogs(source: unknown[]): MedicationPeriodLog[] {
+  return source
+    .map((item) => normalizeLog(item))
+    .filter((item): item is MedicationPeriodLog => item !== null);
 }
 
-function groupLogs(logs: MedicationLog[]) {
-  const groups = new Map<string, MedicationLog[]>();
+function normalizeLog(raw: unknown): MedicationPeriodLog | null {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const item = raw as {
+    userMedicationId?: unknown;
+    name?: unknown;
+    intakeTime?: unknown;
+    taken?: unknown;
+    takenAt?: unknown;
+    status?: unknown;
+    medicationName?: unknown;
+  };
+
+  if (typeof item.intakeTime === 'string' && typeof item.taken === 'boolean') {
+    return {
+      userMedicationId: typeof item.userMedicationId === 'number' ? item.userMedicationId : 0,
+      name: typeof item.name === 'string' && item.name.trim() ? item.name : '복용 약',
+      intakeTime: item.intakeTime,
+      taken: item.taken,
+    };
+  }
+
+  if (typeof item.takenAt === 'string' && typeof item.status === 'string') {
+    return {
+      userMedicationId: typeof item.userMedicationId === 'number' ? item.userMedicationId : 0,
+      name:
+        typeof item.name === 'string' && item.name.trim()
+          ? item.name
+          : typeof item.medicationName === 'string' && item.medicationName.trim()
+            ? item.medicationName
+            : '복용 약',
+      intakeTime: item.takenAt,
+      taken: item.status === 'TAKEN',
+    };
+  }
+
+  return null;
+}
+
+function getStats(logs: MedicationPeriodLog[]) {
+  const taken = logs.filter((log) => log.taken).length;
+  const missed = logs.filter((log) => !log.taken).length;
+  const total = logs.length;
+  const rate = total > 0 ? Math.round((taken / total) * 100) : 0;
+  return { rate: `${rate}%`, taken: String(taken), missed: String(missed) };
+}
+
+function groupLogs(logs: MedicationPeriodLog[]) {
+  const groups = new Map<string, MedicationPeriodLog[]>();
   logs.forEach((log) => {
-    const date = formatDate(log.takenAt);
+    const date = formatDate(log.intakeTime);
     groups.set(date, [...(groups.get(date) ?? []), log]);
   });
 
   return Array.from(groups.entries()).map(([date, items]) => ({
     date,
     items: items.map((item) => ({
-      text: `${formatTime(item.takenAt)} 스케줄 #${item.scheduleId}`,
-      status: item.status === 'TAKEN' ? '복용' : item.status === 'SKIPPED' ? '건너뜀' : '미복용',
-      muted: item.status !== 'TAKEN',
+      text: `${formatTime(item.intakeTime)} ${item.name}`,
+      status: item.taken ? '복용' : '미복용',
+      muted: !item.taken,
     })),
   }));
 }
 
 function formatDate(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(0, 10);
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
 function formatTime(value: string) {
-  const date = new Date(value);
+  const date = parseServerDateTime(value);
   if (Number.isNaN(date.getTime())) return value.slice(11, 16);
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }

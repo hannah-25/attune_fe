@@ -1,5 +1,15 @@
-import { Routes, Route } from 'react-router';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { Navigate, Outlet, Routes, Route } from 'react-router';
+import logoSquare from '@src/assets/logo-square.png';
 import { AppViewport } from './components/AppViewport';
+import GuestBanner from './components/GuestBanner';
+import { ApiError, getAccessToken } from './api/client';
+import { isGuestMode } from './guest';
+import { getMyProfile } from './api/user';
+import TimezoneSyncPrompt from './components/TimezoneSyncPrompt';
+import { SyncService } from './offline/SyncService';
+import { preloadOfflineAssets } from './offline/preloadAssets';
+import { syncPushSubscription } from './lib/pushSubscription';
 
 // Auth
 import SplashPage from '../pages/auth/SplashPage';
@@ -16,10 +26,17 @@ import Onboarding2Page from '../pages/onboarding/Onboarding2Page';
 import Onboarding3Page from '../pages/onboarding/Onboarding3Page';
 import Onboarding4Page from '../pages/onboarding/Onboarding4Page';
 import Onboarding5Page from '../pages/onboarding/Onboarding5Page';
+import OnboardingHistoryPage from '../pages/onboarding/OnboardingHistoryPage';
+import OnboardingHistoryDetailPage from '../pages/onboarding/OnboardingHistoryDetailPage';
+import OnboardingQuickPage from '../pages/onboarding/OnboardingQuickPage';
+import OnboardingAiLoadingPage from '../pages/onboarding/OnboardingAiLoadingPage';
+import OnboardingAiResultPage from '../pages/onboarding/OnboardingAiResultPage';
 
 // Home
 import HomeListPage from '../pages/home/HomeListPage';
-import HomeCalendarPage from '../pages/home/HomeCalendarPage';
+
+// Notifications
+import NotificationInboxPage from '../pages/notifications/NotificationInboxPage';
 
 // Journal
 import JournalFullPage from '../pages/journal/JournalFullPage';
@@ -38,6 +55,7 @@ import MedicationHistoryPage from '../pages/medication/MedicationHistoryPage';
 import CalendarMainPage from '../pages/calendar/CalendarMainPage';
 import EventDetailPage from '../pages/calendar/EventDetailPage';
 import NewEventPage from '../pages/calendar/NewEventPage';
+import NewTodoPage from '../pages/calendar/NewTodoPage';
 import ExternalCalendarPage from '../pages/calendar/ExternalCalendarPage';
 
 // Report
@@ -47,6 +65,7 @@ import ReportMonthlyDetailPage from '../pages/report/ReportMonthlyDetailPage';
 
 // Counseling
 import CounselingListPage from '../pages/counseling/CounselingListPage';
+import CounselingAddPage from '../pages/counseling/CounselingAddPage';
 import CounselingPreparePage from '../pages/counseling/CounselingPreparePage';
 import CounselingResultPage from '../pages/counseling/CounselingResultPage';
 
@@ -67,17 +86,157 @@ import EmptyCommunitySearchPage from '../pages/empty/EmptyCommunitySearchPage';
 import MyPage from '../pages/settings/MyPage';
 import NotificationSettingsPage from '../pages/settings/NotificationSettingsPage';
 import WithdrawPage from '../pages/settings/WithdrawPage';
+import InquiryPage from '../pages/settings/InquiryPage';
 
-// Index
-import IndexPage from './pages/IndexPage';
 import OverviewPage from './pages/OverviewPage';
 
+const AdminMembersPage = lazy(() => import('../pages/admin/AdminMembersPage'));
+const AdminNoticesPage = lazy(() => import('../pages/admin/AdminNoticesPage'));
+const AdminTermsPage = lazy(() => import('../pages/admin/AdminTermsPage'));
+const AdminMarketingPage = lazy(() => import('../pages/admin/AdminMarketingPage'));
+
+function AppLoadingScreen() {
+  return (
+    <div className="w-full h-full bg-gray-50 flex items-center justify-center" aria-live="polite">
+      <img
+        src={logoSquare}
+        alt="a.tune 불러오는 중"
+        className="w-36 h-36 object-contain"
+        style={{ animation: 'float 3s ease-in-out infinite' }}
+      />
+    </div>
+  );
+}
+
+function ProtectedRoute() {
+  useEffect(() => {
+    if (isGuestMode() || !getAccessToken() || !navigator.onLine) return;
+
+    SyncService.initialize().catch(err => {
+      if (import.meta.env.DEV) console.error('[SyncService] initialize failed:', err);
+    });
+
+    // 브라우저가 구독을 교체·폐기해도 서버 등록이 낡은 채로 남지 않게 한다.
+    // 로그인 직후에도 여기서 돈다 — /login이 이 라우트 바깥이라 새로 마운트되기 때문.
+    // 실패는 내부에서 흡수하고 로깅하므로 여기서 다루지 않는다.
+    void syncPushSubscription();
+  }, []);
+
+  if (!getAccessToken() && !isGuestMode()) {
+    return <Navigate to="/login" replace />;
+  }
+  return (
+    <div className="flex flex-col h-full">
+      {isGuestMode() && <GuestBanner />}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Outlet />
+      </div>
+      <TimezoneSyncPrompt />
+    </div>
+  );
+}
+
+function AdminRoute() {
+  const usesMockAdminApi =
+    import.meta.env.DEV
+    && (import.meta.env.VITE_ADMIN_USE_MOCK as string | undefined) === 'true';
+
+  if (!usesMockAdminApi && (!getAccessToken() || isGuestMode())) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
+}
+
+function RootRoute() {
+  const [destination, setDestination] = useState<string | null>(() => {
+    if (isGuestMode()) return '/home';
+    if (!getAccessToken()) return '/splash';
+    return null;
+  });
+
+  useEffect(() => {
+    if (destination) return;
+
+    let ignore = false;
+
+    getMyProfile()
+      .then(() => {
+        if (!ignore) setDestination('/home');
+      })
+      .catch((error: unknown) => {
+        if (ignore) return;
+
+        // A missing profile means onboarding has not been completed. Temporary
+        // network/server failures should not incorrectly reset an existing user.
+        if (error instanceof ApiError && error.status === 404) {
+          setDestination('/splash');
+          return;
+        }
+
+        console.error('Failed to verify profile while routing:', error);
+        setDestination('/home');
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [destination]);
+
+  if (!destination) return <AppLoadingScreen />;
+
+  if (destination === '/home') {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <Navigate to="/splash" replace />;
+}
+
 export default function App() {
+  useEffect(() => {
+    SyncService.startListening();
+    preloadOfflineAssets();
+  }, []);
+
   return (
     <AppViewport>
       <Routes>
-        <Route path="/" element={<IndexPage />} />
+        <Route path="/" element={<RootRoute />} />
         <Route path="/overview" element={<OverviewPage />} />
+        <Route element={<AdminRoute />}>
+          <Route
+            path="/admin"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminMembersPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/admin/notices"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminNoticesPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/admin/terms"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminTermsPage />
+              </Suspense>
+            )}
+          />
+          <Route
+            path="/admin/marketing"
+            element={(
+              <Suspense fallback={<AppLoadingScreen />}>
+                <AdminMarketingPage />
+              </Suspense>
+            )}
+          />
+        </Route>
 
         {/* Auth */}
         <Route path="/splash" element={<SplashPage />} />
@@ -87,6 +246,7 @@ export default function App() {
         <Route path="/reset-password/1" element={<ResetPassword1Page />} />
         <Route path="/reset-password/2" element={<ResetPassword2Page />} />
         <Route path="/reset-password/3" element={<ResetPassword3Page />} />
+        <Route path="/reset-password/3/:token" element={<ResetPassword3Page />} />
 
         {/* Onboarding */}
         <Route path="/onboarding/1" element={<Onboarding1Page />} />
@@ -94,57 +254,75 @@ export default function App() {
         <Route path="/onboarding/3" element={<Onboarding3Page />} />
         <Route path="/onboarding/4" element={<Onboarding4Page />} />
         <Route path="/onboarding/5" element={<Onboarding5Page />} />
+        <Route path="/onboarding/quick" element={<OnboardingQuickPage />} />
+        <Route path="/onboarding/ai-loading" element={<OnboardingAiLoadingPage />} />
+        <Route path="/onboarding/ai-result" element={<OnboardingAiResultPage />} />
 
-        {/* Home */}
-        <Route path="/home" element={<HomeListPage />} />
-        <Route path="/home/calendar" element={<HomeCalendarPage />} />
+        {/* Protected routes — 토큰 없으면 /login 리다이렉트 */}
+        <Route element={<ProtectedRoute />}>
+          {/* Onboarding history */}
+          <Route path="/onboarding/history" element={<OnboardingHistoryPage />} />
+          <Route path="/onboarding/history/:id" element={<OnboardingHistoryDetailPage />} />
 
-        {/* Journal */}
-        <Route path="/journal" element={<JournalFullPage />} />
-        <Route path="/journal/timeline" element={<JournalTimelinePage />} />
-        <Route path="/journal/calendar" element={<JournalCalendarPage />} />
-        <Route path="/journal/tags" element={<JournalTagsPage />} />
+          {/* Home */}
+          <Route path="/home" element={<HomeListPage />} />
+          <Route path="/home/calendar" element={<Navigate to="/calendar" replace />} />
 
-        {/* Medication */}
-        <Route path="/medication" element={<MedicationListPage />} />
-        <Route path="/medication/add" element={<MedicationAddPage />} />
-        <Route path="/medication/alarm" element={<MedicationAlarmPage />} />
-        <Route path="/medication/info" element={<MedicationInfoPage />} />
-        <Route path="/medication/history" element={<MedicationHistoryPage />} />
+          {/* Notifications */}
+          <Route path="/notifications" element={<NotificationInboxPage />} />
 
-        {/* Calendar */}
-        <Route path="/calendar" element={<CalendarMainPage />} />
-        <Route path="/calendar/event" element={<EventDetailPage />} />
-        <Route path="/calendar/new" element={<NewEventPage />} />
-        <Route path="/calendar/external" element={<ExternalCalendarPage />} />
+          {/* Journal */}
+          <Route path="/journal" element={<JournalFullPage />} />
+          <Route path="/journal/write" element={<JournalFullPage />} />
+          <Route path="/journal/timeline" element={<JournalTimelinePage />} />
+          <Route path="/journal/calendar" element={<JournalCalendarPage />} />
+          <Route path="/journal/tags" element={<JournalTagsPage />} />
 
-        {/* Report */}
-        <Route path="/report" element={<ReportWeeklyPage />} />
-        <Route path="/report/monthly" element={<ReportMonthlyListPage />} />
-        <Route path="/report/monthly/detail" element={<ReportMonthlyDetailPage />} />
+          {/* Medication */}
+          <Route path="/medication" element={<MedicationListPage />} />
+          <Route path="/medication/add" element={<MedicationAddPage />} />
+          <Route path="/medication/alarm" element={<MedicationAlarmPage />} />
+          <Route path="/medication/info" element={<MedicationInfoPage />} />
+          <Route path="/medication/history" element={<MedicationHistoryPage />} />
 
-        {/* Counseling */}
-        <Route path="/counseling" element={<CounselingListPage />} />
-        <Route path="/counseling/prepare" element={<CounselingPreparePage />} />
-        <Route path="/counseling/result" element={<CounselingResultPage />} />
+          {/* Calendar */}
+          <Route path="/calendar" element={<CalendarMainPage />} />
+          <Route path="/calendar/event" element={<EventDetailPage />} />
+          <Route path="/calendar/new" element={<NewEventPage />} />
+          <Route path="/calendar/new-todo" element={<NewTodoPage />} />
+          <Route path="/calendar/external" element={<ExternalCalendarPage />} />
 
-        {/* Community */}
-        <Route path="/community/notice" element={<CommunityNoticePage />} />
-        <Route path="/community" element={<CommunityFeedPage />} />
-        <Route path="/community/post" element={<CommunityPostPage />} />
-        <Route path="/community/write" element={<CommunityWritePage />} />
+          {/* Report */}
+          <Route path="/report" element={<ReportWeeklyPage />} />
+          <Route path="/report/monthly" element={<ReportMonthlyListPage />} />
+          <Route path="/report/monthly/detail" element={<ReportMonthlyDetailPage />} />
 
-        {/* Empty States */}
-        <Route path="/empty/journal" element={<EmptyJournalPage />} />
-        <Route path="/empty/medication" element={<EmptyMedicationPage />} />
-        <Route path="/empty/calendar" element={<EmptyCalendarPage />} />
-        <Route path="/empty/report" element={<EmptyReportPage />} />
-        <Route path="/empty/community-search" element={<EmptyCommunitySearchPage />} />
+          {/* Counseling */}
+          <Route path="/counseling" element={<CounselingListPage />} />
+          <Route path="/counseling/add" element={<CounselingAddPage />} />
+          <Route path="/counseling/prepare" element={<CounselingPreparePage />} />
+          <Route path="/counseling/result" element={<CounselingResultPage />} />
 
-        {/* Settings */}
-        <Route path="/settings" element={<MyPage />} />
-        <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
-        <Route path="/settings/withdraw" element={<WithdrawPage />} />
+          {/* Community */}
+          <Route path="/community/notice" element={<CommunityNoticePage />} />
+          <Route path="/community" element={<CommunityFeedPage />} />
+          <Route path="/community/post/:postId" element={<CommunityPostPage />} />
+          <Route path="/community/write" element={<CommunityWritePage />} />
+
+          {/* Empty States */}
+          <Route path="/empty/journal" element={<EmptyJournalPage />} />
+          <Route path="/empty/medication" element={<EmptyMedicationPage />} />
+          <Route path="/empty/calendar" element={<EmptyCalendarPage />} />
+          <Route path="/empty/report" element={<EmptyReportPage />} />
+          <Route path="/empty/community-search" element={<EmptyCommunitySearchPage />} />
+
+          {/* Settings */}
+          <Route path="/settings" element={<MyPage />} />
+          <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
+          <Route path="/settings/withdraw" element={<WithdrawPage />} />
+          <Route path="/settings/inquiry" element={<InquiryPage />} />
+          <Route path="/inquiry" element={<InquiryPage />} />
+        </Route>
       </Routes>
     </AppViewport>
   );

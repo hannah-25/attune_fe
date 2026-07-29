@@ -1,0 +1,315 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, Pill } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import {
+  createQuickMedicationLog,
+  getAllMedicationLogs,
+  getMedications,
+  type QuickMedicationLogAction,
+  type MedicationListResponse,
+  type MedicationScheduleSummary,
+  type MedicationSummary,
+} from '@/api/medication';
+import { isEndAtPassed } from '@/lib/date';
+import { parseMedicationTime, resolveMedicationLogScheduleId } from '@/lib/medication';
+import { useDelayedLoading } from '@/lib/useDelayedLoading';
+
+type ActiveMedication = {
+  userMedicationId: number;
+  name: string;
+  isActive: boolean;
+  endAt?: string | null;
+  schedules: MedicationScheduleSummary[];
+};
+
+type HomeDoseItem = {
+  key: string;
+  userMedicationId: number;
+  scheduleId: number;
+  medicationName: string;
+  time: string;
+  status: 'PENDING' | 'TAKEN' | 'SKIPPED';
+  expired: boolean;
+};
+
+export default function HomeMedicationSection({ className }: { className?: string }) {
+  const navigate = useNavigate();
+  const [activeMedicationCount, setActiveMedicationCount] = useState(0);
+  const [doseItems, setDoseItems] = useState<HomeDoseItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const showLoading = useDelayedLoading(isLoading);
+  const [error, setError] = useState('');
+  const [loggingKeys, setLoggingKeys] = useState<string[]>([]);
+  const loggingKeysRef = useRef(new Set<string>());
+  const mountedRef = useRef(true);
+
+  const loadHomeMedication = useCallback(async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const todayKey = toDateKey(new Date());
+      const listResponse = await getMedications();
+      const normalized = normalizeMedicationList(listResponse);
+      const activeMedications = pickActiveMedications(normalized);
+
+      setActiveMedicationCount(activeMedications.length);
+
+      if (activeMedications.length === 0) {
+        setDoseItems([]);
+        return;
+      }
+
+      const scheduleStatuses = new Map<string, HomeDoseItem['status']>();
+      try {
+        const logsResponse = await getAllMedicationLogs({ startDate: todayKey, endDate: todayKey });
+        logsResponse.logs.forEach((log) => {
+          const medication = activeMedications.find((m) => m.userMedicationId === log.userMedicationId);
+          if (!medication) return;
+          const scheduleId = resolveMedicationLogScheduleId(log, medication.schedules);
+          if (scheduleId !== null) {
+            scheduleStatuses.set(
+              buildDoseKey(log.userMedicationId, scheduleId),
+              log.taken ? 'TAKEN' : 'SKIPPED',
+            );
+          }
+        });
+      } catch (logErr) {
+        console.error('Failed to load medication logs:', logErr);
+      }
+
+      setDoseItems(buildDoseItems(activeMedications, scheduleStatuses));
+    } catch (err) {
+      console.error('Failed to load home medication:', err);
+      setActiveMedicationCount(0);
+      setDoseItems([]);
+      setError('복약 정보를 불러오지 못했어요.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    void loadHomeMedication();
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [loadHomeMedication]);
+
+  const totalDoses = useMemo(() => doseItems.length, [doseItems]);
+
+  const handleLog = async (item: HomeDoseItem, action: Extract<QuickMedicationLogAction, 'TAKEN' | 'SKIPPED'>) => {
+    if (item.status !== 'PENDING' || loggingKeysRef.current.has(item.key)) return;
+
+    setError('');
+    loggingKeysRef.current.add(item.key);
+    setLoggingKeys((current) => [...current, item.key]);
+    const nextStatus = action === 'TAKEN' ? 'TAKEN' : 'SKIPPED';
+    setDoseItems((current) =>
+      current.map((dose) => (dose.key === item.key ? { ...dose, status: nextStatus } : dose))
+    );
+
+    try {
+      await createQuickMedicationLog(item.userMedicationId, {
+        action,
+        scheduleId: item.scheduleId,
+      });
+    } catch (err) {
+      console.error('Failed to record dose:', err);
+      if (!mountedRef.current) return;
+      setDoseItems((current) =>
+        current.map((dose) => (dose.key === item.key ? { ...dose, status: 'PENDING' } : dose))
+      );
+      setError('복약 상태를 기록하지 못했어요.');
+    } finally {
+      loggingKeysRef.current.delete(item.key);
+      if (mountedRef.current) {
+        setLoggingKeys((current) => current.filter((key) => key !== item.key));
+      }
+    }
+  };
+
+  return (
+    <section className={className} aria-busy={isLoading || loggingKeys.length > 0}>
+      <div className="overflow-hidden rounded-[1.75rem] border border-gray-100 bg-white shadow-[rgba(60,40,90,0.07)_0px_5px_18px_0px]">
+        <button
+          type="button"
+          onClick={() => navigate('/medication')}
+          className="relative w-full overflow-hidden px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
+        >
+          <span
+            className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-purple-100/50"
+            aria-hidden="true"
+          />
+          <span
+            className="absolute bottom-2 right-4 flex h-7 w-7 rotate-6 items-center justify-center rounded-[0.625rem] bg-purple-100 text-purple-600"
+            aria-hidden="true"
+          >
+            <Pill className="h-4 w-4" strokeWidth={1.8} />
+          </span>
+          <h2 className="relative z-[1] text-sm font-bold text-gray-900">오늘 복약</h2>
+        </button>
+
+        <div>
+          {error ? (
+            <div className="flex min-h-[52px] items-center justify-between gap-3 px-4" role="alert">
+              <span className="text-xs text-red-700">{error}</span>
+              <button
+                type="button"
+                onClick={() => void loadHomeMedication()}
+                className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-semibold text-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+              >
+                다시 시도
+              </button>
+            </div>
+          ) : showLoading ? (
+            <div className="flex min-h-[52px] items-center px-4" role="status" aria-live="polite">
+              <span className="text-xs font-medium text-gray-400">복약 정보를 불러오고 있어요.</span>
+            </div>
+          ) : activeMedicationCount === 0 ? (
+            <button
+              type="button"
+              onClick={() => navigate('/medication')}
+              className="min-h-[52px] w-full px-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-inset"
+            >
+              <span className="block text-xs font-medium text-gray-500">복용 중인 약이 없어요.</span>
+              <span className="mt-1 block text-xs font-bold text-purple-700">복약 추가하기</span>
+            </button>
+          ) : totalDoses === 0 ? (
+            <div className="flex min-h-[52px] items-center px-4 text-xs font-medium text-gray-500">
+              등록된 복약 시간이 없어요.
+            </div>
+          ) : (
+            doseItems.slice(0, 3).map((item) => {
+              const isPending = loggingKeys.includes(item.key);
+              const isRecorded = item.status !== 'PENDING';
+
+              return (
+                <div key={item.key} className="flex min-h-[52px] items-center gap-2 px-4">
+                  <div className="w-10 shrink-0 text-xs font-extrabold text-gray-600">{item.time}</div>
+                  <div className="min-w-0 grow">
+                    <div
+                      className={`truncate text-[13px] font-bold ${
+                        isRecorded ? 'text-gray-400 line-through' : item.expired ? 'text-gray-500 italic' : 'text-gray-900'
+                      }`}
+                    >
+                      {item.medicationName}
+                    </div>
+                    {item.expired ? (
+                      <div className="mt-0.5 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3 shrink-0 text-amber-500" strokeWidth={2.5} />
+                        <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">
+                          종료일 지남
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+                  {isRecorded ? (
+                    <span className="shrink-0 text-xs font-medium text-gray-400">
+                      {item.status === 'TAKEN' ? '복용 완료' : '건너뜀'}
+                    </span>
+                  ) : (
+                    <div className="flex shrink-0 items-center">
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => void handleLog(item, 'SKIPPED')}
+                        className="min-h-11 px-2 text-[10px] font-normal text-gray-300 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700"
+                      >
+                        건너뛰기
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => void handleLog(item, 'TAKEN')}
+                        className="flex min-h-11 items-center pl-1 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-1"
+                      >
+                        <span className="rounded-full bg-purple-500 px-3 py-1.5 text-[11px] font-bold text-white">
+                          {isPending ? '기록 중' : '복용하기'}
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+
+          {!isLoading && !error && doseItems.length > 3 ? (
+            <p className="px-4 py-2 text-xs font-medium text-gray-500">
+              외 {doseItems.length - 3}회는 전체 관리에서 확인할 수 있어요.
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function buildDoseItems(
+  activeMedications: ActiveMedication[],
+  scheduleStatuses: Map<string, HomeDoseItem['status']>,
+) {
+  return activeMedications
+    .flatMap((medication) =>
+      medication.schedules
+        .filter((schedule) => typeof schedule.scheduleId === 'number')
+        .map((schedule) => {
+          const scheduleId = schedule.scheduleId;
+          const key = buildDoseKey(medication.userMedicationId, scheduleId);
+
+          return {
+            key,
+            userMedicationId: medication.userMedicationId,
+            scheduleId,
+            medicationName: medication.name,
+            time: toTimeLabel(schedule.doseTime),
+            status: scheduleStatuses.get(key) ?? 'PENDING',
+            expired: isEndAtPassed(medication.endAt),
+          } satisfies HomeDoseItem;
+        })
+    )
+    .sort((a, b) => a.time.localeCompare(b.time) || a.medicationName.localeCompare(b.medicationName));
+}
+
+function buildDoseKey(userMedicationId: number, scheduleId: number) {
+  return `${userMedicationId}-${scheduleId}`;
+}
+
+// 활성(isActive) 약은 종료일이 지났어도 '복용 중'으로 노출한다(남은 약을 계속
+// 복용 중일 수 있음). 종료일 경과는 숨김이 아니라 '종료일 지남' 라벨로 표시한다.
+function pickActiveMedications(medications: ActiveMedication[]) {
+  return medications.filter((medication) => medication.isActive);
+}
+
+function normalizeMedicationList(response: MedicationListResponse): ActiveMedication[] {
+  return response
+    .map((item) => normalizeMedication(item))
+    .filter((item): item is ActiveMedication => item !== null);
+}
+
+function normalizeMedication(medication: MedicationSummary): ActiveMedication | null {
+  if (typeof medication.userMedicationId !== 'number' || !medication.medicationName) return null;
+
+  return {
+    userMedicationId: medication.userMedicationId,
+    name: medication.medicationName,
+    isActive: medication.isActive,
+    endAt: medication.endAt,
+    schedules: medication.schedules ?? [],
+  };
+}
+
+function toTimeLabel(value: string) {
+  const parsed = parseMedicationTime(value);
+  if (!parsed) return '--:--';
+
+  return `${String(parsed.hours).padStart(2, '0')}:${String(parsed.minutes).padStart(2, '0')}`;
+}
+
+function toDateKey(date: Date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}

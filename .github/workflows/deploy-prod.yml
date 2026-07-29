@@ -32,6 +32,8 @@ jobs:
       # 4. 프로젝트 빌드
       - name: Build project
         run: pnpm build
+        env:
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
 
       # 5. AWS 자격 증명 설정
       - name: Configure AWS credentials
