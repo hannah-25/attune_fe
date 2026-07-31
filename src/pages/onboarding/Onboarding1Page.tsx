@@ -13,7 +13,7 @@ export default function Onboarding1Page() {
     setIsSkipping(true);
     try {
       await skipOnboarding();
-      navigate('/home');
+      navigate('/home', { replace: true, state: { onboardingSkipped: true } });
     } catch (err) {
       console.error('Failed to skip onboarding:', err);
       setError('자가 체크 건너뛰기에 실패했습니다. 잠시 후 다시 시도해주세요.');

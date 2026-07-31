@@ -1,11 +1,11 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { Navigate, Outlet, Routes, Route } from 'react-router';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Navigate, Outlet, Routes, Route, useLocation } from 'react-router';
 import logoSquare from '@src/assets/logo-square.png';
 import { AppViewport } from './components/AppViewport';
 import GuestBanner from './components/GuestBanner';
-import { ApiError, getAccessToken } from './api/client';
+import { getAccessToken } from './api/client';
 import { isGuestMode } from './guest';
-import { getMyProfile } from './api/user';
+import { getOnboardingHistory } from './api/onboarding';
 import TimezoneSyncPrompt from './components/TimezoneSyncPrompt';
 import { SyncService } from './offline/SyncService';
 import { preloadOfflineAssets } from './offline/preloadAssets';
@@ -109,6 +109,13 @@ function AppLoadingScreen() {
 }
 
 function ProtectedRoute() {
+  const location = useLocation();
+  const skippedOnboardingThisSession = useRef(
+    (location.state as { onboardingSkipped?: boolean } | null)?.onboardingSkipped === true,
+  ).current;
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(() => !skippedOnboardingThisSession);
+  const [onboardingRedirect, setOnboardingRedirect] = useState<string | null>(null);
+
   useEffect(() => {
     if (isGuestMode() || !getAccessToken() || !navigator.onLine) return;
 
@@ -122,9 +129,43 @@ function ProtectedRoute() {
     void syncPushSubscription();
   }, []);
 
+  useEffect(() => {
+    if (isGuestMode() || !getAccessToken() || skippedOnboardingThisSession) {
+      setIsCheckingOnboarding(false);
+      return;
+    }
+
+    let ignore = false;
+    let timedOut = false;
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true;
+      if (!ignore) setIsCheckingOnboarding(false);
+    }, 5_000);
+
+    getOnboardingHistory()
+      .then(({ records }) => (records.length > 0 ? null : '/onboarding/1'))
+      .then((destination) => {
+        if (!ignore && !timedOut) setOnboardingRedirect(destination);
+      })
+      .catch((error) => {
+        console.error('Failed to get onboarding status while routing:', error);
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
+        if (!ignore && !timedOut) setIsCheckingOnboarding(false);
+      });
+
+    return () => {
+      ignore = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
   if (!getAccessToken() && !isGuestMode()) {
     return <Navigate to="/login" replace />;
   }
+  if (isCheckingOnboarding) return <AppLoadingScreen />;
+  if (onboardingRedirect) return <Navigate to={onboardingRedirect} replace />;
   return (
     <div className="flex flex-col h-full">
       {isGuestMode() && <GuestBanner />}
@@ -149,47 +190,8 @@ function AdminRoute() {
 }
 
 function RootRoute() {
-  const [destination, setDestination] = useState<string | null>(() => {
-    if (isGuestMode()) return '/home';
-    if (!getAccessToken()) return '/splash';
-    return null;
-  });
-
-  useEffect(() => {
-    if (destination) return;
-
-    let ignore = false;
-
-    getMyProfile()
-      .then(() => {
-        if (!ignore) setDestination('/home');
-      })
-      .catch((error: unknown) => {
-        if (ignore) return;
-
-        // A missing profile means onboarding has not been completed. Temporary
-        // network/server failures should not incorrectly reset an existing user.
-        if (error instanceof ApiError && error.status === 404) {
-          setDestination('/splash');
-          return;
-        }
-
-        console.error('Failed to verify profile while routing:', error);
-        setDestination('/home');
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [destination]);
-
-  if (!destination) return <AppLoadingScreen />;
-
-  if (destination === '/home') {
-    return <Navigate to="/home" replace />;
-  }
-
-  return <Navigate to="/splash" replace />;
+  if (isGuestMode()) return <Navigate to="/home" replace />;
+  return <Navigate to={getAccessToken() ? '/home' : '/splash'} replace />;
 }
 
 export default function App() {
