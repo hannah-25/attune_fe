@@ -59,7 +59,7 @@ export default function LoginPage() {
       clearGuestStore();
       clearPendingRestoreEmail(email.trim());
       setAccessToken(accessToken);
-      navigate('/home');
+      navigate('/');
     } catch (err) {
       if (isWithdrawalCandidateError(err)) {
         setPendingSocialRestore(null);
@@ -102,7 +102,7 @@ export default function LoginPage() {
       clearGuestStore();
       clearPendingRestoreEmail();
       setAccessToken(accessToken);
-      navigate('/home');
+      navigate('/');
     } catch (err) {
       if (isWithdrawalCandidateError(err)) {
         setError('');
@@ -147,7 +147,7 @@ export default function LoginPage() {
       clearGuestStore();
       clearPendingRestoreEmail();
       setAccessToken(accessToken);
-      navigate('/home');
+      navigate('/');
     } catch (err) {
       if (isWithdrawalCandidateError(err)) {
         setError('');
@@ -184,7 +184,7 @@ export default function LoginPage() {
         clearGuestStore();
         clearPendingRestoreEmail(pendingSocialRestore.email ?? undefined);
         setAccessToken(accessToken);
-        navigate('/home');
+        navigate('/');
       } catch (err) {
         setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '계정 복구에 실패했습니다. 다시 시도해주세요.');
         setShowRestorePrompt(false);
@@ -210,7 +210,7 @@ export default function LoginPage() {
       clearGuestStore();
       clearPendingRestoreEmail(email.trim());
       setAccessToken(accessToken);
-      navigate('/home');
+      navigate('/');
     } catch (err) {
       setError(err instanceof ApiError && err.backendMessage ? err.backendMessage : '계정 복구에 실패했습니다. 다시 시도해주세요.');
       setShowRestorePrompt(false);
