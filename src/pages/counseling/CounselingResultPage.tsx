@@ -291,7 +291,7 @@ export default function CounselingResultPage() {
 
       const applyEntry = async (entry: PrescriptionEntry): Promise<((prev: PrescriptionEntry[]) => PrescriptionEntry[]) | null> => {
         const status = getEntryStatus(entry);
-        const doseTime = `${entry.scheduleTime || '08:00'}:00`;
+        const doseTime = entry.scheduleTime || '08:00';
         const schedules = [{ doseTime, label: '복용' }];
 
         if (status === '중단' && entry.userMedicationId) {
