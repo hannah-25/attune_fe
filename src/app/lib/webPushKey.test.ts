@@ -8,7 +8,7 @@ import test from 'node:test';
 import { isStaleApplicationServerKey, urlBase64ToArrayBuffer } from './webPushKey';
 
 // 실제 배포에 쓰는 VAPID 공개키 (.env.production — 공개용 값).
-const VAPID_PUBLIC_KEY = 'BATSA_-E9KkcTBuVsNv56peor1jeOgId92E-GSYTttrWzXhmZUqz5ywcw63uBp92pWaBQGYY2dTFlrROyu7tJO0';
+const VAPID_PUBLIC_KEY = 'BB3j4s2mMdDjqe3lNsgydSm9CejwqqCBaR9_Y8eeN9yq2GwDf8SdEtTHrQRjXYnG6y9KHiA6gmvOPb7kVuXmLik';
 
 test('decodes a VAPID public key to a 65-byte P-256 point', () => {
   const key = urlBase64ToArrayBuffer(VAPID_PUBLIC_KEY);

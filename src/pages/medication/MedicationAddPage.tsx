@@ -549,6 +549,7 @@ function toTimeInputValue(value?: string) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
+// 서버 계약(api-guide/medication.md)의 doseTime 포맷은 "HH:mm" — 초를 붙이면 안 된다.
 function toDoseTime(value: string) {
   const match = value.match(/^(\d{2}):(\d{2})$/);
   if (!match) return null;
@@ -558,5 +559,5 @@ function toDoseTime(value: string) {
   if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
 
-  return `${value}:00`;
+  return value;
 }
