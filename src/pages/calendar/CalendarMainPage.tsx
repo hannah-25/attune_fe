@@ -3,7 +3,7 @@ import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle
 import { useNavigate } from 'react-router';
 import { TabBar } from '@/components/TabBar';
 import { getScheduleCategories, ScheduleCategory } from '@/api/schedule';
-import { getTodosByDate, TodoItem, updateTodo } from '@/api/todo';
+import { getTodosByDate, getTodosByDateRange, TodoItem, updateTodo } from '@/api/todo';
 import { CalendarEvent, getCalendarEvents } from '@/api/calendarEvents';
 import { parseServerDateTime } from '@/lib/date';
 import { getCalendarConnections, syncCalendarConnection } from '@/api/calendarConnection';
@@ -25,6 +25,7 @@ export default function CalendarMainPage() {
   const [categories, setCategories] = useState<ScheduleCategory[]>([]);
   const [error, setError] = useState('');
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  const [todoDateKeys, setTodoDateKeys] = useState<Set<string>>(new Set());
   const [todoError, setTodoError] = useState('');
   const [todosOpen, setTodosOpen] = useState(true);
   const [eventsOpen, setEventsOpen] = useState(true);
@@ -135,6 +136,23 @@ export default function CalendarMainPage() {
       ignore = true;
     };
   }, [selectedDateKey]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    getTodosByDateRange(rangeStartDate, rangeEndDate)
+      .then(({ todos: rangeTodos }) => {
+        if (!ignore) setTodoDateKeys(new Set(rangeTodos.map((todo) => toDateKeyFromDateTime(todo.dueAt))));
+      })
+      .catch((err) => {
+        console.error('Failed to load calendar todo markers:', err);
+        if (!ignore) setTodoDateKeys(new Set());
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [rangeEndDate, rangeStartDate]);
 
   useEffect(() => {
     let ignore = false;
@@ -305,6 +323,7 @@ export default function CalendarMainPage() {
           <CalendarGrid
             compact={viewMode === 'week'}
             events={events}
+            todoDateKeys={todoDateKeys}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
             onDoubleClickDate={(date) => { setSelectedDate(date); setDateMenuDate(toDateKey(date)); }}
@@ -471,12 +490,14 @@ export default function CalendarMainPage() {
 function CalendarGrid({
   compact,
   events,
+  todoDateKeys,
   onDoubleClickDate,
   onSelectDate,
   selectedDate,
 }: {
   compact: boolean;
   events: CalendarEvent[];
+  todoDateKeys: Set<string>;
   onDoubleClickDate: (date: Date) => void;
   onSelectDate: (date: Date) => void;
   selectedDate: Date;
@@ -490,13 +511,14 @@ function CalendarGrid({
       {days.map((day, index) => {
         const isSelected = day !== null && toDateKey(day) === toDateKey(selectedDate);
         const hasEvent = day !== null && events.some((event) => event.startTime.startsWith(toDateKey(day)));
+        const hasTodo = day !== null && todoDateKeys.has(toDateKey(day));
         return (
           <button type="button" key={`${day?.toISOString() ?? 'empty'}-${index}`} disabled={day === null} onClick={() => day && onSelectDate(day)} onDoubleClick={() => day && onDoubleClickDate(day)} className={`relative text-center aspect-[0.82_/_1] pt-1 pr-0 pb-1 pl-0 rounded-lg ${day === null ? 'opacity-[0.35]' : ''} ${isSelected ? 'bg-[rgb(31,27,46)]' : ''}`}>
             <div className={`font-${isSelected ? 'extrabold' : 'semibold'} text-center ${isSelected ? 'text-white' : (day?.getDay() === 0 || day?.getDay() === 6) ? 'text-[rgb(185,166,255)]' : ''}`}>{day?.getDate() ?? ''}</div>
-            {hasEvent ? (
+            {hasEvent || hasTodo ? (
               <div className="flex justify-center text-center mt-[3px] gap-[2px]">
-                <div className={`text-center w-1 h-1 ${isSelected ? 'bg-white' : 'bg-purple-300'} rounded-xs`} />
-                {isSelected ? <div className="text-center w-1 h-1 bg-white rounded-xs" /> : null}
+                {hasEvent ? <div className={`h-1 w-1 rounded-xs ${isSelected ? 'bg-purple-200' : 'bg-purple-300'}`} /> : null}
+                {hasTodo ? <div className="h-1 w-1 rounded-xs bg-orange-400" /> : null}
               </div>
             ) : null}
           </button>
