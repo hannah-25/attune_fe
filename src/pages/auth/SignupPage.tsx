@@ -215,6 +215,7 @@ export default function SignupPage() {
             />
             <SocialLoginButton
               icon={<AppleMark className="w-[18px] h-[18px] text-white" />}
+              badge="준비 중"
               label="Apple로 계속하기"
               className="bg-[rgb(31,27,46)] text-white"
               onClick={() => handleSocialLogin('apple')}
@@ -389,7 +390,8 @@ function Agreement({
   );
 }
 
-function SocialLoginButton({ icon, label, className, style, onClick, loading, disabled }: {
+function SocialLoginButton({ icon, label, badge, className, style, onClick, loading, disabled }: {
+  badge?: string;
   icon: React.ReactNode;
   label: string;
   className?: string;
@@ -411,7 +413,7 @@ function SocialLoginButton({ icon, label, className, style, onClick, loading, di
           ? <span className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
           : icon}
       </span>
-      {label}
+      {label}{badge ? <span className="ml-2 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">{badge}</span> : null}
     </button>
   );
 }
