@@ -37,6 +37,10 @@ export function getTodosByDate(date: string) {
   return apiRequest<{ todos: TodoItem[] }>(`/v1/todos?${new URLSearchParams({ date })}`);
 }
 
+export function getTodosByDateRange(startDate: string, endDate: string) {
+  return apiRequest<{ todos: TodoItem[] }>(`/v1/todos?${new URLSearchParams({ startDate, endDate })}`);
+}
+
 export function getTodo(todoId: number) {
   return apiRequest<TodoItem>(`/v1/todos/${todoId}`);
 }

@@ -911,7 +911,15 @@ function dispatch(path: string, m: Method, body: unknown): unknown {
 
   // ── Todos ─────────────────────────────────────────────────────────────────
   if (p === '/v1/todos' && m === 'GET') {
-    return ok({ todos: guestRead('todos') ?? mockTodos });
+    const todos = guestRead<typeof mockTodos>('todos') ?? mockTodos;
+    const params = new URLSearchParams(path.split('?')[1]);
+    const startDate = params.get('startDate');
+    const endDate = params.get('endDate');
+    const date = params.get('date');
+    return ok({ todos: todos.filter((todo) => {
+      const dueDate = todo.dueAt.slice(0, 10);
+      return startDate && endDate ? dueDate >= startDate && dueDate <= endDate : !date || dueDate === date;
+    }) });
   }
   if (p === '/v1/todos' && m === 'POST') {
     const todo = { todoId: genId(), isCompleted: false, ...(body as object) } as (typeof mockTodos)[number];

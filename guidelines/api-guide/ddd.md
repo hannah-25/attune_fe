@@ -351,6 +351,7 @@ Base path: `/v1/todos`
 |--------|------|------|------|
 | `POST` | `/v1/todos` | 할 일 생성 | 필요 |
 | `GET` | `/v1/todos?date={date}` | 특정 일자 할 일 목록 조회 | 필요 |
+| `GET` | `/v1/todos?startDate={startDate}&endDate={endDate}` | 기간 내 할 일 목록 조회 | 필요 |
 | `GET` | `/v1/todos/{todoId}` | 할 일 상세 조회 | 필요 |
 | `PATCH` | `/v1/todos/{todoId}` | 할 일 수정 | 필요 |
 
