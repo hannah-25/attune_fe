@@ -400,6 +400,12 @@ export async function resolveOfflineRequest<T>(path: string, options: ApiRequest
 
   if (base === '/v1/todos' && method === 'GET') {
     const date = params.get('date') ?? '';
+    const startDate = params.get('startDate');
+    const endDate = params.get('endDate');
+    if (startDate && endDate) {
+      const cached = await db.todosByDate.where('date').between(startDate, endDate, true, true).toArray();
+      return { todos: cached.flatMap((entry) => entry.data) } as T;
+    }
     const cached = date ? await db.todosByDate.get(date) : null;
     return { todos: cached?.data ?? [] } as T;
   }

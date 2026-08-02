@@ -252,6 +252,15 @@ export async function cacheResponse(
         if (!shouldWrite()) return;
         await db.todosByDate.put({ date, data: response.todos, cachedAt: now });
       }
+      if (!date && Array.isArray(response?.todos)) {
+        if (!shouldWrite()) return;
+        const todosByDate = new Map<string, TodoItem[]>();
+        response.todos.forEach((todo) => {
+          const todoDate = todo.dueAt.slice(0, 10);
+          todosByDate.set(todoDate, [...(todosByDate.get(todoDate) ?? []), todo]);
+        });
+        await Promise.all(Array.from(todosByDate, ([date, data]) => db.todosByDate.put({ date, data, cachedAt: now })));
+      }
       return;
     }
 

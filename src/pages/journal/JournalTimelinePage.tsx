@@ -381,7 +381,7 @@ export default function JournalTimelinePage() {
       {activeCategory && config && (
         <>
           <div className="fixed inset-0 bg-black/30 z-40" onClick={closeSheet} />
-          <div className="fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-[rgba(60,40,90,0.2)_0px_-8px_30px_0px] pt-4 px-4 pb-8">
+          <div className="fixed left-0 right-0 bottom-0 z-50 grid max-h-[calc(100dvh-env(safe-area-inset-top,0px))] grid-rows-[auto_auto_minmax(0,1fr)_auto] rounded-t-3xl bg-white px-4 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))] shadow-[rgba(60,40,90,0.2)_0px_-8px_30px_0px]">
             <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export default function JournalTimelinePage() {
                 <X className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
               </button>
             </div>
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="mb-6 flex min-h-0 flex-wrap content-start gap-2 overflow-y-auto">
               {sheetTags.map(tag => {
                 const isSelected = selectedTags.has(tag.label);
                 return (
