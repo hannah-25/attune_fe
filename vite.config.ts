@@ -20,8 +20,8 @@ export default defineConfig({
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: 'script',
-      manifestFilename: 'manifest-v2.webmanifest',
-      includeAssets: ['pwa-v2-192x192.png', 'pwa-v2-512x512.png', 'pwa-v2-maskable-512x512.png'],
+      manifestFilename: 'manifest-v3.webmanifest',
+      includeAssets: ['pwa-v3-192x192.png', 'pwa-v3-512x512.png', 'pwa-v3-maskable-512x512.png'],
       manifest: {
         name: 'a.tune',
         short_name: 'a.tune',
@@ -34,19 +34,19 @@ export default defineConfig({
         start_url: '/home',
         icons: [
           {
-            src: 'pwa-v2-192x192.png',
+            src: 'pwa-v3-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: 'pwa-v2-512x512.png',
+            src: 'pwa-v3-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: 'pwa-v2-maskable-512x512.png',
+            src: 'pwa-v3-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

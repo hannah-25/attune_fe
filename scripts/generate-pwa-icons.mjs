@@ -36,9 +36,9 @@ async function generate() {
   console.log(`Trimmed source: ${width} x ${height}`);
 
   const icons = [
-    { out: 'pwa-v2-192x192.png',         size: 192, padding: 0.05 },
-    { out: 'pwa-v2-512x512.png',         size: 512, padding: 0.05 },
-    { out: 'pwa-v2-maskable-512x512.png', size: 512, padding: 0.20 }, // safe zone = 지름 80% "원". 사각 80%로는 모서리가 잘린다
+    { out: 'pwa-v3-192x192.png',         size: 192, padding: 0.05 },
+    { out: 'pwa-v3-512x512.png',         size: 512, padding: 0.05 },
+    { out: 'pwa-v3-maskable-512x512.png', size: 512, padding: 0.20 }, // safe zone = 지름 80% "원". 사각 80%로는 모서리가 잘린다
   ];
 
   for (const { out, size, padding } of icons) {
