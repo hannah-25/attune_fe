@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronUp, Circle, Plus, RefreshCw } from 'lucide-react';
+import { CalendarDays, CheckSquare, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Circle, Plus, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { TabBar } from '@/components/TabBar';
 import { getScheduleCategories, ScheduleCategory } from '@/api/schedule';
 import { getTodosByDate, getTodosByDateRange, TodoItem, updateTodo } from '@/api/todo';
 import { CalendarEvent, getCalendarEvents } from '@/api/calendarEvents';
-import { parseServerDateTime } from '@/lib/date';
+import { addMonthsClamped, parseServerDateTime } from '@/lib/date';
 import { getCalendarConnections, syncCalendarConnection } from '@/api/calendarConnection';
 
 type ViewMode = 'month' | 'week';
@@ -44,6 +44,19 @@ export default function CalendarMainPage() {
     const monthEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
     return [toDateKey(monthStart), toDateKey(monthEnd)] as const;
   }, [selectedDate, viewMode]);
+
+  // 조회 범위가 곧 화면에 보이는 기간이라, 오늘이 그 안에 있으면 현재 기간이다.
+  const todayKey = toDateKey(new Date());
+  const isCurrentPeriod = todayKey >= rangeStartDate && todayKey <= rangeEndDate;
+
+  // 월간은 ±1개월(말일 보정), 주간은 ±7일 이동. selectedDate만 바꾸면 조회 범위와 목록이 따라온다.
+  const shiftPeriod = (delta: number) => {
+    setSelectedDate((current) =>
+      viewMode === 'week'
+        ? new Date(current.getFullYear(), current.getMonth(), current.getDate() + delta * 7)
+        : addMonthsClamped(current, delta),
+    );
+  };
 
   const visibleEvents = useMemo(
     () => [...events].sort((a, b) => parseServerDateTime(a.startTime).getTime() - parseServerDateTime(b.startTime).getTime()),
@@ -271,8 +284,38 @@ export default function CalendarMainPage() {
       <div className="relative flex h-full flex-col min-h-0">
         <header className="flex min-h-[60px] items-center px-4 py-2 shrink-0">
           <div className="flex flex-col gap-2">
-            <div className="font-extrabold text-2xl leading-none" style={{ fontFamily: 'NanumSquare, system-ui' }}>{selectedDate.getMonth() + 1}월</div>
-            <div className="flex bg-gray-100 p-[3px] rounded-xl gap-[2px]">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => shiftPeriod(-1)}
+                className="flex h-9 w-9 items-center justify-center rounded-full transition-colors active:bg-gray-100"
+                aria-label={viewMode === 'week' ? '이전 주' : '이전 달'}
+              >
+                <ChevronLeft className="h-[18px] w-[18px] text-gray-600" strokeWidth={2.5} />
+              </button>
+              <div className="font-extrabold text-2xl leading-none" style={{ fontFamily: 'NanumSquare, system-ui' }}>
+                {todayKey.startsWith(`${selectedDate.getFullYear()}-`) ? '' : `${selectedDate.getFullYear()}. `}
+                {selectedDate.getMonth() + 1}월
+              </div>
+              <button
+                type="button"
+                onClick={() => shiftPeriod(1)}
+                className="flex h-9 w-9 items-center justify-center rounded-full transition-colors active:bg-gray-100"
+                aria-label={viewMode === 'week' ? '다음 주' : '다음 달'}
+              >
+                <ChevronRight className="h-[18px] w-[18px] text-gray-600" strokeWidth={2.5} />
+              </button>
+              {isCurrentPeriod ? null : (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(new Date())}
+                  className="text-xs font-bold text-gray-600 bg-gray-100 rounded-lg px-2.5 py-1.5"
+                >
+                  오늘
+                </button>
+              )}
+            </div>
+            <div className="flex w-fit bg-gray-100 p-[3px] rounded-xl gap-[2px]">
               <button
                 type="button"
                 onClick={() => setViewMode('month')}

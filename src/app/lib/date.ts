@@ -174,3 +174,12 @@ export function toLocalIsoFromInputs(dateValue: string, timeValue: string, allDa
   const timePart = allDay ? (edge === 'end' ? '23:59' : '00:00') : (timeValue || '00:00');
   return `${dateValue}T${timePart}:00`;
 }
+
+/**
+ * delta개월 이동. 말일 보정으로 달을 건너뛰는 것을 막는다.
+ * (1/31에 +1개월 하면 setMonth는 3/3으로 넘어간다 → 2/28로 고정)
+ */
+export function addMonthsClamped(date: Date, delta: number): Date {
+  const lastDate = new Date(date.getFullYear(), date.getMonth() + delta + 1, 0).getDate();
+  return new Date(date.getFullYear(), date.getMonth() + delta, Math.min(date.getDate(), lastDate));
+}
