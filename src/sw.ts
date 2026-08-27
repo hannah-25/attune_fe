@@ -208,8 +208,8 @@ sw.addEventListener('push', (event) => {
     const [showResult] = await Promise.allSettled([
       sw.registration.showNotification(payload.title ?? 'a.tune 알림', {
         body: payload.body,
-        icon: '/pwa-v2-192x192.png',
-        badge: '/pwa-v2-192x192.png',
+        icon: '/pwa-v3-192x192.png',
+        badge: '/pwa-v3-192x192.png',
         data: {
           url: payload.url ?? '/home',
           deliveryAttemptId: payload.deliveryAttemptId,
