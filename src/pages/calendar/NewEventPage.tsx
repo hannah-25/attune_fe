@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, ChevronDown, ChevronRight, MapPin } from 'lucide-react';
+import { Bell, ChevronDown, ChevronRight, MapPin, Pencil } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { TopBar } from '../../app/components/TopBar';
 import { NavBackButton } from '@/components/NavButtons';
@@ -10,6 +10,7 @@ import {
   getScheduleCategories,
   ScheduleCategory,
   updateSchedule,
+  updateScheduleCategory,
 } from '@/api/schedule';
 import { ApiError } from '@/api/client';
 import {
@@ -27,6 +28,11 @@ import {
 
 const REPEAT_OPTIONS = ['없음', '매주', '매월'] as const;
 const DEFAULT_CATEGORY_COLOR = '#B9A6FF';
+// 카테고리 색은 캘린더 일정 목록의 좌측 바에 그대로 쓰인다(CalendarMainPage).
+const CATEGORY_COLORS = ['#B9A6FF', '#F9A8D4', '#FDBA74', '#FCD34D', '#86EFAC', '#93C5FD'];
+
+// 서버 색상은 대소문자가 제각각이고(#86efac) 팔레트에 없는 값일 수도 있다.
+const sameColor = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 const MAX_ALARMS_PER_SCHEDULE = 3;
 
 type AlarmOptionKey = 'none' | '5m' | '10m' | '15m' | '30m' | '1h' | 'custom';
@@ -77,6 +83,9 @@ export default function NewEventPage() {
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
   const [newCategory, setNewCategory] = useState('');
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryColor, setEditCategoryColor] = useState(DEFAULT_CATEGORY_COLOR);
 
   const [memo, setMemo] = useState('');
   const [memoOpen, setMemoOpen] = useState(false);
@@ -91,6 +100,10 @@ export default function NewEventPage() {
   const hasValidRange = hasDateTimeValues && startTimeForPayload <= endTimeForPayload;
   const canSave = title.trim().length > 0 && selectedCategoryId !== null && dirty && hasValidRange && !isSaving;
   const selectedCategoryName = categories.find((category) => category.categoryId === selectedCategoryId)?.categoryName ?? '';
+  // 팔레트에 없는 기존 색도 현재 선택으로 보여준다.
+  const editColorOptions = CATEGORY_COLORS.some((color) => sameColor(color, editCategoryColor))
+    ? CATEGORY_COLORS
+    : [editCategoryColor, ...CATEGORY_COLORS];
 
   const selectedAlarmPreset = ALARM_PRESETS.find((preset) => preset.key === alarmOptionKey) ?? ALARM_PRESETS[0];
   const customAlarmMinutes = Number.parseInt(customAlarmMinutesInput, 10);
@@ -199,6 +212,29 @@ export default function NewEventPage() {
       markDirty();
     } catch (err) {
       setError(errorMessage(err, '카테고리를 추가하지 못했습니다.'));
+    }
+  };
+
+  const startEditCategory = (category: ScheduleCategory) => {
+    setEditingCategoryId(category.categoryId);
+    setEditCategoryName(category.categoryName);
+    setEditCategoryColor(category.color || DEFAULT_CATEGORY_COLOR);
+    setAddingCategory(false);
+    setError('');
+  };
+
+  // 카테고리는 일정과 별개 리소스라 즉시 저장한다. 폼 dirty와 무관.
+  const saveCategory = async () => {
+    const trimmedCategory = editCategoryName.trim();
+    if (!trimmedCategory || editingCategoryId === null) return;
+
+    try {
+      await updateScheduleCategory(editingCategoryId, { categoryName: trimmedCategory, color: editCategoryColor });
+      const response = await getScheduleCategories();
+      setCategories(response.categories);
+      setEditingCategoryId(null);
+    } catch (err) {
+      setError(errorMessage(err, '카테고리를 수정하지 못했습니다.'));
     }
   };
 
@@ -366,23 +402,71 @@ export default function NewEventPage() {
                 {categories.map((category) => {
                   const selected = selectedCategoryId === category.categoryId;
 
+                  if (editingCategoryId === category.categoryId) {
+                    return (
+                      <div key={category.categoryId} className="flex flex-col bg-white border border-gray-300 gap-2.5 px-3 py-2.5 rounded-xl">
+                        <div className="items-center flex gap-2">
+                          <input
+                            value={editCategoryName}
+                            onChange={(event) => setEditCategoryName(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') saveCategory();
+                            }}
+                            autoFocus
+                            placeholder="분류 이름"
+                            className="grow min-w-0 text-sm bg-transparent outline-none placeholder:text-gray-300"
+                          />
+                          <button type="button" onClick={() => setEditingCategoryId(null)} className="font-bold text-xs text-gray-400">취소</button>
+                          <button type="button" onClick={saveCategory} disabled={!editCategoryName.trim()} className="font-bold text-xs text-purple-700 disabled:opacity-30">저장</button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {editColorOptions.map((color) => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => setEditCategoryColor(color)}
+                              aria-label={`색상 ${color}`}
+                              aria-pressed={sameColor(editCategoryColor, color)}
+                              className={`h-6 w-6 rounded-full transition-all ${sameColor(editCategoryColor, color) ? 'ring-2 ring-gray-500 ring-offset-2' : ''}`}
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <button
+                    <div
                       key={category.categoryId}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategoryId(category.categoryId);
-                        setCategoryOpen(false);
-                        markDirty();
-                      }}
-                      className={`items-center flex w-full text-left text-sm font-semibold rounded-xl px-3 py-2.5 transition-all active:scale-[0.98] ${
-                        selected
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-                      }`}
+                      className={`items-center flex w-full rounded-xl transition-all ${selected ? 'bg-purple-500' : 'bg-purple-50 hover:bg-purple-100'}`}
                     >
-                      {category.categoryName}
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategoryId(category.categoryId);
+                          setCategoryOpen(false);
+                          markDirty();
+                        }}
+                        className={`items-center flex grow min-w-0 text-left text-sm font-semibold gap-2 pt-2.5 pr-1 pb-2.5 pl-3 transition-all active:scale-[0.98] ${
+                          selected ? 'text-white' : 'text-purple-700'
+                        }`}
+                      >
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: category.color || DEFAULT_CATEGORY_COLOR }}
+                        />
+                        <span className="truncate">{category.categoryName}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startEditCategory(category)}
+                        aria-label={`${category.categoryName} 수정`}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                      >
+                        <Pencil className={`w-3.5 h-3.5 ${selected ? 'text-white' : 'text-purple-400'}`} strokeWidth={2.4} />
+                      </button>
+                    </div>
                   );
                 })}
                 {addingCategory ? (
@@ -402,7 +486,10 @@ export default function NewEventPage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setAddingCategory(true)}
+                    onClick={() => {
+                      setAddingCategory(true);
+                      setEditingCategoryId(null);
+                    }}
                     className="items-center flex justify-center w-full font-semibold bg-white border border-gray-300 text-gray-600 text-sm rounded-xl py-2.5 transition-all active:scale-[0.98]"
                   >
                     + 새 분류
